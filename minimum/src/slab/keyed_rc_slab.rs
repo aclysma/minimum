@@ -73,6 +73,6 @@ impl<KeyT: Eq + Hash, ValueT> KeyedRcSlab<KeyT, ValueT> {
         self.slab.update();
 
         // Drop any data from the hash map that can't be upgraded
-        self.lookup.retain(|k, v| v.upgrade().is_some());
+        self.lookup.retain(|_k, v| v.upgrade().is_some());
     }
 }

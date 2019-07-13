@@ -29,7 +29,8 @@ impl<T> AcquiredResourcesLockGuards<T> {
 // Waits until the locks for all required resources can be gathered. The result is a struct that owns
 // the guards for the resources
 pub struct AcquireResources<T, ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     id: usize,
     dispatcher: Arc<Dispatcher<ResourceId>>,
@@ -53,9 +54,13 @@ enum AcquireResourcesState {
 }
 
 impl<T, ResourceId> AcquireResources<T, ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
-    pub fn new(dispatcher: Arc<Dispatcher<ResourceId>>, required_resources: RequiredResources<T, ResourceId>) -> Self {
+    pub fn new(
+        dispatcher: Arc<Dispatcher<ResourceId>>,
+        required_resources: RequiredResources<T, ResourceId>,
+    ) -> Self {
         AcquireResources::<T, ResourceId> {
             id: dispatcher.take_task_id(),
             state: AcquireResourcesState::WaitForDispatch(dispatcher.dispatch_lock().clone()),
@@ -68,7 +73,8 @@ where ResourceId : super::ResourceIdTrait
 }
 
 enum TryTakeLocksResult<ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     // All locks were successfully taken, contains the guards for those acquired locks
     Success(Vec<tokio::sync::lock::LockGuard<()>>),
@@ -78,11 +84,15 @@ where ResourceId : super::ResourceIdTrait
 }
 
 impl<T, ResourceId> AcquireResources<T, ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     // Tries to take all locks. If successful, returns a Vec of lock guards. Otherwise, returns the
     // lock that failed (and needs to be awaited before trying to dispatch again)
-    fn try_take_locks(&self, required_resources: &Vec<ResourceId>) -> TryTakeLocksResult<ResourceId> {
+    fn try_take_locks(
+        &self,
+        required_resources: &Vec<ResourceId>,
+    ) -> TryTakeLocksResult<ResourceId> {
         let mut guards = vec![];
         for resource in required_resources {
             // We expect every resource type that we will try to fetch already has a lock set up
@@ -106,7 +116,8 @@ where ResourceId : super::ResourceIdTrait
 }
 
 impl<T, ResourceId> futures::future::Future for AcquireResources<T, ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     type Item = AcquiredResourcesLockGuards<T>;
     type Error = ();

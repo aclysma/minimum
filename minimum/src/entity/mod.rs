@@ -1,13 +1,11 @@
-
 use crate::slab;
 use slab::GenSlab;
 use slab::GenSlabKey;
 
 use crate::component;
 use component::Component;
-use component::VecComponentStorage;
-use component::ComponentStorage;
 use component::ComponentRegistry;
+use component::ComponentStorage;
 
 use crate::systems;
 
@@ -16,60 +14,45 @@ pub type EntityHandle = GenSlabKey<Entity>;
 #[derive(Debug)]
 pub struct Entity {
     //components:
-    // bitset for what components the entity has
-    // flag to destroy (which could be an entity)
+// bitset for what components the entity has
+// flag to destroy (which could be an entity)
 }
 
 impl Entity {
     pub fn new() -> Self {
-        Entity {
-
-        }
+        Entity {}
     }
 }
 
 //TODO: This is dangerous.. it's not enforcing the entity can't be removed
 pub struct EntityRef<'e> {
-    entity: &'e Entity,
+    _entity: &'e Entity, // this ref is just for borrow checking
     handle: EntityHandle,
 }
 
 impl<'e> EntityRef<'e> {
-    pub fn new(
-        entity: &'e Entity,
-        handle: EntityHandle
-    ) -> Self {
+    pub fn new(entity: &'e Entity, handle: EntityHandle) -> Self {
         EntityRef {
-            entity,
-            handle
+            _entity: entity,
+            handle,
         }
     }
 
-    pub fn add_component<T : Component>(
-        &self,
-        storage: &mut T::Storage,
-        data: T,
-    ) {
+    pub fn add_component<T: Component>(&self, storage: &mut T::Storage, data: T) {
         storage.allocate(&self.handle, data);
     }
 
-    pub fn remove_component<T : Component>(
-        &self,
-        storage: &mut T::Storage
-    ) {
+    pub fn remove_component<T: Component>(&self, storage: &mut T::Storage) {
         storage.free(&self.handle);
     }
 
-    pub fn get_component<'c, T : Component>(
-        &self,
-        storage: &'c T::Storage
-    ) -> Option<&'c T> {
+    pub fn get_component<'c, T: Component>(&self, storage: &'c T::Storage) -> Option<&'c T> {
         storage.get(&self.handle)
     }
 
-    pub fn get_component_mut<'c, T : Component>(
+    pub fn get_component_mut<'c, T: Component>(
         &self,
-        storage: &'c mut T::Storage
+        storage: &'c mut T::Storage,
     ) -> Option<&'c mut T> {
         storage.get_mut(&self.handle)
     }
@@ -78,7 +61,7 @@ impl<'e> EntityRef<'e> {
 pub struct EntitySet {
     slab: GenSlab<Entity>,
     component_registry: ComponentRegistry,
-    pending_deletes: Vec<EntityHandle>
+    pending_deletes: Vec<EntityHandle>,
 }
 
 impl EntitySet {
@@ -86,11 +69,11 @@ impl EntitySet {
         EntitySet {
             slab: GenSlab::new(),
             component_registry: ComponentRegistry::new(),
-            pending_deletes: vec![]
+            pending_deletes: vec![],
         }
     }
 
-    pub fn register_component_type<T : Component>(&mut self, world : &mut systems::World) {
+    pub fn register_component_type<T: Component>(&mut self, world: &mut systems::World) {
         world.insert(T::Storage::new());
         self.component_registry.register_component::<T>();
     }
@@ -126,7 +109,8 @@ impl EntitySet {
             self.slab.free(pending_delete);
         }
 
-        self.component_registry.on_entities_free(world, self.pending_deletes.as_slice());
+        self.component_registry
+            .on_entities_free(world, self.pending_deletes.as_slice());
         self.pending_deletes.clear();
     }
 }
@@ -134,16 +118,15 @@ impl EntitySet {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::component::VecComponentStorage;
 
     struct TestComponent {
-        value: i32
+        _value: i32,
     }
 
     impl TestComponent {
         fn new(value: i32) -> Self {
-            TestComponent {
-                value
-            }
+            TestComponent { _value: value }
         }
     }
 
@@ -206,7 +189,7 @@ mod tests {
 
         // Create an entity
         let entity_handle = entity_set.allocate();
-        let mut entity = entity_set.get_entity_ref(&entity_handle).unwrap();
+        let entity = entity_set.get_entity_ref(&entity_handle).unwrap();
 
         // Add the component
         {
@@ -232,7 +215,7 @@ mod tests {
 
         // Create an entity
         let entity_handle = entity_set.allocate();
-        let mut entity = entity_set.get_entity_ref(&entity_handle).unwrap();
+        let entity = entity_set.get_entity_ref(&entity_handle).unwrap();
 
         let mut test_component_storage = world.fetch_mut::<Storage>();
 
@@ -254,7 +237,6 @@ mod tests {
         let component = entity.get_component::<TestComponent>(&test_component_storage);
         assert!(component.is_none());
     }
-
 
     #[test]
     fn iterate_entities_with_components() {

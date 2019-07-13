@@ -88,7 +88,7 @@ pub struct RcSlab<T> {
 impl<T> RcSlab<T> {
     pub fn new() -> Self {
         let initial_count: SlabIndexT = 32;
-        let mut entries = Vec::with_capacity(initial_count as usize);
+        let entries = Vec::with_capacity(initial_count as usize);
 
         RcSlab::<T> {
             slab: GenSlab::<T>::new(),
@@ -152,7 +152,7 @@ mod tests {
         let mut pool = RcSlab::<TestStruct>::new();
         let value = TestStruct::new(123);
         {
-            let entry = pool.allocate(value);
+            let _entry = pool.allocate(value);
             assert_eq!(1, pool.active_count());
         }
 

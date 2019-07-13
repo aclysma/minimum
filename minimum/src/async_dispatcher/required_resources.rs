@@ -1,13 +1,14 @@
 //use super::ResourceId;
-use std::marker::PhantomData;
 use crate::async_dispatcher::ResourceIdTrait;
+use std::marker::PhantomData;
 
 // This is a helper that determines the reads/writes required for a system. I would have preferred
 // not to need this structure at all, but many of the shred types require lifetimes that just
 // don't play nicely with tasks. This gets rid of those lifetimes.
 #[derive(Debug)]
 pub struct RequiredResources<T, ResourceId>
-where ResourceId : ResourceIdTrait
+where
+    ResourceId: ResourceIdTrait,
 {
     pub(super) reads: Vec<ResourceId>,
     pub(super) writes: Vec<ResourceId>,
@@ -16,8 +17,8 @@ where ResourceId : ResourceIdTrait
 
 impl<T, ResourceId> RequiredResources<T, ResourceId>
 where
-    T : RequiresResources<ResourceId>,
-    ResourceId : ResourceIdTrait
+    T: RequiresResources<ResourceId>,
+    ResourceId: ResourceIdTrait,
 {
     pub fn new() -> Self {
         RequiredResources {
@@ -29,7 +30,8 @@ where
 }
 
 pub trait RequiresResources<ResourceId>: Sized
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     fn reads() -> Vec<ResourceId>;
     fn writes() -> Vec<ResourceId>;
@@ -40,7 +42,8 @@ where ResourceId : super::ResourceIdTrait
 }
 
 impl<ResourceId> RequiresResources<ResourceId> for ()
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     fn reads() -> Vec<ResourceId> {
         vec![]

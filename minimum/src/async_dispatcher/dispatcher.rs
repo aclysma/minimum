@@ -10,7 +10,8 @@ pub struct DispatcherBuilder<ResourceId> {
 }
 
 impl<ResourceId> DispatcherBuilder<ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     // Create an empty dispatcher builder
     pub fn new() -> Self {
@@ -51,7 +52,8 @@ where ResourceId : super::ResourceIdTrait
 // This way it's not blocking any other tasks that are able to proceed, and it's not spinning while
 // it's waiting.
 pub struct Dispatcher<ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     next_task_id: std::sync::atomic::AtomicUsize,
     dispatch_lock: tokio::sync::lock::Lock<()>,
@@ -61,7 +63,8 @@ where ResourceId : super::ResourceIdTrait
 }
 
 impl<ResourceId> Dispatcher<ResourceId>
-where ResourceId : super::ResourceIdTrait
+where
+    ResourceId: super::ResourceIdTrait,
 {
     pub(super) fn dispatch_lock(&self) -> &tokio::sync::lock::Lock<()> {
         &self.dispatch_lock

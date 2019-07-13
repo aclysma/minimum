@@ -1,25 +1,21 @@
-
-use super::EntityHandle;
 use super::Component;
 use super::ComponentStorage;
-use super::ComponentStorageBase;
+use super::EntityHandle;
 
-use crate::async_dispatcher;
 use crate::systems;
 use systems::World;
 
 //TODO: Can this be done with a trait?
 type OnEntitiesFreeCb = fn(&World, &[EntityHandle]);
-type CheckComponentExists = fn(&World, &EntityHandle);
 
 pub struct RegisteredComponent {
-    on_entities_free_cb: OnEntitiesFreeCb
+    on_entities_free_cb: OnEntitiesFreeCb,
 }
 
 impl RegisteredComponent {
     fn new(on_entities_free_cb: OnEntitiesFreeCb) -> Self {
         RegisteredComponent {
-            on_entities_free_cb
+            on_entities_free_cb,
         }
     }
 
@@ -29,17 +25,17 @@ impl RegisteredComponent {
 }
 
 pub struct ComponentRegistry {
-    registered_components: Vec<RegisteredComponent>
+    registered_components: Vec<RegisteredComponent>,
 }
 
 impl ComponentRegistry {
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         ComponentRegistry {
-            registered_components: vec![]
+            registered_components: vec![],
         }
     }
 
-    pub fn register_component<T : Component + 'static>(&mut self) {
+    pub fn register_component<T: Component + 'static>(&mut self) {
         let callback = |world: &World, entity_handles: &[EntityHandle]| {
             let mut storage = world.fetch_mut::<T::Storage>();
             for entity_handle in entity_handles {
@@ -47,7 +43,8 @@ impl ComponentRegistry {
             }
         };
 
-        self.registered_components.push(RegisteredComponent::new(callback));
+        self.registered_components
+            .push(RegisteredComponent::new(callback));
     }
 
     pub fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]) {

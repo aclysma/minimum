@@ -4,15 +4,12 @@ use super::systems;
 use crate::async_dispatcher;
 
 use async_dispatcher::{
-    AcquireResources, AcquiredResourcesLockGuards, Dispatcher, DispatcherBuilder,
-    RequiresResources
+    AcquireResources, AcquiredResourcesLockGuards, Dispatcher, DispatcherBuilder, RequiresResources,
 };
 
 use systems::ResourceId;
 
-impl crate::async_dispatcher::ResourceIdTrait for ResourceId {
-
-}
+impl crate::async_dispatcher::ResourceIdTrait for ResourceId {}
 
 //
 // Hook up Read/Write to the resource system
@@ -106,7 +103,7 @@ impl MinimumDispatcherBuilder {
 
         MinimumDispatcherBuilder {
             dispatcher_builder,
-            world
+            world,
         }
     }
 
@@ -117,7 +114,8 @@ impl MinimumDispatcherBuilder {
 
     pub fn insert_resource<T: systems::Resource>(&mut self, resource: T) {
         self.world.insert(resource);
-        self.dispatcher_builder.register_resource_id(ResourceId::new::<T>());
+        self.dispatcher_builder
+            .register_resource_id(ResourceId::new::<T>());
     }
 
     pub fn world(&self) -> &systems::World {

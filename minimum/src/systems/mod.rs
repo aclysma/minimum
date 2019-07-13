@@ -14,10 +14,10 @@ pub use trust_cell::RefMut;
 pub use trust_cell::TrustCell;
 
 mod dispatch;
-pub use dispatch::MinimumDispatcherBuilder;
-pub use dispatch::MinimumDispatcher;
-pub use dispatch::MinimumDispatcherContext;
 pub use dispatch::AcquiredResources;
+pub use dispatch::MinimumDispatcher;
+pub use dispatch::MinimumDispatcherBuilder;
+pub use dispatch::MinimumDispatcherContext;
 
 use crate::systems;
 
@@ -59,27 +59,27 @@ mod __resource_mopafy_scope {
 impl<T> Resource for T where T: Any + Send + Sync {}
 
 pub struct WorldBuilder {
-    world: World
+    world: World,
 }
 
 impl WorldBuilder {
     pub fn new() -> Self {
         WorldBuilder {
-            world: World::new()
+            world: World::new(),
         }
     }
 
     pub fn with_resource<R>(mut self, r: R) -> Self
-        where
-            R: Resource
+    where
+        R: Resource,
     {
         self.world.insert(r);
         self
     }
 
     pub fn insert<R>(&mut self, r: R)
-        where
-            R: Resource
+    where
+        R: Resource,
     {
         self.world.insert(r);
     }
@@ -164,8 +164,8 @@ impl World {
     }
 
     pub fn has_value<R>(&self) -> bool
-        where
-            R: Resource,
+    where
+        R: Resource,
     {
         self.has_value_raw(ResourceId::new::<R>())
     }
@@ -174,7 +174,7 @@ impl World {
         self.resources.contains_key(&id)
     }
 
-    pub fn keys(&self) -> impl Iterator<Item=&ResourceId> {
+    pub fn keys(&self) -> impl Iterator<Item = &ResourceId> {
         self.resources.iter().map(|x| x.0)
     }
 }
@@ -295,7 +295,10 @@ where
 // Task
 //
 pub trait Task {
-    type RequiredResources: for<'a> DataRequirement<'a> + crate::async_dispatcher::RequiresResources<ResourceId> + Send + 'static;
+    type RequiredResources: for<'a> DataRequirement<'a>
+        + crate::async_dispatcher::RequiresResources<ResourceId>
+        + Send
+        + 'static;
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow);
 }

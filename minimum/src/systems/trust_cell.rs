@@ -1,6 +1,6 @@
 // This is originally from the shred project. (I wanted to avoid pulling in all dependencies)
 //
-// Shouldn't have any funtional changes (i.e. added some allow dead_code)
+// Shouldn't have any funtional changes (i.e. added some allow dead_code, ran cargo fmt)
 //
 // Original source available on github: https://github.com/slide-rs/shred
 //
@@ -112,9 +112,9 @@ impl<'a, T: ?Sized> Ref<'a, T> {
     /// assert_eq!(*b2, 5);
     /// ```
     pub fn map<U, F>(self, f: F) -> Ref<'a, U>
-        where
-            F: FnOnce(&T) -> &U,
-            U: ?Sized,
+    where
+        F: FnOnce(&T) -> &U,
+        U: ?Sized,
     {
         // Extract the values from the `Ref` through a pointer so that we do not run
         // `Drop`. Because the returned `Ref` has the same lifetime `'a` as the
@@ -214,9 +214,9 @@ impl<'a, T: ?Sized> RefMut<'a, T> {
     /// assert_eq!(*b2, 5);
     /// ```
     pub fn map<U, F>(self, f: F) -> RefMut<'a, U>
-        where
-            F: FnOnce(&mut T) -> &mut U,
-            U: ?Sized,
+    where
+        F: FnOnce(&mut T) -> &mut U,
+        U: ?Sized,
     {
         // Extract the values from the `RefMut` through a pointer so that we do not run
         // `Drop`. Because the returned `RefMut` has the same lifetime `'a` as
@@ -287,7 +287,8 @@ impl<T> TrustCell<T> {
     /// This function will panic if there is a mutable reference to the data
     /// already in use.
     pub fn borrow(&self) -> Ref<T> {
-        self.check_flag_read().unwrap_or_else(|_| borrow_panic!(" mutably"));
+        self.check_flag_read()
+            .unwrap_or_else(|_| borrow_panic!(" mutably"));
 
         Ref {
             flag: &self.flag,
@@ -318,7 +319,8 @@ impl<T> TrustCell<T> {
     /// This function will panic if there are any references to the data already
     /// in use.
     pub fn borrow_mut(&self) -> RefMut<T> {
-        self.check_flag_write().unwrap_or_else(|_| borrow_panic!(""));
+        self.check_flag_write()
+            .unwrap_or_else(|_| borrow_panic!(""));
 
         RefMut {
             flag: &self.flag,
@@ -382,8 +384,8 @@ impl<T> TrustCell<T> {
 unsafe impl<T> Sync for TrustCell<T> where T: Sync {}
 
 impl<T> Default for TrustCell<T>
-    where
-        T: Default,
+where
+    T: Default,
 {
     fn default() -> Self {
         TrustCell::new(Default::default())
