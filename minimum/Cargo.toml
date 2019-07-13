@@ -3,6 +3,14 @@ name = "minimum"
 version = "0.1.0"
 authors = ["Philip Degarmo <aclysma@gmail.com>"]
 edition = "2018"
+description = "A collection of utilites for games."
+license = "MIT/Apache-2.0"
+readme = "../README.md"
+repository = "https://github.com/aclysma/minimum"
+homepage = "https://github.com/aclysma/minimum"
+keywords = ["game", "engine", "utilities", "ecs"]
+categories = ["algorithms", "data-structures", "game-engines", "memory-management"]
+
 
 [dependencies]
 hashbrown = "0.5"
