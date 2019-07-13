@@ -9,11 +9,15 @@ use mopa::Any;
 use std::marker::PhantomData;
 
 mod trust_cell;
-use trust_cell::Ref;
-use trust_cell::RefMut;
-use trust_cell::TrustCell;
+pub use trust_cell::Ref;
+pub use trust_cell::RefMut;
+pub use trust_cell::TrustCell;
 
 mod dispatch;
+pub use dispatch::MinimumDispatcherBuilder;
+pub use dispatch::MinimumDispatcher;
+pub use dispatch::MinimumDispatcherContext;
+pub use dispatch::AcquiredResources;
 
 use crate::systems;
 
