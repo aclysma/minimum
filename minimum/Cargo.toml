@@ -1,0 +1,12 @@
+[package]
+name = "minimum"
+version = "0.1.0"
+authors = ["Philip Degarmo <aclysma@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+hashbrown = "0.5"
+mopa = "0.2"
+futures = "0.1"
+tokio = "0.1"
+log = "0.4"
