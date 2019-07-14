@@ -201,11 +201,21 @@ pub struct Read<T: Resource> {
     phantom_data: PhantomData<T>,
 }
 
+pub type ReadOption<T> = Option<Read<T>>;
+
 impl<'a, T: Resource> DataRequirement<'a> for Read<T> {
     type Borrow = ReadBorrow<'a, T>;
 
     fn fetch(world: &'a World) -> Self::Borrow {
         world.fetch::<T>()
+    }
+}
+
+impl<'a, T: Resource> DataRequirement<'a> for Option<Read<T>> {
+    type Borrow = Option<ReadBorrow<'a, T>>;
+
+    fn fetch(world: &'a World) -> Self::Borrow {
+        world.try_fetch::<T>()
     }
 }
 
@@ -216,11 +226,21 @@ pub struct Write<T: Resource> {
     phantom_data: PhantomData<T>,
 }
 
+pub type WriteOption<T> = Option<Write<T>>;
+
 impl<'a, T: Resource> DataRequirement<'a> for Write<T> {
     type Borrow = WriteBorrow<'a, T>;
 
     fn fetch(world: &'a World) -> Self::Borrow {
         world.fetch_mut::<T>()
+    }
+}
+
+impl<'a, T: Resource> DataRequirement<'a> for Option<Write<T>> {
+    type Borrow = Option<WriteBorrow<'a, T>>;
+
+    fn fetch(world: &'a World) -> Self::Borrow {
+        world.try_fetch_mut::<T>()
     }
 }
 
@@ -240,6 +260,7 @@ pub struct ReadBorrow<'a, T> {
 }
 
 impl<'a, T> DataBorrow for ReadBorrow<'a, T> {}
+impl<'a, T> DataBorrow for Option<ReadBorrow<'a, T>> {}
 
 impl<'a, T> std::ops::Deref for ReadBorrow<'a, T>
 where
@@ -270,6 +291,7 @@ pub struct WriteBorrow<'a, T> {
 }
 
 impl<'a, T> DataBorrow for WriteBorrow<'a, T> {}
+impl<'a, T> DataBorrow for Option<WriteBorrow<'a, T>> {}
 
 impl<'a, T> std::ops::Deref for WriteBorrow<'a, T>
 where

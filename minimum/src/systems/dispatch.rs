@@ -32,6 +32,24 @@ impl<T: systems::Resource> RequiresResources<ResourceId> for systems::Write<T> {
     }
 }
 
+impl<T: systems::Resource> RequiresResources<ResourceId> for Option<systems::Read<T>> {
+    fn reads() -> Vec<ResourceId> {
+        vec![ResourceId::new::<T>()]
+    }
+    fn writes() -> Vec<ResourceId> {
+        vec![]
+    }
+}
+
+impl<T: systems::Resource> RequiresResources<ResourceId> for Option<systems::Write<T>> {
+    fn reads() -> Vec<ResourceId> {
+        vec![]
+    }
+    fn writes() -> Vec<ResourceId> {
+        vec![ResourceId::new::<T>()]
+    }
+}
+
 //
 // Helper that holds the locks and provides a method to fetch the data
 //

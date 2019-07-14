@@ -1,3 +1,4 @@
+use crate::systems::TrustCell;
 use hashbrown::HashMap;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -9,6 +10,8 @@ pub struct DispatcherBuilder<ResourceId> {
     resource_locks: HashMap<ResourceId, tokio::sync::lock::Lock<()>>,
 }
 
+//TODO: Pre-registration is no longer needed to make it easier to handle ReadOption/WriteOption.
+// Using a builder here could be deprecated, but going to hold off on making this change for now.
 impl<ResourceId> DispatcherBuilder<ResourceId>
 where
     ResourceId: super::ResourceIdTrait,
@@ -39,7 +42,7 @@ where
         return Dispatcher {
             next_task_id: std::sync::atomic::AtomicUsize::new(0),
             dispatch_lock: tokio::sync::lock::Lock::new(()),
-            resource_locks: self.resource_locks,
+            resource_locks: TrustCell::new(self.resource_locks),
             should_terminate: std::sync::atomic::AtomicBool::new(false),
         };
     }
@@ -58,7 +61,7 @@ where
     next_task_id: std::sync::atomic::AtomicUsize,
     dispatch_lock: tokio::sync::lock::Lock<()>,
     //TODO: Change this to a RwLock, but waiting until I have something more "real" to test with
-    resource_locks: HashMap<ResourceId, tokio::sync::lock::Lock<()>>,
+    resource_locks: TrustCell<HashMap<ResourceId, tokio::sync::lock::Lock<()>>>,
     should_terminate: std::sync::atomic::AtomicBool,
 }
 
@@ -70,7 +73,9 @@ where
         &self.dispatch_lock
     }
 
-    pub(super) fn resource_locks(&self) -> &HashMap<ResourceId, tokio::sync::lock::Lock<()>> {
+    pub(super) fn resource_locks(
+        &self,
+    ) -> &TrustCell<HashMap<ResourceId, tokio::sync::lock::Lock<()>>> {
         &self.resource_locks
     }
 

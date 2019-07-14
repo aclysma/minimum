@@ -1,3 +1,4 @@
+use hashbrown::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -92,15 +93,15 @@ where
     fn try_take_locks(
         &self,
         required_resources: &Vec<ResourceId>,
+        locks: &mut HashMap<ResourceId, tokio::sync::lock::Lock<()>>,
     ) -> TryTakeLocksResult<ResourceId> {
         let mut guards = vec![];
+
         for resource in required_resources {
             // We expect every resource type that we will try to fetch already has a lock set up
-            let mut lock = self
-                .dispatcher
-                .resource_locks()
-                .get(&resource)
-                .expect("A resource lock does not exist for a certain type.")
+            let mut lock = locks
+                .entry(resource.clone())
+                .or_insert_with(|| tokio::sync::lock::Lock::<()>::new(()))
                 .clone();
 
             match lock.poll_lock() {
@@ -155,33 +156,37 @@ where
                         // are available
                         trace!("<{}> Check resource locks", self.id);
 
+                        let mut resource_locks = self.dispatcher.resource_locks().borrow_mut();
+
                         // Try to get read access where needed
-                        let read_guards = match self.try_take_locks(&self.required_reads) {
-                            TryTakeLocksResult::Success(guards) => guards,
-                            TryTakeLocksResult::Failure(resource_id, lock) => {
-                                trace!(
-                                    "<{}> Failed to acquire read access for {:?}",
-                                    self.id,
-                                    resource_id
-                                );
-                                self.state = AcquireResourcesState::WaitForResource(lock);
-                                return Ok(futures::Async::NotReady);
-                            }
-                        };
+                        let read_guards =
+                            match self.try_take_locks(&self.required_reads, &mut resource_locks) {
+                                TryTakeLocksResult::Success(guards) => guards,
+                                TryTakeLocksResult::Failure(resource_id, lock) => {
+                                    trace!(
+                                        "<{}> Failed to acquire read access for {:?}",
+                                        self.id,
+                                        resource_id
+                                    );
+                                    self.state = AcquireResourcesState::WaitForResource(lock);
+                                    return Ok(futures::Async::NotReady);
+                                }
+                            };
 
                         // Try to get write access where needed
-                        let write_guards = match self.try_take_locks(&self.required_writes) {
-                            TryTakeLocksResult::Success(guards) => guards,
-                            TryTakeLocksResult::Failure(resource_id, lock) => {
-                                trace!(
-                                    "<{}> Failed to acquire write access for {:?}",
-                                    self.id,
-                                    resource_id
-                                );
-                                self.state = AcquireResourcesState::WaitForResource(lock);
-                                return Ok(futures::Async::NotReady);
-                            }
-                        };
+                        let write_guards =
+                            match self.try_take_locks(&self.required_writes, &mut resource_locks) {
+                                TryTakeLocksResult::Success(guards) => guards,
+                                TryTakeLocksResult::Failure(resource_id, lock) => {
+                                    trace!(
+                                        "<{}> Failed to acquire write access for {:?}",
+                                        self.id,
+                                        resource_id
+                                    );
+                                    self.state = AcquireResourcesState::WaitForResource(lock);
+                                    return Ok(futures::Async::NotReady);
+                                }
+                            };
 
                         trace!("<{}> Resource locks acquired", self.id);
 

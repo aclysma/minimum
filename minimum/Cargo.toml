@@ -10,7 +10,10 @@ repository = "https://github.com/aclysma/minimum"
 homepage = "https://github.com/aclysma/minimum"
 keywords = ["game", "engine", "utilities", "ecs"]
 categories = ["algorithms", "data-structures", "game-engines", "memory-management"]
-
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
 
 [dependencies]
 hashbrown = "0.5"
@@ -18,3 +21,7 @@ mopa = "0.2"
 futures = "0.1"
 tokio = "0.1"
 log = "0.4"
+
+[dev-dependencies]
+nalgebra  = { version = "0.18", features = [ "sparse" ] }
+nalgebra-glm = "0.4"
