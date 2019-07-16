@@ -1,6 +1,7 @@
 use super::Generation;
 use super::GenerationIndex;
 use super::SlabIndexT;
+use crate::slab::RawSlabKey;
 use std::marker::PhantomData;
 
 //TODO: Do I need something that doesn't have generations in it?
@@ -11,6 +12,16 @@ pub struct GenSlabKey<T> {
     index: SlabIndexT,
     generation_index: GenerationIndex,
     phantom_data: PhantomData<T>,
+}
+
+impl<T> GenSlabKey<T> {
+    fn new(index: SlabIndexT, generation_index: GenerationIndex) -> GenSlabKey<T> {
+        GenSlabKey::<T> {
+            index,
+            generation_index,
+            phantom_data: PhantomData,
+        }
+    }
 }
 
 impl<T> GenSlabKey<T> {
@@ -89,22 +100,14 @@ impl<T> GenSlab<T> {
             self.storage.push(generation);
 
             //println!("new slab index {}", index);
-            return GenSlabKey::<T> {
-                index,
-                generation_index,
-                phantom_data: PhantomData,
-            };
+            return GenSlabKey::new(index, generation_index);
         } else {
             // Reuse a free slot
             let index = index.unwrap();
             //println!("reuse slab index {}", index);
             assert!(self.storage[index as usize].is_none());
             let generation_index = self.storage[index as usize].allocate(value);
-            return GenSlabKey::<T> {
-                index,
-                generation_index,
-                phantom_data: PhantomData,
-            };
+            return GenSlabKey::new(index, generation_index);
         }
     }
 
@@ -141,6 +144,16 @@ impl<T> GenSlab<T> {
 
     pub fn active_count(&self) -> usize {
         self.storage.len() - self.free_list.len()
+    }
+
+    pub fn upgrade_index_to_handle(&self, index: SlabIndexT) -> Option<GenSlabKey<T>> {
+        let index_usize = index as usize;
+        if !self.storage[index_usize].is_none() {
+            let generation_index = self.storage[index_usize].generation_index();
+            Some(GenSlabKey::new(index, generation_index))
+        } else {
+            None
+        }
     }
 }
 

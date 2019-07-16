@@ -2,17 +2,125 @@ use super::Component;
 use super::ComponentStorage;
 use super::EntityHandle;
 
+pub struct VecComponentIterator<'a, T, I>
+where
+    T: Component,
+    I: Iterator<Item = (usize, &'a Option<T>)>,
+{
+    slab_iter: I,
+    entity_set: &'a super::entity::EntitySet,
+}
+
+impl<'a, T, I> VecComponentIterator<'a, T, I>
+where
+    T: Component,
+    I: Iterator<Item = (usize, &'a Option<T>)>,
+{
+    fn new(entity_set: &'a super::entity::EntitySet, slab_iter: I) -> Self {
+        VecComponentIterator {
+            entity_set,
+            slab_iter,
+        }
+    }
+}
+
+impl<'a, T, I> Iterator for VecComponentIterator<'a, T, I>
+where
+    T: Component,
+    I: Iterator<Item = (usize, &'a Option<T>)>,
+{
+    type Item = (EntityHandle, &'a T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.slab_iter.next().map(|(entitiy_index, component)| {
+            (
+                self.entity_set
+                    .upgrade_index_to_handle(entitiy_index as u32),
+                component.as_ref().unwrap(),
+            )
+        })
+    }
+}
+
+pub struct VecComponentIteratorMut<'a, T, I>
+where
+    T: Component,
+    I: Iterator<Item = (usize, &'a mut Option<T>)>,
+{
+    slab_iter: I,
+    entity_set: &'a super::entity::EntitySet,
+}
+
+impl<'a, T, I> VecComponentIteratorMut<'a, T, I>
+where
+    T: Component,
+    I: Iterator<Item = (usize, &'a mut Option<T>)>,
+{
+    fn new(entity_set: &'a super::entity::EntitySet, slab_iter: I) -> Self {
+        VecComponentIteratorMut {
+            entity_set,
+            slab_iter,
+        }
+    }
+}
+
+impl<'a, T, I> Iterator for VecComponentIteratorMut<'a, T, I>
+where
+    T: Component,
+    I: Iterator<Item = (usize, &'a mut Option<T>)>,
+{
+    type Item = (EntityHandle, &'a mut T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.slab_iter.next().map(|(entitiy_index, component)| {
+            (
+                self.entity_set
+                    .upgrade_index_to_handle(entitiy_index as u32),
+                component.as_mut().unwrap(),
+            )
+        })
+    }
+}
+
 pub struct VecComponentStorage<T: Component> {
     components: Vec<Option<T>>,
 }
 
-impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
-    fn new() -> Self {
+impl<T: Component> VecComponentStorage<T> {
+    pub fn new() -> Self {
         VecComponentStorage::<T> {
             components: Vec::with_capacity(32), //TODO: Hardcoded value
         }
     }
 
+    pub fn iter<'a>(
+        &'a self,
+        entity_set: &'a super::entity::EntitySet,
+    ) -> impl Iterator<Item = (EntityHandle, &'a T)> {
+        VecComponentIterator::<T, _>::new(
+            entity_set,
+            self.components
+                .iter()
+                .enumerate()
+                .filter(|(entity_index, component_key)| component_key.is_some()),
+        )
+    }
+
+    pub fn iter_mut<'a>(
+        &'a mut self,
+        entity_set: &'a super::entity::EntitySet,
+    ) -> impl Iterator<Item = (EntityHandle, &'a mut T)> {
+        VecComponentIteratorMut::<T, _>::new(
+            entity_set,
+            self.components
+                .iter_mut()
+                .enumerate()
+                .filter(|(entity_index, component_key)| component_key.is_some()),
+        )
+    }
+}
+
+impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
     fn allocate(&mut self, entity: &EntityHandle, data: T) {
         // If the slab keys vec isn't long enough, expand it
         if self.components.len() <= entity.index() as usize {

@@ -3,8 +3,6 @@ use hashbrown::HashMap;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-//use super::ResourceId;
-
 // This allows the user to add all the resources that will be used during execution
 pub struct DispatcherBuilder<ResourceId> {
     resource_locks: HashMap<ResourceId, tokio::sync::lock::Lock<()>>,

@@ -48,7 +48,6 @@ impl ComponentRegistry {
     }
 
     pub fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]) {
-        println!("on_entities_free {:?}", entity_handles);
         for rc in &self.registered_components {
             rc.on_entities_free(world, entity_handles);
         }

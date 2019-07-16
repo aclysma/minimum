@@ -2,9 +2,22 @@ use super::SlabIndexT;
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone)]
-pub struct RawSlabKey<T> {
+pub struct RawSlabKey<T: Sized> {
     index: SlabIndexT,
     phantom_data: PhantomData<T>,
+}
+
+impl<T: Sized> RawSlabKey<T> {
+    fn new(index: SlabIndexT) -> Self {
+        RawSlabKey {
+            index,
+            phantom_data: PhantomData,
+        }
+    }
+
+    pub fn index(&self) -> SlabIndexT {
+        self.index
+    }
 }
 
 // The pool is responsible for allocation and deletion
@@ -39,19 +52,13 @@ impl<T> RawSlab<T> {
             self.storage.push(Some(value));
 
             //println!("new slab index {}", index);
-            return RawSlabKey::<T> {
-                index,
-                phantom_data: PhantomData,
-            };
+            return RawSlabKey::new(index);
         } else {
             // Reuse a free slot
             let index = index.unwrap();
             assert!(self.storage[index as usize].is_none());
             self.storage[index as usize] = Some(value);
-            return RawSlabKey::<T> {
-                index,
-                phantom_data: PhantomData,
-            };
+            return RawSlabKey::new(index);
         }
     }
 
@@ -77,8 +84,12 @@ impl<T> RawSlab<T> {
         self.storage[slab_key.index as usize].as_mut()
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.storage.iter().filter_map(|x| x.as_ref())
+    pub fn iter(&self) -> impl Iterator<Item = (RawSlabKey<T>, &T)> {
+        self.storage
+            .iter()
+            .enumerate()
+            .filter(|(index, value)| value.is_some())
+            .map(|(index, value)| (RawSlabKey::new(index as u32), value.as_ref().unwrap()))
     }
 
     pub fn active_count(&self) -> usize {

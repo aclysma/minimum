@@ -74,6 +74,11 @@ impl<T> Generation<T> {
     pub fn peek_mut(&mut self) -> Option<&mut T> {
         self.value.as_mut()
     }
+
+    pub fn generation_index(&self) -> GenerationIndex {
+        assert!(!self.is_none());
+        self.generation_index
+    }
 }
 
 #[cfg(test)]

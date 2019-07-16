@@ -7,35 +7,37 @@ use component::Component;
 use component::ComponentRegistry;
 use component::ComponentStorage;
 
+use crate::slab::RawSlabKey;
 use crate::systems;
 
 pub type EntityHandle = GenSlabKey<Entity>;
 
 #[derive(Debug)]
 pub struct Entity {
-    //components:
-// bitset for what components the entity has
-// flag to destroy (which could be an entity)
+    // This is an option, but it is inteded to always be valid. We need to allocate before
+    // we can get the handle for the allocation
+    handle: Option<EntityHandle>,
 }
 
 impl Entity {
     pub fn new() -> Self {
-        Entity {}
+        Entity { handle: None }
+    }
+
+    pub fn handle(&self) -> EntityHandle {
+        self.handle.clone().unwrap()
     }
 }
 
 //TODO: This is dangerous.. it's not enforcing the entity can't be removed
 pub struct EntityRef<'e> {
-    _entity: &'e Entity, // this ref is just for borrow checking
+    entity: &'e Entity, // this ref is just for borrow checking
     handle: EntityHandle,
 }
 
 impl<'e> EntityRef<'e> {
     pub fn new(entity: &'e Entity, handle: EntityHandle) -> Self {
-        EntityRef {
-            _entity: entity,
-            handle,
-        }
+        EntityRef { entity, handle }
     }
 
     pub fn add_component<T: Component>(&self, storage: &mut T::Storage, data: T) {
@@ -73,13 +75,21 @@ impl EntitySet {
         }
     }
 
-    pub fn register_component_type<T: Component>(&mut self, world: &mut systems::World) {
-        world.insert(T::Storage::new());
+    pub fn register_component_type<T: Component>(&mut self) {
         self.component_registry.register_component::<T>();
     }
 
     pub fn allocate(&mut self) -> EntityHandle {
-        self.slab.allocate(Entity::new())
+        let mut handle = self.slab.allocate(Entity::new());
+        self.slab.get_mut(&handle).unwrap().handle = Some(handle.clone());
+        handle
+    }
+
+    pub fn allocate_get(&mut self) -> EntityRef {
+        let mut handle = self.slab.allocate(Entity::new());
+        let mut entity = self.slab.get_mut(&handle).unwrap();
+        entity.handle = Some(handle.clone());
+        EntityRef::new(entity, handle)
     }
 
     pub fn enqueue_free(&mut self, entity_handle: &EntityHandle) {
@@ -96,13 +106,13 @@ impl EntitySet {
         Some(EntityRef::new(e, handle))
     }
 
-    pub fn get_entity(&self, entity_handle: &EntityHandle) -> Option<&Entity> {
-        self.slab.get(entity_handle)
-    }
-
-    pub fn get_entity_mut(&mut self, entity_handle: &EntityHandle) -> Option<&mut Entity> {
-        self.slab.get_mut(entity_handle)
-    }
+    //    pub fn get_entity(&self, entity_handle: &EntityHandle) -> Option<&Entity> {
+    //        self.slab.get(entity_handle)
+    //    }
+    //
+    //    pub fn get_entity_mut(&mut self, entity_handle: &EntityHandle) -> Option<&mut Entity> {
+    //        self.slab.get_mut(entity_handle)
+    //    }
 
     pub fn flush_free(&mut self, world: &systems::World) {
         for pending_delete in &self.pending_deletes {
@@ -113,7 +123,17 @@ impl EntitySet {
             .on_entities_free(world, self.pending_deletes.as_slice());
         self.pending_deletes.clear();
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Entity> {
+        self.slab.iter()
+    }
+
+    pub fn upgrade_index_to_handle(&self, index: u32) -> EntityHandle {
+        self.slab.upgrade_index_to_handle(index).unwrap()
+    }
 }
+
+pub struct Iter {}
 
 #[cfg(test)]
 mod tests {
@@ -138,7 +158,8 @@ mod tests {
     fn test_entity_count() {
         let mut world = systems::World::new();
         let mut entity_set = EntitySet::new();
-        entity_set.register_component_type::<TestComponent>(&mut world);
+        world.insert(<TestComponent as Component>::Storage::new());
+        entity_set.register_component_type::<TestComponent>();
 
         let entity = entity_set.allocate();
         assert_eq!(entity_set.entity_count(), 1);
@@ -147,36 +168,38 @@ mod tests {
         entity_set.flush_free(&world);
         assert_eq!(entity_set.entity_count(), 0);
     }
-
-    #[test]
-    fn test_get_entity() {
-        let mut world = systems::World::new();
-        let mut entity_set = EntitySet::new();
-        entity_set.register_component_type::<TestComponent>(&mut world);
-
-        let entity_handle = entity_set.allocate();
-        assert!(entity_set.get_entity(&entity_handle).is_some());
-
-        entity_set.enqueue_free(&entity_handle);
-        assert!(entity_set.get_entity(&entity_handle).is_some());
-        entity_set.flush_free(&world);
-        assert!(entity_set.get_entity(&entity_handle).is_none());
-    }
-
-    #[test]
-    fn test_get_entity_mut() {
-        let mut world = systems::World::new();
-        let mut entity_set = EntitySet::new();
-        entity_set.register_component_type::<TestComponent>(&mut world);
-
-        let entity_handle = entity_set.allocate();
-        assert!(entity_set.get_entity_mut(&entity_handle).is_some());
-
-        entity_set.enqueue_free(&entity_handle);
-        assert!(entity_set.get_entity_mut(&entity_handle).is_some());
-        entity_set.flush_free(&world);
-        assert!(entity_set.get_entity_mut(&entity_handle).is_none());
-    }
+    //
+    //    #[test]
+    //    fn test_get_entity() {
+    //        let mut world = systems::World::new();
+    //        let mut entity_set = EntitySet::new();
+    //        world.insert(<TestComponent as Component>::Storage::new());
+    //        entity_set.register_component_type::<TestComponent>();
+    //
+    //        let entity_handle = entity_set.allocate();
+    //        assert!(entity_set.get_entity(&entity_handle).is_some());
+    //
+    //        entity_set.enqueue_free(&entity_handle);
+    //        assert!(entity_set.get_entity(&entity_handle).is_some());
+    //        entity_set.flush_free(&world);
+    //        assert!(entity_set.get_entity(&entity_handle).is_none());
+    //    }
+    //
+    //    #[test]
+    //    fn test_get_entity_mut() {
+    //        let mut world = systems::World::new();
+    //        let mut entity_set = EntitySet::new();
+    //        world.insert(<TestComponent as Component>::Storage::new());
+    //        entity_set.register_component_type::<TestComponent>();
+    //
+    //        let entity_handle = entity_set.allocate();
+    //        assert!(entity_set.get_entity_mut(&entity_handle).is_some());
+    //
+    //        entity_set.enqueue_free(&entity_handle);
+    //        assert!(entity_set.get_entity_mut(&entity_handle).is_some());
+    //        entity_set.flush_free(&world);
+    //        assert!(entity_set.get_entity_mut(&entity_handle).is_none());
+    //    }
 
     #[test]
     fn test_destroy_entity_releases_components() {
@@ -185,7 +208,8 @@ mod tests {
 
         let mut world = systems::World::new();
         let mut entity_set = EntitySet::new();
-        entity_set.register_component_type::<TestComponent>(&mut world);
+        world.insert(<TestComponent as Component>::Storage::new());
+        entity_set.register_component_type::<TestComponent>();
 
         // Create an entity
         let entity_handle = entity_set.allocate();
@@ -211,7 +235,8 @@ mod tests {
 
         let mut world = systems::World::new();
         let mut entity_set = EntitySet::new();
-        entity_set.register_component_type::<TestComponent>(&mut world);
+        world.insert(<TestComponent as Component>::Storage::new());
+        entity_set.register_component_type::<TestComponent>();
 
         // Create an entity
         let entity_handle = entity_set.allocate();
