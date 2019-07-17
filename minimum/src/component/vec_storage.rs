@@ -102,7 +102,7 @@ impl<T: Component> VecComponentStorage<T> {
             self.components
                 .iter()
                 .enumerate()
-                .filter(|(entity_index, component_key)| component_key.is_some()),
+                .filter(|(_entity_index, component_key)| component_key.is_some()),
         )
     }
 
@@ -115,7 +115,7 @@ impl<T: Component> VecComponentStorage<T> {
             self.components
                 .iter_mut()
                 .enumerate()
-                .filter(|(entity_index, component_key)| component_key.is_some()),
+                .filter(|(_entity_index, component_key)| component_key.is_some()),
         )
     }
 }

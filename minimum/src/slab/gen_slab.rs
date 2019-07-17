@@ -1,7 +1,6 @@
 use super::Generation;
 use super::GenerationIndex;
 use super::SlabIndexT;
-use crate::slab::RawSlabKey;
 use std::marker::PhantomData;
 
 //TODO: Do I need something that doesn't have generations in it?

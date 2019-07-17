@@ -7,7 +7,6 @@ use component::Component;
 use component::ComponentRegistry;
 use component::ComponentStorage;
 
-use crate::slab::RawSlabKey;
 use crate::systems;
 
 pub type EntityHandle = GenSlabKey<Entity>;
@@ -30,14 +29,18 @@ impl Entity {
 }
 
 //TODO: This is dangerous.. it's not enforcing the entity can't be removed
+//TODO: Should I remove the entity ref?
 pub struct EntityRef<'e> {
-    entity: &'e Entity, // this ref is just for borrow checking
+    _entity: &'e Entity, // this ref is just for borrow checking
     handle: EntityHandle,
 }
 
 impl<'e> EntityRef<'e> {
     pub fn new(entity: &'e Entity, handle: EntityHandle) -> Self {
-        EntityRef { entity, handle }
+        EntityRef {
+            _entity: entity,
+            handle,
+        }
     }
 
     pub fn add_component<T: Component>(&self, storage: &mut T::Storage, data: T) {
@@ -80,13 +83,13 @@ impl EntitySet {
     }
 
     pub fn allocate(&mut self) -> EntityHandle {
-        let mut handle = self.slab.allocate(Entity::new());
+        let handle = self.slab.allocate(Entity::new());
         self.slab.get_mut(&handle).unwrap().handle = Some(handle.clone());
         handle
     }
 
     pub fn allocate_get(&mut self) -> EntityRef {
-        let mut handle = self.slab.allocate(Entity::new());
+        let handle = self.slab.allocate(Entity::new());
         let mut entity = self.slab.get_mut(&handle).unwrap();
         entity.handle = Some(handle.clone());
         EntityRef::new(entity, handle)

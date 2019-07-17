@@ -88,7 +88,7 @@ impl<T> RawSlab<T> {
         self.storage
             .iter()
             .enumerate()
-            .filter(|(index, value)| value.is_some())
+            .filter(|(_, value)| value.is_some())
             .map(|(index, value)| (RawSlabKey::new(index as u32), value.as_ref().unwrap()))
     }
 

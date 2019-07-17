@@ -3,7 +3,6 @@ use super::ComponentStorage;
 use super::EntityHandle;
 use super::RawSlab;
 use super::RawSlabKey;
-use std::marker::PhantomData;
 
 pub struct SlabComponentIterator<'a, T, I>
 where
@@ -128,7 +127,7 @@ impl<T: Component> SlabComponentStorage<T> {
             self.slab_keys
                 .iter()
                 .enumerate()
-                .filter(|(entity_index, component_key)| component_key.is_some()),
+                .filter(|(_entity_index, component_key)| component_key.is_some()),
         )
     }
 
@@ -142,7 +141,7 @@ impl<T: Component> SlabComponentStorage<T> {
             self.slab_keys
                 .iter()
                 .enumerate()
-                .filter(|(entity_index, component_key)| component_key.is_some()),
+                .filter(|(_entity_index, component_key)| component_key.is_some()),
         )
     }
 }
