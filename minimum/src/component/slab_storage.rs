@@ -144,6 +144,22 @@ impl<T: Component> SlabComponentStorage<T> {
                 .filter(|(_entity_index, component_key)| component_key.is_some()),
         )
     }
+
+    pub fn iter_values<'a>(
+        &'a self
+    ) -> impl Iterator<Item = &'a T> {
+        self.slab
+            .iter()
+            .map(|(_key, value)| value)
+    }
+
+    pub fn iter_values_mut<'a>(
+        &'a mut self
+    ) -> impl Iterator<Item = &'a mut T> {
+        self.slab
+            .iter_mut()
+            .map(|(_key, value)| value)
+    }
 }
 
 impl<T: Component> ComponentStorage<T> for SlabComponentStorage<T> {

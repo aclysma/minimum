@@ -13,11 +13,8 @@ pub use trust_cell::Ref;
 pub use trust_cell::RefMut;
 pub use trust_cell::TrustCell;
 
-mod dispatch;
-pub use dispatch::AcquiredResources;
-pub use dispatch::MinimumDispatcher;
-pub use dispatch::MinimumDispatcherBuilder;
-pub use dispatch::MinimumDispatcherContext;
+pub mod async_dispatch;
+pub mod simple_dispatch;
 
 use crate::systems;
 

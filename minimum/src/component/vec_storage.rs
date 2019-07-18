@@ -102,7 +102,7 @@ impl<T: Component> VecComponentStorage<T> {
             self.components
                 .iter()
                 .enumerate()
-                .filter(|(_entity_index, component_key)| component_key.is_some()),
+                .filter(|(_entity_index, component_key)| component_key.is_some())
         )
     }
 
@@ -117,6 +117,22 @@ impl<T: Component> VecComponentStorage<T> {
                 .enumerate()
                 .filter(|(_entity_index, component_key)| component_key.is_some()),
         )
+    }
+
+    pub fn iter_values<'a>(
+        &'a self
+    ) -> impl Iterator<Item = &'a T> {
+        self.components
+            .iter()
+            .filter_map(|component_key| component_key.as_ref())
+    }
+
+    pub fn iter_values_mut<'a>(
+        &'a mut self
+    ) -> impl Iterator<Item = &'a mut T> {
+        self.components
+            .iter_mut()
+            .filter_map(|component_key| component_key.as_mut())
     }
 }
 

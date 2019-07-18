@@ -1,5 +1,5 @@
 use minimum::systems::{
-    DataRequirement, MinimumDispatcherBuilder, Read, Task, World, WorldBuilder, Write,
+    DataRequirement, Read, Task, World, WorldBuilder, Write,
 };
 
 use minimum::async_dispatcher::ExecuteSequential;
@@ -213,17 +213,35 @@ fn create_objects(world: &World) {
     }
 }
 
-fn main() {
-    // Register global systems
-    let mut world = WorldBuilder::new()
-        .with_resource(PhysicsSystem)
-        .with_resource(UpdateCount::new())
-        .with_resource(TimeState::new())
-        .build();
+fn simple_implementation(world: World) {
 
-    GameEntities::setup(&mut world);
-    create_objects(&world);
+    use minimum::systems::simple_dispatch::MinimumDispatcherBuilder;
+    let dispatcher = MinimumDispatcherBuilder::from_world(world).build();
 
+    dispatcher.enter_game_loop(|ctx| {
+        ctx.run_task(UpdatePhysicsSystem);
+        ctx.run_task(UpdatePositions);
+
+        {
+            let world = ctx.world();
+            GameEntities::update(&world);
+        }
+
+        {
+            let world = ctx.world();
+            let mut update_count = world.fetch_mut::<UpdateCount>();
+            println!("update {}", update_count.count);
+            update_count.count += 1;
+            if update_count.count > 10 {
+                ctx.end_game_loop();
+            }
+        }
+
+    });
+}
+
+fn async_implementation(world: World) {
+    use minimum::systems::async_dispatch::MinimumDispatcherBuilder;
     let dispatcher = MinimumDispatcherBuilder::from_world(world).build();
 
     dispatcher.enter_game_loop(|ctx| {
@@ -252,4 +270,19 @@ fn main() {
             })),
         ])
     });
+}
+
+fn main() {
+    // Register global systems
+    let mut world = WorldBuilder::new()
+        .with_resource(PhysicsSystem)
+        .with_resource(UpdateCount::new())
+        .with_resource(TimeState::new())
+        .build();
+
+    GameEntities::setup(&mut world);
+    create_objects(&world);
+
+    simple_implementation(world);
+    //async_implementation(world);
 }

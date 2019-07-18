@@ -92,6 +92,14 @@ impl<T> RawSlab<T> {
             .map(|(index, value)| (RawSlabKey::new(index as u32), value.as_ref().unwrap()))
     }
 
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = (RawSlabKey<T>, &mut T)> {
+        self.storage
+            .iter_mut()
+            .enumerate()
+            .filter(|(_, value)| value.is_some())
+            .map(|(index, value)| (RawSlabKey::new(index as u32), value.as_mut().unwrap()))
+    }
+
     pub fn active_count(&self) -> usize {
         self.storage.len() - self.free_list.len()
     }
