@@ -3,6 +3,7 @@ use hashbrown::HashMap;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
+
 // This allows the user to add all the resources that will be used during execution
 pub struct DispatcherBuilder<ResourceId> {
     resource_locks: HashMap<ResourceId, tokio::sync::lock::Lock<()>>,
@@ -42,6 +43,7 @@ where
             dispatch_lock: tokio::sync::lock::Lock::new(()),
             resource_locks: TrustCell::new(self.resource_locks),
             should_terminate: std::sync::atomic::AtomicBool::new(false),
+            cs_lock: futures_locks::RwLock::new(())
         };
     }
 }
@@ -61,6 +63,7 @@ where
     //TODO: Change this to a RwLock, but waiting until I have something more "real" to test with
     resource_locks: TrustCell<HashMap<ResourceId, tokio::sync::lock::Lock<()>>>,
     should_terminate: std::sync::atomic::AtomicBool,
+    cs_lock: futures_locks::RwLock<()>,
 }
 
 impl<ResourceId> Dispatcher<ResourceId>
@@ -70,6 +73,8 @@ where
     pub(super) fn dispatch_lock(&self) -> &tokio::sync::lock::Lock<()> {
         &self.dispatch_lock
     }
+
+    pub(super) fn cs_lock(&self) -> &futures_locks::RwLock<()> { &self.cs_lock }
 
     pub(super) fn resource_locks(
         &self,

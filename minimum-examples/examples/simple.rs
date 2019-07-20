@@ -1,95 +1,27 @@
 use minimum::systems::{
-    DataRequirement, Read, Task, World, WorldBuilder, Write,
+    DataRequirement, Read, World, WorldBuilder, Write,
 };
 
-use minimum::async_dispatcher::ExecuteSequential;
+use minimum::systems::simple_dispatch::{
+    Task
+};
 
 use minimum::component::{Component, ComponentStorage};
 
-use nalgebra_glm as glm;
+mod shared;
 
-// Keep track of how many frames we've run
-struct UpdateCount {
-    count: i32,
-}
+use shared::components::{
+    PositionComponent,
+    VelocityComponent,
+    SpeedMultiplierComponent
+};
 
-impl UpdateCount {
-    fn new() -> Self {
-        return UpdateCount { count: 0 };
-    }
-}
+use shared::resources::{
+    TimeState,
+    UpdateCount
+};
 
-// Mock a physics system
-struct PhysicsSystem;
-impl PhysicsSystem {
-    fn update(&mut self) {}
-}
-
-// A task to trigger updating the physics system
-struct UpdatePhysicsSystem;
-impl Task for UpdatePhysicsSystem {
-    type RequiredResources = (Write<PhysicsSystem>);
-
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
-        let mut physics_system = data;
-        physics_system.update();
-    }
-}
-
-#[derive(Debug)]
-struct PositionComponent {
-    position: glm::Vec2,
-}
-
-impl PositionComponent {
-    fn new(position: glm::Vec2) -> Self {
-        PositionComponent { position }
-    }
-}
-
-impl Component for PositionComponent {
-    type Storage = minimum::component::VecComponentStorage<PositionComponent>;
-}
-
-#[derive(Debug)]
-struct VelocityComponent {
-    velocity: glm::Vec2,
-}
-
-impl VelocityComponent {
-    fn new(velocity: glm::Vec2) -> Self {
-        VelocityComponent { velocity }
-    }
-}
-
-impl Component for VelocityComponent {
-    type Storage = minimum::component::SlabComponentStorage<VelocityComponent>;
-}
-
-#[derive(Debug)]
-struct SpeedMultiplierComponent {
-    multiplier: f32,
-}
-
-impl SpeedMultiplierComponent {
-    fn new(multiplier: f32) -> Self {
-        SpeedMultiplierComponent { multiplier }
-    }
-}
-
-impl Component for SpeedMultiplierComponent {
-    type Storage = minimum::component::SlabComponentStorage<SpeedMultiplierComponent>;
-}
-
-struct TimeState {
-    dt: f32,
-}
-
-impl TimeState {
-    fn new() -> Self {
-        TimeState { dt: 1.0 / 60.0 }
-    }
-}
+use shared::Vec2;
 
 struct GameEntities {
     set: minimum::entity::EntitySet,
@@ -172,8 +104,9 @@ impl Task for UpdatePositions {
                 speed_multiplier_components.get(&entity_index),
             ) {
                 println!("p {:?} v {:?} m {:?}", pos, vel, mul);
-                pos.position +=
-                    time_state.dt * vel.velocity * mul.map(|x| x.multiplier).unwrap_or(1.0);
+                let multiplier = time_state.dt * mul.map(|x| x.multiplier).unwrap_or(1.0);
+                pos.position.x += multiplier * vel.velocity.x;
+                pos.position.y += multiplier * vel.velocity.y;
             }
         }
     }
@@ -192,14 +125,14 @@ fn create_objects(world: &World) {
         // Put a position on everything
         entity.add_component(
             &mut *pos_components,
-            PositionComponent::new(glm::vec2(i as f32, 6.0)),
+            PositionComponent::new(Vec2::new(i as f32, 6.0)),
         );
 
         // Put velocity on half of the entities
         if i % 2 == 0 {
             entity.add_component(
                 &mut *vel_components,
-                VelocityComponent::new(glm::vec2(i as f32, 6.0)),
+                VelocityComponent::new(Vec2::new(i as f32, 6.0)),
             );
         }
 
@@ -213,13 +146,24 @@ fn create_objects(world: &World) {
     }
 }
 
-fn simple_implementation(world: World) {
+fn main() {
+    // Register global systems
+    let mut world = WorldBuilder::new()
+        .with_resource(UpdateCount::new())
+        .with_resource(TimeState::new())
+        .build();
+
+    // Hook up the entity set
+    GameEntities::setup(&mut world);
+
+    // Create a bunch of objects
+    create_objects(&world);
 
     use minimum::systems::simple_dispatch::MinimumDispatcherBuilder;
     let dispatcher = MinimumDispatcherBuilder::from_world(world).build();
 
+    // Run
     dispatcher.enter_game_loop(|ctx| {
-        ctx.run_task(UpdatePhysicsSystem);
         ctx.run_task(UpdatePositions);
 
         {
@@ -238,51 +182,5 @@ fn simple_implementation(world: World) {
         }
 
     });
-}
 
-fn async_implementation(world: World) {
-    use minimum::systems::async_dispatch::MinimumDispatcherBuilder;
-    let dispatcher = MinimumDispatcherBuilder::from_world(world).build();
-
-    dispatcher.enter_game_loop(|ctx| {
-        let ctx1 = ctx.clone();
-        let ctx2 = ctx.clone();
-
-        ExecuteSequential::new(vec![
-            ctx.run_task(UpdatePhysicsSystem),
-            ctx.run_task(UpdatePositions),
-            //This will mutably fetch every component type so needs to be done exclusively
-            Box::new(futures::lazy(move || {
-                let world = ctx1.world();
-                GameEntities::update(&world);
-                Ok(())
-            })),
-            Box::new(futures::lazy(move || {
-                let world = ctx2.world();
-                let mut update_count = world.fetch_mut::<UpdateCount>();
-                println!("update {}", update_count.count);
-                update_count.count += 1;
-                if update_count.count > 10 {
-                    ctx.end_game_loop();
-                }
-
-                Ok(())
-            })),
-        ])
-    });
-}
-
-fn main() {
-    // Register global systems
-    let mut world = WorldBuilder::new()
-        .with_resource(PhysicsSystem)
-        .with_resource(UpdateCount::new())
-        .with_resource(TimeState::new())
-        .build();
-
-    GameEntities::setup(&mut world);
-    create_objects(&world);
-
-    simple_implementation(world);
-    //async_implementation(world);
 }

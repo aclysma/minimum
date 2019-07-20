@@ -2,4 +2,9 @@
 
 members = [
     "minimum",
+    "minimum-examples"
+]
+
+exclude = [
+    "minimum-examples",
 ]

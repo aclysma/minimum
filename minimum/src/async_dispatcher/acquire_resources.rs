@@ -2,8 +2,6 @@ use hashbrown::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-//use super::ResourceId;
-
 use super::Dispatcher;
 use super::RequiredResources;
 
@@ -39,6 +37,7 @@ where
     phantom_data: PhantomData<T>,
     required_reads: Vec<ResourceId>,
     required_writes: Vec<ResourceId>,
+    cs_read_guard: Option<futures_locks::RwLockReadGuard<()>>
 }
 
 #[derive(Debug)]
@@ -59,6 +58,7 @@ where
     ResourceId: super::ResourceIdTrait,
 {
     pub fn new(
+        cs_read_guard: futures_locks::RwLockReadGuard<()>,
         dispatcher: Arc<Dispatcher<ResourceId>>,
         required_resources: RequiredResources<T, ResourceId>,
     ) -> Self {
@@ -68,6 +68,7 @@ where
             dispatcher,
             required_reads: required_resources.reads,
             required_writes: required_resources.writes,
+            cs_read_guard: Some(cs_read_guard),
             phantom_data: PhantomData,
         }
     }
@@ -195,6 +196,7 @@ where
                     };
 
                     self.state = AcquireResourcesState::Finished;
+                    self.cs_read_guard = None;
                     return Ok(futures::Async::Ready(lock_result));
                 }
                 AcquireResourcesState::WaitForResource(resource_lock) => {
@@ -224,4 +226,18 @@ where
             }
         }
     }
+}
+
+pub fn acquire_resources<ResourceId, T>(
+    dispatcher: Arc<Dispatcher<ResourceId>>,
+) -> impl futures::future::Future<Item = AcquiredResourcesLockGuards<T>, Error = ()>
+    where
+        T: super::RequiresResources<ResourceId> + 'static + Send,
+        ResourceId: super::ResourceIdTrait,
+{
+    use futures::future::Future;
+
+    dispatcher.cs_lock().read().and_then(move |cs_read_guard| {
+        AcquireResources::new(cs_read_guard, dispatcher, T::required_resources())
+    })
 }

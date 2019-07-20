@@ -4,10 +4,28 @@ use super::systems;
 use crate::async_dispatcher;
 
 use async_dispatcher::{
-    AcquireResources, AcquiredResourcesLockGuards, Dispatcher, DispatcherBuilder, RequiresResources,
+    AcquiredResourcesLockGuards, Dispatcher, DispatcherBuilder, RequiresResources,
+    AcquireCriticalSectionReadLockGuard,
+    AcquireCriticalSectionWriteLockGuard,
+    acquire_resources as do_acquire_resources,
+    acquire_critical_section_read as do_acquire_critical_section_read,
+    acquire_critical_section_write as do_acquire_critical_section_write
 };
 
 use systems::ResourceId;
+
+//
+// Task
+//
+
+pub trait Task {
+    type RequiredResources: for<'a> systems::DataRequirement<'a>
+    + crate::async_dispatcher::RequiresResources<ResourceId>
+    + Send
+    + 'static;
+
+    fn run(&mut self, data: <Self::RequiredResources as systems::DataRequirement>::Borrow);
+}
 
 impl crate::async_dispatcher::ResourceIdTrait for ResourceId {}
 
@@ -58,19 +76,23 @@ where
     T: RequiresResources<ResourceId> + 'static + Send,
 {
     _lock_guards: AcquiredResourcesLockGuards<T>,
-    world: Arc<systems::World>,
+    world: Arc<systems::TrustCell<systems::World>>,
 }
 
 impl<T> AcquiredResources<T>
 where
     T: RequiresResources<ResourceId> + 'static + Send,
 {
-    pub fn visit<'a, F>(&'a self, f: F)
+    pub fn visit<'a, 'b, F>(&'a self, f: F)
     where
+        'a : 'b,
         F: FnOnce(T::Borrow),
-        T: systems::DataRequirement<'a>,
+        T: systems::DataRequirement<'b>,
+
     {
-        let fetched = T::fetch(&self.world);
+        let trust_cell_ref = (*self.world).borrow();
+        let world_ref = trust_cell_ref.value();
+        let fetched = T::fetch(world_ref);
         (f)(fetched);
     }
 
@@ -82,7 +104,7 @@ where
 //
 pub fn acquire_resources<T>(
     dispatcher: Arc<Dispatcher<ResourceId>>,
-    world: Arc<systems::World>,
+    world: Arc<systems::TrustCell<systems::World>>,
 ) -> impl futures::future::Future<Item = AcquiredResources<T>, Error = ()>
 where
     T: RequiresResources<ResourceId> + 'static + Send,
@@ -90,13 +112,25 @@ where
     use futures::future::Future;
 
     Box::new(
-        AcquireResources::new(dispatcher, T::required_resources()).map(move |lock_guards| {
+        do_acquire_resources::<ResourceId, T>(dispatcher).map(move |lock_guards| {
             AcquiredResources {
                 _lock_guards: lock_guards,
                 world,
             }
         }),
     )
+}
+
+pub fn acquire_critical_section_read(
+    dispatcher: Arc<Dispatcher<ResourceId>>
+) -> impl futures::future::Future<Item = AcquireCriticalSectionReadLockGuard, Error = ()> {
+    do_acquire_critical_section_read(dispatcher)
+}
+
+pub fn acquire_critical_section_write(
+    dispatcher: Arc<Dispatcher<ResourceId>>
+) -> impl futures::future::Future<Item = AcquireCriticalSectionWriteLockGuard, Error = ()> {
+    do_acquire_critical_section_write(dispatcher)
 }
 
 pub struct MinimumDispatcherBuilder {
@@ -143,15 +177,18 @@ impl MinimumDispatcherBuilder {
     // Create the dispatcher
     pub fn build(self) -> MinimumDispatcher {
         let dispatcher = self.dispatcher_builder.build();
-        let world = Arc::new(self.world);
+        let world = Arc::new(systems::TrustCell::new(self.world));
 
-        MinimumDispatcher { dispatcher, world }
+        MinimumDispatcher {
+            dispatcher,
+            world
+        }
     }
 }
 
 pub struct MinimumDispatcher {
     dispatcher: Dispatcher<ResourceId>,
-    world: Arc<systems::World>,
+    world: Arc<systems::TrustCell<systems::World>>,
 }
 
 impl MinimumDispatcher {
@@ -178,25 +215,31 @@ impl MinimumDispatcher {
         });
 
         // Return the world
-        world
+        world.into_inner()
     }
 }
 
 pub struct MinimumDispatcherContext {
     dispatcher: Arc<Dispatcher<ResourceId>>,
-    world: Arc<systems::World>,
+    world: Arc<systems::TrustCell<systems::World>>,
 }
 
+//TODO: I don't like the naming on the member functions here
 impl MinimumDispatcherContext {
     pub fn end_game_loop(&self) {
         self.dispatcher.end_game_loop();
     }
 
-    pub fn dispatcher(&self) -> Arc<Dispatcher<ResourceId>> {
-        self.dispatcher.clone()
+    pub fn has_resource<T>(&self) -> bool
+    where T: systems::Resource
+    {
+        (*self.world).borrow().value().has_value::<T>()
     }
 
-    pub fn world(&self) -> Arc<systems::World> {
+    //WARNING: Using the trust cell here is a bit dangerous, it's much
+    //safer to use visit_world and visit_world_mut as they appropriately
+    //wait to acquire locks to ensure safety
+    pub fn world(&self) -> Arc<systems::TrustCell<systems::World>> {
         self.world.clone()
     }
 
@@ -211,7 +254,7 @@ impl MinimumDispatcherContext {
         use futures::future::Future;
 
         Box::new(
-            acquire_resources::<RequirementT>(self.dispatcher.clone(), self.world.clone()).map(
+            acquire_resources::<RequirementT>(self.dispatcher.clone(), Arc::clone(&self.world)).map(
                 move |acquired_resources| {
                     (f)(acquired_resources);
                 },
@@ -224,17 +267,57 @@ impl MinimumDispatcherContext {
         mut task: T,
     ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
     where
-        T: systems::Task,
+        T: Task,
     {
         use futures::future::Future;
 
         Box::new(
-            acquire_resources::<T::RequiredResources>(self.dispatcher.clone(), self.world.clone())
+            acquire_resources::<T::RequiredResources>(self.dispatcher.clone(), Arc::clone(&self.world))
                 .map(move |acquired_resources| {
                     acquired_resources.visit(move |resources| {
                         task.run(resources);
                     });
                 }),
+        )
+    }
+
+    //TODO: It would be nice to pass the context into the callback, but need to refactor to use
+    //inner arc.
+    pub fn visit_world<F>(
+        &self,
+        f: F
+    ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
+        where F : FnOnce(&systems::World)
+    {
+        use futures::future::Future;
+
+        let world = self.world.clone();
+
+        Box::new(
+            acquire_critical_section_read(self.dispatcher.clone())
+                .map(move |_acquire_critical_section| {
+                    (f)(&(*world).borrow());
+                })
+        )
+    }
+
+    //TODO: It would be nice to pass the context into the callback, but need to refactor to use
+    //inner arc.
+    pub fn visit_world_mut<F>(
+        &self,
+        f: F
+    ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
+    where F : FnOnce(&mut systems::World)
+    {
+        use futures::future::Future;
+
+        let world = self.world.clone();
+
+        Box::new(
+            acquire_critical_section_write(self.dispatcher.clone())
+                .map(move |_acquire_critical_section| {
+                    (f)(&mut (*world).borrow_mut());
+            })
         )
     }
 }

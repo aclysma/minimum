@@ -96,7 +96,11 @@ impl EntitySet {
     }
 
     pub fn enqueue_free(&mut self, entity_handle: &EntityHandle) {
-        self.pending_deletes.push(entity_handle.clone());
+        EntitySet::do_enqueue_free(&mut self.pending_deletes, entity_handle);
+    }
+
+    fn do_enqueue_free(pending_deletes: &mut Vec<EntityHandle>, entity_handle: &EntityHandle) {
+        pending_deletes.push(entity_handle.clone());
     }
 
     pub fn entity_count(&self) -> usize {
@@ -116,6 +120,18 @@ impl EntitySet {
     //    pub fn get_entity_mut(&mut self, entity_handle: &EntityHandle) -> Option<&mut Entity> {
     //        self.slab.get_mut(entity_handle)
     //    }
+
+    pub fn clear(&mut self, world: &systems::World) {
+
+        let slab = &self.slab;
+        let pending_deletes = &mut self.pending_deletes;
+
+        for e in slab.iter() {
+            EntitySet::do_enqueue_free(pending_deletes, &e.handle());
+        }
+
+        self.flush_free(world);
+    }
 
     pub fn flush_free(&mut self, world: &systems::World) {
         for pending_delete in &self.pending_deletes {

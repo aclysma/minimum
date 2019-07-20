@@ -65,10 +65,25 @@ impl Error for InvalidBorrow {
 #[derive(Debug)]
 pub struct Ref<'a, T: ?Sized + 'a> {
     flag: &'a AtomicUsize,
-    value: &'a T,
+    pub value: &'a T,
 }
 
 impl<'a, T: ?Sized> Ref<'a, T> {
+
+    // ADDED: I had some code like this:
+    //
+    //   let w : &'a systems::TrustCell<systems::World> = &*self.world;
+    //   let w_borrow : systems::trust_cell::Ref<'a, systems::World> = w.borrow();
+    //   let w_ref : &'a systems::World = &*w_borrow;
+    //
+    // It did not compile because it complained w_borrow did not live long enough.
+    // Adding this getter allowed me to use the ref as-is.
+    //
+    //TODO: Make a minimum example and ask why the above code doesn't work
+    pub fn value(&self) -> &'a T {
+        self.value
+    }
+
     /// Makes a new `Ref` for a component of the borrowed data which preserves
     /// the existing borrow.
     ///

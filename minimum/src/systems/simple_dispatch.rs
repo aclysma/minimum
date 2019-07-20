@@ -81,6 +81,18 @@ pub struct MinimumDispatcherContext {
     should_terminate: std::cell::Cell<bool>
 }
 
+//
+// Task
+//
+
+pub trait Task {
+    type RequiredResources: for<'a> super::DataRequirement<'a>
+    + Send
+    + 'static;
+
+    fn run(&mut self, data: <Self::RequiredResources as super::DataRequirement>::Borrow);
+}
+
 impl MinimumDispatcherContext {
     pub fn end_game_loop(&self) {
         self.should_terminate.set(true);
@@ -91,10 +103,10 @@ impl MinimumDispatcherContext {
     }
 
     pub fn run_task<T>(&self, mut task: T)
-        where T: systems::Task,
+        where T: Task,
     {
         use systems::DataRequirement;
-        let required_data = <<T as systems::Task>::RequiredResources>::fetch(&self.world);
+        let required_data = <<T as Task>::RequiredResources>::fetch(&self.world);
         task.run(required_data);
     }
 }

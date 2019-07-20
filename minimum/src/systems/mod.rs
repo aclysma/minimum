@@ -13,7 +13,9 @@ pub use trust_cell::Ref;
 pub use trust_cell::RefMut;
 pub use trust_cell::TrustCell;
 
+#[cfg(feature = "async_support")]
 pub mod async_dispatch;
+
 pub mod simple_dispatch;
 
 use crate::systems;
@@ -308,18 +310,6 @@ where
     fn deref_mut(&mut self) -> &mut T {
         unsafe { self.inner.downcast_mut_unchecked() }
     }
-}
-
-//
-// Task
-//
-pub trait Task {
-    type RequiredResources: for<'a> DataRequirement<'a>
-        + crate::async_dispatcher::RequiresResources<ResourceId>
-        + Send
-        + 'static;
-
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow);
 }
 
 macro_rules! impl_data {
