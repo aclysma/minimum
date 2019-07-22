@@ -1,0 +1,59 @@
+[package]
+name = "minimum-demo"
+version = "0.1.0"
+authors = ["Philip Degarmo <aclysma@gmail.com>"]
+edition = "2018"
+
+[features]
+default = ["metal", "rendy/full"]
+dx12 = ["rendy/dx12"]
+metal = ["rendy/metal"]
+vulkan = ["rendy/vulkan"]
+
+[dependencies]
+# math
+nalgebra        = { version = "0.18", features = [ "sparse" ] }
+nalgebra-glm    = "0.4"
+nphysics2d      = "0.11"
+ncollide2d      = "0.19"
+
+# logging
+log="0.4"
+env_logger = "0.6"
+
+#utilities
+lazy_static = "1.0"
+failure = "0.1"
+
+# async
+futures = "0.1"
+
+# window management
+winit = { version = "0.20.0-alpha2", features = ["serde"] }
+
+# rendering
+gfx-backend-metal="0.2"
+gfx-hal = "0.2"
+shaderc = "0.5"
+image="0.21"
+rendy = { version="0.3", features = ["winit-20"]}
+
+# imgui
+imgui = "0.1.0-pre"
+imgui-winit-support = { version = "0.1.0-pre", default-features = false, features = ["winit-20"] }
+
+# minimum
+minimum = { path = "../minimum", features = ["async_support"] }
+
+
+[dependencies.gfx-backend-vulkan]
+version = "0.2"
+optional = true
+
+[target.'cfg(target_os = "macos")'.dependencies.gfx-backend-metal]
+version = "0.2"
+optional = true
+
+[target.'cfg(windows)'.dependencies.gfx-backend-dx12]
+version = "0.2"
+optional = true
