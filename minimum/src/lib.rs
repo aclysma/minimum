@@ -9,3 +9,33 @@ pub mod component;
 pub mod entity;
 pub mod slab;
 pub mod systems;
+
+pub use entity::EntityHandle;
+pub use entity::EntitySet;
+pub use entity::Entity;
+
+pub use component::Component;
+
+pub use systems::World;
+pub use systems::WorldBuilder;
+
+#[cfg(feature = "async_support")]
+pub use systems::async_dispatch as dispatch;
+
+#[cfg(not(feature = "async_support"))]
+pub use systems::simple_dispatch as dispatch;
+
+#[cfg(feature = "async_support")]
+pub use systems::async_dispatch::Task;
+#[cfg(feature = "async_support")]
+pub use systems::async_dispatch::MinimumDispatcherBuilder;
+#[cfg(feature = "async_support")]
+pub use systems::async_dispatch::MinimumDispatcher;
+
+#[cfg(not(feature = "async_support"))]
+pub use systems::simple_dispatch::Task;
+#[cfg(not(feature = "async_support"))]
+pub use systems::async_dispatch::MinimumDispatcherBuilder;
+#[cfg(not(feature = "async_support"))]
+pub use systems::async_dispatch::MinimumDispatcher;
+

@@ -3,6 +3,7 @@ extern crate nalgebra_glm as glm;
 #[macro_use]
 extern crate log;
 
+mod components;
 mod resources;
 mod init;
 mod tasks;
@@ -13,6 +14,8 @@ use minimum::systems::async_dispatch::{
     MinimumDispatcherBuilder
 };
 
+use minimum::component::Component;
+use minimum::systems::World;
 
 fn main() {
     run_the_game().unwrap();
@@ -35,8 +38,8 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .build(&event_loop)?;
 
     let mut entity_set = minimum::entity::EntitySet::new();
-//    entity_set.register_component_type::<game::TerrainComponent>();
-//    entity_set.register_component_type::<game::PickupComponent>();
+    entity_set.register_component_type::<components::PositionComponent>();
+    entity_set.register_component_type::<components::DebugDrawCircleComponent>();
 
     let mut world = minimum::systems::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
@@ -48,8 +51,8 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(entity_set)
-//        .with_resource(<game::TerrainComponent as minimum::component::Component>::Storage::new())
-//        .with_resource(<game::PickupComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::PositionComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::DebugDrawCircleComponent as minimum::component::Component>::Storage::new())
         .build();
 
     // Assets you want to always have available could be loaded here
@@ -57,6 +60,8 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     world.insert(init::init_imgui_manager(&world));
     world.insert(init::create_renderer(&world));
+
+    create_objects(&world);
 
     // Wrap the threadsafe interface to the window in WindowInterface and add it to the world
     // Return the event_tx which needs to be given to the event loop
@@ -79,7 +84,26 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     //NOTE: The game terminates when the event_loop halts, so any code here onwards won't execute
 }
 
-//TODO: Can this all be visualized as a graph?
+fn create_objects(world: &World) {
+    let mut entities = world.fetch_mut::<minimum::EntitySet>();
+    let mut pos_components = world.fetch_mut::<<components::PositionComponent as Component>::Storage>();
+    let mut vel_components = world.fetch_mut::<<components::DebugDrawCircleComponent as Component>::Storage>();
+
+    for i in 0..10 {
+        let entity = entities.allocate_get();
+
+        // Put a position on everything
+        entity.add_component(
+            &mut *pos_components,
+            components::PositionComponent::new(glm::Vec2::new(50.0 * i as f32, 6.0)),
+        );
+
+        entity.add_component(
+            &mut *vel_components,
+            components::DebugDrawCircleComponent::new(50.0, glm::Vec4::new(1.0, 0.0, 0.0, 1.0)),
+        );
+    }
+}
 
 fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
     info!("dispatch thread started");
@@ -90,36 +114,15 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
         let dispatch_context2 = dispatch_ctx.clone();
 
         minimum::async_dispatcher::ExecuteSequential::new(vec![
+            dispatch_ctx.run_task(tasks::UpdateTimeState),
             dispatch_ctx.run_task(tasks::HandleInput),
-            //dispatch_ctx.run_task(tasks::UpdateRenderer), //TODO: Is this really necessary to have?
             dispatch_ctx.run_task(tasks::ImguiBeginFrame),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
-            //dispatch_ctx.run_task(tasks::UpdateDebugCameraSettings),
-
-            // Conditionally execute tasks
-            // Way to pause the game and get mutable access to the world
-//            Box::new(futures::lazy(move || {
-//                if !dispatch_context1.has_resource::<game::GameState>() {
-//                    return minimum::async_dispatcher::ExecuteSequential::new(vec![]);
-//                }
-//
-//                minimum::async_dispatcher::ExecuteSequential::new(vec![
-//                    dispatch_context1.run_task(tasks::PrePhysics),
-//                    dispatch_context1.run_task(tasks::Physics),
-//                    dispatch_context1.run_task(tasks::PostPhysics),
-//                    dispatch_context1.run_task(tasks::DebugDraw),
-//                ])
-//            })),
-
-//            dispatch_ctx.run_task(tasks::UpdateFileLoader),
-//            dispatch_ctx.run_task(tasks::UpdateTextureCache),
+            dispatch_ctx.run_task(tasks::UpdateDebugDraw),
 
             dispatch_ctx.visit_world(|world| {
                 tasks::render(world);
             }),
-
-            dispatch_ctx.run_task(tasks::UpdateTimeState),
-            dispatch_ctx.run_task(tasks::ClearDebugDraw),
 
             dispatch_ctx.visit_world_mut(move |world| {
                 let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();

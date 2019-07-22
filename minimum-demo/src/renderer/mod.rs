@@ -20,9 +20,7 @@ use rendy::{
 
 use minimum::systems::World;
 
-use crate::renderer::passes::{
-    ImguiRenderPipeline
-};
+use crate::renderer::passes::{ImguiRenderPipeline, DebugDrawRenderPipeline};
 
 use crate::resources;
 
@@ -95,22 +93,22 @@ impl Renderer {
 
         // Render imgui
         let pass0 = graph_builder.add_node(
-            ImguiRenderPipeline::builder()
+            DebugDrawRenderPipeline::builder()
                 .into_subpass()
                 .with_color(color)
                 .into_pass(),
         );
 
-//        let pass1 = graph_builder.add_node(
-//            ImguiRenderPipeline::builder()
-//                .with_dependency(pass0)
-//                .into_subpass()
-//                .with_color(color)
-//                .into_pass(),
-//        );
+        let pass1 = graph_builder.add_node(
+            ImguiRenderPipeline::builder()
+                .with_dependency(pass0)
+                .into_subpass()
+                .with_color(color)
+                .into_pass(),
+        );
 
         let present_builder =
-            PresentNode::builder(&self.factory, surface, color).with_dependency(pass0);
+            PresentNode::builder(&self.factory, surface, color).with_dependency(pass1);
 
         let swapchain_backbuffer_count = present_builder.image_count();
         world.fetch_mut::<resources::RenderState>().init(

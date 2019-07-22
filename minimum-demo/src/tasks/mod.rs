@@ -11,6 +11,9 @@ use crate::resources::{
     DebugDraw
 };
 
+use crate::components;
+use minimum::component::ComponentStorage;
+
 pub struct ImguiBeginFrame;
 impl Task for ImguiBeginFrame {
     type RequiredResources = (
@@ -193,15 +196,6 @@ impl Task for UpdateTimeState {
     }
 }
 
-pub struct ClearDebugDraw;
-impl Task for ClearDebugDraw {
-    type RequiredResources = (Write<DebugDraw>);
-
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
-        let mut debug_draw = data;
-        debug_draw.clear();
-    }
-}
 
 //pub struct UpdateDebugCameraSettings;
 //impl Task for UpdateDebugCameraSettings {
@@ -266,24 +260,23 @@ impl Task for ClearDebugDraw {
 //}
 
 pub struct UpdateDebugDraw;
-impl Task for DebugDraw {
+impl Task for UpdateDebugDraw {
     type RequiredResources = (
         Write<DebugDraw>,
-        //Read<<crate::game::PickupComponent as minimum::component::Component>::Storage>,
-        //Read<<crate::game::TerrainComponent as minimum::component::Component>::Storage>
+        Read<minimum::EntitySet>,
+        Read<<components::DebugDrawCircleComponent as minimum::component::Component>::Storage>,
+        Read<<components::PositionComponent as minimum::component::Component>::Storage>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
-//        let (mut debug_draw, pickups, terrains) = data;
-//
-//        for terrain in terrains.iter_values() {
-//            terrain.debug_draw(&mut debug_draw);
-//        }
-//
-//        for pickup in pickups.iter_values() {
-//            pickup.debug_draw(&mut debug_draw);
-//        }
-//
-//        game_state.vore.debug_draw(&mut debug_draw);
+        let (mut debug_draw, entity_set, circle_components, position_components) = data;
+
+        debug_draw.clear();
+
+        for (entity_index, circle) in circle_components.iter(&entity_set) {
+            if let Some(position) = position_components.get(&entity_index) {
+                debug_draw.add_circle(position.position(), circle.radius(), circle.color())
+            }
+        }
     }
 }

@@ -17,7 +17,7 @@ use minimum::systems::World;
 
 use nalgebra_glm as glm;
 
-use crate::renderer::{shaders::IMGUI_SHADERS as SHADERS, vertex_types::PosTexColor, resources::RenderState};
+use crate::renderer::{shaders::IMGUI_SHADERS as SHADERS, vertex_types::PosTexColor};
 use crate::resources;
 
 #[cfg(feature = "spirv-reflection")]
@@ -135,7 +135,7 @@ impl<B> SimpleGraphicsPipelineDesc<B, minimum::systems::World> for ImguiRenderPi
 
         log::trace!("DESC BUILD");
 
-        let backbuffer_count = aux.fetch::<RenderState>().backbuffer_count() as usize;
+        let backbuffer_count = aux.fetch::<resources::RenderState>().backbuffer_count() as usize;
         assert_ne!(backbuffer_count, 0);
 
         let texture = {
