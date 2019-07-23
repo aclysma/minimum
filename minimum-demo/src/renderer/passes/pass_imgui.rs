@@ -36,7 +36,7 @@ struct UniformArgs {
 impl UniformArgs {
     fn new(renderer_state: &crate::resources::RenderState) -> UniformArgs {
         UniformArgs {
-            mvp: renderer_state.get_ui_space_matrix().clone(),
+            mvp: renderer_state.ui_space_matrix().clone(),
         }
     }
 }
@@ -352,7 +352,7 @@ impl<B> SimpleGraphicsPipeline<B, World> for ImguiRenderPipeline<B>
                     .upload_visible_buffer(uniform_buffers, 0, &[uniform_args])
                     .unwrap();
 
-                let draw_data = imgui_manager.get_draw_data();
+                let draw_data = imgui_manager.draw_data();
                 if draw_data.is_none() {
                     warn!("get_draw_data returned None");
                     return PrepareResult::DrawRecord;
@@ -438,7 +438,7 @@ impl<B> SimpleGraphicsPipeline<B, World> for ImguiRenderPipeline<B>
 
         unsafe {
             let mut imgui_context = aux.fetch_mut::<resources::ImguiManager>();
-            let draw_data = imgui_context.get_draw_data();
+            let draw_data = imgui_context.draw_data();
 
             if let Some(draw_data) = draw_data {
                 //TODO: Verify the draw list index doesn't exceed the vbuf/ibuf list

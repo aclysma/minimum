@@ -15,6 +15,7 @@ pub use entity::EntitySet;
 pub use entity::Entity;
 
 pub use component::Component;
+pub use component::ComponentStorage;
 
 pub use systems::World;
 pub use systems::WorldBuilder;

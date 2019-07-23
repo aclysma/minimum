@@ -15,6 +15,8 @@ impl PositionComponent {
     pub fn position(&self) -> glm::Vec2 {
         self.position
     }
+
+    pub fn position_mut(&mut self) -> &mut glm::Vec2 { &mut self.position }
 }
 
 impl minimum::Component for PositionComponent {

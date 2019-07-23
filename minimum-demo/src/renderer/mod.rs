@@ -52,11 +52,11 @@ impl Renderer {
         }
     }
 
-    pub fn get_camera_position(&self) -> glm::Vec3 {
+    pub fn camera_position(&self) -> glm::Vec3 {
         self.camera_position
     }
 
-    pub fn get_camera_zoom(&self) -> f32 {
+    pub fn camera_zoom(&self) -> f32 {
         self.camera_zoom
     }
 
@@ -78,7 +78,7 @@ impl Renderer {
             1,
             self.factory.get_surface_format(&surface),
             Some(gfx_hal::command::ClearValue::Color(
-                [0.9, 0.7, 0.7, 1.0].into(),
+                [0.1, 0.1, 0.1, 1.0].into(),
             )),
         );
 

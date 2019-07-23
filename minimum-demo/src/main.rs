@@ -8,6 +8,7 @@ mod resources;
 mod init;
 mod tasks;
 mod renderer;
+mod constructors;
 
 use minimum::systems::async_dispatch::{
     MinimumDispatcher,
@@ -39,7 +40,9 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut entity_set = minimum::entity::EntitySet::new();
     entity_set.register_component_type::<components::PositionComponent>();
+    entity_set.register_component_type::<components::VelocityComponent>();
     entity_set.register_component_type::<components::DebugDrawCircleComponent>();
+    entity_set.register_component_type::<components::PlayerComponent>();
 
     let mut world = minimum::systems::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
@@ -52,7 +55,9 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(resources::RenderState::empty())
         .with_resource(entity_set)
         .with_resource(<components::PositionComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::VelocityComponent as minimum::component::Component>::Storage::new())
         .with_resource(<components::DebugDrawCircleComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::PlayerComponent as minimum::component::Component>::Storage::new())
         .build();
 
     // Assets you want to always have available could be loaded here
@@ -87,22 +92,43 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 fn create_objects(world: &World) {
     let mut entities = world.fetch_mut::<minimum::EntitySet>();
     let mut pos_components = world.fetch_mut::<<components::PositionComponent as Component>::Storage>();
-    let mut vel_components = world.fetch_mut::<<components::DebugDrawCircleComponent as Component>::Storage>();
+    let mut debug_draw_components = world.fetch_mut::<<components::DebugDrawCircleComponent as Component>::Storage>();
+    let mut player_components = world.fetch_mut::<<components::PlayerComponent as Component>::Storage>();
 
-    for i in 0..10 {
-        let entity = entities.allocate_get();
+    {
+        let player_entity = entities.allocate_get();
+
+        player_entity.add_component(
+            &mut *player_components,
+            components::PlayerComponent::new()
+        );
 
         // Put a position on everything
-        entity.add_component(
+        player_entity.add_component(
             &mut *pos_components,
-            components::PositionComponent::new(glm::Vec2::new(50.0 * i as f32, 6.0)),
+            components::PositionComponent::new(glm::zero()),
         );
 
-        entity.add_component(
-            &mut *vel_components,
-            components::DebugDrawCircleComponent::new(50.0, glm::Vec4::new(1.0, 0.0, 0.0, 1.0)),
+        player_entity.add_component(
+            &mut *debug_draw_components,
+            components::DebugDrawCircleComponent::new(15.0, glm::Vec4::new(0.0, 1.0, 0.0, 1.0)),
         );
     }
+
+//    for i in 0..10 {
+//        let entity = entities.allocate_get();
+//
+//        // Put a position on everything
+//        entity.add_component(
+//            &mut *pos_components,
+//            components::PositionComponent::new(glm::Vec2::new(50.0 * i as f32, 6.0)),
+//        );
+//
+//        entity.add_component(
+//            &mut *vel_components,
+//            components::DebugDrawCircleComponent::new(50.0, glm::Vec4::new(1.0, 0.0, 0.0, 1.0)),
+//        );
+//    }
 }
 
 fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
@@ -115,7 +141,9 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
 
         minimum::async_dispatcher::ExecuteSequential::new(vec![
             dispatch_ctx.run_task(tasks::UpdateTimeState),
-            dispatch_ctx.run_task(tasks::HandleInput),
+            dispatch_ctx.run_task(tasks::GatherInput),
+            dispatch_ctx.run_task(tasks::ControlPlayerEntity),
+            dispatch_ctx.run_task(tasks::UpdatePositionWithVelocity),
             dispatch_ctx.run_task(tasks::ImguiBeginFrame),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::UpdateDebugDraw),

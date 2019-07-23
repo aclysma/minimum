@@ -169,7 +169,7 @@ impl ImguiManager {
     }
 
     // Returns draw data (render must be called first to end the frame)
-    pub fn get_draw_data(&mut self) -> Option<&imgui::DrawData> {
+    pub fn draw_data(&mut self) -> Option<&imgui::DrawData> {
         let inner = self.inner.lock().unwrap();
 
         if inner.ui.is_some() {

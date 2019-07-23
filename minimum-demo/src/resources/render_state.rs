@@ -41,7 +41,7 @@ impl RenderState {
 
     pub fn backbuffer_count(&self) -> u32 { self.backbuffer_count }
 
-    pub fn get_ui_space_matrix(&self) -> &glm::Mat4 {
+    pub fn ui_space_matrix(&self) -> &glm::Mat4 {
         &self.ui_space_matrix
     }
 
@@ -49,11 +49,11 @@ impl RenderState {
         self.ui_space_matrix = matrix;
     }
 
-    pub fn get_screen_space_matrix(&self) -> &glm::Mat4 {
+    pub fn screen_space_matrix(&self) -> &glm::Mat4 {
         &self.screen_space_matrix
     }
 
-    pub fn get_screen_space_dimensions(&self) -> glm::Vec2 {
+    pub fn screen_space_dimensions(&self) -> glm::Vec2 {
         self.screen_space_dimensions
     }
 
@@ -62,11 +62,11 @@ impl RenderState {
         self.screen_space_dimensions = dimensions;
     }
 
-    pub fn get_world_space_camera_position(&self) -> glm::Vec3 {
+    pub fn world_space_camera_position(&self) -> glm::Vec3 {
         self.world_space_camera_position
     }
 
-    pub fn get_world_space_matrix(&self) -> &glm::Mat4 {
+    pub fn world_space_matrix(&self) -> &glm::Mat4 {
         &self.world_space_matrix
     }
 

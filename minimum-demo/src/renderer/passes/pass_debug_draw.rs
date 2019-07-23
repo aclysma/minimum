@@ -35,7 +35,7 @@ struct UniformArgs {
 impl UniformArgs {
     fn new(renderer_state: &resources::RenderState) -> UniformArgs {
         UniformArgs {
-            mvp: renderer_state.get_world_space_matrix().clone(),
+            mvp: renderer_state.world_space_matrix().clone(),
         }
     }
 }
