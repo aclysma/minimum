@@ -8,7 +8,7 @@ pub struct InputManager {
 
     mouse_buttons_down: [bool; 3],
     mouse_buttons_just_down: [bool; 3],
-    mouse_position: winit::dpi::LogicalPosition
+    mouse_position: glm::Vec2
 }
 
 pub enum MouseButtons {
@@ -24,7 +24,7 @@ impl InputManager {
             key_states_just_down: [false; 255],
             mouse_buttons_down: [false; 3],
             mouse_buttons_just_down: [false; 3],
-            mouse_position: LogicalPosition { x: 0.5, y: 0.5 }
+            mouse_position: glm::zero()
         };
     }
 
@@ -36,8 +36,8 @@ impl InputManager {
         return self.key_states_just_down[key as usize];
     }
 
-    pub fn mouse_position(&self) -> LogicalPosition {
-        return self.mouse_position
+    pub fn mouse_position(&self) -> glm::Vec2 {
+        return self.mouse_position;
     }
 
     pub fn is_mouse_down(&self, mouse_button: MouseButtons) -> bool {
@@ -123,6 +123,6 @@ impl InputManager {
         &mut self,
         position: winit::dpi::LogicalPosition
     ) {
-        self.mouse_position = position;
+        self.mouse_position = glm::vec2(position.x as f32, position.y as f32);
     }
 }

@@ -1,13 +1,19 @@
 # minimum
 
-A collection of utilites for games. The goal is to provide a relatively thin framework that helps knit together 3rd party libraries and your game logic.
+A collection of utilites for games - a relatively thin framework that helps knit 3rd party libraries with your game logic.
+
+This library is aimed at people who want to start with something thin and bring their own tech to put on top of it.
+
+ * For a mature ecs, I suggest looking at `shred` or `specs`. (In fact some of this library is quite similar to shred!)
+ * For a more complete, turnkey solution in rust, I would look at `amethyst`, `coffee`, or `ggez`.
 
 # Examples
 
-There is a collection of small samples in [/minimum-examples](minimum-examples).
+A collection of small samples is located in [/minimum-examples](minimum-examples).
 
-Additionally, [/minimum-demo](minimum-demo) shows a more realistic integration of 
-these utilities with other popular libraries like `winit`, `gfx-hal`, `rendy`, `nphysics`, and `imgui`. 
+Additionally, [/minimum-demo](minimum-demo) shows a more realistic integration of these utilities with other popular 
+libraries like `winit`, `gfx-hal`, `rendy`, `nphysics`, and `imgui`. It would be a reasonable template for something
+small, and it shows how the pieces provided could be fit together for something bigger.
 
 ## Contribution
 

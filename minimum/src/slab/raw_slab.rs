@@ -100,7 +100,7 @@ impl<T> RawSlab<T> {
             .map(|(index, value)| (RawSlabKey::new(index as u32), value.as_mut().unwrap()))
     }
 
-    pub fn active_count(&self) -> usize {
+    pub fn count(&self) -> usize {
         self.storage.len() - self.free_list.len()
     }
 }
@@ -126,9 +126,9 @@ mod tests {
         let value = TestStruct::new(123);
         let key = pool.allocate(value);
 
-        assert_eq!(1, pool.active_count());
+        assert_eq!(1, pool.count());
         pool.free(&key);
-        assert_eq!(0, pool.active_count());
+        assert_eq!(0, pool.count());
     }
 
     #[test]
@@ -138,9 +138,9 @@ mod tests {
         let value = TestStruct::new(123);
         let key = pool.allocate(value);
 
-        assert_eq!(1, pool.active_count());
+        assert_eq!(1, pool.count());
         pool.free(&key);
-        assert_eq!(0, pool.active_count());
+        assert_eq!(0, pool.count());
         pool.free(&key);
     }
 
@@ -156,13 +156,13 @@ mod tests {
             keys.push(key);
         }
 
-        assert_eq!(1000, pool.active_count());
+        assert_eq!(1000, pool.count());
 
         for k in &keys {
             pool.free(k);
         }
 
-        assert_eq!(0, pool.active_count());
+        assert_eq!(0, pool.count());
     }
 
     #[test]
@@ -176,13 +176,13 @@ mod tests {
             keys.push(key);
         }
 
-        assert_eq!(1000, pool.active_count());
+        assert_eq!(1000, pool.count());
 
         for i in (0..keys.len()).rev() {
             pool.free(&keys[i]);
         }
 
-        assert_eq!(0, pool.active_count());
+        assert_eq!(0, pool.count());
     }
 
     #[test]
@@ -196,7 +196,7 @@ mod tests {
             keys.push(key);
         }
 
-        assert_eq!(10, pool.active_count());
+        assert_eq!(10, pool.count());
         assert_eq!(5, pool.get(&keys[5]).unwrap().value);
     }
 
@@ -205,12 +205,12 @@ mod tests {
         let mut pool = RawSlab::<TestStruct>::new();
         let value = TestStruct::new(123);
         let key = pool.allocate(value);
-        assert_eq!(1, pool.active_count());
+        assert_eq!(1, pool.count());
 
         assert!(pool.get(&key).is_some());
 
         pool.free(&key);
-        assert_eq!(0, pool.active_count());
+        assert_eq!(0, pool.count());
 
         assert!(pool.get(&key).is_none());
     }
@@ -226,7 +226,7 @@ mod tests {
             keys.push(key);
         }
 
-        assert_eq!(10, pool.active_count());
+        assert_eq!(10, pool.count());
         assert_eq!(5, pool.get_mut(&keys[5]).unwrap().value);
     }
 
@@ -235,12 +235,12 @@ mod tests {
         let mut pool = RawSlab::<TestStruct>::new();
         let value = TestStruct::new(123);
         let key = pool.allocate(value);
-        assert_eq!(1, pool.active_count());
+        assert_eq!(1, pool.count());
 
         assert!(pool.get_mut(&key).is_some());
 
         pool.free(&key);
-        assert_eq!(0, pool.active_count());
+        assert_eq!(0, pool.count());
 
         assert!(pool.get_mut(&key).is_none());
     }

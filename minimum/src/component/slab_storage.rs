@@ -160,6 +160,10 @@ impl<T: Component> SlabComponentStorage<T> {
             .iter_mut()
             .map(|(_key, value)| value)
     }
+
+    pub fn count(&self) -> usize {
+        self.slab.count()
+    }
 }
 
 impl<T: Component> ComponentStorage<T> for SlabComponentStorage<T> {

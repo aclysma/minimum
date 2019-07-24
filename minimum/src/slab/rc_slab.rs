@@ -119,8 +119,8 @@ impl<T> RcSlab<T> {
         self.slab.iter_mut()
     }
 
-    pub fn active_count(&self) -> usize {
-        self.slab.active_count()
+    pub fn count(&self) -> usize {
+        self.slab.count()
     }
 
     pub fn update(&mut self) {
@@ -153,12 +153,12 @@ mod tests {
         let value = TestStruct::new(123);
         {
             let _entry = pool.allocate(value);
-            assert_eq!(1, pool.active_count());
+            assert_eq!(1, pool.count());
         }
 
-        assert_eq!(1, pool.active_count());
+        assert_eq!(1, pool.count());
         pool.update();
-        assert_eq!(0, pool.active_count());
+        assert_eq!(0, pool.count());
     }
 
     #[test]
@@ -172,7 +172,7 @@ mod tests {
             keys.push(key);
         }
 
-        assert_eq!(10, pool.active_count());
+        assert_eq!(10, pool.count());
         assert_eq!(5, pool.get(&keys[5]).value);
     }
 
@@ -187,7 +187,7 @@ mod tests {
             keys.push(key);
         }
 
-        assert_eq!(10, pool.active_count());
+        assert_eq!(10, pool.count());
         assert_eq!(5, pool.get_mut(&keys[5]).value);
     }
 }

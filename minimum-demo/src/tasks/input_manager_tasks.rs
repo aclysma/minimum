@@ -28,6 +28,9 @@ impl Task for GatherInput {
         input_manager.clear_events_from_previous_frame();
         let mut is_close_requested = false;
 
+        let imgui_want_capture_keyboard = imgui_manager.want_capture_keyboard();
+        let imgui_want_capture_mouse = imgui_manager.want_capture_mouse();
+
         loop {
             match window_interface.event_rx.lock().unwrap().try_recv() {
                 Ok(event) => {
@@ -61,7 +64,9 @@ impl Task for GatherInput {
                             ..
                         } => {
                             trace!("keyboard {:?}", input);
-                            input_manager.handle_keyboard_event(&input);
+                            if !imgui_want_capture_keyboard {
+                                input_manager.handle_keyboard_event(&input);
+                            }
                         },
 
                         Event::WindowEvent {
@@ -69,7 +74,9 @@ impl Task for GatherInput {
                             ..
                         } => {
                             trace!("mouse {:?} {:?} {:?} {:?}", device_id, state, button, modifiers);
-                            input_manager.handle_mouse_button_event(state, button, modifiers);
+                            if !imgui_want_capture_mouse {
+                                input_manager.handle_mouse_button_event(state, button, modifiers);
+                            }
                         },
 
                         Event::WindowEvent {

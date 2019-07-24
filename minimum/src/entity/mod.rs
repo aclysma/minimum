@@ -95,6 +95,7 @@ impl EntitySet {
         EntityRef::new(entity, handle)
     }
 
+    //TODO: This could be handled using a separate DeferredFree component storage
     pub fn enqueue_free(&mut self, entity_handle: &EntityHandle) {
         EntitySet::do_enqueue_free(&mut self.pending_deletes, entity_handle);
     }
@@ -104,7 +105,7 @@ impl EntitySet {
     }
 
     pub fn entity_count(&self) -> usize {
-        self.slab.active_count()
+        self.slab.count()
     }
 
     pub fn get_entity_ref(&self, entity_handle: &EntityHandle) -> Option<EntityRef> {

@@ -6,6 +6,7 @@ mod input_manager;
 mod time_state;
 mod imgui_manager;
 mod render_state;
+mod debug_options;
 
 pub use game_control::GameControl;
 pub use window_interface::WindowInterface;
@@ -16,3 +17,4 @@ pub use input_manager::MouseButtons;
 pub use time_state::TimeState;
 pub use imgui_manager::ImguiManager;
 pub use render_state::RenderState;
+pub use debug_options::DebugOptions;

@@ -38,11 +38,16 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_title("Vore")
         .build(&event_loop)?;
 
+    //TODO-API: registering the component and then registering the component storage as a resource might be considered redundant
+
+    //TODO-API: We could have a "default" entity set that doesn't need to be registered as a resource (and automatically knows about all component types)
     let mut entity_set = minimum::entity::EntitySet::new();
     entity_set.register_component_type::<components::PositionComponent>();
     entity_set.register_component_type::<components::VelocityComponent>();
     entity_set.register_component_type::<components::DebugDrawCircleComponent>();
     entity_set.register_component_type::<components::PlayerComponent>();
+    entity_set.register_component_type::<components::BulletComponent>();
+    entity_set.register_component_type::<components::FreeAtTimeComponent>();
 
     let mut world = minimum::systems::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
@@ -53,11 +58,14 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         //.with_resource(physics::Physics::new())
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
+        .with_resource(resources::DebugOptions::new())
         .with_resource(entity_set)
         .with_resource(<components::PositionComponent as minimum::component::Component>::Storage::new())
         .with_resource(<components::VelocityComponent as minimum::component::Component>::Storage::new())
         .with_resource(<components::DebugDrawCircleComponent as minimum::component::Component>::Storage::new())
         .with_resource(<components::PlayerComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::BulletComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::FreeAtTimeComponent as minimum::component::Component>::Storage::new())
         .build();
 
     // Assets you want to always have available could be loaded here
@@ -140,11 +148,12 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
         let dispatch_context2 = dispatch_ctx.clone();
 
         minimum::async_dispatcher::ExecuteSequential::new(vec![
+            dispatch_ctx.run_task(tasks::ImguiBeginFrame),
             dispatch_ctx.run_task(tasks::UpdateTimeState),
             dispatch_ctx.run_task(tasks::GatherInput),
             dispatch_ctx.run_task(tasks::ControlPlayerEntity),
             dispatch_ctx.run_task(tasks::UpdatePositionWithVelocity),
-            dispatch_ctx.run_task(tasks::ImguiBeginFrame),
+            dispatch_ctx.run_task(tasks::HandleFreeAtTimeComponents),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::UpdateDebugDraw),
 

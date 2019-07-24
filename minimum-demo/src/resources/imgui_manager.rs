@@ -15,6 +15,12 @@ struct Inner {
 
     // Handles the integration between imgui and winit
     platform: imgui_winit_support::WinitPlatform,
+
+    // These are all refreshed when frame is started
+    want_capture_keyboard : bool,
+    want_capture_mouse : bool,
+    want_set_mouse_pos : bool,
+    want_text_input : bool
 }
 
 // Rust assumes pointers in Inner are not safe to send, so we need to explicitly impl that here
@@ -53,6 +59,10 @@ impl ImguiManager {
                 font_atlas_texture,
                 ui: None,
                 platform,
+                want_capture_keyboard : false,
+                want_capture_mouse : false,
+                want_set_mouse_pos : false,
+                want_text_input : false
             }),
         }
     }
@@ -136,6 +146,11 @@ impl ImguiManager {
             .unwrap();
         let ui = Box::new(inner.context.frame());
 
+        inner.want_capture_keyboard = ui.io().want_capture_keyboard;
+        inner.want_capture_mouse = ui.io().want_capture_mouse;
+        inner.want_set_mouse_pos = ui.io().want_set_mouse_pos;
+        inner.want_text_input = ui.io().want_text_input;
+
         // Remove the lifetime of the Ui
         let ui_ptr: *mut imgui::Ui = Box::into_raw(ui);
         let ui_ptr: *mut imgui::Ui<'static> = unsafe { std::mem::transmute(ui_ptr) };
@@ -185,6 +200,22 @@ impl ImguiManager {
 
         let draw_data = unsafe { &*(draw_data as *mut imgui::DrawData) };
         Some(draw_data)
+    }
+
+    pub fn want_capture_keyboard(&self) -> bool {
+        self.inner.lock().unwrap().want_capture_keyboard
+    }
+
+    pub fn want_capture_mouse(&self) -> bool {
+        self.inner.lock().unwrap().want_capture_mouse
+    }
+
+    pub fn want_set_mouse_pos(&self) -> bool {
+        self.inner.lock().unwrap().want_set_mouse_pos
+    }
+
+    pub fn want_text_input(&self) -> bool {
+        self.inner.lock().unwrap().want_text_input
     }
 }
 

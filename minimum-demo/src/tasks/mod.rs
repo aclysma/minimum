@@ -9,7 +9,8 @@ use crate::resources::{
     GameControl,
     TimeState,
     DebugDraw,
-    MouseButtons
+    MouseButtons,
+    RenderState
 };
 
 use crate::components;
@@ -49,10 +50,13 @@ impl Task for ControlPlayerEntity {
         Write<minimum::EntitySet>,
         Read<InputManager>,
         Read<TimeState>,
+        Read<RenderState>,
         Read<<components::PlayerComponent as minimum::component::Component>::Storage>,
         Write<<components::PositionComponent as minimum::component::Component>::Storage>,
         Write<<components::VelocityComponent as minimum::component::Component>::Storage>,
-        Write<<components::DebugDrawCircleComponent as minimum::component::Component>::Storage>
+        Write<<components::DebugDrawCircleComponent as minimum::component::Component>::Storage>,
+        Write<<components::BulletComponent as minimum::component::Component>::Storage>,
+        Write<<components::FreeAtTimeComponent as minimum::component::Component>::Storage>
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -60,10 +64,13 @@ impl Task for ControlPlayerEntity {
             mut entity_set,
             input_manager,
             time_state,
+            render_state,
             player_components,
             mut position_components,
             mut velocity_components,
-            mut debug_draw_circle_components
+            mut debug_draw_circle_components,
+            mut bullet_components,
+            mut free_at_time_components
         ) = data;
 
         let dt = time_state.previous_frame_dt;
@@ -91,21 +98,32 @@ impl Task for ControlPlayerEntity {
                 }
 
                 if input_manager.is_mouse_down(MouseButtons::Left) {
-                    println!("{:?}", input_manager.mouse_position());
-                    pending_bullets.push((pos.position(), glm::vec2(40.0, 20.0)));
+
+                    let target_position = render_state.ui_space_to_world_space(input_manager.mouse_position());
+
+                    let mut velocity = target_position - pos.position();
+
+                    if glm::magnitude(&velocity) > 0.0 {
+                        velocity = glm::normalize(&velocity) * 300.0;
+                    }
+
+                    pending_bullets.push((pos.position(), velocity));
                 }
             }
         }
 
-        //TODO: Defer this to frame sync point.. we can reduce the required resources once that's done
+        //TODO-API: Defer this to frame sync point.. we can reduce the required resources once that's done
         for pending_bullet in pending_bullets {
             crate::constructors::create_bullet(
                 pending_bullet.0,
                 pending_bullet.1,
+                &time_state,
                 &mut entity_set,
                 &mut *position_components,
                 &mut *velocity_components,
-                &mut *debug_draw_circle_components);
+                &mut *debug_draw_circle_components,
+            &mut *bullet_components,
+            &mut *free_at_time_components);
         }
     }
 }
@@ -139,6 +157,37 @@ impl Task for UpdatePositionWithVelocity {
     }
 }
 
+
+pub struct HandleFreeAtTimeComponents;
+impl Task for HandleFreeAtTimeComponents {
+    type RequiredResources = (
+        Write<minimum::EntitySet>,
+        Read<TimeState>,
+        Read<<components::FreeAtTimeComponent as minimum::component::Component>::Storage>
+    );
+
+    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+        let (
+            mut entity_set,
+            time_state,
+            free_at_time_components,
+        ) = data;
+
+        let dt = time_state.previous_frame_dt;
+
+        //TODO-API: Find a better way to do this.. deferred delete is fine
+        let mut entities_to_free = vec![];
+        for (entity, free_at_time) in free_at_time_components.iter(&entity_set) {
+            if free_at_time.should_free(&time_state) {
+                entities_to_free.push(entity);
+            }
+        }
+
+        for e in entities_to_free {
+            entity_set.enqueue_free(&e);
+        }
+    }
+}
 
 //pub struct UpdateDebugCameraSettings;
 //impl Task for UpdateDebugCameraSettings {

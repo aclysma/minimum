@@ -64,8 +64,8 @@ impl<KeyT: Eq + Hash, ValueT> KeyedRcSlab<KeyT, ValueT> {
         self.slab.iter_mut()
     }
 
-    pub fn active_count(&self) -> usize {
-        self.slab.active_count()
+    pub fn count(&self) -> usize {
+        self.slab.count()
     }
 
     pub fn update(&mut self) {

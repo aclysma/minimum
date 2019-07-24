@@ -1,5 +1,6 @@
 
 use minimum::systems::{DataRequirement, Read, ReadOption, async_dispatch::Task, Write};
+use minimum::{Component, EntitySet, ComponentStorage};
 
 use crate::resources::{
     ImguiManager,
@@ -7,7 +8,15 @@ use crate::resources::{
     InputManager,
     GameControl,
     TimeState,
-    DebugDraw
+    DebugDraw,
+    DebugOptions,
+    RenderState
+};
+
+use crate::components::{
+    BulletComponent,
+    PlayerComponent,
+    PositionComponent
 };
 
 pub struct ImguiBeginFrame;
@@ -29,6 +38,13 @@ impl Task for RenderImguiMainMenu {
         Read<TimeState>,
         Write<ImguiManager>,
         Write<GameControl>,
+        Write<DebugOptions>,
+        Read<EntitySet>,
+        Read<<BulletComponent as Component>::Storage>,
+        Read<<PlayerComponent as Component>::Storage>,
+        Read<<PositionComponent as Component>::Storage>,
+        Read<InputManager>,
+        Read<RenderState>
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -36,15 +52,22 @@ impl Task for RenderImguiMainMenu {
             time_state,
             mut imgui_manager,
             mut game_control,
+            mut debug_options,
+            entity_set,
+            bullet_components,
+            player_components,
+            position_components,
+            input_manager,
+            render_state
         ) = data;
 
-        imgui_manager.with_ui(|ui| {
+        imgui_manager.with_ui(|ui : &mut imgui::Ui| {
             use imgui::im_str;
 
             ui.main_menu_bar(|| {
                 ui.menu(im_str!("File")).build(|| {
                     ui.menu(im_str!("Load")).build(|| {
-                        for pack in &["pack1", "pack2", "pack3"] {
+                        for pack in &["placeholder1", "placeholder2", "placeholder3"] {
                             ui.menu(&im_str!("{}", pack)).build(|| {
                                 for level in &["level1", "level2", "level3"] {
                                     let selected = ui.menu_item(&im_str!("{}", level)).build();
@@ -57,7 +80,9 @@ impl Task for RenderImguiMainMenu {
                         }
                     });
                 });
+                ui.separator();
 
+                ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_window);
                 ui.separator();
 
 //                let vore_position = if game_state_option.is_some() {
@@ -90,8 +115,35 @@ impl Task for RenderImguiMainMenu {
 //                }
             });
 
-            let mut demo_window_opened = true;
-            ui.show_demo_window(&mut demo_window_opened);
+            if debug_options.show_window {
+                //let mut demo_window_opened = true;
+                //ui.show_demo_window(&mut debug_options.show_window);
+
+                let bullet_count = bullet_components.count();
+
+                let mouse_position_ui_space = input_manager.mouse_position();
+
+                let mouse_position_world_space = render_state.ui_space_to_world_space(glm::vec2(mouse_position_ui_space.x as f32, mouse_position_ui_space.y as f32));
+
+                let mut player_position = None;
+                for (entity_handle, player) in player_components.iter(&entity_set) {
+                    if let Some(position) = position_components.get(&entity_handle) {
+                        player_position = Some(position.position());
+                    }
+                    break;
+                }
+
+                ui.window(im_str!("Debug Window"))
+                    .build(|| {
+
+                        if let Some(p) = player_position {
+                            ui.text(format!("player world space: {:.1} {:.1}", p.x, p.y));
+                        }
+                        ui.text(format!("mouse screen space: {:.1} {:.1}", mouse_position_ui_space.x, mouse_position_ui_space.y));
+                        ui.text(format!("mouse world space: {:.1} {:.1}", mouse_position_world_space.x, mouse_position_world_space.y));
+                        ui.text(format!("bullet count: {}", bullet_count));
+                    });
+            }
         })
     }
 }

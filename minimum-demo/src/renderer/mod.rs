@@ -177,8 +177,9 @@ impl Renderer {
         }
     }
 
-    // Top-Left: (0,0)
-    // Bottom-Right: (1,1)
+    // this is based on window size (i.e. pixels)
+    // bottom-left: (0, 0)
+    // top-right: (window_width_in_pixels, window_height_in_pixels)
     fn calculate_ui_space_matrix(window: &winit::window::Window) -> glm::Mat4 {
         let logical_size = window.inner_size();
 
@@ -207,8 +208,9 @@ impl Renderer {
         glm::Vec2::new(600.0 * ratio, 600.0)
     }
 
-    // Top-Left: (0,1)
-    // Bottom-Right: (1,0)
+    // this is a virtual coordinate system
+    // top-left: (0, 0)
+    // bottom-right: (600 * aspect_ratio, 600) where aspect_ratio is window_width / window_height
     fn calculate_screen_space_matrix(window: &winit::window::Window) -> glm::Mat4 {
         let screen_space_dimensions = Renderer::calculate_screen_space_dimensions(window);
 
@@ -235,8 +237,10 @@ impl Renderer {
         projection * view
     }
 
-    // Top-Left: Center + (-view_extent.X, view_extent.Y)
-    // Bottom-Right: Center + (view_extent.X, -view_extent.Y)
+    // this is a virtual coordinate system where h = 600 and w = 600 * aspect_ratio where
+    // aspect_ratio is window_width / window_height
+    // top-left: (-w/2, -h/2)
+    // bottom-right: (w/2, h/2)
     fn calculate_world_space_matrix(
         window: &winit::window::Window,
         position: glm::Vec3,
