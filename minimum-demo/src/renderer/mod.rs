@@ -1,4 +1,3 @@
-
 #[cfg(feature = "dx12")]
 type Backend = rendy::dx12::Backend;
 
@@ -20,7 +19,7 @@ use rendy::{
 
 use minimum::systems::World;
 
-use crate::renderer::passes::{ImguiRenderPipeline, DebugDrawRenderPipeline};
+use crate::renderer::passes::{DebugDrawRenderPipeline, ImguiRenderPipeline};
 
 use crate::resources;
 
@@ -131,16 +130,14 @@ impl Renderer {
     }
 
     //pub fn update(&mut self) {
-//        self.factory.maintain(&mut self.families);
-//    }
+    //        self.factory.maintain(&mut self.families);
+    //    }
 
     pub fn render(&mut self, window: &winit::window::Window, world: &minimum::systems::World) {
-
         self.factory.maintain(&mut self.families);
 
         // Update the render state
         {
-
             // Here you can recalculate where you want the camera to be.
             self.camera_position = glm::Vec3::new(0.0, 0.0, 5.0);
 

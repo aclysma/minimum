@@ -1,31 +1,15 @@
-
-use minimum::systems::{DataRequirement, Read, ReadOption, async_dispatch::Task, Write};
-use minimum::{Component, EntitySet, ComponentStorage};
+use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
+use minimum::{Component, ComponentStorage, EntitySet};
 
 use crate::resources::{
-    ImguiManager,
-    WindowInterface,
-    InputManager,
-    GameControl,
-    TimeState,
-    DebugDraw,
-    DebugOptions,
-    RenderState,
-    PhysicsManager
+    DebugOptions, GameControl, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
 };
 
-use crate::components::{
-    BulletComponent,
-    PlayerComponent,
-    PositionComponent
-};
+use crate::components::{BulletComponent, PlayerComponent, PositionComponent};
 
 pub struct ImguiBeginFrame;
 impl Task for ImguiBeginFrame {
-    type RequiredResources = (
-        Read<winit::window::Window>,
-        Write<ImguiManager>,
-    );
+    type RequiredResources = (Read<winit::window::Window>, Write<ImguiManager>);
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
         let (window, mut imgui_manager) = data;
@@ -46,14 +30,14 @@ impl Task for RenderImguiMainMenu {
         Read<<PlayerComponent as Component>::Storage>,
         Read<<PositionComponent as Component>::Storage>,
         Read<InputManager>,
-        Read<RenderState>
+        Read<RenderState>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
         let (
             time_state,
             mut imgui_manager,
-            mut game_control,
+            mut _game_control,
             mut debug_options,
             physics_manager,
             entity_set,
@@ -61,10 +45,10 @@ impl Task for RenderImguiMainMenu {
             player_components,
             position_components,
             input_manager,
-            render_state
+            render_state,
         ) = data;
 
-        imgui_manager.with_ui(|ui : &mut imgui::Ui| {
+        imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             use imgui::im_str;
 
             ui.main_menu_bar(|| {
@@ -93,32 +77,38 @@ impl Task for RenderImguiMainMenu {
             });
 
             if debug_options.show_window {
-
                 let bullet_count = bullet_components.count();
                 let mouse_position_ui_space = input_manager.mouse_position();
-                let mouse_position_world_space = render_state.ui_space_to_world_space(glm::vec2(mouse_position_ui_space.x as f32, mouse_position_ui_space.y as f32));
+                let mouse_position_world_space = render_state.ui_space_to_world_space(glm::vec2(
+                    mouse_position_ui_space.x as f32,
+                    mouse_position_ui_space.y as f32,
+                ));
                 let body_count = physics_manager.world().bodies().count();
 
                 let mut player_position = None;
-                for (entity_handle, player) in player_components.iter(&entity_set) {
+                for (entity_handle, _player) in player_components.iter(&entity_set) {
                     if let Some(position) = position_components.get(&entity_handle) {
                         player_position = Some(position.position());
                     }
                     break;
                 }
 
-                ui.window(im_str!("Debug Window"))
-                    .build(|| {
-                        if let Some(p) = player_position {
-                            ui.text(format!("player world space: {:.1} {:.1}", p.x, p.y));
-                        }
-                        ui.text(format!("mouse screen space: {:.1} {:.1}", mouse_position_ui_space.x, mouse_position_ui_space.y));
-                        ui.text(format!("mouse world space: {:.1} {:.1}", mouse_position_world_space.x, mouse_position_world_space.y));
-                        ui.text(format!("bullet count: {}", bullet_count));
-                        ui.text(format!("body count: {}", body_count));
-                    });
+                ui.window(im_str!("Debug Window")).build(|| {
+                    if let Some(p) = player_position {
+                        ui.text(format!("player world space: {:.1} {:.1}", p.x, p.y));
+                    }
+                    ui.text(format!(
+                        "mouse screen space: {:.1} {:.1}",
+                        mouse_position_ui_space.x, mouse_position_ui_space.y
+                    ));
+                    ui.text(format!(
+                        "mouse world space: {:.1} {:.1}",
+                        mouse_position_world_space.x, mouse_position_world_space.y
+                    ));
+                    ui.text(format!("bullet count: {}", bullet_count));
+                    ui.text(format!("body count: {}", body_count));
+                });
             }
         })
     }
 }
-

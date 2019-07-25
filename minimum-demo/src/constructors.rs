@@ -1,7 +1,6 @@
-
-use minimum::Component;
 use crate::components;
 use crate::resources;
+use minimum::Component;
 
 //TODO: Probably want a create queue for these to streamline getting the necessary component storages
 // and perhaps to allow rate-limiting of construction rate
@@ -9,14 +8,11 @@ pub fn create_player(
     entities: &mut minimum::EntitySet,
     position_components: &mut <components::PositionComponent as Component>::Storage,
     debug_draw_components: &mut <components::DebugDrawCircleComponent as Component>::Storage,
-    player_components: &mut <components::PlayerComponent as Component>::Storage
+    player_components: &mut <components::PlayerComponent as Component>::Storage,
 ) {
     let entity = entities.allocate_get();
 
-    entity.add_component(
-        &mut *player_components,
-        components::PlayerComponent::new()
-    );
+    entity.add_component(&mut *player_components, components::PlayerComponent::new());
 
     entity.add_component(
         &mut *position_components,
@@ -58,8 +54,7 @@ pub fn create_bullet(
     );
 
     let body_handle = {
-        use ncollide2d::shape::{Ball, ConvexPolygon, ShapeHandle};
-        use ncollide2d::world::CollisionGroups;
+        use ncollide2d::shape::{Ball, ShapeHandle};
         use nphysics2d::material::{BasicMaterial, MaterialHandle};
         use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
@@ -81,7 +76,7 @@ pub fn create_bullet(
 
     entity.add_component(
         &mut *physics_body_components,
-        components::PhysicsBodyComponent::new(body_handle)
+        components::PhysicsBodyComponent::new(body_handle),
     );
 
     entity.add_component(
@@ -89,13 +84,12 @@ pub fn create_bullet(
         components::DebugDrawCircleComponent::new(radius, color),
     );
 
-    entity.add_component(
-        &mut *bullet_components,
-        components::BulletComponent::new(),
-    );
+    entity.add_component(&mut *bullet_components, components::BulletComponent::new());
 
     entity.add_component(
         &mut *free_at_time_components,
-        components::FreeAtTimeComponent::new(time_state.frame_start_instant + std::time::Duration::from_secs(4)),
+        components::FreeAtTimeComponent::new(
+            time_state.frame_start_instant + std::time::Duration::from_secs(4),
+        ),
     );
 }

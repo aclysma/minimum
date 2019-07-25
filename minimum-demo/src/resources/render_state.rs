@@ -1,5 +1,3 @@
-
-
 pub struct RenderState {
     backbuffer_count: u32,
     ui_space_matrix: glm::Mat4,
@@ -39,7 +37,9 @@ impl RenderState {
         self.world_space_matrix = world_space_matrix;
     }
 
-    pub fn backbuffer_count(&self) -> u32 { self.backbuffer_count }
+    pub fn backbuffer_count(&self) -> u32 {
+        self.backbuffer_count
+    }
     pub fn ui_space_matrix(&self) -> &glm::Mat4 {
         &self.ui_space_matrix
     }
@@ -82,11 +82,7 @@ impl RenderState {
 
     pub fn ui_space_to_world_space(&self, ui_position: glm::Vec2) -> glm::Vec2 {
         // input is a position in pixels
-        let position = glm::vec4(
-            ui_position.x,
-            ui_position.y,
-            0.0,
-            1.0);
+        let position = glm::vec4(ui_position.x, ui_position.y, 0.0, 1.0);
 
         // project to raw space
         let position = self.ui_space_matrix * position;

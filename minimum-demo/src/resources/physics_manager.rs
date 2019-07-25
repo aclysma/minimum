@@ -1,16 +1,4 @@
-//use nphysics2d::world::World;
-//use nalegebra::{Vector2, Isometry2};
-use core::f32;
-use nalgebra::Point2;
-use ncollide2d::shape::{Ball, ConvexPolygon, ShapeHandle};
-use ncollide2d::world::CollisionGroups;
-use nphysics2d::material::{BasicMaterial, MaterialHandle};
-use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
-
 use crate::resources;
-
-//const COLLISION_GROUP_A: usize = 0;
-//const COLLISION_GROUP_B: usize = 1;
 
 const GRAVITY: f32 = -9.8;
 

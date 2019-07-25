@@ -1,10 +1,5 @@
-
+use crate::resources::{ImguiManager, WindowUserEvent};
 use imgui;
-use crate::resources::{
-    ImguiManager,
-    WindowUserEvent,
-    WindowInterface
-};
 
 fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     use imgui::Context;

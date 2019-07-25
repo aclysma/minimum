@@ -8,8 +8,8 @@ use vertex::AsVertex;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Position2(pub [f32; 2]);
 impl<T> From<T> for Position2
-    where
-        T: Into<[f32; 2]>,
+where
+    T: Into<[f32; 2]>,
 {
     fn from(from: T) -> Self {
         Position2(from.into())
@@ -26,8 +26,8 @@ impl vertex::AsAttribute for Position2 {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PackedColorU32(pub [u8; 4]);
 impl<T> From<T> for PackedColorU32
-    where
-        T: Into<[u8; 4]>,
+where
+    T: Into<[u8; 4]>,
 {
     fn from(from: T) -> Self {
         PackedColorU32(from.into())

@@ -16,7 +16,7 @@ use minimum::systems::World;
 
 use nalgebra_glm as glm;
 
-use crate::renderer::{shaders::DEBUG_SHADERS as SHADERS};
+use crate::renderer::shaders::DEBUG_SHADERS as SHADERS;
 use crate::resources;
 
 #[cfg(feature = "spirv-reflection")]

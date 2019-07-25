@@ -47,8 +47,8 @@ const UNIFORM_SIZE: u64 = std::mem::size_of::<UniformArgs>() as u64;
 pub struct ImguiRenderPipelineDesc;
 
 impl<B> SimpleGraphicsPipelineDesc<B, minimum::systems::World> for ImguiRenderPipelineDesc
-    where
-        B: gfx_hal::Backend,
+where
+    B: gfx_hal::Backend,
 {
     type Pipeline = ImguiRenderPipeline<B>;
 
@@ -73,23 +73,23 @@ impl<B> SimpleGraphicsPipelineDesc<B, minimum::systems::World> for ImguiRenderPi
         gfx_hal::pso::VertexInputRate,
     )> {
         #[cfg(feature = "spirv-reflection")]
-            return vec![SHADER_REFLECTION
+        return vec![SHADER_REFLECTION
             .attributes_range(..)
             .unwrap()
             .gfx_vertex_input_desc(0)];
 
         #[cfg(not(feature = "spirv-reflection"))]
-            return vec![
+        return vec![
             PosTexColor::vertex().gfx_vertex_input_desc(gfx_hal::pso::VertexInputRate::Vertex)
         ];
     }
 
     fn layout(&self) -> Layout {
         #[cfg(feature = "spirv-reflection")]
-            return SHADER_REFLECTION.layout().unwrap();
+        return SHADER_REFLECTION.layout().unwrap();
 
         #[cfg(not(feature = "spirv-reflection"))]
-            return Layout {
+        return Layout {
             sets: vec![SetLayout {
                 bindings: vec![
                     gfx_hal::pso::DescriptorSetLayoutBinding {
@@ -270,11 +270,11 @@ impl<B> SimpleGraphicsPipelineDesc<B, minimum::systems::World> for ImguiRenderPi
         ];
 
         #[cfg(feature = "spirv-reflection")]
-            let vbuf_size = SHADER_REFLECTION.attributes_range(..).unwrap().stride as u64
+        let vbuf_size = SHADER_REFLECTION.attributes_range(..).unwrap().stride as u64
             * quad_vertex_data.len() as u64;
 
         #[cfg(not(feature = "spirv-reflection"))]
-            let vbuf_size = PosTexColor::vertex().stride as u64 * quad_vertex_data.len() as u64;
+        let vbuf_size = PosTexColor::vertex().stride as u64 * quad_vertex_data.len() as u64;
 
         let mut quad_vbuf = factory
             .create_buffer(
@@ -315,8 +315,8 @@ pub struct ImguiRenderPipeline<B: gfx_hal::Backend> {
 }
 
 impl<B> SimpleGraphicsPipeline<B, World> for ImguiRenderPipeline<B>
-    where
-        B: gfx_hal::Backend,
+where
+    B: gfx_hal::Backend,
 {
     type Desc = ImguiRenderPipelineDesc;
 
@@ -365,11 +365,11 @@ impl<B> SimpleGraphicsPipeline<B, World> for ImguiRenderPipeline<B>
                     let vertex_count = draw_list.vtx_buffer().len() as u64;
 
                     #[cfg(feature = "spirv-reflection")]
-                        let vbuf_size = SHADER_REFLECTION.attributes_range(..).unwrap().stride as u64
+                    let vbuf_size = SHADER_REFLECTION.attributes_range(..).unwrap().stride as u64
                         * vertex_count;
 
                     #[cfg(not(feature = "spirv-reflection"))]
-                        let vbuf_size = PosTexColor::vertex().stride as u64 * vertex_count;
+                    let vbuf_size = PosTexColor::vertex().stride as u64 * vertex_count;
 
                     let mut vbuf = factory
                         .create_buffer(

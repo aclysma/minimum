@@ -1,6 +1,4 @@
 use winit::event::KeyboardInput;
-use winit::event::WindowEvent;
-use winit::dpi::LogicalPosition;
 
 pub struct InputManager {
     key_states_is_down: [bool; 255],
@@ -8,13 +6,13 @@ pub struct InputManager {
 
     mouse_buttons_down: [bool; 3],
     mouse_buttons_just_down: [bool; 3],
-    mouse_position: glm::Vec2
+    mouse_position: glm::Vec2,
 }
 
 pub enum MouseButtons {
     Left,
     Middle,
-    Right
+    Right,
 }
 
 impl InputManager {
@@ -24,7 +22,7 @@ impl InputManager {
             key_states_just_down: [false; 255],
             mouse_buttons_down: [false; 3],
             mouse_buttons_just_down: [false; 3],
-            mouse_position: glm::zero()
+            mouse_position: glm::zero(),
         };
     }
 
@@ -91,16 +89,16 @@ impl InputManager {
         &mut self,
         state: winit::event::ElementState,
         button: winit::event::MouseButton,
-        modifiers: winit::event::ModifiersState
+        _modifiers: winit::event::ModifiersState,
     ) {
-        use winit::event::MouseButton;
         use winit::event::ElementState;
+        use winit::event::MouseButton;
 
-        let button_index : i32 = match button {
+        let button_index: i32 = match button {
             MouseButton::Left => 0,
             MouseButton::Middle => 1,
             MouseButton::Right => 2,
-            _ => -1
+            _ => -1,
         };
 
         if button_index < 0 {
@@ -115,14 +113,11 @@ impl InputManager {
 
         self.mouse_buttons_down[button_index] = match state {
             ElementState::Pressed => true,
-            ElementState::Released => false
+            ElementState::Released => false,
         };
     }
 
-    pub fn handle_mouse_move_event(
-        &mut self,
-        position: winit::dpi::LogicalPosition
-    ) {
+    pub fn handle_mouse_move_event(&mut self, position: winit::dpi::LogicalPosition) {
         self.mouse_position = glm::vec2(position.x as f32, position.y as f32);
     }
 }

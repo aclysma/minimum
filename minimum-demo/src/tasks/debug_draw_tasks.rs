@@ -1,19 +1,16 @@
-
-use minimum::systems::{DataRequirement, Read, ReadOption, async_dispatch::Task, Write};
-use minimum::Component;
-use minimum::ComponentStorage;
+use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
+use minimum::{Component, ComponentStorage};
 
 use crate::components;
 use crate::resources::DebugDraw;
-
 
 pub struct UpdateDebugDraw;
 impl Task for UpdateDebugDraw {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<minimum::EntitySet>,
-        Read<<components::DebugDrawCircleComponent as minimum::component::Component>::Storage>,
-        Read<<components::PositionComponent as minimum::component::Component>::Storage>,
+        Read<<components::DebugDrawCircleComponent as Component>::Storage>,
+        Read<<components::PositionComponent as Component>::Storage>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {

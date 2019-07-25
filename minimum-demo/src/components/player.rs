@@ -1,16 +1,11 @@
-
 use minimum::component::SlabComponentStorage;
 
 #[derive(Debug)]
-pub struct PlayerComponent {
-
-}
+pub struct PlayerComponent {}
 
 impl PlayerComponent {
     pub fn new() -> Self {
-        PlayerComponent {
-
-        }
+        PlayerComponent {}
     }
 }
 

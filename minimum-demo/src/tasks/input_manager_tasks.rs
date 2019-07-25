@@ -1,12 +1,6 @@
+use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
 
-use minimum::systems::{DataRequirement, Read, ReadOption, async_dispatch::Task, Write};
-
-use crate::resources::{
-    WindowInterface,
-    ImguiManager,
-    InputManager,
-    GameControl
-};
+use crate::resources::{GameControl, ImguiManager, InputManager, WindowInterface};
 
 pub struct GatherInput;
 impl Task for GatherInput {
@@ -46,15 +40,15 @@ impl Task for GatherInput {
                         // Close if the escape key is hit
                         Event::WindowEvent {
                             event:
-                            WindowEvent::KeyboardInput {
-                                input:
-                                winit::event::KeyboardInput {
-                                    virtual_keycode:
-                                    Some(winit::event::VirtualKeyCode::Escape),
+                                WindowEvent::KeyboardInput {
+                                    input:
+                                        winit::event::KeyboardInput {
+                                            virtual_keycode:
+                                                Some(winit::event::VirtualKeyCode::Escape),
+                                            ..
+                                        },
                                     ..
                                 },
-                                ..
-                            },
                             ..
                         } => is_close_requested = true,
 
@@ -67,26 +61,42 @@ impl Task for GatherInput {
                             if !imgui_want_capture_keyboard {
                                 input_manager.handle_keyboard_event(&input);
                             }
-                        },
+                        }
 
                         Event::WindowEvent {
-                            event: WindowEvent::MouseInput { device_id, state, button, modifiers },
+                            event:
+                                WindowEvent::MouseInput {
+                                    device_id,
+                                    state,
+                                    button,
+                                    modifiers,
+                                },
                             ..
                         } => {
-                            trace!("mouse {:?} {:?} {:?} {:?}", device_id, state, button, modifiers);
+                            trace!(
+                                "mouse {:?} {:?} {:?} {:?}",
+                                device_id,
+                                state,
+                                button,
+                                modifiers
+                            );
                             if !imgui_want_capture_mouse {
                                 input_manager.handle_mouse_button_event(state, button, modifiers);
                             }
-                        },
+                        }
 
                         Event::WindowEvent {
-                            event: WindowEvent::CursorMoved { device_id, position, modifiers },
+                            event:
+                                WindowEvent::CursorMoved {
+                                    device_id,
+                                    position,
+                                    modifiers,
+                                },
                             ..
                         } => {
                             trace!("mouse {:?} {:?} {:?}", device_id, position, modifiers);
                             input_manager.handle_mouse_move_event(position);
-                        },
-
+                        }
 
                         // Ignore any other events
                         _ => (),

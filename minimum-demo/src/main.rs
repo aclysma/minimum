@@ -1,19 +1,19 @@
+//There is a decent amount of dead code in this demo that is left as an example
+#![allow(dead_code)]
+
 extern crate nalgebra_glm as glm;
 
 #[macro_use]
 extern crate log;
 
 mod components;
-mod resources;
-mod init;
-mod tasks;
-mod renderer;
 mod constructors;
+mod init;
+mod renderer;
+mod resources;
+mod tasks;
 
-use minimum::systems::async_dispatch::{
-    MinimumDispatcher,
-    MinimumDispatcherBuilder
-};
+use minimum::systems::async_dispatch::{MinimumDispatcher, MinimumDispatcherBuilder};
 
 use minimum::component::Component;
 use minimum::systems::World;
@@ -60,17 +60,16 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
         .with_resource(entity_set)
-        .with_resource(<components::PositionComponent as minimum::component::Component>::Storage::new())
-        .with_resource(<components::VelocityComponent as minimum::component::Component>::Storage::new())
-        .with_resource(<components::DebugDrawCircleComponent as minimum::component::Component>::Storage::new())
-        .with_resource(<components::PlayerComponent as minimum::component::Component>::Storage::new())
-        .with_resource(<components::BulletComponent as minimum::component::Component>::Storage::new())
-        .with_resource(<components::FreeAtTimeComponent as minimum::component::Component>::Storage::new())
-        .with_resource(<components::PhysicsBodyComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::PositionComponent as Component>::Storage::new())
+        .with_resource(<components::VelocityComponent as Component>::Storage::new())
+        .with_resource(<components::DebugDrawCircleComponent as Component>::Storage::new())
+        .with_resource(<components::PlayerComponent as Component>::Storage::new())
+        .with_resource(<components::BulletComponent as Component>::Storage::new())
+        .with_resource(<components::FreeAtTimeComponent as Component>::Storage::new())
+        .with_resource(<components::PhysicsBodyComponent as Component>::Storage::new())
         .build();
 
     // Assets you want to always have available could be loaded here
-
 
     world.insert(init::init_imgui_manager(&world));
     world.insert(init::create_renderer(&world));
@@ -100,53 +99,26 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
 fn create_objects(world: &World) {
     let mut entities = world.fetch_mut::<minimum::EntitySet>();
-    let mut pos_components = world.fetch_mut::<<components::PositionComponent as Component>::Storage>();
-    let mut debug_draw_components = world.fetch_mut::<<components::DebugDrawCircleComponent as Component>::Storage>();
-    let mut player_components = world.fetch_mut::<<components::PlayerComponent as Component>::Storage>();
+    let mut pos_components =
+        world.fetch_mut::<<components::PositionComponent as Component>::Storage>();
+    let mut debug_draw_components =
+        world.fetch_mut::<<components::DebugDrawCircleComponent as Component>::Storage>();
+    let mut player_components =
+        world.fetch_mut::<<components::PlayerComponent as Component>::Storage>();
 
-    {
-        let player_entity = entities.allocate_get();
-
-        player_entity.add_component(
-            &mut *player_components,
-            components::PlayerComponent::new()
-        );
-
-        // Put a position on everything
-        player_entity.add_component(
-            &mut *pos_components,
-            components::PositionComponent::new(glm::zero()),
-        );
-
-        player_entity.add_component(
-            &mut *debug_draw_components,
-            components::DebugDrawCircleComponent::new(15.0, glm::Vec4::new(0.0, 1.0, 0.0, 1.0)),
-        );
-    }
-
-//    for i in 0..10 {
-//        let entity = entities.allocate_get();
-//
-//        // Put a position on everything
-//        entity.add_component(
-//            &mut *pos_components,
-//            components::PositionComponent::new(glm::Vec2::new(50.0 * i as f32, 6.0)),
-//        );
-//
-//        entity.add_component(
-//            &mut *vel_components,
-//            components::DebugDrawCircleComponent::new(50.0, glm::Vec4::new(1.0, 0.0, 0.0, 1.0)),
-//        );
-//    }
+    constructors::create_player(
+        &mut entities,
+        &mut *pos_components,
+        &mut *debug_draw_components,
+        &mut *player_components,
+    );
 }
 
 fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
     info!("dispatch thread started");
 
     let mut world = dispatcher.enter_game_loop(move |dispatch_ctx| {
-
-        let dispatch_context1 = dispatch_ctx.clone();
-        let dispatch_context2 = dispatch_ctx.clone();
+        let dispatch_context = dispatch_ctx.clone();
 
         //TODO: Explore non-intrusive method for defining task dependencies
         //TODO: Explore flags to turn steps on/off
@@ -161,11 +133,9 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
             dispatch_ctx.run_task(tasks::UpdatePositionFromPhysics),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::UpdateDebugDraw),
-
             dispatch_ctx.visit_world(|world| {
                 tasks::render(world);
             }),
-
             dispatch_ctx.visit_world_mut(move |world| {
                 let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();
                 entity_set.flush_free(world);
@@ -173,17 +143,15 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
                 let mut game_control = world.fetch_mut::<resources::GameControl>();
 
                 if game_control.terminate_process() {
-                    dispatch_context2.end_game_loop();
+                    dispatch_context.end_game_loop();
                 } else if game_control.has_load_level() {
-
                     // Unload game state
                     entity_set.clear(world);
                     //world.remove::<game::GameState>();
 
                     // Setup game state
-                    let level_to_load = game_control.take_load_level();
+                    let _level_to_load = game_control.take_load_level();
                     //world.insert::<physics::Physics>();
-
                 }
             }),
         ])

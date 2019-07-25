@@ -17,10 +17,10 @@ struct Inner {
     platform: imgui_winit_support::WinitPlatform,
 
     // These are all refreshed when frame is started
-    want_capture_keyboard : bool,
-    want_capture_mouse : bool,
-    want_set_mouse_pos : bool,
-    want_text_input : bool
+    want_capture_keyboard: bool,
+    want_capture_mouse: bool,
+    want_set_mouse_pos: bool,
+    want_text_input: bool,
 }
 
 // Rust assumes pointers in Inner are not safe to send, so we need to explicitly impl that here
@@ -59,10 +59,10 @@ impl ImguiManager {
                 font_atlas_texture,
                 ui: None,
                 platform,
-                want_capture_keyboard : false,
-                want_capture_mouse : false,
-                want_set_mouse_pos : false,
-                want_text_input : false
+                want_capture_keyboard: false,
+                want_capture_mouse: false,
+                want_set_mouse_pos: false,
+                want_text_input: false,
             }),
         }
     }
