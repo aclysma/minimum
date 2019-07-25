@@ -44,6 +44,10 @@ impl<KeyT: Eq + Hash, ValueT> KeyedRcSlab<KeyT, ValueT> {
         }
     }
 
+    pub fn exists(&self, slab_entry: &RcSlabEntry<ValueT>) -> bool {
+        self.slab.exists(slab_entry)
+    }
+
     pub fn get(&self, slab_entry: &RcSlabEntry<ValueT>) -> &ValueT {
         self.slab.get(slab_entry)
     }

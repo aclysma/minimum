@@ -122,6 +122,11 @@ impl<T> GenSlab<T> {
         self.free_list.push(slab_key.index);
     }
 
+    pub fn exists(&self, slab_key: &GenSlabKey<T>) -> bool {
+        // Non-mutable return value so we can return a ref to the value in the vec
+        self.storage[slab_key.index as usize].exists(slab_key.generation_index)
+    }
+
     pub fn get(&self, slab_key: &GenSlabKey<T>) -> Option<&T> {
         // Non-mutable return value so we can return a ref to the value in the vec
         self.storage[slab_key.index as usize].get(slab_key.generation_index)

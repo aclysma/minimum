@@ -103,6 +103,10 @@ impl<T> RcSlab<T> {
         entry
     }
 
+    pub fn exists(&self, slab_entry: &RcSlabEntry<T>) -> bool {
+        self.slab.exists(&*slab_entry.slab_key)
+    }
+
     pub fn get(&self, slab_entry: &RcSlabEntry<T>) -> &T {
         self.slab.get(&*slab_entry.slab_key).unwrap()
     }

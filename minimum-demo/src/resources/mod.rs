@@ -7,6 +7,7 @@ mod time_state;
 mod imgui_manager;
 mod render_state;
 mod debug_options;
+mod physics_manager;
 
 pub use game_control::GameControl;
 pub use window_interface::WindowInterface;
@@ -18,3 +19,4 @@ pub use time_state::TimeState;
 pub use imgui_manager::ImguiManager;
 pub use render_state::RenderState;
 pub use debug_options::DebugOptions;
+pub use physics_manager::PhysicsManager;

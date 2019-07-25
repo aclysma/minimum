@@ -6,6 +6,7 @@ use crate::component;
 use component::Component;
 use component::ComponentRegistry;
 use component::ComponentStorage;
+use component::ComponentFreeHandler;
 
 use crate::systems;
 
@@ -82,6 +83,11 @@ impl EntitySet {
         self.component_registry.register_component::<T>();
     }
 
+    //TODO: Improve this API
+    pub fn register_component_type_with_free_handler<T: Component, F: ComponentFreeHandler<T> + 'static>(&mut self) {
+        self.component_registry.register_component_type_with_free_handler::<T, F>();
+    }
+
     pub fn allocate(&mut self) -> EntityHandle {
         let handle = self.slab.allocate(Entity::new());
         self.slab.get_mut(&handle).unwrap().handle = Some(handle.clone());
@@ -95,12 +101,13 @@ impl EntitySet {
         EntityRef::new(entity, handle)
     }
 
-    //TODO: This could be handled using a separate DeferredFree component storage
     pub fn enqueue_free(&mut self, entity_handle: &EntityHandle) {
         EntitySet::do_enqueue_free(&mut self.pending_deletes, entity_handle);
     }
 
     fn do_enqueue_free(pending_deletes: &mut Vec<EntityHandle>, entity_handle: &EntityHandle) {
+        //TODO: This could be handled by adding a DeferredFree component to the entity, which avoids
+        //requiring mutable self
         pending_deletes.push(entity_handle.clone());
     }
 
@@ -113,14 +120,6 @@ impl EntitySet {
         let e = self.slab.get(entity_handle)?;
         Some(EntityRef::new(e, handle))
     }
-
-    //    pub fn get_entity(&self, entity_handle: &EntityHandle) -> Option<&Entity> {
-    //        self.slab.get(entity_handle)
-    //    }
-    //
-    //    pub fn get_entity_mut(&mut self, entity_handle: &EntityHandle) -> Option<&mut Entity> {
-    //        self.slab.get_mut(entity_handle)
-    //    }
 
     pub fn clear(&mut self, world: &systems::World) {
 
@@ -188,38 +187,6 @@ mod tests {
         entity_set.flush_free(&world);
         assert_eq!(entity_set.entity_count(), 0);
     }
-    //
-    //    #[test]
-    //    fn test_get_entity() {
-    //        let mut world = systems::World::new();
-    //        let mut entity_set = EntitySet::new();
-    //        world.insert(<TestComponent as Component>::Storage::new());
-    //        entity_set.register_component_type::<TestComponent>();
-    //
-    //        let entity_handle = entity_set.allocate();
-    //        assert!(entity_set.get_entity(&entity_handle).is_some());
-    //
-    //        entity_set.enqueue_free(&entity_handle);
-    //        assert!(entity_set.get_entity(&entity_handle).is_some());
-    //        entity_set.flush_free(&world);
-    //        assert!(entity_set.get_entity(&entity_handle).is_none());
-    //    }
-    //
-    //    #[test]
-    //    fn test_get_entity_mut() {
-    //        let mut world = systems::World::new();
-    //        let mut entity_set = EntitySet::new();
-    //        world.insert(<TestComponent as Component>::Storage::new());
-    //        entity_set.register_component_type::<TestComponent>();
-    //
-    //        let entity_handle = entity_set.allocate();
-    //        assert!(entity_set.get_entity_mut(&entity_handle).is_some());
-    //
-    //        entity_set.enqueue_free(&entity_handle);
-    //        assert!(entity_set.get_entity_mut(&entity_handle).is_some());
-    //        entity_set.flush_free(&world);
-    //        assert!(entity_set.get_entity_mut(&entity_handle).is_none());
-    //    }
 
     #[test]
     fn test_destroy_entity_releases_components() {
@@ -281,23 +248,5 @@ mod tests {
         // Fail to find the component
         let component = entity.get_component::<TestComponent>(&test_component_storage);
         assert!(component.is_none());
-    }
-
-    #[test]
-    fn iterate_entities_with_components() {
-        /*
-        let mask = 0x00000000;
-        mask |= component.get_index<A>();
-        mask |= component.get_index<B>();
-        mask |= component.get_index<C>();
-
-        for entity in entities {
-            if entity.component_mask & mask != 0 {
-                let a = entity.get<A>();
-                let b = entity.get<B>();
-                let c = entity.get<C>();
-            }
-        }
-        */
     }
 }

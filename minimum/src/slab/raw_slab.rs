@@ -72,6 +72,10 @@ impl<T> RawSlab<T> {
         self.free_list.push(slab_key.index);
     }
 
+    pub fn exists(&self, slab_key: &RawSlabKey<T>) -> bool {
+        self.storage[slab_key.index as usize].is_some()
+    }
+
     pub fn get(&self, slab_key: &RawSlabKey<T>) -> Option<&T> {
         // Non-mutable return value so we can return a ref to the value in the vec
 

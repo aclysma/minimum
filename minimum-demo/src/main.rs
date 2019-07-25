@@ -48,14 +48,14 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     entity_set.register_component_type::<components::PlayerComponent>();
     entity_set.register_component_type::<components::BulletComponent>();
     entity_set.register_component_type::<components::FreeAtTimeComponent>();
+    entity_set.register_component_type_with_free_handler::<components::PhysicsBodyComponent, components::PhysicsBodyComponentFreeHandler>();
 
     let mut world = minimum::systems::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
         .with_resource(resources::DebugDraw::new())
         .with_resource(resources::InputManager::new())
         .with_resource(resources::TimeState::new())
-        //.with_resource(gfx::DebugCameraSettings::new())
-        //.with_resource(physics::Physics::new())
+        .with_resource(resources::PhysicsManager::new())
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
@@ -66,6 +66,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(<components::PlayerComponent as minimum::component::Component>::Storage::new())
         .with_resource(<components::BulletComponent as minimum::component::Component>::Storage::new())
         .with_resource(<components::FreeAtTimeComponent as minimum::component::Component>::Storage::new())
+        .with_resource(<components::PhysicsBodyComponent as minimum::component::Component>::Storage::new())
         .build();
 
     // Assets you want to always have available could be loaded here
@@ -147,6 +148,8 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
         let dispatch_context1 = dispatch_ctx.clone();
         let dispatch_context2 = dispatch_ctx.clone();
 
+        //TODO: Explore non-intrusive method for defining task dependencies
+        //TODO: Explore flags to turn steps on/off
         minimum::async_dispatcher::ExecuteSequential::new(vec![
             dispatch_ctx.run_task(tasks::ImguiBeginFrame),
             dispatch_ctx.run_task(tasks::UpdateTimeState),
@@ -154,6 +157,8 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
             dispatch_ctx.run_task(tasks::ControlPlayerEntity),
             dispatch_ctx.run_task(tasks::UpdatePositionWithVelocity),
             dispatch_ctx.run_task(tasks::HandleFreeAtTimeComponents),
+            dispatch_ctx.run_task(tasks::UpdatePhysics),
+            dispatch_ctx.run_task(tasks::UpdatePositionFromPhysics),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::UpdateDebugDraw),
 

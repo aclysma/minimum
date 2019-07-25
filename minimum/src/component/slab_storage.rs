@@ -200,6 +200,14 @@ impl<T: Component> ComponentStorage<T> for SlabComponentStorage<T> {
         }
     }
 
+    fn exists(&self, entity: &EntityHandle) -> bool {
+        if entity.index() as usize >= self.slab_keys.len() {
+            return false;
+        }
+
+        self.slab_keys[entity.index() as usize].is_some()
+    }
+
     fn get(&self, entity: &EntityHandle) -> Option<&T> {
         if entity.index() as usize >= self.slab_keys.len() {
             return None;

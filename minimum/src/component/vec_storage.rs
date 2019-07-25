@@ -166,6 +166,14 @@ impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
         }
     }
 
+    fn exists(&self, entity: &EntityHandle) -> bool {
+        if entity.index() as usize >= self.components.len() {
+            return false;
+        }
+
+        self.components[entity.index() as usize].is_some()
+    }
+
     fn get(&self, entity: &EntityHandle) -> Option<&T> {
         if entity.index() as usize >= self.components.len() {
             return None;

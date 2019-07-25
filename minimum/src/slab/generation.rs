@@ -16,6 +16,10 @@ impl<T> Generation<T> {
         }
     }
 
+    pub fn exists(&self, generation: GenerationIndex) -> bool {
+        self.value.is_some() && self.generation_index == generation
+    }
+
     pub fn get(&self, generation: GenerationIndex) -> Option<&T> {
         //println!("get self: {} param: {}", self.generation_index.0, generation.0);
 
