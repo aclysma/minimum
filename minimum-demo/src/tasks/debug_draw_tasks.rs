@@ -1,5 +1,5 @@
 use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
-use minimum::{Component, ComponentStorage};
+use minimum::{ComponentStorage, ReadComponent};
 
 use crate::components;
 use crate::resources::DebugDraw;
@@ -9,8 +9,8 @@ impl Task for UpdateDebugDraw {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<minimum::EntitySet>,
-        Read<<components::DebugDrawCircleComponent as Component>::Storage>,
-        Read<<components::PositionComponent as Component>::Storage>,
+        ReadComponent<components::DebugDrawCircleComponent>,
+        ReadComponent<components::PositionComponent>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {

@@ -5,10 +5,11 @@ use minimum::systems::{
 };
 
 use minimum::systems::async_dispatch::{
-    MinimumDispatcherBuilder,
+    MinimumDispatcher,
     Task
 };
 use minimum::async_dispatcher::ExecuteSequential;
+use minimum::WorldBuilder;
 
 // Mock a physics system
 pub struct ExampleResource;
@@ -37,12 +38,14 @@ impl Task for ExampleTask {
 
 fn main() {
     // Set up a dispatcher with the example resource in it
-    let dispatcher_builder = MinimumDispatcherBuilder::new()
+    let world = WorldBuilder::new()
         .with_resource(ExampleResource::new())
         .build();
 
+    let dispatcher = MinimumDispatcher::new(world);
+
     // Start the game loop
-    dispatcher_builder.enter_game_loop(|ctx| {
+    dispatcher.enter_game_loop(|ctx| {
         ExecuteSequential::new(vec![
             // Run a task, this will call update on the given resource
             ctx.run_task(ExampleTask),

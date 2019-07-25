@@ -8,6 +8,7 @@ use minimum::systems::async_dispatch::{
 
 use minimum::async_dispatcher::ExecuteSequential;
 
+use minimum::{EntitySet, ReadComponent, WriteComponent};
 use minimum::component::{Component, ComponentStorage};
 
 mod shared;
@@ -25,43 +26,14 @@ use shared::resources::{
 
 use shared::Vec2;
 
-struct GameEntities {
-    set: minimum::entity::EntitySet,
-}
-
-impl GameEntities {
-    // Install component storage as needed to the world, create an entity_set, register
-    // component types to that set
-    pub fn setup(world: &mut World) {
-        // The ctors here can take parameters as config (for example to hint max counts for each type)
-        world.insert(<PositionComponent as Component>::Storage::new());
-        world.insert(<VelocityComponent as Component>::Storage::new());
-        world.insert(<SpeedMultiplierComponent as Component>::Storage::new());
-
-        let mut entity_set = minimum::entity::EntitySet::new();
-        entity_set.register_component_type::<PositionComponent>();
-        entity_set.register_component_type::<VelocityComponent>();
-        entity_set.register_component_type::<SpeedMultiplierComponent>();
-
-        let game_entities = GameEntities { set: entity_set };
-
-        world.insert(game_entities);
-    }
-
-    pub fn update(world: &World) {
-        let mut entity_set = world.fetch_mut::<GameEntities>();
-        entity_set.set.flush_free(&world);
-    }
-}
-
 struct UpdatePositions;
 impl Task for UpdatePositions {
     type RequiredResources = (
         Read<TimeState>,
-        Read<GameEntities>,
-        Read<<VelocityComponent as Component>::Storage>,
-        Write<<PositionComponent as Component>::Storage>,
-        Read<<SpeedMultiplierComponent as Component>::Storage>,
+        Read<EntitySet>,
+        ReadComponent<VelocityComponent>,
+        WriteComponent<PositionComponent>,
+        ReadComponent<SpeedMultiplierComponent>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -74,13 +46,13 @@ impl Task for UpdatePositions {
         ) = data;
 
         // EXAMPLE: iterate entity handles
-        println!("entity count {:?}", game_entities.set.iter().count());
-        for entity in game_entities.set.iter() {
+        println!("entity count {:?}", game_entities.iter().count());
+        for entity in game_entities.iter() {
             println!("all entities: {:?}", entity.handle());
         }
 
         // EXAMPLE: non-mutable iterate over entities with velocity components
-        for (entity_handle, vel_component) in velocity_components.iter(&game_entities.set) {
+        for (entity_handle, vel_component) in velocity_components.iter(&game_entities) {
             println!(
                 "entities with velocity: E: {:?} V: {:?}",
                 entity_handle, vel_component
@@ -88,7 +60,7 @@ impl Task for UpdatePositions {
         }
 
         //EXAMPLE: mutable iterate over entities with position components
-        for (entity_handle, pos_component) in position_components.iter_mut(&game_entities.set) {
+        for (entity_handle, pos_component) in position_components.iter_mut(&game_entities) {
             pos_component.position.y += 10.0;
             println!(
                 "entities with position: E: {:?} P: {:?}",
@@ -100,7 +72,7 @@ impl Task for UpdatePositions {
         // - mutable position
         // - immutable velocity (use get_mut for mutable component
         // - optional speed multiplier
-        for (entity_index, pos) in position_components.iter_mut(&game_entities.set) {
+        for (entity_index, pos) in position_components.iter_mut(&game_entities) {
             if let (Some(vel), mul) = (
                 velocity_components.get(&entity_index),
                 speed_multiplier_components.get(&entity_index),
@@ -115,14 +87,14 @@ impl Task for UpdatePositions {
 }
 
 fn create_objects(world: &World) {
-    let mut game_entities = world.fetch_mut::<GameEntities>();
+    let mut game_entities = world.fetch_mut::<EntitySet>();
     let mut pos_components = world.fetch_mut::<<PositionComponent as Component>::Storage>();
     let mut vel_components = world.fetch_mut::<<VelocityComponent as Component>::Storage>();
     let mut speed_multiplier_components =
         world.fetch_mut::<<SpeedMultiplierComponent as Component>::Storage>();
 
     for i in 0..10 {
-        let entity = game_entities.set.allocate_get();
+        let entity = game_entities.allocate_get();
 
         // Put a position on everything
         entity.add_component(
@@ -153,16 +125,16 @@ fn main() {
     let mut world = WorldBuilder::new()
         .with_resource(UpdateCount::new())
         .with_resource(TimeState::new())
+        .with_component(<PositionComponent as Component>::Storage::new())
+        .with_component(<VelocityComponent as Component>::Storage::new())
+        .with_component(<SpeedMultiplierComponent as Component>::Storage::new())
         .build();
-
-    // Hook up the entity set..
-    GameEntities::setup(&mut world);
 
     // Create a bunch of objects
     create_objects(&world);
 
-    use minimum::systems::async_dispatch::MinimumDispatcherBuilder;
-    let dispatcher = MinimumDispatcherBuilder::from_world(world).build();
+    use minimum::systems::async_dispatch::MinimumDispatcher;
+    let dispatcher = MinimumDispatcher::new(world);
 
     dispatcher.enter_game_loop(|ctx| {
         let ctx1 = ctx.clone();
@@ -171,7 +143,9 @@ fn main() {
             ctx.run_task(UpdatePositions),
             //This will mutably fetch every component type so needs to be done exclusively
             ctx.visit_world(move |world| {
-                GameEntities::update(&world)
+                let mut entity_set = world.fetch_mut::<EntitySet>();
+                entity_set.flush_free(world);
+
             }),
             ctx.visit_world_mut(move |world| {
                 let mut update_count = world.fetch_mut::<UpdateCount>();

@@ -3,7 +3,8 @@ use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
 use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState, TimeState};
 
 use crate::components;
-use minimum::{Component, ComponentStorage, EntitySet};
+use minimum::component::{ReadComponent, WriteComponent};
+use minimum::{ComponentStorage, EntitySet};
 
 mod imgui_tasks;
 pub use imgui_tasks::ImguiBeginFrame;
@@ -39,13 +40,13 @@ impl Task for ControlPlayerEntity {
         Read<TimeState>,
         Read<RenderState>,
         Write<PhysicsManager>,
-        Read<<components::PlayerComponent as Component>::Storage>,
-        Write<<components::PositionComponent as Component>::Storage>,
-        Write<<components::VelocityComponent as Component>::Storage>,
-        Write<<components::DebugDrawCircleComponent as Component>::Storage>,
-        Write<<components::BulletComponent as Component>::Storage>,
-        Write<<components::FreeAtTimeComponent as Component>::Storage>,
-        Write<<components::PhysicsBodyComponent as Component>::Storage>,
+        ReadComponent<components::PlayerComponent>,
+        WriteComponent<components::PositionComponent>,
+        WriteComponent<components::VelocityComponent>,
+        WriteComponent<components::DebugDrawCircleComponent>,
+        WriteComponent<components::BulletComponent>,
+        WriteComponent<components::FreeAtTimeComponent>,
+        WriteComponent<components::PhysicsBodyComponent>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -127,9 +128,9 @@ impl Task for UpdatePositionWithVelocity {
     type RequiredResources = (
         Read<minimum::EntitySet>,
         Read<TimeState>,
-        Write<<components::PositionComponent as Component>::Storage>,
-        Read<<components::VelocityComponent as Component>::Storage>,
-        Read<<components::PhysicsBodyComponent as Component>::Storage>,
+        WriteComponent<components::PositionComponent>,
+        ReadComponent<components::VelocityComponent>,
+        ReadComponent<components::PhysicsBodyComponent>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -162,7 +163,7 @@ impl Task for HandleFreeAtTimeComponents {
     type RequiredResources = (
         Write<minimum::EntitySet>,
         Read<TimeState>,
-        Read<<components::FreeAtTimeComponent as Component>::Storage>,
+        ReadComponent<components::FreeAtTimeComponent>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -197,9 +198,9 @@ impl Task for UpdatePositionFromPhysics {
     type RequiredResources = (
         Read<EntitySet>,
         Read<PhysicsManager>,
-        Read<<components::PhysicsBodyComponent as Component>::Storage>,
-        Write<<components::PositionComponent as Component>::Storage>,
-        Write<<components::VelocityComponent as Component>::Storage>,
+        ReadComponent<components::PhysicsBodyComponent>,
+        WriteComponent<components::PositionComponent>,
+        WriteComponent<components::VelocityComponent>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {

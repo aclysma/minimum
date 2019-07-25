@@ -19,6 +19,7 @@ pub mod async_dispatch;
 pub mod simple_dispatch;
 
 use crate::systems;
+use crate::EntitySet;
 
 //
 // ResourceId
@@ -59,12 +60,14 @@ impl<T> Resource for T where T: Any + Send + Sync {}
 
 pub struct WorldBuilder {
     world: World,
+    default_entity_set: crate::EntitySet
 }
 
 impl WorldBuilder {
     pub fn new() -> Self {
         WorldBuilder {
             world: World::new(),
+            default_entity_set: EntitySet::new()
         }
     }
 
@@ -76,6 +79,11 @@ impl WorldBuilder {
         self
     }
 
+    pub fn with_component<C : crate::Component, S : crate::ComponentStorage<C> + 'static>(mut self, component_storage: S) -> Self {
+        self.world.insert(component_storage);
+        self
+    }
+
     pub fn insert<R>(&mut self, r: R)
     where
         R: Resource,
@@ -83,7 +91,12 @@ impl WorldBuilder {
         self.world.insert(r);
     }
 
-    pub fn build(self) -> World {
+    pub fn build(mut self) -> World {
+        // If no entity set was created, insert the default
+        if !self.world.has_value::<EntitySet>() {
+            self.world.insert(self.default_entity_set);
+        }
+
         self.world
     }
 }

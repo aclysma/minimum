@@ -1,5 +1,5 @@
 use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
-use minimum::{Component, ComponentStorage, EntitySet};
+use minimum::{ComponentStorage, EntitySet, ReadComponent};
 
 use crate::resources::{
     DebugOptions, GameControl, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
@@ -26,9 +26,9 @@ impl Task for RenderImguiMainMenu {
         Write<DebugOptions>,
         Read<PhysicsManager>,
         Read<EntitySet>,
-        Read<<BulletComponent as Component>::Storage>,
-        Read<<PlayerComponent as Component>::Storage>,
-        Read<<PositionComponent as Component>::Storage>,
+        ReadComponent<BulletComponent>,
+        ReadComponent<PlayerComponent>,
+        ReadComponent<PositionComponent>,
         Read<InputManager>,
         Read<RenderState>,
     );

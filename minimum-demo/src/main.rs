@@ -13,7 +13,7 @@ mod renderer;
 mod resources;
 mod tasks;
 
-use minimum::systems::async_dispatch::{MinimumDispatcher, MinimumDispatcherBuilder};
+use minimum::systems::async_dispatch::MinimumDispatcher;
 
 use minimum::component::Component;
 use minimum::systems::World;
@@ -41,15 +41,6 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     //TODO-API: registering the component and then registering the component storage as a resource might be considered redundant
 
     //TODO-API: We could have a "default" entity set that doesn't need to be registered as a resource (and automatically knows about all component types)
-    let mut entity_set = minimum::entity::EntitySet::new();
-    entity_set.register_component_type::<components::PositionComponent>();
-    entity_set.register_component_type::<components::VelocityComponent>();
-    entity_set.register_component_type::<components::DebugDrawCircleComponent>();
-    entity_set.register_component_type::<components::PlayerComponent>();
-    entity_set.register_component_type::<components::BulletComponent>();
-    entity_set.register_component_type::<components::FreeAtTimeComponent>();
-    entity_set.register_component_type_with_free_handler::<components::PhysicsBodyComponent, components::PhysicsBodyComponentFreeHandler>();
-
     let mut world = minimum::systems::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
         .with_resource(resources::DebugDraw::new())
@@ -59,14 +50,13 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
-        .with_resource(entity_set)
-        .with_resource(<components::PositionComponent as Component>::Storage::new())
-        .with_resource(<components::VelocityComponent as Component>::Storage::new())
-        .with_resource(<components::DebugDrawCircleComponent as Component>::Storage::new())
-        .with_resource(<components::PlayerComponent as Component>::Storage::new())
-        .with_resource(<components::BulletComponent as Component>::Storage::new())
-        .with_resource(<components::FreeAtTimeComponent as Component>::Storage::new())
-        .with_resource(<components::PhysicsBodyComponent as Component>::Storage::new())
+        .with_component(<components::PositionComponent as Component>::Storage::new())
+        .with_component(<components::VelocityComponent as Component>::Storage::new())
+        .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
+        .with_component(<components::PlayerComponent as Component>::Storage::new())
+        .with_component(<components::BulletComponent as Component>::Storage::new())
+        .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
+        .with_component(<components::PhysicsBodyComponent as Component>::Storage::new())
         .build();
 
     // Assets you want to always have available could be loaded here
@@ -81,7 +71,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     let winit_event_tx = init::create_window_interface(&mut world, &event_loop); //TODO: continue moving things to init.rs
 
     // Start the game loop thread
-    let dispatcher = MinimumDispatcherBuilder::from_world(world).build();
+    let dispatcher = MinimumDispatcher::new(world);
     let _join_handle = std::thread::spawn(|| dispatcher_thread(dispatcher));
 
     // Hand control of the main thread to winit

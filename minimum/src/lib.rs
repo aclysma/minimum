@@ -16,6 +16,7 @@ pub use entity::Entity;
 
 pub use component::Component;
 pub use component::ComponentStorage;
+pub use component::{ReadComponent, WriteComponent, ReadComponentOption, WriteComponentOption};
 
 pub use systems::World;
 pub use systems::WorldBuilder;
@@ -29,14 +30,10 @@ pub use systems::simple_dispatch as dispatch;
 #[cfg(feature = "async_support")]
 pub use systems::async_dispatch::Task;
 #[cfg(feature = "async_support")]
-pub use systems::async_dispatch::MinimumDispatcherBuilder;
-#[cfg(feature = "async_support")]
 pub use systems::async_dispatch::MinimumDispatcher;
 
 #[cfg(not(feature = "async_support"))]
 pub use systems::simple_dispatch::Task;
 #[cfg(not(feature = "async_support"))]
-pub use systems::async_dispatch::MinimumDispatcherBuilder;
-#[cfg(not(feature = "async_support"))]
-pub use systems::async_dispatch::MinimumDispatcher;
+pub use systems::simple_dispatch::MinimumDispatcher;
 

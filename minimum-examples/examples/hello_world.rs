@@ -1,12 +1,10 @@
 
 use minimum::systems::{
     simple_dispatch::Task,
+    simple_dispatch::MinimumDispatcher,
     Write,
-    DataRequirement
-};
-
-use minimum::systems::simple_dispatch::{
-    MinimumDispatcherBuilder
+    DataRequirement,
+    WorldBuilder
 };
 
 //
@@ -49,12 +47,14 @@ impl Task for ExampleTask {
 //
 fn main() {
     // Set up a dispatcher with the example resource in it
-    let dispatcher_builder = MinimumDispatcherBuilder::new()
+    let world = WorldBuilder::new()
         .with_resource(ExampleResource::new())
         .build();
 
+    let dispatcher = MinimumDispatcher::new(world);
+
     // Start the game loop
-    dispatcher_builder.enter_game_loop(|ctx| {
+    dispatcher.enter_game_loop(|ctx| {
         // Run a task, this will call update on the given resource
         ctx.run_task(ExampleTask);
 

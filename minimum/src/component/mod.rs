@@ -32,3 +32,8 @@ where
 pub trait Component: Sized + Send + Sync + 'static {
     type Storage: ComponentStorage<Self>;
 }
+
+pub type ReadComponent<T> = crate::systems::Read<<T as Component>::Storage>;
+pub type WriteComponent<T> = crate::systems::Write<<T as Component>::Storage>;
+pub type ReadComponentOption<T> = crate::systems::ReadOption<<T as Component>::Storage>;
+pub type WriteComponentOption<T> = crate::systems::WriteOption<<T as Component>::Storage>;

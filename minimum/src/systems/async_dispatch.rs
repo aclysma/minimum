@@ -133,65 +133,24 @@ pub fn acquire_critical_section_write(
     do_acquire_critical_section_write(dispatcher)
 }
 
-pub struct MinimumDispatcherBuilder {
-    dispatcher_builder: DispatcherBuilder<ResourceId>,
-    world: systems::World,
-}
-
-impl MinimumDispatcherBuilder {
-    // Create an empty dispatcher builder
-    pub fn new() -> Self {
-        MinimumDispatcherBuilder {
-            dispatcher_builder: DispatcherBuilder::new(),
-            world: systems::World::new(),
-        }
-    }
-
-    pub fn from_world(world: systems::World) -> MinimumDispatcherBuilder {
-        let mut dispatcher_builder = DispatcherBuilder::new();
-        for resource in world.keys() {
-            dispatcher_builder.register_resource_id(resource.clone());
-        }
-
-        MinimumDispatcherBuilder {
-            dispatcher_builder,
-            world,
-        }
-    }
-
-    pub fn with_resource<T: systems::Resource>(mut self, resource: T) -> Self {
-        self.insert_resource(resource);
-        self
-    }
-
-    pub fn insert_resource<T: systems::Resource>(&mut self, resource: T) {
-        self.world.insert(resource);
-        self.dispatcher_builder
-            .register_resource_id(ResourceId::new::<T>());
-    }
-
-    pub fn world(&self) -> &systems::World {
-        &self.world
-    }
-
-    // Create the dispatcher
-    pub fn build(self) -> MinimumDispatcher {
-        let dispatcher = self.dispatcher_builder.build();
-        let world = Arc::new(systems::TrustCell::new(self.world));
-
-        MinimumDispatcher {
-            dispatcher,
-            world
-        }
-    }
-}
-
 pub struct MinimumDispatcher {
     dispatcher: Dispatcher<ResourceId>,
     world: Arc<systems::TrustCell<systems::World>>,
 }
 
 impl MinimumDispatcher {
+    pub fn new(world: systems::World) -> MinimumDispatcher {
+        let mut dispatcher_builder = DispatcherBuilder::new();
+        for resource in world.keys() {
+            dispatcher_builder.register_resource_id(resource.clone());
+        }
+
+        MinimumDispatcher {
+            dispatcher: dispatcher_builder.build(),
+            world: Arc::new(systems::TrustCell::new(world))
+        }
+    }
+
     // Call this to kick off processing.
     pub fn enter_game_loop<F, FutureT>(self, f: F) -> systems::World
     where
