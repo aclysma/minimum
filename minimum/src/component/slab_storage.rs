@@ -40,10 +40,10 @@ where
     type Item = (EntityHandle, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.slab_iter.next().map(|(entitiy_index, component_key)| {
+        self.slab_iter.next().map(|(entity_index, component_key)| {
             (
                 self.entity_set
-                    .upgrade_index_to_handle(entitiy_index as u32),
+                    .upgrade_index_to_handle(entity_index as u32),
                 self.raw_slab.get(&component_key.as_ref().unwrap()).unwrap(),
             )
         })

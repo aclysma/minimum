@@ -1,6 +1,6 @@
 use minimum::component::SlabComponentStorage;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VelocityComponent {
     velocity: glm::Vec2,
 }

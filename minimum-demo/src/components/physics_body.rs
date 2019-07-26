@@ -2,7 +2,8 @@ use minimum::component::SlabComponentStorage;
 use minimum::{Component, ComponentStorage};
 use nphysics2d::object::BodyHandle;
 
-#[derive(Debug)]
+//TODO: Remove Clone and implement a custom factory
+#[derive(Debug, Clone)]
 pub struct PhysicsBodyComponent {
     body_handle: BodyHandle,
 }

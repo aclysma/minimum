@@ -1,10 +1,10 @@
 use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
 
-use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState, TimeState};
+use crate::resources::{InputManager, MouseButtons, RenderState, TimeState};
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
-use minimum::{ComponentStorage, EntitySet};
+use minimum::ComponentStorage;
 
 mod imgui_tasks;
 pub use imgui_tasks::ImguiBeginFrame;
@@ -16,11 +16,9 @@ pub use debug_draw_tasks::UpdateDebugDraw;
 mod input_manager_tasks;
 pub use input_manager_tasks::GatherInput;
 
-pub fn render(world: &minimum::systems::World) {
-    let window = world.fetch::<winit::window::Window>();
-    let mut renderer = world.fetch_mut::<crate::renderer::Renderer>();
-    renderer.render(&window, &world);
-}
+mod physics_tasks;
+pub use physics_tasks::UpdatePhysics;
+pub use physics_tasks::UpdatePositionFromPhysics;
 
 pub struct UpdateTimeState;
 impl Task for UpdateTimeState {
@@ -35,41 +33,29 @@ impl Task for UpdateTimeState {
 pub struct ControlPlayerEntity;
 impl Task for ControlPlayerEntity {
     type RequiredResources = (
-        Write<minimum::EntitySet>,
+        Read<minimum::EntitySet>,
         Read<InputManager>,
         Read<TimeState>,
         Read<RenderState>,
-        Write<PhysicsManager>,
         ReadComponent<components::PlayerComponent>,
         WriteComponent<components::PositionComponent>,
-        WriteComponent<components::VelocityComponent>,
-        WriteComponent<components::DebugDrawCircleComponent>,
-        WriteComponent<components::BulletComponent>,
-        WriteComponent<components::FreeAtTimeComponent>,
-        WriteComponent<components::PhysicsBodyComponent>,
+        Write<crate::constructors::BulletFactory>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
         let (
-            mut entity_set,
+            entity_set,
             input_manager,
             time_state,
             render_state,
-            mut physics_manager,
             player_components,
             mut position_components,
-            mut velocity_components,
-            mut debug_draw_circle_components,
-            mut bullet_components,
-            mut free_at_time_components,
-            mut physics_body_components,
+            mut bullet_factory,
         ) = data;
 
         let dt = time_state.previous_frame_dt;
 
         use winit::event::VirtualKeyCode;
-
-        let mut pending_bullets = vec![];
 
         for (entity, _p) in player_components.iter(&entity_set) {
             if let Some(pos) = position_components.get_mut(&entity) {
@@ -99,26 +85,12 @@ impl Task for ControlPlayerEntity {
                         velocity = glm::normalize(&velocity) * 300.0;
                     }
 
-                    pending_bullets.push((pos.position(), velocity));
+                    bullet_factory.enqueue_create(crate::constructors::BulletPrototype::new(
+                        pos.position(),
+                        velocity,
+                    ));
                 }
             }
-        }
-
-        //TODO-API: Defer this to frame sync point.. we can reduce the required resources once that's done
-        for pending_bullet in pending_bullets {
-            crate::constructors::create_bullet(
-                pending_bullet.0,
-                pending_bullet.1,
-                &time_state,
-                &mut physics_manager,
-                &mut entity_set,
-                &mut *position_components,
-                &mut *velocity_components,
-                &mut *debug_draw_circle_components,
-                &mut *bullet_components,
-                &mut *free_at_time_components,
-                &mut *physics_body_components,
-            );
         }
     }
 }
@@ -179,52 +151,6 @@ impl Task for HandleFreeAtTimeComponents {
 
         for e in entities_to_free {
             entity_set.enqueue_free(&e);
-        }
-    }
-}
-
-pub struct UpdatePhysics;
-impl Task for UpdatePhysics {
-    type RequiredResources = (Read<TimeState>, Write<PhysicsManager>);
-
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
-        let (time_state, mut physics) = data;
-        physics.update(&time_state);
-    }
-}
-
-pub struct UpdatePositionFromPhysics;
-impl Task for UpdatePositionFromPhysics {
-    type RequiredResources = (
-        Read<EntitySet>,
-        Read<PhysicsManager>,
-        ReadComponent<components::PhysicsBodyComponent>,
-        WriteComponent<components::PositionComponent>,
-        WriteComponent<components::VelocityComponent>,
-    );
-
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
-        let (
-            entity_set,
-            physics_manager,
-            physics_body_components,
-            mut pos_components,
-            mut vel_components,
-        ) = data;
-
-        for (entity, body_component) in physics_body_components.iter(&entity_set) {
-            let body: &nphysics2d::object::RigidBody<f32> = physics_manager
-                .world()
-                .rigid_body(body_component.body_handle())
-                .unwrap();
-
-            if let Some(pos_component) = pos_components.get_mut(&entity) {
-                *pos_component.position_mut() = body.position().translation.vector;
-            }
-
-            if let Some(vel_component) = vel_components.get_mut(&entity) {
-                *vel_component.velocity_mut() = body.velocity().linear;
-            }
         }
     }
 }

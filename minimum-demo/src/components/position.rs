@@ -1,6 +1,6 @@
 use minimum::component::VecComponentStorage;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PositionComponent {
     position: glm::Vec2,
 }

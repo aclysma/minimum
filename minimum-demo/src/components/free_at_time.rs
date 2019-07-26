@@ -2,7 +2,7 @@ use minimum::component::SlabComponentStorage;
 
 use crate::resources::TimeState;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FreeAtTimeComponent {
     free_time: std::time::Instant,
 }

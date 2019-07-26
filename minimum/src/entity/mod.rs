@@ -7,6 +7,13 @@ use component::Component;
 use component::ComponentRegistry;
 use component::ComponentStorage;
 use component::ComponentFreeHandler;
+use component::ComponentFactory;
+use component::ComponentPrototype;
+
+mod entity_factory;
+pub use entity_factory::EntityPrototype;
+pub use entity_factory::EntityFactory;
+pub use entity_factory::ComponentPrototypeWrapper;
 
 use crate::systems;
 
@@ -67,7 +74,7 @@ impl<'e> EntityRef<'e> {
 pub struct EntitySet {
     slab: GenSlab<Entity>,
     component_registry: ComponentRegistry,
-    pending_deletes: Vec<EntityHandle>,
+    pending_deletes: Vec<EntityHandle>
 }
 
 impl EntitySet {
@@ -75,7 +82,7 @@ impl EntitySet {
         EntitySet {
             slab: GenSlab::new(),
             component_registry: ComponentRegistry::new(),
-            pending_deletes: vec![],
+            pending_deletes: vec![]
         }
     }
 
@@ -86,6 +93,10 @@ impl EntitySet {
     //TODO: Improve this API
     pub fn register_component_type_with_free_handler<T: Component, F: ComponentFreeHandler<T> + 'static>(&mut self) {
         self.component_registry.register_component_type_with_free_handler::<T, F>();
+    }
+
+    pub fn register_component_factory<P : ComponentPrototype, F : ComponentFactory<P>>(&mut self) {
+        self.component_registry.register_component_factory::<P, F>();
     }
 
     pub fn allocate(&mut self) -> EntityHandle {
@@ -134,13 +145,24 @@ impl EntitySet {
     }
 
     pub fn flush_free(&mut self, world: &systems::World) {
+        self.component_registry
+            .on_entities_free(world, self.pending_deletes.as_slice());
+
         for pending_delete in &self.pending_deletes {
             self.slab.free(pending_delete);
         }
 
-        self.component_registry
-            .on_entities_free(world, self.pending_deletes.as_slice());
         self.pending_deletes.clear();
+    }
+
+    pub fn flush_creates(&mut self, world: &systems::World) {
+        world.fetch_mut::<EntityFactory>().flush_creates(world, self);
+        self.component_registry.on_flush_creates(world, self);
+    }
+
+    pub fn update(&mut self, world: &systems::World) {
+        self.flush_free(world);
+        self.flush_creates(world);
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Entity> {

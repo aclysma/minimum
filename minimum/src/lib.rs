@@ -13,6 +13,8 @@ pub mod systems;
 pub use entity::EntityHandle;
 pub use entity::EntitySet;
 pub use entity::Entity;
+pub use entity::EntityPrototype;
+pub use entity::EntityFactory;
 
 pub use component::Component;
 pub use component::ComponentStorage;
@@ -20,6 +22,11 @@ pub use component::{ReadComponent, WriteComponent, ReadComponentOption, WriteCom
 
 pub use systems::World;
 pub use systems::WorldBuilder;
+pub use systems::Write;
+pub use systems::Read;
+pub use systems::WriteOption;
+pub use systems::ReadOption;
+pub use systems::Resource;
 
 #[cfg(feature = "async_support")]
 pub use systems::async_dispatch as dispatch;

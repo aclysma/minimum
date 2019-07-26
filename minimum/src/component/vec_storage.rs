@@ -32,10 +32,10 @@ where
     type Item = (EntityHandle, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.slab_iter.next().map(|(entitiy_index, component)| {
+        self.slab_iter.next().map(|(entity_index, component)| {
             (
                 self.entity_set
-                    .upgrade_index_to_handle(entitiy_index as u32),
+                    .upgrade_index_to_handle(entity_index as u32),
                 component.as_ref().unwrap(),
             )
         })
@@ -72,10 +72,10 @@ where
     type Item = (EntityHandle, &'a mut T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.slab_iter.next().map(|(entitiy_index, component)| {
+        self.slab_iter.next().map(|(entity_index, component)| {
             (
                 self.entity_set
-                    .upgrade_index_to_handle(entitiy_index as u32),
+                    .upgrade_index_to_handle(entity_index as u32),
                 component.as_mut().unwrap(),
             )
         })
@@ -147,7 +147,7 @@ impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
             }
         }
 
-        assert!(self.components[entity.index() as usize].is_none());
+        assert!(self.components[entity.index() as usize].is_none()); // this is tripping, probably because i'm destroying/allocating the same entity in a single frame
         self.components[entity.index() as usize] = Some(data);
     }
 

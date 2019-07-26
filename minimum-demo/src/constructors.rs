@@ -1,57 +1,40 @@
 use crate::components;
 use crate::resources;
-use minimum::Component;
+use minimum::component::CloneComponentPrototype;
+use minimum::entity::EntityPrototype;
+use minimum::systems::DataRequirement;
+use minimum::{Read, World, Write};
+use std::collections::VecDeque;
 
-//TODO: Probably want a create queue for these to streamline getting the necessary component storages
-// and perhaps to allow rate-limiting of construction rate
-pub fn create_player(
-    entities: &mut minimum::EntitySet,
-    position_components: &mut <components::PositionComponent as Component>::Storage,
-    debug_draw_components: &mut <components::DebugDrawCircleComponent as Component>::Storage,
-    player_components: &mut <components::PlayerComponent as Component>::Storage,
-) {
-    let entity = entities.allocate_get();
-
-    entity.add_component(&mut *player_components, components::PlayerComponent::new());
-
-    entity.add_component(
-        &mut *position_components,
-        components::PositionComponent::new(glm::zero()),
-    );
-
-    entity.add_component(
-        &mut *debug_draw_components,
-        components::DebugDrawCircleComponent::new(15.0, glm::Vec4::new(0.0, 1.0, 0.0, 1.0)),
-    );
+pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
+    let entity_prototype = EntityPrototype::new(vec![
+        Box::new(CloneComponentPrototype::new(
+            components::PlayerComponent::new(),
+        )),
+        Box::new(CloneComponentPrototype::new(
+            components::PositionComponent::new(glm::zero()),
+        )),
+        Box::new(CloneComponentPrototype::new(
+            components::DebugDrawCircleComponent::new(15.0, glm::Vec4::new(0.0, 1.0, 0.0, 1.0)),
+        )),
+    ]);
+    entity_factory.enqueue_create(entity_prototype);
 }
 
+type BulletFactoryResources = (
+    Read<resources::TimeState>,
+    Write<resources::PhysicsManager>,
+    Write<minimum::EntityFactory>,
+);
+
 pub fn create_bullet(
-    position: glm::Vec2,
-    velocity: glm::Vec2,
-    time_state: &resources::TimeState,
-    physics_manager: &mut resources::PhysicsManager,
-    entities: &mut minimum::EntitySet,
-    position_components: &mut <components::PositionComponent as Component>::Storage,
-    velocity_components: &mut <components::VelocityComponent as Component>::Storage,
-    debug_draw_components: &mut <components::DebugDrawCircleComponent as Component>::Storage,
-    bullet_components: &mut <components::BulletComponent as Component>::Storage,
-    free_at_time_components: &mut <components::FreeAtTimeComponent as Component>::Storage,
-    physics_body_components: &mut <components::PhysicsBodyComponent as Component>::Storage,
+    prototype: BulletPrototype,
+    resources: <BulletFactoryResources as minimum::systems::DataRequirement>::Borrow,
 ) {
     let radius = 5.0;
     let color = glm::Vec4::new(1.0, 0.0, 0.0, 1.0);
 
-    let entity = entities.allocate_get();
-
-    entity.add_component(
-        &mut *position_components,
-        components::PositionComponent::new(position),
-    );
-
-    entity.add_component(
-        &mut *velocity_components,
-        components::VelocityComponent::new(velocity),
-    );
+    let (time_state, mut physics_manager, mut entity_factory) = resources;
 
     let body_handle = {
         use ncollide2d::shape::{Ball, ShapeHandle};
@@ -64,7 +47,7 @@ pub fn create_bullet(
             .name("bullet".to_string());
 
         let body = RigidBodyDesc::new()
-            .translation(position)
+            .translation(prototype.position)
             .mass(1000.0)
             .collider(&collider_desc)
             .kinematic_rotation(false)
@@ -74,22 +57,68 @@ pub fn create_bullet(
         body.handle()
     };
 
-    entity.add_component(
-        &mut *physics_body_components,
-        components::PhysicsBodyComponent::new(body_handle),
-    );
+    {
+        let entity_prototype = EntityPrototype::new(vec![
+            Box::new(CloneComponentPrototype::new(
+                components::PositionComponent::new(prototype.position),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::VelocityComponent::new(prototype.velocity),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::PhysicsBodyComponent::new(body_handle),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::DebugDrawCircleComponent::new(radius, color),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::BulletComponent::new(),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::FreeAtTimeComponent::new(
+                    time_state.frame_start_instant + std::time::Duration::from_secs(4),
+                ),
+            )),
+        ]);
+        entity_factory.enqueue_create(entity_prototype);
+    }
+}
 
-    entity.add_component(
-        &mut *debug_draw_components,
-        components::DebugDrawCircleComponent::new(radius, color),
-    );
+pub struct BulletPrototype {
+    position: glm::Vec2,
+    velocity: glm::Vec2,
+}
 
-    entity.add_component(&mut *bullet_components, components::BulletComponent::new());
+impl BulletPrototype {
+    pub fn new(position: glm::Vec2, velocity: glm::Vec2) -> Self {
+        BulletPrototype { position, velocity }
+    }
+}
 
-    entity.add_component(
-        &mut *free_at_time_components,
-        components::FreeAtTimeComponent::new(
-            time_state.frame_start_instant + std::time::Duration::from_secs(4),
-        ),
-    );
+pub struct BulletFactory {
+    prototypes: VecDeque<BulletPrototype>,
+}
+
+impl BulletFactory {
+    pub fn new() -> Self {
+        BulletFactory {
+            prototypes: VecDeque::new(),
+        }
+    }
+
+    pub fn enqueue_create(&mut self, bullet_prototype: BulletPrototype) {
+        self.prototypes.push_back(bullet_prototype);
+    }
+
+    pub fn flush_creates(&mut self, world: &World) {
+        if self.prototypes.is_empty() {
+            return;
+        }
+
+        for p in self.prototypes.drain(..) {
+            //TODO: fetch per object is bad
+            let resources = <BulletFactoryResources as DataRequirement>::fetch(world);
+            create_bullet(p, resources);
+        }
+    }
 }

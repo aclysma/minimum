@@ -86,6 +86,7 @@ impl Task for UpdatePositions {
     }
 }
 
+//TODO: Rewrite to use an entity prototype
 fn create_objects(world: &World) {
     let mut game_entities = world.fetch_mut::<EntitySet>();
     let mut pos_components = world.fetch_mut::<<PositionComponent as Component>::Storage>();

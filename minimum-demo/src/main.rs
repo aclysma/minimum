@@ -38,9 +38,6 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_title("Vore")
         .build(&event_loop)?;
 
-    //TODO-API: registering the component and then registering the component storage as a resource might be considered redundant
-
-    //TODO-API: We could have a "default" entity set that doesn't need to be registered as a resource (and automatically knows about all component types)
     let mut world = minimum::systems::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
         .with_resource(resources::DebugDraw::new())
@@ -50,13 +47,38 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
+        .with_resource(constructors::BulletFactory::new())
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
         .with_component(<components::PlayerComponent as Component>::Storage::new())
         .with_component(<components::BulletComponent as Component>::Storage::new())
         .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
-        .with_component(<components::PhysicsBodyComponent as Component>::Storage::new())
+        .with_component_and_free_handler::<_, _, components::PhysicsBodyComponentFreeHandler>(
+            <components::PhysicsBodyComponent as Component>::Storage::new(),
+        )
+        //TODO: Ideally we don't need to register the factory in addition to the component itself
+        .with_component_factory(minimum::component::CloneComponentFactory::<
+            components::PositionComponent,
+        >::new())
+        .with_component_factory(minimum::component::CloneComponentFactory::<
+            components::VelocityComponent,
+        >::new())
+        .with_component_factory(minimum::component::CloneComponentFactory::<
+            components::DebugDrawCircleComponent,
+        >::new())
+        .with_component_factory(minimum::component::CloneComponentFactory::<
+            components::PlayerComponent,
+        >::new())
+        .with_component_factory(minimum::component::CloneComponentFactory::<
+            components::BulletComponent,
+        >::new())
+        .with_component_factory(minimum::component::CloneComponentFactory::<
+            components::FreeAtTimeComponent,
+        >::new())
+        .with_component_factory(minimum::component::CloneComponentFactory::<
+            components::PhysicsBodyComponent,
+        >::new())
         .build();
 
     // Assets you want to always have available could be loaded here
@@ -68,7 +90,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     // Wrap the threadsafe interface to the window in WindowInterface and add it to the world
     // Return the event_tx which needs to be given to the event loop
-    let winit_event_tx = init::create_window_interface(&mut world, &event_loop); //TODO: continue moving things to init.rs
+    let winit_event_tx = init::create_window_interface(&mut world, &event_loop);
 
     // Start the game loop thread
     let dispatcher = MinimumDispatcher::new(world);
@@ -88,20 +110,8 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn create_objects(world: &World) {
-    let mut entities = world.fetch_mut::<minimum::EntitySet>();
-    let mut pos_components =
-        world.fetch_mut::<<components::PositionComponent as Component>::Storage>();
-    let mut debug_draw_components =
-        world.fetch_mut::<<components::DebugDrawCircleComponent as Component>::Storage>();
-    let mut player_components =
-        world.fetch_mut::<<components::PlayerComponent as Component>::Storage>();
-
-    constructors::create_player(
-        &mut entities,
-        &mut *pos_components,
-        &mut *debug_draw_components,
-        &mut *player_components,
-    );
+    let mut entity_factory = world.fetch_mut::<minimum::EntityFactory>();
+    constructors::create_player(&mut *entity_factory);
 }
 
 fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
@@ -124,18 +134,30 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::UpdateDebugDraw),
             dispatch_ctx.visit_world(|world| {
-                tasks::render(world);
-            }),
-            dispatch_ctx.visit_world_mut(move |world| {
-                let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();
-                entity_set.flush_free(world);
+                render(world);
 
+                //TODO: This will be removed when the process for spawning a physics body is more straightforward
+                {
+                    world
+                        .fetch_mut::<constructors::BulletFactory>()
+                        .flush_creates(world);
+                }
+
+                // This must be called once per frame to create/destroy entities
+                {
+                    let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();
+                    entity_set.update(world);
+                }
+            }),
+            // This checks if we need to load a different level or kill the process
+            dispatch_ctx.visit_world_mut(move |world| {
                 let mut game_control = world.fetch_mut::<resources::GameControl>();
 
                 if game_control.terminate_process() {
                     dispatch_context.end_game_loop();
                 } else if game_control.has_load_level() {
                     // Unload game state
+                    let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();
                     entity_set.clear(world);
                     //world.remove::<game::GameState>();
 
@@ -161,4 +183,10 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
 
     info!("dispatch thread is done");
     world
+}
+
+pub fn render(world: &minimum::systems::World) {
+    let window = world.fetch::<winit::window::Window>();
+    let mut renderer = world.fetch_mut::<crate::renderer::Renderer>();
+    renderer.render(&window, &world);
 }

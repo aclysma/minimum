@@ -51,7 +51,6 @@ impl<T> RawSlab<T> {
             let index = self.storage.len() as SlabIndexT;
             self.storage.push(Some(value));
 
-            //println!("new slab index {}", index);
             return RawSlabKey::new(index);
         } else {
             // Reuse a free slot
@@ -63,7 +62,6 @@ impl<T> RawSlab<T> {
     }
 
     pub fn free(&mut self, slab_key: &RawSlabKey<T>) {
-        //println!("push slab index {}", slab_key.index);
         assert!(
             self.storage[slab_key.index as usize].is_some(),
             "tried to free a none value"

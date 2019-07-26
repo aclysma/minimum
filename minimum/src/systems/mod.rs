@@ -18,8 +18,11 @@ pub mod async_dispatch;
 
 pub mod simple_dispatch;
 
-use crate::systems;
+use crate::{systems, EntityFactory};
 use crate::EntitySet;
+
+use crate::component::ComponentPrototype;
+use crate::component::ComponentFactory;
 
 //
 // ResourceId
@@ -79,8 +82,22 @@ impl WorldBuilder {
         self
     }
 
+    //TODO: The storage/factory types here are rendundant and a user could possibly pass a component/storage that doesn't match
     pub fn with_component<C : crate::Component, S : crate::ComponentStorage<C> + 'static>(mut self, component_storage: S) -> Self {
         self.world.insert(component_storage);
+        self.default_entity_set.register_component_type::<C>();
+        self
+    }
+
+    pub fn with_component_and_free_handler<C : crate::Component, S : crate::ComponentStorage<C> + 'static, F : crate::component::ComponentFreeHandler<C> + 'static>(mut self, component_storage: S) -> Self {
+        self.world.insert(component_storage);
+        self.default_entity_set.register_component_type_with_free_handler::<C, F>();
+        self
+    }
+
+    pub fn with_component_factory<P : ComponentPrototype, F : ComponentFactory<P>>(mut self, component_factory: F) -> Self {
+        self.world.insert(component_factory);
+        self.default_entity_set.register_component_factory::<P, F>();
         self
     }
 
@@ -95,6 +112,10 @@ impl WorldBuilder {
         // If no entity set was created, insert the default
         if !self.world.has_value::<EntitySet>() {
             self.world.insert(self.default_entity_set);
+        }
+
+        if !self.world.has_value::<EntityFactory>() {
+            self.world.insert(EntityFactory::new());
         }
 
         self.world

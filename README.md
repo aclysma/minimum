@@ -7,7 +7,7 @@ This library is aimed at people who want to start with something thin and bring 
  * For a mature ecs, I suggest looking at `shred` or `specs`. (In fact some of this library is quite similar to shred!)
  * For a more complete, turnkey solution in rust, I would look at `amethyst`, `coffee`, or `ggez`.
 
-# Examples
+## Examples
 
 A collection of small samples is located in [/minimum-examples](minimum-examples).
 

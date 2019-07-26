@@ -1,10 +1,10 @@
 use super::Component;
 use super::ComponentStorage;
-use super::EntityHandle;
+use super::ComponentPrototype;
+use super::ComponentFactory;
 use std::marker::PhantomData;
 
-use crate::systems;
-use systems::World;
+use crate::{Resource, EntitySet, World, EntityHandle};
 
 //
 // Handler can be implemented to run custom logic when entities are being destroyed
@@ -21,7 +21,7 @@ struct DefaultFreeHandler {
 }
 
 impl<T : Component> ComponentFreeHandler<T> for DefaultFreeHandler {
-    fn on_entities_free(world: &World, entity_handles: &[EntityHandle], storage: &mut <T as Component>::Storage) {
+    fn on_entities_free(_world: &World, _entity_handles: &[EntityHandle], _storage: &mut <T as Component>::Storage) {
         // The default behavior does nothing extra
     }
 }
@@ -39,12 +39,12 @@ where
     T : Component,
     F : ComponentFreeHandler<T>
 {
-    fn new() -> Self {
-        CustomFreeHandler::<T, F> {
-            phantom_data1: PhantomData,
-            phantom_data2: PhantomData
-        }
-    }
+//    fn new() -> Self {
+//        CustomFreeHandler::<T, F> {
+//            phantom_data1: PhantomData,
+//            phantom_data2: PhantomData
+//        }
+//    }
 }
 
 impl<T, F> ComponentFreeHandler<T> for CustomFreeHandler<T, F>
@@ -103,14 +103,58 @@ impl<T, F> RegisteredComponentTrait for RegisteredComponent<T, F>
     }
 }
 
+//
+// Registered component factory
+//
+
+trait RegisteredComponentFactoryTrait : Resource {
+    fn flush_creates(&self, world: &World, entity_set: &EntitySet);
+}
+
+pub struct RegisteredComponentFactory<P, F>
+    where
+        P: ComponentPrototype,
+        F: ComponentFactory<P>
+{
+    phantom_data1: PhantomData<P>,
+    phantom_data2: PhantomData<F>
+
+}
+
+impl<P, F> RegisteredComponentFactory<P, F>
+    where
+        P: ComponentPrototype,
+        F: ComponentFactory<P>
+{
+    fn new() -> Self {
+        RegisteredComponentFactory {
+            phantom_data1: PhantomData,
+            phantom_data2: PhantomData
+        }
+    }
+}
+
+impl<P, F> RegisteredComponentFactoryTrait for RegisteredComponentFactory<P, F>
+    where
+        P: ComponentPrototype,
+        F: ComponentFactory<P>
+{
+    fn flush_creates(&self, world: &World, entity_set: &EntitySet) {
+        let mut factory = world.fetch_mut::<F>();
+        factory.flush_creates(world, entity_set);
+    }
+}
+
 pub struct ComponentRegistry {
     registered_components: Vec<Box<RegisteredComponentTrait>>,
+    registered_factories: Vec<Box<RegisteredComponentFactoryTrait>>,
 }
 
 impl ComponentRegistry {
     pub fn new() -> Self {
         ComponentRegistry {
             registered_components: vec![],
+            registered_factories: vec![],
         }
     }
 
@@ -124,9 +168,19 @@ impl ComponentRegistry {
             .push(Box::new(RegisteredComponent::<T, CustomFreeHandler<T, F>>::new()));
     }
 
+    pub fn register_component_factory<P : ComponentPrototype, F : ComponentFactory<P>>(&mut self) {
+        self.registered_factories.push(Box::new(RegisteredComponentFactory::<P, F>::new()));
+    }
+
     pub fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]) {
         for rc in &self.registered_components {
             rc.on_entities_free(world, entity_handles);
+        }
+    }
+
+    pub fn on_flush_creates(&self, world: &World, entity_set: &EntitySet) {
+        for rf in &self.registered_factories {
+            rf.flush_creates(world, entity_set);
         }
     }
 }
