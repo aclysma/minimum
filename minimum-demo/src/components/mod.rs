@@ -14,3 +14,8 @@ pub use physics_body::PhysicsBodyComponentFreeHandler;
 pub use player::PlayerComponent;
 pub use position::PositionComponent;
 pub use velocity::VelocityComponent;
+
+
+pub use physics_body::PhysicsBodyComponentDesc;
+pub use physics_body::PhysicsBodyComponentPrototype;
+pub use physics_body::PhysicsBodyComponentFactory;

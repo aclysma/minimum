@@ -6,6 +6,8 @@ use minimum::systems::DataRequirement;
 use minimum::{Read, World, Write};
 use std::collections::VecDeque;
 
+use components::{PhysicsBodyComponentPrototype, PhysicsBodyComponentDesc};
+
 pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
     let entity_prototype = EntityPrototype::new(vec![
         Box::new(CloneComponentPrototype::new(
@@ -28,7 +30,8 @@ type BulletFactoryResources = (
 );
 
 pub fn create_bullet(
-    prototype: BulletPrototype,
+    position: glm::Vec2,
+    velocity: glm::Vec2,
     resources: <BulletFactoryResources as minimum::systems::DataRequirement>::Borrow,
 ) {
     let radius = 5.0;
@@ -36,7 +39,7 @@ pub fn create_bullet(
 
     let (time_state, mut physics_manager, mut entity_factory) = resources;
 
-    let body_handle = {
+    let body_component_desc = {
         use ncollide2d::shape::{Ball, ShapeHandle};
         use nphysics2d::material::{BasicMaterial, MaterialHandle};
         use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
@@ -46,42 +49,41 @@ pub fn create_bullet(
             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
             .name("bullet".to_string());
 
-        let body = RigidBodyDesc::new()
-            .translation(prototype.position)
+        let body_desc = RigidBodyDesc::new()
+            .translation(position)
             .mass(1000.0)
-            .collider(&collider_desc)
             .kinematic_rotation(false)
-            .name("bullet".to_string())
-            .build(physics_manager.world_mut());
+            .name("bullet".to_string());
 
-        body.handle()
+        let mut body_component_desc = components::PhysicsBodyComponentDesc::new(body_desc);
+        body_component_desc.add_collider(collider_desc);
+
+        body_component_desc
     };
 
-    {
-        let entity_prototype = EntityPrototype::new(vec![
-            Box::new(CloneComponentPrototype::new(
-                components::PositionComponent::new(prototype.position),
-            )),
-            Box::new(CloneComponentPrototype::new(
-                components::VelocityComponent::new(prototype.velocity),
-            )),
-            Box::new(CloneComponentPrototype::new(
-                components::PhysicsBodyComponent::new(body_handle),
-            )),
-            Box::new(CloneComponentPrototype::new(
-                components::DebugDrawCircleComponent::new(radius, color),
-            )),
-            Box::new(CloneComponentPrototype::new(
-                components::BulletComponent::new(),
-            )),
-            Box::new(CloneComponentPrototype::new(
-                components::FreeAtTimeComponent::new(
-                    time_state.frame_start_instant + std::time::Duration::from_secs(4),
-                ),
-            )),
-        ]);
-        entity_factory.enqueue_create(entity_prototype);
-    }
+    let entity_prototype = EntityPrototype::new(vec![
+        Box::new(CloneComponentPrototype::new(
+            components::PositionComponent::new(position),
+        )),
+        Box::new(CloneComponentPrototype::new(
+            components::VelocityComponent::new(velocity),
+        )),
+        Box::new(PhysicsBodyComponentPrototype::new(
+            body_component_desc
+        )),
+        Box::new(CloneComponentPrototype::new(
+            components::DebugDrawCircleComponent::new(radius, color),
+        )),
+        Box::new(CloneComponentPrototype::new(
+            components::BulletComponent::new(),
+        )),
+        Box::new(CloneComponentPrototype::new(
+            components::FreeAtTimeComponent::new(
+                time_state.frame_start_instant + std::time::Duration::from_secs(4),
+            ),
+        )),
+    ]);
+    entity_factory.enqueue_create(entity_prototype);
 }
 
 pub struct BulletPrototype {
@@ -118,7 +120,7 @@ impl BulletFactory {
         for p in self.prototypes.drain(..) {
             //TODO: fetch per object is bad
             let resources = <BulletFactoryResources as DataRequirement>::fetch(world);
-            create_bullet(p, resources);
+            create_bullet(p.position, p.velocity, resources);
         }
     }
 }

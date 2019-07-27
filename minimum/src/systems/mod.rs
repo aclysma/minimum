@@ -83,6 +83,7 @@ impl WorldBuilder {
     }
 
     //TODO: The storage/factory types here are rendundant and a user could possibly pass a component/storage that doesn't match
+    //TODO: I'd rather not have the systems layer aware of entities/components.
     pub fn with_component<C : crate::Component, S : crate::ComponentStorage<C> + 'static>(mut self, component_storage: S) -> Self {
         self.world.insert(component_storage);
         self.default_entity_set.register_component_type::<C>();

@@ -120,7 +120,7 @@ mod tests {
         let entity_set = world.fetch::<EntitySet>();
         let c1_storage = world.fetch::<<TestComponent1 as Component>::Storage>();
         let c2_storage = world.fetch::<<TestComponent2 as Component>::Storage>();
-        for e in world.fetch::<EntitySet>().iter() {
+        for e in entity_set.iter() {
             c1_storage.get(&e.handle.as_ref().unwrap()).unwrap();
             c2_storage.get(&e.handle.as_ref().unwrap()).unwrap();
         }

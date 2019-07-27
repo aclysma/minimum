@@ -18,6 +18,10 @@ pub use entity::EntityFactory;
 
 pub use component::Component;
 pub use component::ComponentStorage;
+pub use component::ComponentFactory;
+pub use component::ComponentPrototype;
+pub use component::CloneComponentFactory;
+pub use component::CloneComponentPrototype;
 pub use component::{ReadComponent, WriteComponent, ReadComponentOption, WriteComponentOption};
 
 pub use systems::World;

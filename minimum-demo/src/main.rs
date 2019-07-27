@@ -17,6 +17,7 @@ use minimum::systems::async_dispatch::MinimumDispatcher;
 
 use minimum::component::Component;
 use minimum::systems::World;
+use minimum::CloneComponentFactory;
 
 fn main() {
     run_the_game().unwrap();
@@ -26,7 +27,6 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     // Setup logging
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Debug)
-        .filter_module("vore::level_loader", log::LevelFilter::Warn)
         .filter_module("gfx_backend_metal", log::LevelFilter::Error)
         .filter_module("rendy", log::LevelFilter::Error)
         .init();
@@ -58,27 +58,15 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
             <components::PhysicsBodyComponent as Component>::Storage::new(),
         )
         //TODO: Ideally we don't need to register the factory in addition to the component itself
-        .with_component_factory(minimum::component::CloneComponentFactory::<
-            components::PositionComponent,
-        >::new())
-        .with_component_factory(minimum::component::CloneComponentFactory::<
-            components::VelocityComponent,
-        >::new())
-        .with_component_factory(minimum::component::CloneComponentFactory::<
-            components::DebugDrawCircleComponent,
-        >::new())
-        .with_component_factory(minimum::component::CloneComponentFactory::<
-            components::PlayerComponent,
-        >::new())
-        .with_component_factory(minimum::component::CloneComponentFactory::<
-            components::BulletComponent,
-        >::new())
-        .with_component_factory(minimum::component::CloneComponentFactory::<
-            components::FreeAtTimeComponent,
-        >::new())
-        .with_component_factory(minimum::component::CloneComponentFactory::<
-            components::PhysicsBodyComponent,
-        >::new())
+        .with_component_factory(CloneComponentFactory::<components::PositionComponent>::new())
+        .with_component_factory(CloneComponentFactory::<components::VelocityComponent>::new())
+        .with_component_factory(
+            CloneComponentFactory::<components::DebugDrawCircleComponent>::new(),
+        )
+        .with_component_factory(CloneComponentFactory::<components::PlayerComponent>::new())
+        .with_component_factory(CloneComponentFactory::<components::BulletComponent>::new())
+        .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
+        .with_component_factory(components::PhysicsBodyComponentFactory::new())
         .build();
 
     // Assets you want to always have available could be loaded here
