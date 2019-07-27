@@ -47,7 +47,6 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
-        .with_resource(constructors::BulletFactory::new())
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
@@ -123,13 +122,6 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
             dispatch_ctx.run_task(tasks::UpdateDebugDraw),
             dispatch_ctx.visit_world(|world| {
                 render(world);
-
-                //TODO: This will be removed when the process for spawning a physics body is more straightforward
-                {
-                    world
-                        .fetch_mut::<constructors::BulletFactory>()
-                        .flush_creates(world);
-                }
 
                 // This must be called once per frame to create/destroy entities
                 {

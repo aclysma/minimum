@@ -1,10 +1,11 @@
 use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
 
-use crate::resources::{InputManager, MouseButtons, RenderState, TimeState};
+use crate::resources::{InputManager, MouseButtons, RenderState, TimeState, PhysicsManager};
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
 use minimum::ComponentStorage;
+use minimum::EntityFactory;
 
 mod imgui_tasks;
 pub use imgui_tasks::ImguiBeginFrame;
@@ -38,8 +39,10 @@ impl Task for ControlPlayerEntity {
         Read<TimeState>,
         Read<RenderState>,
         ReadComponent<components::PlayerComponent>,
-        WriteComponent<components::PositionComponent>,
-        Write<crate::constructors::BulletFactory>,
+        ReadComponent<components::PositionComponent>,
+        Write<EntityFactory>,
+        ReadComponent<components::PhysicsBodyComponent>,
+        Write<PhysicsManager>
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -49,8 +52,10 @@ impl Task for ControlPlayerEntity {
             time_state,
             render_state,
             player_components,
-            mut position_components,
-            mut bullet_factory,
+            position_components,
+            mut entity_factory,
+            physics_body_components,
+            mut physics_manager
         ) = data;
 
         let dt = time_state.previous_frame_dt;
@@ -58,22 +63,35 @@ impl Task for ControlPlayerEntity {
         use winit::event::VirtualKeyCode;
 
         for (entity, _p) in player_components.iter(&entity_set) {
-            if let Some(pos) = position_components.get_mut(&entity) {
+            if let (Some(pos), Some(physics_body_component)) = (
+                position_components.get(&entity),
+                physics_body_components.get(&entity))
+
+            {
+                let mut direction : glm::Vec2 = glm::zero();
+
                 if input_manager.is_key_down(VirtualKeyCode::S) {
-                    pos.position_mut().y -= dt * 150.0;
+                    direction.y -= 1.0;
                 }
 
                 if input_manager.is_key_down(VirtualKeyCode::W) {
-                    pos.position_mut().y += dt * 150.0;
+                    direction.y += 1.0;
                 }
 
                 if input_manager.is_key_down(VirtualKeyCode::A) {
-                    pos.position_mut().x -= dt * 150.0;
+                    direction.x -= 1.0;
                 }
 
                 if input_manager.is_key_down(VirtualKeyCode::D) {
-                    pos.position_mut().x += dt * 150.0;
+                    direction.x += 1.0;
                 }
+
+                let physics_world = physics_manager.world_mut();
+                let body = physics_world
+                    .rigid_body_mut(physics_body_component.body_handle())
+                    .unwrap();
+
+                body.set_velocity(nphysics2d::math::Velocity::new(direction * 150.0, 0.0));
 
                 if input_manager.is_mouse_down(MouseButtons::Left) {
                     let target_position =
@@ -85,10 +103,11 @@ impl Task for ControlPlayerEntity {
                         velocity = glm::normalize(&velocity) * 300.0;
                     }
 
-                    bullet_factory.enqueue_create(crate::constructors::BulletPrototype::new(
+                    crate::constructors::create_bullet(
                         pos.position(),
                         velocity,
-                    ));
+                        &time_state,
+                        &mut entity_factory);
                 }
             }
         }

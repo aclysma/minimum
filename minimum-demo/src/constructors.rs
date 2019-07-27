@@ -8,16 +8,56 @@ use std::collections::VecDeque;
 
 use components::{PhysicsBodyComponentPrototype, PhysicsBodyComponentDesc};
 
-pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
+const COLLISION_GROUP_PLAYER: usize = 0;
+const COLLISION_GROUP_BULLETS: usize = 1;
+const COLLISION_GROUP_WALL: usize = 2;
+
+pub fn create_player(
+    entity_factory: &mut minimum::EntityFactory
+) {
+    let position = glm::zero();
+    let radius = 15.0;
+    let color = glm::Vec4::new(0.0, 1.0, 0.0, 1.0);
+
+    let body_component_desc = {
+        use ncollide2d::shape::{Ball, ShapeHandle};
+        use nphysics2d::material::{BasicMaterial, MaterialHandle};
+        use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
+
+        let shape = ShapeHandle::new(Ball::new(radius));
+        let collider_desc = ColliderDesc::new(shape)
+            .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
+            .collision_groups(
+                ncollide2d::world::CollisionGroups::new()
+                    .with_membership(&[COLLISION_GROUP_PLAYER])
+                    .with_whitelist(&[]),
+            )
+            .name("player".to_string());
+
+        let body_desc = RigidBodyDesc::new()
+            .translation(position)
+            .mass(1000.0)
+            .kinematic_rotation(false)
+            .name("player".to_string());
+
+        let mut body_component_desc = components::PhysicsBodyComponentDesc::new(body_desc);
+        body_component_desc.add_collider(collider_desc);
+
+        body_component_desc
+    };
+
     let entity_prototype = EntityPrototype::new(vec![
         Box::new(CloneComponentPrototype::new(
             components::PlayerComponent::new(),
         )),
         Box::new(CloneComponentPrototype::new(
-            components::PositionComponent::new(glm::zero()),
+            components::PositionComponent::new(position),
         )),
         Box::new(CloneComponentPrototype::new(
-            components::DebugDrawCircleComponent::new(15.0, glm::Vec4::new(0.0, 1.0, 0.0, 1.0)),
+            components::DebugDrawCircleComponent::new(radius, color),
+        )),
+        Box::new(PhysicsBodyComponentPrototype::new(
+            body_component_desc
         )),
     ]);
     entity_factory.enqueue_create(entity_prototype);
@@ -32,12 +72,11 @@ type BulletFactoryResources = (
 pub fn create_bullet(
     position: glm::Vec2,
     velocity: glm::Vec2,
-    resources: <BulletFactoryResources as minimum::systems::DataRequirement>::Borrow,
+    time_state: &resources::TimeState,
+    entity_factory: &mut minimum::EntityFactory
 ) {
     let radius = 5.0;
     let color = glm::Vec4::new(1.0, 0.0, 0.0, 1.0);
-
-    let (time_state, mut physics_manager, mut entity_factory) = resources;
 
     let body_component_desc = {
         use ncollide2d::shape::{Ball, ShapeHandle};
@@ -51,6 +90,7 @@ pub fn create_bullet(
 
         let body_desc = RigidBodyDesc::new()
             .translation(position)
+            .velocity(nphysics2d::math::Velocity::<f32>::new(velocity, 0.0))
             .mass(1000.0)
             .kinematic_rotation(false)
             .name("bullet".to_string());
@@ -84,43 +124,4 @@ pub fn create_bullet(
         )),
     ]);
     entity_factory.enqueue_create(entity_prototype);
-}
-
-pub struct BulletPrototype {
-    position: glm::Vec2,
-    velocity: glm::Vec2,
-}
-
-impl BulletPrototype {
-    pub fn new(position: glm::Vec2, velocity: glm::Vec2) -> Self {
-        BulletPrototype { position, velocity }
-    }
-}
-
-pub struct BulletFactory {
-    prototypes: VecDeque<BulletPrototype>,
-}
-
-impl BulletFactory {
-    pub fn new() -> Self {
-        BulletFactory {
-            prototypes: VecDeque::new(),
-        }
-    }
-
-    pub fn enqueue_create(&mut self, bullet_prototype: BulletPrototype) {
-        self.prototypes.push_back(bullet_prototype);
-    }
-
-    pub fn flush_creates(&mut self, world: &World) {
-        if self.prototypes.is_empty() {
-            return;
-        }
-
-        for p in self.prototypes.drain(..) {
-            //TODO: fetch per object is bad
-            let resources = <BulletFactoryResources as DataRequirement>::fetch(world);
-            create_bullet(p.position, p.velocity, resources);
-        }
-    }
 }

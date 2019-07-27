@@ -1,6 +1,6 @@
 use crate::resources;
 
-const GRAVITY: f32 = -9.8;
+const GRAVITY: f32 = 0.0;
 
 //TODO: Are steps really necessary? Appropriate size?
 const STEP_SIZE: f32 = 1.0 / 120.0;
