@@ -50,6 +50,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
+        .with_component(<components::DebugDrawRectComponent as Component>::Storage::new())
         .with_component(<components::PlayerComponent as Component>::Storage::new())
         .with_component(<components::BulletComponent as Component>::Storage::new())
         .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
@@ -62,6 +63,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(
             CloneComponentFactory::<components::DebugDrawCircleComponent>::new(),
         )
+        .with_component_factory(CloneComponentFactory::<components::DebugDrawRectComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::PlayerComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::BulletComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
@@ -99,6 +101,53 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 fn create_objects(world: &World) {
     let mut entity_factory = world.fetch_mut::<minimum::EntityFactory>();
     constructors::create_player(&mut *entity_factory);
+
+    constructors::create_wall(
+        glm::vec2(250.0, -125.0),
+        glm::vec2(20.0, 100.0),
+        &mut *entity_factory,
+    );
+    constructors::create_wall(
+        glm::vec2(200.0, 250.0),
+        glm::vec2(30.0, 50.0),
+        &mut *entity_factory,
+    );
+    constructors::create_wall(
+        glm::vec2(-170.0, 40.0),
+        glm::vec2(50.0, 100.0),
+        &mut *entity_factory,
+    );
+    constructors::create_wall(
+        glm::vec2(-120.0, -100.0),
+        glm::vec2(100.0, 10.0),
+        &mut *entity_factory,
+    );
+    constructors::create_wall(
+        glm::vec2(10.0, -200.0),
+        glm::vec2(15.0, 40.0),
+        &mut *entity_factory,
+    );
+
+    constructors::create_wall(
+        glm::vec2(0.0, 280.0),
+        glm::vec2(800.0, 10.0),
+        &mut *entity_factory,
+    );
+    constructors::create_wall(
+        glm::vec2(0.0, -280.0),
+        glm::vec2(800.0, 10.0),
+        &mut *entity_factory,
+    );
+    constructors::create_wall(
+        glm::vec2(380.0, 0.0),
+        glm::vec2(10.0, 600.0),
+        &mut *entity_factory,
+    );
+    constructors::create_wall(
+        glm::vec2(-380.0, 0.0),
+        glm::vec2(10.0, 600.0),
+        &mut *entity_factory,
+    );
 }
 
 fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {

@@ -34,8 +34,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         self.slab_iter.next().map(|(entity_index, component)| {
             (
-                self.entity_set
-                    .upgrade_index_to_handle(entity_index as u32),
+                self.entity_set.upgrade_index_to_handle(entity_index as u32),
                 component.as_ref().unwrap(),
             )
         })
@@ -74,8 +73,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         self.slab_iter.next().map(|(entity_index, component)| {
             (
-                self.entity_set
-                    .upgrade_index_to_handle(entity_index as u32),
+                self.entity_set.upgrade_index_to_handle(entity_index as u32),
                 component.as_mut().unwrap(),
             )
         })
@@ -102,7 +100,7 @@ impl<T: Component> VecComponentStorage<T> {
             self.components
                 .iter()
                 .enumerate()
-                .filter(|(_entity_index, component_key)| component_key.is_some())
+                .filter(|(_entity_index, component_key)| component_key.is_some()),
         )
     }
 
@@ -119,17 +117,13 @@ impl<T: Component> VecComponentStorage<T> {
         )
     }
 
-    pub fn iter_values<'a>(
-        &'a self
-    ) -> impl Iterator<Item = &'a T> {
+    pub fn iter_values<'a>(&'a self) -> impl Iterator<Item = &'a T> {
         self.components
             .iter()
             .filter_map(|component_key| component_key.as_ref())
     }
 
-    pub fn iter_values_mut<'a>(
-        &'a mut self
-    ) -> impl Iterator<Item = &'a mut T> {
+    pub fn iter_values_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut T> {
         self.components
             .iter_mut()
             .filter_map(|component_key| component_key.as_mut())

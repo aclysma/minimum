@@ -42,8 +42,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         self.slab_iter.next().map(|(entity_index, component_key)| {
             (
-                self.entity_set
-                    .upgrade_index_to_handle(entity_index as u32),
+                self.entity_set.upgrade_index_to_handle(entity_index as u32),
                 self.raw_slab.get(&component_key.as_ref().unwrap()).unwrap(),
             )
         })
@@ -145,20 +144,12 @@ impl<T: Component> SlabComponentStorage<T> {
         )
     }
 
-    pub fn iter_values<'a>(
-        &'a self
-    ) -> impl Iterator<Item = &'a T> {
-        self.slab
-            .iter()
-            .map(|(_key, value)| value)
+    pub fn iter_values<'a>(&'a self) -> impl Iterator<Item = &'a T> {
+        self.slab.iter().map(|(_key, value)| value)
     }
 
-    pub fn iter_values_mut<'a>(
-        &'a mut self
-    ) -> impl Iterator<Item = &'a mut T> {
-        self.slab
-            .iter_mut()
-            .map(|(_key, value)| value)
+    pub fn iter_values_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut T> {
+        self.slab.iter_mut().map(|(_key, value)| value)
     }
 
     pub fn count(&self) -> usize {

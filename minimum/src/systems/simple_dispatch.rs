@@ -1,4 +1,3 @@
-
 use super::systems;
 use std::sync::Arc;
 
@@ -15,13 +14,13 @@ impl MinimumDispatcher {
 
     // Call this to kick off processing.
     pub fn enter_game_loop<F>(self, f: F) -> systems::World
-        where
-            F: Fn(&MinimumDispatcherContext)
+    where
+        F: Fn(&MinimumDispatcherContext),
     {
         {
             let ctx = MinimumDispatcherContext {
                 world: self.world.clone(),
-                should_terminate: std::cell::Cell::new(false)
+                should_terminate: std::cell::Cell::new(false),
             };
 
             loop {
@@ -44,7 +43,7 @@ impl MinimumDispatcher {
 
 pub struct MinimumDispatcherContext {
     world: Arc<systems::World>,
-    should_terminate: std::cell::Cell<bool>
+    should_terminate: std::cell::Cell<bool>,
 }
 
 //
@@ -52,9 +51,7 @@ pub struct MinimumDispatcherContext {
 //
 
 pub trait Task {
-    type RequiredResources: for<'a> super::DataRequirement<'a>
-    + Send
-    + 'static;
+    type RequiredResources: for<'a> super::DataRequirement<'a> + Send + 'static;
 
     fn run(&mut self, data: <Self::RequiredResources as super::DataRequirement>::Borrow);
 }
@@ -69,7 +66,8 @@ impl MinimumDispatcherContext {
     }
 
     pub fn run_task<T>(&self, mut task: T)
-        where T: Task,
+    where
+        T: Task,
     {
         use systems::DataRequirement;
         let required_data = <<T as Task>::RequiredResources>::fetch(&self.world);

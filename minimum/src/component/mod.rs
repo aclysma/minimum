@@ -1,7 +1,7 @@
+mod component_factory;
 mod registry;
 mod slab_storage;
 mod vec_storage;
-mod component_factory;
 
 use crate::slab;
 use slab::RawSlab;
@@ -10,19 +10,19 @@ use slab::RawSlabKey;
 use crate::entity;
 use entity::EntityHandle;
 
-pub use registry::ComponentRegistry;
+pub use component_factory::CloneComponentFactory;
+pub use component_factory::CloneComponentPrototype;
+pub use component_factory::ComponentFactory;
+pub use component_factory::ComponentPrototype;
 pub use registry::ComponentFreeHandler;
+pub use registry::ComponentRegistry;
 pub use slab_storage::SlabComponentStorage;
 pub use vec_storage::VecComponentStorage;
-pub use component_factory::ComponentPrototype;
-pub use component_factory::ComponentFactory;
-pub use component_factory::CloneComponentPrototype;
-pub use component_factory::CloneComponentFactory;
 
 //TODO: Make these take some sort of private index type to prevent someone from
 // trying to fetch components directly (these are not checking generation.. it's assumed
 // we are calling through the entity code, which does a gen check there
-pub trait ComponentStorage<T> : Send + Sync
+pub trait ComponentStorage<T>: Send + Sync
 where
     T: Component,
 {

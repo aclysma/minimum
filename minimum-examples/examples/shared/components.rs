@@ -1,4 +1,3 @@
-
 use super::Vec2;
 
 use minimum::component::Component;

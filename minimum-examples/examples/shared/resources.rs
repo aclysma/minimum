@@ -1,4 +1,3 @@
-
 // A resource that keeps track of how many times the update loop has run
 pub struct UpdateCount {
     pub count: i32,

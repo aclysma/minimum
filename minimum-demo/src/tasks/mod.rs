@@ -58,8 +58,6 @@ impl Task for ControlPlayerEntity {
             mut physics_manager,
         ) = data;
 
-        let dt = time_state.previous_frame_dt;
-
         use winit::event::VirtualKeyCode;
 
         for (entity, _p) in player_components.iter(&entity_set) {

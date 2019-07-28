@@ -1,26 +1,15 @@
-use minimum::systems::{
-    DataRequirement, Read, World, WorldBuilder, Write,
-};
+use minimum::systems::{DataRequirement, Read, World, WorldBuilder, Write};
 
-use minimum::systems::simple_dispatch::{
-    Task
-};
+use minimum::systems::simple_dispatch::Task;
 
 use minimum::component::{Component, ComponentStorage};
 use minimum::EntitySet;
 
 mod shared;
 
-use shared::components::{
-    PositionComponent,
-    VelocityComponent,
-    SpeedMultiplierComponent
-};
+use shared::components::{PositionComponent, SpeedMultiplierComponent, VelocityComponent};
 
-use shared::resources::{
-    TimeState,
-    UpdateCount
-};
+use shared::resources::{TimeState, UpdateCount};
 
 use shared::Vec2;
 
@@ -121,7 +110,7 @@ fn create_objects(world: &World) {
 
 fn main() {
     // Register global systems
-    let mut world = WorldBuilder::new()
+    let world = WorldBuilder::new()
         .with_resource(UpdateCount::new())
         .with_resource(TimeState::new())
         .with_component(<PositionComponent as Component>::Storage::new())

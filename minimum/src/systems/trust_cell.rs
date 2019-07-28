@@ -69,7 +69,6 @@ pub struct Ref<'a, T: ?Sized + 'a> {
 }
 
 impl<'a, T: ?Sized> Ref<'a, T> {
-
     // ADDED: I had some code like this:
     //
     //   let w : &'a systems::TrustCell<systems::World> = &*self.world;

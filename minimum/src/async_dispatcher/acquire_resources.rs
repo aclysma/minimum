@@ -37,7 +37,7 @@ where
     phantom_data: PhantomData<T>,
     required_reads: Vec<ResourceId>,
     required_writes: Vec<ResourceId>,
-    cs_read_guard: Option<futures_locks::RwLockReadGuard<()>>
+    cs_read_guard: Option<futures_locks::RwLockReadGuard<()>>,
 }
 
 #[derive(Debug)]
@@ -231,9 +231,9 @@ where
 pub fn acquire_resources<ResourceId, T>(
     dispatcher: Arc<Dispatcher<ResourceId>>,
 ) -> impl futures::future::Future<Item = AcquiredResourcesLockGuards<T>, Error = ()>
-    where
-        T: super::RequiresResources<ResourceId> + 'static + Send,
-        ResourceId: super::ResourceIdTrait,
+where
+    T: super::RequiresResources<ResourceId> + 'static + Send,
+    ResourceId: super::ResourceIdTrait,
 {
     use futures::future::Future;
 

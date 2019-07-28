@@ -18,11 +18,11 @@ pub mod async_dispatch;
 
 pub mod simple_dispatch;
 
-use crate::{systems, EntityFactory, PendingDeleteComponent};
 use crate::EntitySet;
+use crate::{systems, EntityFactory, PendingDeleteComponent};
 
-use crate::component::ComponentPrototype;
 use crate::component::ComponentFactory;
+use crate::component::ComponentPrototype;
 
 //
 // ResourceId
@@ -63,14 +63,14 @@ impl<T> Resource for T where T: Any + Send + Sync {}
 
 pub struct WorldBuilder {
     world: World,
-    default_entity_set: crate::EntitySet
+    default_entity_set: crate::EntitySet,
 }
 
 impl WorldBuilder {
     pub fn new() -> Self {
         WorldBuilder {
             world: World::new(),
-            default_entity_set: EntitySet::new()
+            default_entity_set: EntitySet::new(),
         }
     }
 
@@ -84,19 +84,33 @@ impl WorldBuilder {
 
     //TODO: The storage/factory types here are rendundant and a user could possibly pass a component/storage that doesn't match
     //TODO: I'd rather not have the systems layer aware of entities/components.
-    pub fn with_component<C : crate::Component, S : crate::ComponentStorage<C> + 'static>(mut self, component_storage: S) -> Self {
+    pub fn with_component<C: crate::Component, S: crate::ComponentStorage<C> + 'static>(
+        mut self,
+        component_storage: S,
+    ) -> Self {
         self.world.insert(component_storage);
         self.default_entity_set.register_component_type::<C>();
         self
     }
 
-    pub fn with_component_and_free_handler<C : crate::Component, S : crate::ComponentStorage<C> + 'static, F : crate::component::ComponentFreeHandler<C> + 'static>(mut self, component_storage: S) -> Self {
+    pub fn with_component_and_free_handler<
+        C: crate::Component,
+        S: crate::ComponentStorage<C> + 'static,
+        F: crate::component::ComponentFreeHandler<C> + 'static,
+    >(
+        mut self,
+        component_storage: S,
+    ) -> Self {
         self.world.insert(component_storage);
-        self.default_entity_set.register_component_type_with_free_handler::<C, F>();
+        self.default_entity_set
+            .register_component_type_with_free_handler::<C, F>();
         self
     }
 
-    pub fn with_component_factory<P : ComponentPrototype, F : ComponentFactory<P>>(mut self, component_factory: F) -> Self {
+    pub fn with_component_factory<P: ComponentPrototype, F: ComponentFactory<P>>(
+        mut self,
+        component_factory: F,
+    ) -> Self {
         self.world.insert(component_factory);
         self.default_entity_set.register_component_factory::<P, F>();
         self
@@ -110,7 +124,6 @@ impl WorldBuilder {
     }
 
     pub fn build(mut self) -> World {
-
         // If no entity factory was inserted, insert the default
         if !self.world.has_value::<EntityFactory>() {
             //self.world.insert(EntityFactory::new());
@@ -118,8 +131,12 @@ impl WorldBuilder {
         }
 
         // If no pending delete component was inserted, insert the default
-        if !self.world.has_value::<<PendingDeleteComponent as crate::Component>::Storage>() {
-            self = self.with_component(<PendingDeleteComponent as crate::Component>::Storage::new());
+        if !self
+            .world
+            .has_value::<<PendingDeleteComponent as crate::Component>::Storage>()
+        {
+            self =
+                self.with_component(<PendingDeleteComponent as crate::Component>::Storage::new());
         }
 
         // If no entity set was created, insert the default

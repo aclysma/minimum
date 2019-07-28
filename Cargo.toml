@@ -14,9 +14,7 @@ exclude = [
 [patch.crates-io]
 
 rendy = { git = 'https://github.com/aclysma/rendy.git', branch="winit-0.20.0" }
-
 gfx-hal = { git = 'https://github.com/aclysma/gfx.git', branch="winit-0.20.0" }
 gfx-backend-metal = { git = 'https://github.com/aclysma/gfx.git', branch="winit-0.20.0" }
-
 imgui = { git = 'https://github.com/aclysma/imgui-rs.git' }
 imgui-winit-support = { git = 'https://github.com/aclysma/imgui-rs.git' }

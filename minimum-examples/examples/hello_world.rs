@@ -1,10 +1,5 @@
-
 use minimum::systems::{
-    simple_dispatch::Task,
-    simple_dispatch::MinimumDispatcher,
-    Write,
-    DataRequirement,
-    WorldBuilder
+    simple_dispatch::MinimumDispatcher, simple_dispatch::Task, DataRequirement, WorldBuilder, Write,
 };
 
 //
@@ -12,7 +7,6 @@ use minimum::systems::{
 //
 pub struct ExampleResource;
 impl ExampleResource {
-
     pub fn new() -> Self {
         ExampleResource
     }

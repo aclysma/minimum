@@ -1,28 +1,17 @@
-use minimum::systems::{
-    DataRequirement, Read, World, WorldBuilder, Write,
-};
+use minimum::systems::{DataRequirement, Read, World, WorldBuilder, Write};
 
-use minimum::systems::async_dispatch::{
-    Task
-};
+use minimum::systems::async_dispatch::Task;
 
 use minimum::async_dispatcher::ExecuteSequential;
 
-use minimum::{EntitySet, ReadComponent, WriteComponent};
 use minimum::component::{Component, ComponentStorage};
+use minimum::{EntitySet, ReadComponent, WriteComponent};
 
 mod shared;
 
-use shared::components::{
-    PositionComponent,
-    VelocityComponent,
-    SpeedMultiplierComponent
-};
+use shared::components::{PositionComponent, SpeedMultiplierComponent, VelocityComponent};
 
-use shared::resources::{
-    TimeState,
-    UpdateCount
-};
+use shared::resources::{TimeState, UpdateCount};
 
 use shared::Vec2;
 
@@ -146,7 +135,6 @@ fn main() {
             ctx.visit_world(move |world| {
                 let mut entity_set = world.fetch_mut::<EntitySet>();
                 entity_set.flush_free(world);
-
             }),
             ctx.visit_world_mut(move |world| {
                 let mut update_count = world.fetch_mut::<UpdateCount>();

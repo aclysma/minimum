@@ -1,23 +1,20 @@
-use crate::World;
 use crate::EntityHandle;
 use crate::EntitySet;
+use crate::World;
 use std::collections::VecDeque;
 
 use crate::component::ComponentPrototype;
-
 
 //
 // Create entity with list of components
 //
 pub struct EntityPrototype {
-    components: Vec<Box<dyn ComponentPrototypeWrapper>>
+    components: Vec<Box<dyn ComponentPrototypeWrapper>>,
 }
 
 impl EntityPrototype {
     pub fn new(components: Vec<Box<ComponentPrototypeWrapper>>) -> Self {
-        EntityPrototype {
-            components
-        }
+        EntityPrototype { components }
     }
 }
 
@@ -26,12 +23,13 @@ impl EntityPrototype {
 // associated type and it's not currently possible to have a Box<dyn Trait> without specifying the
 // associated type. This trait just
 //
-pub trait ComponentPrototypeWrapper : Sync + Send {
+pub trait ComponentPrototypeWrapper: Sync + Send {
     fn enqueue_create(&self, world: &World, entity_handle: &EntityHandle);
 }
 
 impl<T> ComponentPrototypeWrapper for T
-    where T : ComponentPrototype + Sync + Send
+where
+    T: ComponentPrototype + Sync + Send,
 {
     fn enqueue_create(&self, world: &World, entity_handle: &EntityHandle) {
         <T as ComponentPrototype>::enqueue_create(&self, world, entity_handle);
@@ -73,11 +71,11 @@ impl EntityFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::component::SlabComponentStorage;
-    use crate::Component;
     use crate::component::CloneComponentFactory;
     use crate::component::CloneComponentPrototype;
     use crate::component::ComponentStorage;
+    use crate::component::SlabComponentStorage;
+    use crate::Component;
 
     #[derive(Clone)]
     struct TestComponent1;
@@ -92,7 +90,6 @@ mod tests {
 
     #[test]
     fn test_entity_prototype() {
-
         let world = crate::WorldBuilder::new()
             .with_component(<TestComponent1 as Component>::Storage::new())
             .with_component(<TestComponent2 as Component>::Storage::new())
@@ -105,13 +102,13 @@ mod tests {
             let c1_prototype = CloneComponentPrototype::new(TestComponent1);
             let c2_prototype = CloneComponentPrototype::new(TestComponent2);
 
-            let c_list : Vec<Box<ComponentPrototypeWrapper>> = vec![
-                Box::new(c1_prototype),
-                Box::new(c2_prototype)
-            ];
+            let c_list: Vec<Box<ComponentPrototypeWrapper>> =
+                vec![Box::new(c1_prototype), Box::new(c2_prototype)];
 
             let e_prototype = EntityPrototype::new(c_list);
-            world.fetch_mut::<EntityFactory>().enqueue_create(e_prototype);
+            world
+                .fetch_mut::<EntityFactory>()
+                .enqueue_create(e_prototype);
             //e_prototype.enqueue_create(&world);
         }
 
@@ -121,8 +118,8 @@ mod tests {
         let c1_storage = world.fetch::<<TestComponent1 as Component>::Storage>();
         let c2_storage = world.fetch::<<TestComponent2 as Component>::Storage>();
         for e in entity_set.iter() {
-            c1_storage.get(&e.handle.as_ref().unwrap()).unwrap();
-            c2_storage.get(&e.handle.as_ref().unwrap()).unwrap();
+            c1_storage.get(&e.handle()).unwrap();
+            c2_storage.get(&e.handle()).unwrap();
         }
     }
 }

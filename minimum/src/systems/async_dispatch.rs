@@ -4,12 +4,11 @@ use super::systems;
 use crate::async_dispatcher;
 
 use async_dispatcher::{
-    AcquiredResourcesLockGuards, Dispatcher, DispatcherBuilder, RequiresResources,
-    AcquireCriticalSectionReadLockGuard,
-    AcquireCriticalSectionWriteLockGuard,
-    acquire_resources as do_acquire_resources,
     acquire_critical_section_read as do_acquire_critical_section_read,
-    acquire_critical_section_write as do_acquire_critical_section_write
+    acquire_critical_section_write as do_acquire_critical_section_write,
+    acquire_resources as do_acquire_resources, AcquireCriticalSectionReadLockGuard,
+    AcquireCriticalSectionWriteLockGuard, AcquiredResourcesLockGuards, Dispatcher,
+    DispatcherBuilder, RequiresResources,
 };
 
 use systems::ResourceId;
@@ -20,9 +19,9 @@ use systems::ResourceId;
 
 pub trait Task {
     type RequiredResources: for<'a> systems::DataRequirement<'a>
-    + crate::async_dispatcher::RequiresResources<ResourceId>
-    + Send
-    + 'static;
+        + crate::async_dispatcher::RequiresResources<ResourceId>
+        + Send
+        + 'static;
 
     fn run(&mut self, data: <Self::RequiredResources as systems::DataRequirement>::Borrow);
 }
@@ -85,10 +84,9 @@ where
 {
     pub fn visit<'a, 'b, F>(&'a self, f: F)
     where
-        'a : 'b,
+        'a: 'b,
         F: FnOnce(T::Borrow),
         T: systems::DataRequirement<'b>,
-
     {
         let trust_cell_ref = (*self.world).borrow();
         let world_ref = trust_cell_ref.value();
@@ -122,13 +120,13 @@ where
 }
 
 pub fn acquire_critical_section_read(
-    dispatcher: Arc<Dispatcher<ResourceId>>
+    dispatcher: Arc<Dispatcher<ResourceId>>,
 ) -> impl futures::future::Future<Item = AcquireCriticalSectionReadLockGuard, Error = ()> {
     do_acquire_critical_section_read(dispatcher)
 }
 
 pub fn acquire_critical_section_write(
-    dispatcher: Arc<Dispatcher<ResourceId>>
+    dispatcher: Arc<Dispatcher<ResourceId>>,
 ) -> impl futures::future::Future<Item = AcquireCriticalSectionWriteLockGuard, Error = ()> {
     do_acquire_critical_section_write(dispatcher)
 }
@@ -147,7 +145,7 @@ impl MinimumDispatcher {
 
         MinimumDispatcher {
             dispatcher: dispatcher_builder.build(),
-            world: Arc::new(systems::TrustCell::new(world))
+            world: Arc::new(systems::TrustCell::new(world)),
         }
     }
 
@@ -190,7 +188,8 @@ impl MinimumDispatcherContext {
     }
 
     pub fn has_resource<T>(&self) -> bool
-    where T: systems::Resource
+    where
+        T: systems::Resource,
     {
         (*self.world).borrow().value().has_value::<T>()
     }
@@ -213,11 +212,10 @@ impl MinimumDispatcherContext {
         use futures::future::Future;
 
         Box::new(
-            acquire_resources::<RequirementT>(self.dispatcher.clone(), Arc::clone(&self.world)).map(
-                move |acquired_resources| {
+            acquire_resources::<RequirementT>(self.dispatcher.clone(), Arc::clone(&self.world))
+                .map(move |acquired_resources| {
                     (f)(acquired_resources);
-                },
-            ),
+                }),
         )
     }
 
@@ -231,52 +229,52 @@ impl MinimumDispatcherContext {
         use futures::future::Future;
 
         Box::new(
-            acquire_resources::<T::RequiredResources>(self.dispatcher.clone(), Arc::clone(&self.world))
-                .map(move |acquired_resources| {
-                    acquired_resources.visit(move |resources| {
-                        task.run(resources);
-                    });
-                }),
+            acquire_resources::<T::RequiredResources>(
+                self.dispatcher.clone(),
+                Arc::clone(&self.world),
+            )
+            .map(move |acquired_resources| {
+                acquired_resources.visit(move |resources| {
+                    task.run(resources);
+                });
+            }),
         )
     }
 
     //TODO: It would be nice to pass the context into the callback, but need to refactor to use
     //inner arc.
-    pub fn visit_world<F>(
-        &self,
-        f: F
-    ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
-        where F : FnOnce(&systems::World)
+    pub fn visit_world<F>(&self, f: F) -> Box<impl futures::future::Future<Item = (), Error = ()>>
+    where
+        F: FnOnce(&systems::World),
     {
         use futures::future::Future;
 
         let world = self.world.clone();
 
-        Box::new(
-            acquire_critical_section_read(self.dispatcher.clone())
-                .map(move |_acquire_critical_section| {
-                    (f)(&(*world).borrow());
-                })
-        )
+        Box::new(acquire_critical_section_read(self.dispatcher.clone()).map(
+            move |_acquire_critical_section| {
+                (f)(&(*world).borrow());
+            },
+        ))
     }
 
     //TODO: It would be nice to pass the context into the callback, but need to refactor to use
     //inner arc.
     pub fn visit_world_mut<F>(
         &self,
-        f: F
+        f: F,
     ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
-    where F : FnOnce(&mut systems::World)
+    where
+        F: FnOnce(&mut systems::World),
     {
         use futures::future::Future;
 
         let world = self.world.clone();
 
-        Box::new(
-            acquire_critical_section_write(self.dispatcher.clone())
-                .map(move |_acquire_critical_section| {
-                    (f)(&mut (*world).borrow_mut());
-            })
-        )
+        Box::new(acquire_critical_section_write(self.dispatcher.clone()).map(
+            move |_acquire_critical_section| {
+                (f)(&mut (*world).borrow_mut());
+            },
+        ))
     }
 }

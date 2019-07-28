@@ -16,6 +16,7 @@ nalgebra        = { version = "0.18", features = [ "sparse" ] }
 nalgebra-glm    = "0.4"
 nphysics2d      = "0.11"
 ncollide2d      = "0.19"
+rand            = "0.7.0"
 
 # logging
 log="0.4"

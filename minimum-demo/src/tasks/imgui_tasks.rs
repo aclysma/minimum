@@ -107,16 +107,10 @@ impl Task for RenderImguiMainMenu {
                     ));
                     ui.text(format!("bullet count: {}", bullet_count));
                     ui.text(format!("body count: {}", body_count));
-
-                    use winit::event::VirtualKeyCode;
-                    ui.text(format!(
-                        "{} {} {} {}",
-                        input_manager.is_key_down(VirtualKeyCode::A),
-                        input_manager.is_key_down(VirtualKeyCode::S),
-                        input_manager.is_key_down(VirtualKeyCode::D),
-                        input_manager.is_key_down(VirtualKeyCode::W)
-                    ))
                 });
+
+                //TODO: Component count
+                //TODO: Frame time
             }
         })
     }
