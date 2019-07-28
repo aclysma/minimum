@@ -1,7 +1,8 @@
 
 //TODO: Use this rather than the queue in entity_set
 
-use minimum::component::SlabComponentStorage;
+use crate::component::SlabComponentStorage;
+use crate::Component;
 
 #[derive(Debug)]
 pub struct PendingDeleteComponent {
@@ -16,6 +17,6 @@ impl PendingDeleteComponent {
     }
 }
 
-impl minimum::Component for PendingDeleteComponent {
+impl Component for PendingDeleteComponent {
     type Storage = SlabComponentStorage<PendingDeleteComponent>;
 }

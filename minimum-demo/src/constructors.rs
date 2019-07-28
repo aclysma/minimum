@@ -6,15 +6,13 @@ use minimum::systems::DataRequirement;
 use minimum::{Read, World, Write};
 use std::collections::VecDeque;
 
-use components::{PhysicsBodyComponentPrototype, PhysicsBodyComponentDesc};
+use components::{PhysicsBodyComponentDesc, PhysicsBodyComponentPrototype};
 
 const COLLISION_GROUP_PLAYER: usize = 0;
 const COLLISION_GROUP_BULLETS: usize = 1;
 const COLLISION_GROUP_WALL: usize = 2;
 
-pub fn create_player(
-    entity_factory: &mut minimum::EntityFactory
-) {
+pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
     let position = glm::zero();
     let radius = 15.0;
     let color = glm::Vec4::new(0.0, 1.0, 0.0, 1.0);
@@ -56,9 +54,7 @@ pub fn create_player(
         Box::new(CloneComponentPrototype::new(
             components::DebugDrawCircleComponent::new(radius, color),
         )),
-        Box::new(PhysicsBodyComponentPrototype::new(
-            body_component_desc
-        )),
+        Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
     ]);
     entity_factory.enqueue_create(entity_prototype);
 }
@@ -73,7 +69,7 @@ pub fn create_bullet(
     position: glm::Vec2,
     velocity: glm::Vec2,
     time_state: &resources::TimeState,
-    entity_factory: &mut minimum::EntityFactory
+    entity_factory: &mut minimum::EntityFactory,
 ) {
     let radius = 5.0;
     let color = glm::Vec4::new(1.0, 0.0, 0.0, 1.0);
@@ -108,9 +104,7 @@ pub fn create_bullet(
         Box::new(CloneComponentPrototype::new(
             components::VelocityComponent::new(velocity),
         )),
-        Box::new(PhysicsBodyComponentPrototype::new(
-            body_component_desc
-        )),
+        Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
         Box::new(CloneComponentPrototype::new(
             components::DebugDrawCircleComponent::new(radius, color),
         )),

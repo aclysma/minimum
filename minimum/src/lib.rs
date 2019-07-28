@@ -15,6 +15,7 @@ pub use entity::EntitySet;
 pub use entity::Entity;
 pub use entity::EntityPrototype;
 pub use entity::EntityFactory;
+pub use entity::PendingDeleteComponent;
 
 pub use component::Component;
 pub use component::ComponentStorage;

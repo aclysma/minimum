@@ -18,7 +18,7 @@ pub mod async_dispatch;
 
 pub mod simple_dispatch;
 
-use crate::{systems, EntityFactory};
+use crate::{systems, EntityFactory, PendingDeleteComponent};
 use crate::EntitySet;
 
 use crate::component::ComponentPrototype;
@@ -110,13 +110,21 @@ impl WorldBuilder {
     }
 
     pub fn build(mut self) -> World {
+
+        // If no entity factory was inserted, insert the default
+        if !self.world.has_value::<EntityFactory>() {
+            //self.world.insert(EntityFactory::new());
+            self = self.with_resource(EntityFactory::new());
+        }
+
+        // If no pending delete component was inserted, insert the default
+        if !self.world.has_value::<<PendingDeleteComponent as crate::Component>::Storage>() {
+            self = self.with_component(<PendingDeleteComponent as crate::Component>::Storage::new());
+        }
+
         // If no entity set was created, insert the default
         if !self.world.has_value::<EntitySet>() {
             self.world.insert(self.default_entity_set);
-        }
-
-        if !self.world.has_value::<EntityFactory>() {
-            self.world.insert(EntityFactory::new());
         }
 
         self.world

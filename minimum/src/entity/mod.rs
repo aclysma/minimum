@@ -15,6 +15,9 @@ pub use entity_factory::EntityPrototype;
 pub use entity_factory::EntityFactory;
 pub use entity_factory::ComponentPrototypeWrapper;
 
+mod pending_delete;
+pub use pending_delete::PendingDeleteComponent;
+
 use crate::systems;
 
 pub type EntityHandle = GenSlabKey<Entity>;
@@ -73,16 +76,14 @@ impl<'e> EntityRef<'e> {
 
 pub struct EntitySet {
     slab: GenSlab<Entity>,
-    component_registry: ComponentRegistry,
-    pending_deletes: Vec<EntityHandle>
+    component_registry: ComponentRegistry
 }
 
 impl EntitySet {
     pub fn new() -> Self {
         EntitySet {
             slab: GenSlab::new(),
-            component_registry: ComponentRegistry::new(),
-            pending_deletes: vec![]
+            component_registry: ComponentRegistry::new()
         }
     }
 
@@ -112,14 +113,14 @@ impl EntitySet {
         EntityRef::new(entity, handle)
     }
 
-    pub fn enqueue_free(&mut self, entity_handle: &EntityHandle) {
-        EntitySet::do_enqueue_free(&mut self.pending_deletes, entity_handle);
-    }
-
-    fn do_enqueue_free(pending_deletes: &mut Vec<EntityHandle>, entity_handle: &EntityHandle) {
-        //TODO: This could be handled by adding a DeferredFree component to the entity, which avoids
-        //requiring mutable self
-        pending_deletes.push(entity_handle.clone());
+    pub fn enqueue_free(
+        &self,
+        entity_handle: &EntityHandle,
+        delete_components: &mut <PendingDeleteComponent as Component>::Storage
+    ) {
+        self.get_entity_ref(entity_handle).unwrap().add_component(
+            delete_components,
+            PendingDeleteComponent {});
     }
 
     pub fn entity_count(&self) -> usize {
@@ -133,26 +134,27 @@ impl EntitySet {
     }
 
     pub fn clear(&mut self, world: &systems::World) {
-
-        let slab = &self.slab;
-        let pending_deletes = &mut self.pending_deletes;
-
-        for e in slab.iter() {
-            EntitySet::do_enqueue_free(pending_deletes, &e.handle());
-        }
-
-        self.flush_free(world);
+        let entity_handles : Vec<_> = self.iter().map(|x| x.handle()).collect();
+        self.do_flush_free(world, entity_handles.as_slice());
     }
 
     pub fn flush_free(&mut self, world: &systems::World) {
-        self.component_registry
-            .on_entities_free(world, self.pending_deletes.as_slice());
 
-        for pending_delete in &self.pending_deletes {
+        let entity_handles : Vec<_> = {
+            let delete_components = world.fetch_mut::<<PendingDeleteComponent as Component>::Storage>();
+            delete_components.iter(&self).map(|x| x.0).collect()
+        };
+
+        self.do_flush_free(world, &entity_handles);
+    }
+
+    pub fn do_flush_free(&mut self, world: &systems::World, entity_handles: &[EntityHandle]) {
+        self.component_registry
+            .on_entities_free(world, entity_handles);
+
+        for pending_delete in entity_handles {
             self.slab.free(pending_delete);
         }
-
-        self.pending_deletes.clear();
     }
 
     pub fn flush_creates(&mut self, world: &systems::World) {
@@ -200,11 +202,12 @@ mod tests {
         let mut world = systems::World::new();
         let mut entity_set = EntitySet::new();
         world.insert(<TestComponent as Component>::Storage::new());
+        world.insert(<PendingDeleteComponent as Component>::Storage::new());
         entity_set.register_component_type::<TestComponent>();
 
         let entity = entity_set.allocate();
         assert_eq!(entity_set.entity_count(), 1);
-        entity_set.enqueue_free(&entity);
+        entity_set.enqueue_free(&entity, &mut *world.fetch_mut::<<PendingDeleteComponent as Component>::Storage>());
         assert_eq!(entity_set.entity_count(), 1);
         entity_set.flush_free(&world);
         assert_eq!(entity_set.entity_count(), 0);
@@ -218,6 +221,7 @@ mod tests {
         let mut world = systems::World::new();
         let mut entity_set = EntitySet::new();
         world.insert(<TestComponent as Component>::Storage::new());
+        world.insert(<PendingDeleteComponent as Component>::Storage::new());
         entity_set.register_component_type::<TestComponent>();
 
         // Create an entity
@@ -231,7 +235,7 @@ mod tests {
         }
 
         // Ensure after we enqueue free and flush free, the component is released
-        entity_set.enqueue_free(&entity_handle);
+        entity_set.enqueue_free(&entity_handle, &mut *world.fetch_mut::<<PendingDeleteComponent as Component>::Storage>());
         assert!(world.fetch::<Storage>().get(&entity_handle).is_some());
         entity_set.flush_free(&world);
         assert!(world.fetch::<Storage>().get(&entity_handle).is_none());

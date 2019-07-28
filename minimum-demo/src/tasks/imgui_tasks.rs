@@ -109,13 +109,13 @@ impl Task for RenderImguiMainMenu {
                     ui.text(format!("body count: {}", body_count));
 
                     use winit::event::VirtualKeyCode;
-                    ui.text(
-                        format!(
-                            "{} {} {} {}",
-                            input_manager.is_key_down(VirtualKeyCode::A),
-                            input_manager.is_key_down(VirtualKeyCode::S),
-                            input_manager.is_key_down(VirtualKeyCode::D),
-                            input_manager.is_key_down(VirtualKeyCode::W)))
+                    ui.text(format!(
+                        "{} {} {} {}",
+                        input_manager.is_key_down(VirtualKeyCode::A),
+                        input_manager.is_key_down(VirtualKeyCode::S),
+                        input_manager.is_key_down(VirtualKeyCode::D),
+                        input_manager.is_key_down(VirtualKeyCode::W)
+                    ))
                 });
             }
         })

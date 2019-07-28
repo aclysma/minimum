@@ -1,6 +1,6 @@
 use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
 
-use crate::resources::{InputManager, MouseButtons, RenderState, TimeState, PhysicsManager};
+use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState, TimeState};
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
@@ -42,7 +42,7 @@ impl Task for ControlPlayerEntity {
         ReadComponent<components::PositionComponent>,
         Write<EntityFactory>,
         ReadComponent<components::PhysicsBodyComponent>,
-        Write<PhysicsManager>
+        Write<PhysicsManager>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -55,7 +55,7 @@ impl Task for ControlPlayerEntity {
             position_components,
             mut entity_factory,
             physics_body_components,
-            mut physics_manager
+            mut physics_manager,
         ) = data;
 
         let dt = time_state.previous_frame_dt;
@@ -65,10 +65,9 @@ impl Task for ControlPlayerEntity {
         for (entity, _p) in player_components.iter(&entity_set) {
             if let (Some(pos), Some(physics_body_component)) = (
                 position_components.get(&entity),
-                physics_body_components.get(&entity))
-
-            {
-                let mut direction : glm::Vec2 = glm::zero();
+                physics_body_components.get(&entity),
+            ) {
+                let mut direction: glm::Vec2 = glm::zero();
 
                 if input_manager.is_key_down(VirtualKeyCode::S) {
                     direction.y -= 1.0;
@@ -107,7 +106,8 @@ impl Task for ControlPlayerEntity {
                         pos.position(),
                         velocity,
                         &time_state,
-                        &mut entity_factory);
+                        &mut entity_factory,
+                    );
                 }
             }
         }
@@ -152,13 +152,14 @@ impl Task for UpdatePositionWithVelocity {
 pub struct HandleFreeAtTimeComponents;
 impl Task for HandleFreeAtTimeComponents {
     type RequiredResources = (
-        Write<minimum::EntitySet>,
+        Read<minimum::EntitySet>,
+        WriteComponent<minimum::PendingDeleteComponent>,
         Read<TimeState>,
         ReadComponent<components::FreeAtTimeComponent>,
     );
 
     fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
-        let (mut entity_set, time_state, free_at_time_components) = data;
+        let (entity_set, mut write_components, time_state, free_at_time_components) = data;
 
         //TODO-API: Find a better way to do this.. deferred delete is fine
         let mut entities_to_free = vec![];
@@ -169,7 +170,7 @@ impl Task for HandleFreeAtTimeComponents {
         }
 
         for e in entities_to_free {
-            entity_set.enqueue_free(&e);
+            entity_set.enqueue_free(&e, &mut *write_components);
         }
     }
 }
