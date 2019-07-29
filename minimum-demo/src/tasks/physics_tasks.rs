@@ -6,6 +6,7 @@ use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
 use minimum::{ComponentStorage, EntitySet};
 
+#[derive(typename::TypeName)]
 pub struct UpdatePhysics;
 impl Task for UpdatePhysics {
     type RequiredResources = (Read<TimeState>, Write<PhysicsManager>);
@@ -16,6 +17,7 @@ impl Task for UpdatePhysics {
     }
 }
 
+#[derive(typename::TypeName)]
 pub struct UpdatePositionFromPhysics;
 impl Task for UpdatePositionFromPhysics {
     type RequiredResources = (

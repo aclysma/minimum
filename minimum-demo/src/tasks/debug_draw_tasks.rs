@@ -4,6 +4,7 @@ use minimum::{ComponentStorage, ReadComponent};
 use crate::components;
 use crate::resources::DebugDraw;
 
+#[derive(typename::TypeName)]
 pub struct UpdateDebugDraw;
 impl Task for UpdateDebugDraw {
     type RequiredResources = (

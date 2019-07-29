@@ -25,7 +25,7 @@ impl PhysicsManager {
     }
 
     pub fn update(&mut self, time_state: &resources::TimeState) {
-        self.time_accumulator += time_state.previous_frame_dt;
+        self.time_accumulator += time_state.playing().previous_frame_dt;
         while self.time_accumulator > STEP_SIZE {
             self.world.step();
             self.time_accumulator -= STEP_SIZE;

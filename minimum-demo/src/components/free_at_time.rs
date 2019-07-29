@@ -13,7 +13,7 @@ impl FreeAtTimeComponent {
     }
 
     pub fn should_free(&self, time_state: &TimeState) -> bool {
-        time_state.frame_start_instant >= self.free_time
+        time_state.playing().frame_start_instant >= self.free_time
     }
 }
 

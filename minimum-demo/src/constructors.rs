@@ -2,7 +2,6 @@ use crate::components;
 use crate::resources;
 use minimum::component::CloneComponentPrototype;
 use minimum::entity::EntityPrototype;
-use minimum::{Read, Write};
 
 use components::PhysicsBodyComponentPrototype;
 use rand::Rng;
@@ -157,7 +156,7 @@ pub fn create_bullet(
             components::BulletComponent::new(),
         )),
         Box::new(CloneComponentPrototype::new(
-            components::FreeAtTimeComponent::new(time_state.frame_start_instant + lifetime),
+            components::FreeAtTimeComponent::new(time_state.playing().frame_start_instant + lifetime),
         )),
     ]);
     entity_factory.enqueue_create(entity_prototype);

@@ -21,16 +21,34 @@ mod physics_tasks;
 pub use physics_tasks::UpdatePhysics;
 pub use physics_tasks::UpdatePositionFromPhysics;
 
+#[derive(typename::TypeName)]
 pub struct UpdateTimeState;
 impl Task for UpdateTimeState {
-    type RequiredResources = (Write<TimeState>);
+    type RequiredResources = (Write<TimeState>, Read<InputManager>);
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
-        let mut time_state = data;
-        time_state.update();
+    fn run(
+        &mut self,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
+        let (mut time_state, input_manager) = data;
+
+        let mut play_mode = time_state.play_mode;
+
+        use winit::event::VirtualKeyCode;
+        use crate::resources::PlayMode;
+        if input_manager.is_key_just_down(VirtualKeyCode::Space) {
+            play_mode = match play_mode {
+                PlayMode::System => PlayMode::Playing,
+                PlayMode::Paused => PlayMode::Playing,
+                PlayMode::Playing => PlayMode::System,
+            }
+        }
+
+        time_state.update(play_mode);
     }
 }
 
+#[derive(typename::TypeName)]
 pub struct ControlPlayerEntity;
 impl Task for ControlPlayerEntity {
     type RequiredResources = (
@@ -112,6 +130,7 @@ impl Task for ControlPlayerEntity {
     }
 }
 
+#[derive(typename::TypeName)]
 pub struct UpdatePositionWithVelocity;
 impl Task for UpdatePositionWithVelocity {
     type RequiredResources = (
@@ -131,7 +150,7 @@ impl Task for UpdatePositionWithVelocity {
             physics_body_components,
         ) = data;
 
-        let dt = time_state.previous_frame_dt;
+        let dt = time_state.playing().previous_frame_dt;
 
         for (entity, vel) in velocity_components.iter(&entity_set) {
             if physics_body_components.exists(&entity) {
@@ -147,6 +166,7 @@ impl Task for UpdatePositionWithVelocity {
     }
 }
 
+#[derive(typename::TypeName)]
 pub struct HandleFreeAtTimeComponents;
 impl Task for HandleFreeAtTimeComponents {
     type RequiredResources = (

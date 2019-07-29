@@ -7,6 +7,7 @@ use crate::resources::{
 
 use crate::components::{BulletComponent, PlayerComponent, PositionComponent};
 
+#[derive(typename::TypeName)]
 pub struct ImguiBeginFrame;
 impl Task for ImguiBeginFrame {
     type RequiredResources = (Read<winit::window::Window>, Write<ImguiManager>);
@@ -17,6 +18,7 @@ impl Task for ImguiBeginFrame {
     }
 }
 
+#[derive(typename::TypeName)]
 pub struct RenderImguiMainMenu;
 impl Task for RenderImguiMainMenu {
     type RequiredResources = (
@@ -72,7 +74,7 @@ impl Task for RenderImguiMainMenu {
                 ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_window);
                 ui.separator();
 
-                ui.text(im_str!("FPS: {:.1}", time_state.fps_smoothed));
+                ui.text(im_str!("FPS: {:.1}", time_state.system().fps_smoothed));
                 ui.separator();
             });
 

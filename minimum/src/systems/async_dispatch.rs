@@ -13,11 +13,13 @@ use async_dispatcher::{
 
 use systems::ResourceId;
 
+use typename::TypeName;
+
 //
 // Task
 //
 
-pub trait Task {
+pub trait Task : typename::TypeName {
     type RequiredResources: for<'a> systems::DataRequirement<'a>
         + crate::async_dispatcher::RequiresResources<ResourceId>
         + Send

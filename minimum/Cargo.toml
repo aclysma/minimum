@@ -22,6 +22,7 @@ async_support = ["futures", "tokio", "futures-locks"]
 hashbrown = "0.5"
 mopa = "0.2"
 log = "0.4"
+typename = "0.1.1"
 
 # These are optional, used with async_support
 futures = { version = "0.1", optional = true }

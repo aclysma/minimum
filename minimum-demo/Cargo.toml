@@ -25,6 +25,9 @@ env_logger = "0.6"
 #utilities
 lazy_static = "1.0"
 failure = "0.1"
+strum = "0.15"
+strum_macros = "0.15"
+typename = "0.1"
 
 # async
 futures = "0.1"
