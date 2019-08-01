@@ -1,3 +1,7 @@
+
+// Used for getting name of type, but only available in nightly
+#![cfg_attr(feature = "nightly", feature(core_intrinsics))]
+
 #[allow(unused_imports)]
 #[macro_use]
 extern crate log;
@@ -9,6 +13,7 @@ pub mod component;
 pub mod entity;
 pub mod slab;
 pub mod systems;
+pub mod util;
 
 pub use entity::Entity;
 pub use entity::EntityFactory;
@@ -32,6 +37,7 @@ pub use systems::World;
 pub use systems::WorldBuilder;
 pub use systems::Write;
 pub use systems::WriteOption;
+pub use systems::DispatchControl;
 
 #[cfg(feature = "async_support")]
 pub use systems::async_dispatch as dispatch;
@@ -43,6 +49,8 @@ pub use systems::simple_dispatch as dispatch;
 pub use systems::async_dispatch::MinimumDispatcher;
 #[cfg(feature = "async_support")]
 pub use systems::async_dispatch::Task;
+#[cfg(feature = "async_support")]
+pub use systems::async_dispatch::TaskContext;
 
 #[cfg(not(feature = "async_support"))]
 pub use systems::simple_dispatch::MinimumDispatcher;

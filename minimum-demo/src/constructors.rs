@@ -156,7 +156,9 @@ pub fn create_bullet(
             components::BulletComponent::new(),
         )),
         Box::new(CloneComponentPrototype::new(
-            components::FreeAtTimeComponent::new(time_state.playing().frame_start_instant + lifetime),
+            components::FreeAtTimeComponent::new(
+                time_state.playing().frame_start_instant + lifetime,
+            ),
         )),
     ]);
     entity_factory.enqueue_create(entity_prototype);

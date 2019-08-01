@@ -120,6 +120,7 @@ trait RegisteredComponentFactoryTrait: Resource {
     fn flush_creates(&self, world: &World, entity_set: &EntitySet);
 }
 
+#[derive(typename::TypeName)]
 pub struct RegisteredComponentFactory<P, F>
 where
     P: ComponentPrototype,
@@ -154,8 +155,8 @@ where
 }
 
 pub struct ComponentRegistry {
-    registered_components: Vec<Box<RegisteredComponentTrait>>,
-    registered_factories: Vec<Box<RegisteredComponentFactoryTrait>>,
+    registered_components: Vec<Box<dyn RegisteredComponentTrait>>,
+    registered_factories: Vec<Box<dyn RegisteredComponentFactoryTrait>>,
 }
 
 impl ComponentRegistry {

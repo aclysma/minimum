@@ -19,6 +19,36 @@ use minimum::component::Component;
 use minimum::systems::World;
 use minimum::CloneComponentFactory;
 
+#[derive(Copy, Clone, strum_macros::EnumCount)]
+pub enum PlayMode {
+    // Represents the game being frozen for debug purposes
+    System,
+
+    // Represents the game being puased by the user (actual meaning of this is game-specific)
+    Paused,
+
+    // Normal simulation is running
+    Playing,
+}
+
+//PLAYMODE_COUNT exists due to strum_macros::EnumCount
+const PLAY_MODE_COUNT: usize = PLAYMODE_COUNT;
+
+pub mod context_flags {
+    // For pause status. Flags will be set based on if the game is in a certain playmode
+    pub const PLAYMODE_SYSTEM: usize = 1;
+    pub const PLAYMODE_PAUSED: usize = 2;
+    pub const PLAYMODE_PLAYING: usize = 4;
+
+    // For multiplayer games:
+    // - Dedicated Server will only run Net_Server
+    // - Pure client will only have Net_Client
+    // - "Listen" client will have both
+    // - Singleplayer will have both
+    pub const AUTHORITY_SERVER: usize = 8;
+    pub const AUTHORITY_CLIENT: usize = 16;
+}
+
 fn main() {
     run_the_game().unwrap();
 }
@@ -27,6 +57,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     // Setup logging
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Debug)
+        .filter_module("minimum::systems", log::LevelFilter::Warn)
         .filter_module("gfx_backend_metal", log::LevelFilter::Error)
         .filter_module("rendy", log::LevelFilter::Error)
         .init();
@@ -82,8 +113,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     let winit_event_tx = init::create_window_interface(&mut world, &event_loop);
 
     // Start the game loop thread
-    let dispatcher = MinimumDispatcher::new(world);
-    let _join_handle = std::thread::spawn(|| dispatcher_thread(dispatcher));
+    let _join_handle = std::thread::spawn(|| dispatcher_thread(world));
 
     // Hand control of the main thread to winit
     event_loop.run(move |event, _, control_flow| match event {
@@ -150,12 +180,17 @@ fn create_objects(world: &World) {
     );
 }
 
-fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
+fn dispatcher_thread(world: minimum::systems::World) -> minimum::systems::World {
     info!("dispatch thread started");
 
-    let mut world = dispatcher.enter_game_loop(move |dispatch_ctx| {
-        let dispatch_context = dispatch_ctx.clone();
+    let context_flags = crate::context_flags::AUTHORITY_CLIENT
+        | crate::context_flags::AUTHORITY_SERVER
+        | crate::context_flags::PLAYMODE_PLAYING
+        | crate::context_flags::PLAYMODE_PAUSED
+        | crate::context_flags::PLAYMODE_SYSTEM;
 
+    let dispatcher = MinimumDispatcher::new(world, context_flags);
+    let mut world = dispatcher.enter_game_loop(move |dispatch_ctx| {
         //TODO: Explore non-intrusive method for defining task dependencies
         //TODO: Explore flags to turn steps on/off
         minimum::async_dispatcher::ExecuteSequential::new(vec![
@@ -170,20 +205,26 @@ fn dispatcher_thread(dispatcher: MinimumDispatcher) -> minimum::systems::World {
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::UpdateDebugDraw),
             dispatch_ctx.visit_world(|world| {
-                render(world);
+                {
+                    let _scope_timer = minimum::util::ScopeTimer::new("render");
+                    render(world);
+                }
 
                 // This must be called once per frame to create/destroy entities
                 {
+                    let _scope_timer = minimum::util::ScopeTimer::new("entity update");
                     let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();
                     entity_set.update(world);
                 }
             }),
             // This checks if we need to load a different level or kill the process
             dispatch_ctx.visit_world_mut(move |world| {
+                let _scope_timer = minimum::util::ScopeTimer::new("end frame");
                 let mut game_control = world.fetch_mut::<resources::GameControl>();
+                let mut dispatch_control = world.fetch_mut::<minimum::DispatchControl>();
 
                 if game_control.terminate_process() {
-                    dispatch_context.end_game_loop();
+                    dispatch_control.end_game_loop();
                 } else if game_control.has_load_level() {
                     // Unload game state
                     let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();

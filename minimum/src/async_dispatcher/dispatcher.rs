@@ -1,6 +1,5 @@
 use crate::systems::TrustCell;
 use hashbrown::HashMap;
-use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 // This allows the user to add all the resources that will be used during execution
@@ -41,7 +40,6 @@ where
             next_task_id: std::sync::atomic::AtomicUsize::new(0),
             dispatch_lock: tokio::sync::lock::Lock::new(()),
             resource_locks: TrustCell::new(self.resource_locks),
-            should_terminate: std::sync::atomic::AtomicBool::new(false),
             cs_lock: futures_locks::RwLock::new(()),
         };
     }
@@ -61,7 +59,6 @@ where
     dispatch_lock: tokio::sync::lock::Lock<()>,
     //TODO: Change this to a RwLock, but waiting until I have something more "real" to test with
     resource_locks: TrustCell<HashMap<ResourceId, tokio::sync::lock::Lock<()>>>,
-    should_terminate: std::sync::atomic::AtomicBool,
     cs_lock: futures_locks::RwLock<()>,
 }
 
@@ -90,15 +87,11 @@ where
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
     }
 
-    pub fn end_game_loop(&self) {
-        self.should_terminate.swap(true, Ordering::Release);
-    }
-
     // Call this to kick off processing.
     pub fn enter_game_loop<F, FutureT>(self, f: F)
     where
-        F: Fn(Arc<Dispatcher<ResourceId>>) -> FutureT + Send + Sync + 'static,
-        FutureT: futures::future::Future<Item = (), Error = ()> + Send + 'static,
+        F: Fn(Arc<Dispatcher<ResourceId>>) -> Option<FutureT> + Send + Sync + 'static,
+        FutureT: futures::future::Future<Item = (), Error = ()> + Send + Sync + 'static,
     {
         // Put the dispatcher in an Arc so it can be shared among tasks
         let dispatcher = Arc::new(self);
@@ -106,16 +99,16 @@ where
         let dispatcher_clone = dispatcher.clone();
 
         let loop_future = futures::future::loop_fn((), move |_| {
-            // This clone is so that we can pass it to the inner closure
-            let dispatcher_clone2 = dispatcher_clone.clone();
-
             // Get a future that represents this frame's work
-            (f)(dispatcher_clone.clone()).map(move |_| {
-                return if dispatcher_clone2.should_terminate.load(Ordering::Acquire) {
-                    futures::future::Loop::Break(())
-                } else {
+            let future = (f)(dispatcher_clone.clone());
+            futures::future::Future::map(future, |future_result| {
+                if future_result.is_some() {
+                    // returned future was non-null, continue
                     futures::future::Loop::Continue(())
-                };
+                } else {
+                    // returned future was null, break
+                    futures::future::Loop::Break(())
+                }
             })
         });
 

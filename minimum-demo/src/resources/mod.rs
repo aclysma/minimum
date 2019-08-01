@@ -17,6 +17,5 @@ pub use input_manager::MouseButtons;
 pub use physics_manager::PhysicsManager;
 pub use render_state::RenderState;
 pub use time_state::TimeState;
-pub use time_state::PlayMode;
 pub use window_interface::WindowInterface;
 pub use window_interface::WindowUserEvent;

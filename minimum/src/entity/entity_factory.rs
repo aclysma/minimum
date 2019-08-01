@@ -13,7 +13,7 @@ pub struct EntityPrototype {
 }
 
 impl EntityPrototype {
-    pub fn new(components: Vec<Box<ComponentPrototypeWrapper>>) -> Self {
+    pub fn new(components: Vec<Box<dyn ComponentPrototypeWrapper>>) -> Self {
         EntityPrototype { components }
     }
 }
@@ -102,7 +102,7 @@ mod tests {
             let c1_prototype = CloneComponentPrototype::new(TestComponent1);
             let c2_prototype = CloneComponentPrototype::new(TestComponent2);
 
-            let c_list: Vec<Box<ComponentPrototypeWrapper>> =
+            let c_list: Vec<Box<dyn ComponentPrototypeWrapper>> =
                 vec![Box::new(c1_prototype), Box::new(c2_prototype)];
 
             let e_prototype = EntityPrototype::new(c_list);

@@ -1,4 +1,5 @@
-use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
+use minimum::systems::{DataRequirement, Read, Write};
+use minimum::{Task, TaskContext};
 
 use crate::resources::{GameControl, ImguiManager, InputManager, WindowInterface};
 
@@ -12,8 +13,14 @@ impl Task for GatherInput {
         Write<InputManager>,
         Write<GameControl>,
     );
+    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize
+        | crate::context_flags::PLAYMODE_SYSTEM as usize;
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        &mut self,
+        _task_context: &TaskContext,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         use winit::event::Event;
         use winit::event::WindowEvent;
 

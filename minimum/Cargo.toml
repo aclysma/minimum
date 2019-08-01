@@ -17,6 +17,7 @@ include = [
 
 [features]
 async_support = ["futures", "tokio", "futures-locks"]
+nightly = []
 
 [dependencies]
 hashbrown = "0.5"

@@ -1,17 +1,22 @@
-use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
+use minimum::systems::{DataRequirement, Read, Write};
 
 use crate::resources::{PhysicsManager, TimeState};
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
-use minimum::{ComponentStorage, EntitySet};
+use minimum::{ComponentStorage, EntitySet, Task, TaskContext};
 
 #[derive(typename::TypeName)]
 pub struct UpdatePhysics;
 impl Task for UpdatePhysics {
     type RequiredResources = (Read<TimeState>, Write<PhysicsManager>);
+    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_PLAYING as usize;
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        &mut self,
+        _task_context: &TaskContext,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         let (time_state, mut physics) = data;
         physics.update(&time_state);
     }
@@ -27,8 +32,13 @@ impl Task for UpdatePositionFromPhysics {
         WriteComponent<components::PositionComponent>,
         WriteComponent<components::VelocityComponent>,
     );
+    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_PLAYING as usize;
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        &mut self,
+        _task_context: &TaskContext,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         let (
             entity_set,
             physics_manager,

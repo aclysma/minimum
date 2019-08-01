@@ -17,6 +17,8 @@ pub use trust_cell::TrustCell;
 pub mod async_dispatch;
 
 pub mod simple_dispatch;
+pub mod dispatch_control;
+pub use dispatch_control::DispatchControl;
 
 use crate::EntitySet;
 use crate::{systems, EntityFactory, PendingDeleteComponent};
@@ -196,8 +198,27 @@ impl World {
             .map(|x| *x)
     }
 
+    #[cfg(feature = "nightly")]
+    fn unwrap_resource<R>(resource: Option<R>) -> R {
+        if resource.is_none() {
+            let name = unsafe {std::intrinsics::type_name::<R>() };
+            // Tried to fetch or fetch_mut on a resource that is not registered.
+            panic!("Resource not found: {}", name);
+        }
+
+        resource.unwrap()
+    }
+
+    #[cfg(not(feature = "nightly"))]
+    fn unwrap_resource<R>(resource: Option<R>) -> R {
+        // Tried to fetch or fetch_mut on a resource that is not registered. (Nightly will give better error message)
+        resource.unwrap()
+    }
+
     pub fn fetch<R: Resource>(&self) -> ReadBorrow<R> {
-        self.try_fetch().unwrap()
+
+        let result = self.try_fetch();
+        Self::unwrap_resource(result)
     }
 
     pub fn try_fetch<R: Resource>(&self) -> Option<ReadBorrow<R>> {
@@ -210,7 +231,8 @@ impl World {
     }
 
     pub fn fetch_mut<R: Resource>(&self) -> WriteBorrow<R> {
-        self.try_fetch_mut().unwrap()
+        let result = self.try_fetch_mut();
+        Self::unwrap_resource(result)
     }
 
     pub fn try_fetch_mut<R: Resource>(&self) -> Option<WriteBorrow<R>> {

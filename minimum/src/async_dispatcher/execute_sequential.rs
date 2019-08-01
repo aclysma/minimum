@@ -1,4 +1,4 @@
-type ChildFuture<ErrorT> = dyn futures::future::Future<Item = (), Error = ErrorT> + Send;
+type ChildFuture<ErrorT> = dyn futures::future::Future<Item = (), Error = ErrorT> + Send + Sync;
 
 // Executes all given futures in sequence. The result of one is not passed to the other. If any task
 // results in an error, we stop executing the futures and return that error

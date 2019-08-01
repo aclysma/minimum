@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::systems;
-use crate::async_dispatcher;
+use crate::{async_dispatcher, DispatchControl};
 
 use async_dispatcher::{
     acquire_critical_section_read as do_acquire_critical_section_read,
@@ -13,11 +13,24 @@ use async_dispatcher::{
 
 use systems::ResourceId;
 
-use typename::TypeName;
-
 //
 // Task
 //
+pub struct TaskContext {
+    context_flags: usize,
+}
+
+impl TaskContext {
+    pub fn new(context_flags: usize) -> Self {
+        TaskContext {
+            context_flags
+        }
+    }
+
+    pub fn context_flags(&self) -> usize {
+        self.context_flags
+    }
+}
 
 pub trait Task : typename::TypeName {
     type RequiredResources: for<'a> systems::DataRequirement<'a>
@@ -25,7 +38,9 @@ pub trait Task : typename::TypeName {
         + Send
         + 'static;
 
-    fn run(&mut self, data: <Self::RequiredResources as systems::DataRequirement>::Borrow);
+    const REQUIRED_FLAGS: usize;
+
+    fn run(&mut self, _task_context: &TaskContext, data: <Self::RequiredResources as systems::DataRequirement>::Borrow);
 }
 
 impl crate::async_dispatcher::ResourceIdTrait for ResourceId {}
@@ -139,10 +154,19 @@ pub struct MinimumDispatcher {
 }
 
 impl MinimumDispatcher {
-    pub fn new(world: systems::World) -> MinimumDispatcher {
+    pub fn new(mut world: systems::World, context_flags: usize) -> MinimumDispatcher {
         let mut dispatcher_builder = DispatcherBuilder::new();
         for resource in world.keys() {
             dispatcher_builder.register_resource_id(resource.clone());
+        }
+
+        if world.has_value::<DispatchControl>() {
+            let dispatch_control = world.try_fetch_mut::<DispatchControl>();
+            *dispatch_control.unwrap().next_frame_context_flags_mut() = context_flags;
+        }
+        else
+        {
+            world.insert(DispatchControl::new(context_flags));
         }
 
         MinimumDispatcher {
@@ -152,20 +176,32 @@ impl MinimumDispatcher {
     }
 
     // Call this to kick off processing.
-    pub fn enter_game_loop<F, FutureT>(self, f: F) -> systems::World
+    pub fn enter_game_loop<F, FutureT>(self, /* context_flags: usize,*/ f: F) -> systems::World
     where
         F: Fn(Arc<MinimumDispatcherContext>) -> FutureT + Send + Sync + 'static,
-        FutureT: futures::future::Future<Item = (), Error = ()> + Send + 'static,
+        FutureT: futures::future::Future<Item = (), Error = ()> + Send + Sync + 'static,
     {
         let world = self.world.clone();
 
+
         self.dispatcher.enter_game_loop(move |dispatcher| {
+
+            if world.borrow().fetch::<DispatchControl>().should_terminate() {
+                return None;
+            }
+
+            let context_flags = {
+                world.borrow().fetch::<DispatchControl>().next_frame_context_flags()
+            };
+
+            info!("starting frame with context_flags {}", context_flags);
             let ctx = Arc::new(MinimumDispatcherContext {
                 dispatcher: dispatcher.clone(),
                 world: world.clone(),
+                context_flags
             });
 
-            (f)(ctx)
+            Some((f)(ctx))
         });
 
         // Then unwrap the world inside it
@@ -181,14 +217,11 @@ impl MinimumDispatcher {
 pub struct MinimumDispatcherContext {
     dispatcher: Arc<Dispatcher<ResourceId>>,
     world: Arc<systems::TrustCell<systems::World>>,
+    context_flags: usize
 }
 
 //TODO: I don't like the naming on the member functions here
 impl MinimumDispatcherContext {
-    pub fn end_game_loop(&self) {
-        self.dispatcher.end_game_loop();
-    }
-
     pub fn has_resource<T>(&self) -> bool
     where
         T: systems::Resource,
@@ -230,6 +263,7 @@ impl MinimumDispatcherContext {
     {
         use futures::future::Future;
 
+        let context_flags = self.context_flags;
         Box::new(
             acquire_resources::<T::RequiredResources>(
                 self.dispatcher.clone(),
@@ -237,7 +271,15 @@ impl MinimumDispatcherContext {
             )
             .map(move |acquired_resources| {
                 acquired_resources.visit(move |resources| {
-                    task.run(resources);
+
+                    //TODO: We should not acquire resources for tasks we aren't going to run
+                    if (T::REQUIRED_FLAGS & context_flags) == T::REQUIRED_FLAGS {
+                        let typename = T::type_name();
+                        let _scope_timer = crate::util::ScopeTimer::new(&typename);
+                        task.run(&TaskContext::new(context_flags), resources);
+                    } else {
+                        trace!("skipping task {} requires: {} has: {}", T::type_name(), T::REQUIRED_FLAGS, context_flags);
+                    }
                 });
             }),
         )

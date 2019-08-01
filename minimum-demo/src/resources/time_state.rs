@@ -1,3 +1,4 @@
+use crate::PlayMode;
 use std::time;
 
 const NANOS_PER_SEC: u32 = 1_000_000_000;
@@ -7,22 +8,9 @@ const NANOS_PER_SEC: u32 = 1_000_000_000;
 
 //TODO: Avoid using pub for fields
 
-#[derive(Copy, Clone, strum_macros::EnumCount)]
-pub enum PlayMode {
-    // Represents the game being frozen for debug purposes
-    System,
-
-    // Represents the game being puased by the user (actual meaning of this is game-specific)
-    Paused,
-
-    // Normal simulation is running
-    Playing
-}
-
 // This is not intended to be accessed when the system time updates, but we can double buffer it
 // if it becomes a problem
 pub struct TimeState {
-
     // System time that the application started
     pub app_start_system_time: time::SystemTime,
 
@@ -35,7 +23,7 @@ pub struct TimeState {
     // The game can be in different levels of play/pause, this determines what mode we are currently in
     pub play_mode: PlayMode,
 
-    play_mode_states: [ModeTimeState; PLAYMODE_COUNT],
+    play_mode_states: [ModeTimeState; crate::PLAYMODE_COUNT],
 }
 
 impl TimeState {
@@ -48,12 +36,11 @@ impl TimeState {
             app_start_instant: now_instant,
             previous_instant: now_instant,
             play_mode: PlayMode::Playing,
-            play_mode_states: [ModeTimeState::new(); PLAYMODE_COUNT],
+            play_mode_states: [ModeTimeState::new(); crate::PLAY_MODE_COUNT],
         };
     }
 
     pub fn update(&mut self, play_mode: PlayMode) {
-
         // Cache the mode we are in this frame
         self.play_mode = play_mode;
 
@@ -62,8 +49,7 @@ impl TimeState {
         let elapsed = now_instant - self.previous_instant;
         self.previous_instant = now_instant;
 
-        for play_mode_index in 0..PLAYMODE_COUNT {
-
+        for play_mode_index in 0..crate::PLAY_MODE_COUNT {
             let mode_elapsed = if play_mode_index <= (play_mode as usize) {
                 elapsed
             } else {
@@ -73,7 +59,11 @@ impl TimeState {
             self.play_mode_states[play_mode_index].update(mode_elapsed);
         }
 
-        trace!("fps: {:.1}  dt: {:.2}ms", self.play_mode_states[0].fps, self.play_mode_states[0].previous_frame_dt * 1000.0);
+        trace!(
+            "fps: {:.1}  dt: {:.2}ms",
+            self.play_mode_states[0].fps,
+            self.play_mode_states[0].previous_frame_dt * 1000.0
+        );
         if self.play_mode_states[0].previous_frame_dt > 1.0 / 30.0 {
             //warn!("slow frame (dt: {:.2}ms)", dt);
         }
@@ -109,7 +99,7 @@ pub struct ModeTimeState {
 
     pub fps_smoothed: f32,
 
-    pub frame_count: u64
+    pub frame_count: u64,
 }
 
 impl ModeTimeState {
@@ -128,21 +118,17 @@ impl ModeTimeState {
     }
 
     pub fn update(&mut self, elapsed: std::time::Duration) {
-
         self.total_time += elapsed;
         self.frame_start_instant += elapsed;
         self.previous_frame_time = elapsed;
 
         // this can eventually be replaced with as_float_secs
-        let dt = (elapsed.as_secs() as f32) + (elapsed.subsec_nanos() as f32) / (NANOS_PER_SEC as f32);
+        let dt =
+            (elapsed.as_secs() as f32) + (elapsed.subsec_nanos() as f32) / (NANOS_PER_SEC as f32);
 
         self.previous_frame_dt = dt;
 
-        let fps = if dt > 0.0 {
-            1.0 / dt
-        } else {
-            0.0
-        };
+        let fps = if dt > 0.0 { 1.0 / dt } else { 0.0 };
 
         //TODO: Replace with a circular buffer
         const SMOOTHING_FACTOR: f32 = 0.95;

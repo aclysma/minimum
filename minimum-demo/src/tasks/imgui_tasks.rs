@@ -1,5 +1,5 @@
-use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
-use minimum::{ComponentStorage, EntitySet, ReadComponent};
+use minimum::systems::{DataRequirement, Read, Write};
+use minimum::{ComponentStorage, EntitySet, ReadComponent, Task, TaskContext};
 
 use crate::resources::{
     DebugOptions, GameControl, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
@@ -11,8 +11,13 @@ use crate::components::{BulletComponent, PlayerComponent, PositionComponent};
 pub struct ImguiBeginFrame;
 impl Task for ImguiBeginFrame {
     type RequiredResources = (Read<winit::window::Window>, Write<ImguiManager>);
+    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        &mut self,
+        _task_context: &TaskContext,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         let (window, mut imgui_manager) = data;
         imgui_manager.begin_frame(&window);
     }
@@ -34,8 +39,13 @@ impl Task for RenderImguiMainMenu {
         Read<InputManager>,
         Read<RenderState>,
     );
+    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        &mut self,
+        _task_context: &TaskContext,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         let (
             time_state,
             mut imgui_manager,

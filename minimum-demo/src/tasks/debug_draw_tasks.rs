@@ -1,5 +1,5 @@
-use minimum::systems::{async_dispatch::Task, DataRequirement, Read, Write};
-use minimum::{ComponentStorage, ReadComponent};
+use minimum::systems::{DataRequirement, Read, Write};
+use minimum::{ComponentStorage, ReadComponent, Task, TaskContext};
 
 use crate::components;
 use crate::resources::DebugDraw;
@@ -14,8 +14,13 @@ impl Task for UpdateDebugDraw {
         ReadComponent<components::DebugDrawRectComponent>,
         ReadComponent<components::PositionComponent>,
     );
+    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        &mut self,
+        _task_context: &TaskContext,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         let (mut debug_draw, entity_set, circle_components, rect_components, position_components) =
             data;
 

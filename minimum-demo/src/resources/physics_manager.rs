@@ -3,7 +3,7 @@ use crate::resources;
 const GRAVITY: f32 = 0.0;
 
 //TODO: Are steps really necessary? Appropriate size?
-const STEP_SIZE: f32 = 1.0 / 120.0;
+const STEP_SIZE: f32 = 1.0 / 60.0;
 
 pub struct PhysicsManager {
     world: nphysics2d::world::World<f32>,
@@ -25,11 +25,27 @@ impl PhysicsManager {
     }
 
     pub fn update(&mut self, time_state: &resources::TimeState) {
-        self.time_accumulator += time_state.playing().previous_frame_dt;
+        let dt = time_state.playing().previous_frame_dt;
+        self.time_accumulator += dt;
+
+        let mut steps = 0;
+        let accumulated_time = self.time_accumulator;
+
+        let t0 = std::time::Instant::now();
         while self.time_accumulator > STEP_SIZE {
+            steps += 1;
             self.world.step();
             self.time_accumulator -= STEP_SIZE;
         }
+        let t1 = std::time::Instant::now();
+
+        trace!(
+            "update physics took {} in {} steps. Last frame dt: {} time accumulator: {}",
+            (t1 - t0).as_micros() as f64 / 1000.0,
+            steps,
+            dt,
+            accumulated_time
+        );
     }
 
     pub fn world(&self) -> &nphysics2d::world::World<f32> {
