@@ -3,6 +3,7 @@ use crate::resources;
 use minimum::component::CloneComponentPrototype;
 use minimum::entity::EntityPrototype;
 
+use components::EditorShapeComponentPrototype;
 use components::PhysicsBodyComponentPrototype;
 use rand::Rng;
 
@@ -17,13 +18,14 @@ pub fn create_wall(
 ) {
     let color = glm::Vec4::new(0.0, 1.0, 1.0, 1.0);
 
+    use ncollide2d::shape::{Cuboid, ShapeHandle};
+    let shape = ShapeHandle::new(Cuboid::new(size / 2.0));
+
     let body_component_desc = {
-        use ncollide2d::shape::{Cuboid, ShapeHandle};
         use nphysics2d::material::{BasicMaterial, MaterialHandle};
         use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
-        let shape = ShapeHandle::new(Cuboid::new(size / 2.0));
-        let collider_desc = ColliderDesc::new(shape)
+        let collider_desc = ColliderDesc::new(shape.clone())
             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
             .collision_groups(
                 ncollide2d::world::CollisionGroups::new().with_membership(&[COLLISION_GROUP_WALL]),
@@ -49,6 +51,7 @@ pub fn create_wall(
             components::DebugDrawRectComponent::new(size, color),
         )),
         Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
+        Box::new(EditorShapeComponentPrototype::new(shape)),
     ]);
     entity_factory.enqueue_create(entity_prototype);
 }
@@ -58,13 +61,14 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
     let radius = 15.0;
     let color = glm::Vec4::new(0.0, 1.0, 0.0, 1.0);
 
+    use ncollide2d::shape::{Ball, ShapeHandle};
+    let shape = ShapeHandle::new(Ball::new(radius));
+
     let body_component_desc = {
-        use ncollide2d::shape::{Ball, ShapeHandle};
         use nphysics2d::material::{BasicMaterial, MaterialHandle};
         use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
-        let shape = ShapeHandle::new(Ball::new(radius));
-        let collider_desc = ColliderDesc::new(shape)
+        let collider_desc = ColliderDesc::new(shape.clone())
             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
             .collision_groups(
                 ncollide2d::world::CollisionGroups::new()
@@ -96,6 +100,7 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
             components::DebugDrawCircleComponent::new(radius, color),
         )),
         Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
+        Box::new(EditorShapeComponentPrototype::new(shape)),
     ]);
     entity_factory.enqueue_create(entity_prototype);
 }
@@ -113,13 +118,14 @@ pub fn create_bullet(
 
     let restitution = rng.gen_range(0.8, 1.0);
 
+    use ncollide2d::shape::{Ball, ShapeHandle};
+    let shape = ShapeHandle::new(Ball::new(radius));
+
     let body_component_desc = {
-        use ncollide2d::shape::{Ball, ShapeHandle};
         use nphysics2d::material::{BasicMaterial, MaterialHandle};
         use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
-        let shape = ShapeHandle::new(Ball::new(radius));
-        let collider_desc = ColliderDesc::new(shape)
+        let collider_desc = ColliderDesc::new(shape.clone())
             .material(MaterialHandle::new(BasicMaterial::new(restitution, 0.0)))
             .collision_groups(
                 ncollide2d::world::CollisionGroups::new()
@@ -149,6 +155,7 @@ pub fn create_bullet(
             components::VelocityComponent::new(velocity),
         )),
         Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
+        Box::new(EditorShapeComponentPrototype::new(shape)),
         Box::new(CloneComponentPrototype::new(
             components::DebugDrawCircleComponent::new(radius, color),
         )),

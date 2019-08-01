@@ -1,5 +1,8 @@
-mod update_debug_draw;
-pub use update_debug_draw::UpdateDebugDraw;
+mod clear_debug_draw;
+pub use clear_debug_draw::ClearDebugDraw;
+
+mod debug_draw_components;
+pub use debug_draw_components::DebugDrawComponents;
 
 mod gather_input;
 pub use gather_input::GatherInput;
@@ -23,3 +26,9 @@ pub use update_position_with_velocity::UpdatePositionWithVelocity;
 mod imgui;
 pub use self::imgui::ImguiBeginFrame;
 pub use self::imgui::RenderImguiMainMenu;
+
+mod editor;
+pub use editor::EditorDrawShapes;
+pub use editor::EditorHandleInput;
+pub use editor::EditorUpdateCollisionWorld;
+pub use editor::EditorUpdateShapesWithPosition;

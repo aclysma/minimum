@@ -78,6 +78,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
+        .with_resource(resources::EditorCollisionWorld::new())
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
@@ -87,6 +88,9 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
         .with_component_and_free_handler::<_, _, components::PhysicsBodyComponentFreeHandler>(
             <components::PhysicsBodyComponent as Component>::Storage::new(),
+        )
+        .with_component_and_free_handler::<_, _, components::EditorShapeComponentFreeHandler>(
+            <components::EditorShapeComponent as Component>::Storage::new(),
         )
         //TODO: Ideally we don't need to register the factory in addition to the component itself
         .with_component_factory(CloneComponentFactory::<components::PositionComponent>::new())
@@ -99,6 +103,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(CloneComponentFactory::<components::BulletComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
         .with_component_factory(components::PhysicsBodyComponentFactory::new())
+        .with_component_factory(components::EditorShapeComponentFactory::new())
         .build();
 
     // Assets you want to always have available could be loaded here
@@ -194,6 +199,7 @@ fn dispatcher_thread(world: minimum::systems::World) -> minimum::systems::World 
         //TODO: Explore non-intrusive method for defining task dependencies
         //TODO: Explore flags to turn steps on/off
         minimum::async_dispatcher::ExecuteSequential::new(vec![
+            dispatch_ctx.run_task(tasks::ClearDebugDraw),
             dispatch_ctx.run_task(tasks::ImguiBeginFrame),
             dispatch_ctx.run_task(tasks::UpdateTimeState),
             dispatch_ctx.run_task(tasks::GatherInput),
@@ -203,7 +209,11 @@ fn dispatcher_thread(world: minimum::systems::World) -> minimum::systems::World 
             dispatch_ctx.run_task(tasks::UpdatePhysics),
             dispatch_ctx.run_task(tasks::UpdatePositionFromPhysics),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
-            dispatch_ctx.run_task(tasks::UpdateDebugDraw),
+            dispatch_ctx.run_task(tasks::EditorUpdateShapesWithPosition),
+            dispatch_ctx.run_task(tasks::EditorUpdateCollisionWorld),
+            dispatch_ctx.run_task(tasks::EditorHandleInput),
+            dispatch_ctx.run_task(tasks::EditorDrawShapes),
+            dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_world(|world| {
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("render");

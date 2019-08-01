@@ -22,9 +22,7 @@ pub struct TaskContext {
 
 impl TaskContext {
     pub fn new(context_flags: usize) -> Self {
-        TaskContext {
-            context_flags
-        }
+        TaskContext { context_flags }
     }
 
     pub fn context_flags(&self) -> usize {
@@ -32,7 +30,7 @@ impl TaskContext {
     }
 }
 
-pub trait Task : typename::TypeName {
+pub trait Task: typename::TypeName {
     type RequiredResources: for<'a> systems::DataRequirement<'a>
         + crate::async_dispatcher::RequiresResources<ResourceId>
         + Send
@@ -40,7 +38,11 @@ pub trait Task : typename::TypeName {
 
     const REQUIRED_FLAGS: usize;
 
-    fn run(&mut self, _task_context: &TaskContext, data: <Self::RequiredResources as systems::DataRequirement>::Borrow);
+    fn run(
+        &mut self,
+        _task_context: &TaskContext,
+        data: <Self::RequiredResources as systems::DataRequirement>::Borrow,
+    );
 }
 
 impl crate::async_dispatcher::ResourceIdTrait for ResourceId {}
@@ -163,9 +165,7 @@ impl MinimumDispatcher {
         if world.has_value::<DispatchControl>() {
             let dispatch_control = world.try_fetch_mut::<DispatchControl>();
             *dispatch_control.unwrap().next_frame_context_flags_mut() = context_flags;
-        }
-        else
-        {
+        } else {
             world.insert(DispatchControl::new(context_flags));
         }
 
@@ -183,22 +183,23 @@ impl MinimumDispatcher {
     {
         let world = self.world.clone();
 
-
         self.dispatcher.enter_game_loop(move |dispatcher| {
-
             if world.borrow().fetch::<DispatchControl>().should_terminate() {
                 return None;
             }
 
             let context_flags = {
-                world.borrow().fetch::<DispatchControl>().next_frame_context_flags()
+                world
+                    .borrow()
+                    .fetch::<DispatchControl>()
+                    .next_frame_context_flags()
             };
 
             info!("starting frame with context_flags {}", context_flags);
             let ctx = Arc::new(MinimumDispatcherContext {
                 dispatcher: dispatcher.clone(),
                 world: world.clone(),
-                context_flags
+                context_flags,
             });
 
             Some((f)(ctx))
@@ -217,7 +218,7 @@ impl MinimumDispatcher {
 pub struct MinimumDispatcherContext {
     dispatcher: Arc<Dispatcher<ResourceId>>,
     world: Arc<systems::TrustCell<systems::World>>,
-    context_flags: usize
+    context_flags: usize,
 }
 
 //TODO: I don't like the naming on the member functions here
@@ -271,14 +272,18 @@ impl MinimumDispatcherContext {
             )
             .map(move |acquired_resources| {
                 acquired_resources.visit(move |resources| {
-
                     //TODO: We should not acquire resources for tasks we aren't going to run
                     if (T::REQUIRED_FLAGS & context_flags) == T::REQUIRED_FLAGS {
                         let typename = T::type_name();
                         let _scope_timer = crate::util::ScopeTimer::new(&typename);
                         task.run(&TaskContext::new(context_flags), resources);
                     } else {
-                        trace!("skipping task {} requires: {} has: {}", T::type_name(), T::REQUIRED_FLAGS, context_flags);
+                        trace!(
+                            "skipping task {} requires: {} has: {}",
+                            T::type_name(),
+                            T::REQUIRED_FLAGS,
+                            context_flags
+                        );
                     }
                 });
             }),

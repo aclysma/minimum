@@ -1,5 +1,6 @@
 mod debug_draw;
 mod debug_options;
+mod editor_collision_world;
 mod game_control;
 mod imgui_manager;
 mod input_manager;
@@ -10,6 +11,7 @@ mod window_interface;
 
 pub use debug_draw::DebugDraw;
 pub use debug_options::DebugOptions;
+pub use editor_collision_world::EditorCollisionWorld;
 pub use game_control::GameControl;
 pub use imgui_manager::ImguiManager;
 pub use input_manager::InputManager;

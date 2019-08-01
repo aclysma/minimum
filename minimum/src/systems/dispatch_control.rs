@@ -1,14 +1,13 @@
-
 pub struct DispatchControl {
     next_frame_context_flags: usize,
-    should_terminate: bool
+    should_terminate: bool,
 }
 
 impl DispatchControl {
     pub fn new(context_flags: usize) -> Self {
         DispatchControl {
             next_frame_context_flags: context_flags,
-            should_terminate: false
+            should_terminate: false,
         }
     }
 

@@ -5,8 +5,8 @@ use crate::components;
 use crate::resources::DebugDraw;
 
 #[derive(typename::TypeName)]
-pub struct UpdateDebugDraw;
-impl Task for UpdateDebugDraw {
+pub struct DebugDrawComponents;
+impl Task for DebugDrawComponents {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<minimum::EntitySet>,
@@ -23,8 +23,6 @@ impl Task for UpdateDebugDraw {
     ) {
         let (mut debug_draw, entity_set, circle_components, rect_components, position_components) =
             data;
-
-        debug_draw.clear();
 
         for (entity_index, circle) in circle_components.iter(&entity_set) {
             if let Some(position) = position_components.get(&entity_index) {

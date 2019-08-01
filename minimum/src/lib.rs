@@ -1,4 +1,3 @@
-
 // Used for getting name of type, but only available in nightly
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 
@@ -30,6 +29,7 @@ pub use component::ComponentPrototype;
 pub use component::ComponentStorage;
 pub use component::{ReadComponent, ReadComponentOption, WriteComponent, WriteComponentOption};
 
+pub use systems::DispatchControl;
 pub use systems::Read;
 pub use systems::ReadOption;
 pub use systems::Resource;
@@ -37,7 +37,6 @@ pub use systems::World;
 pub use systems::WorldBuilder;
 pub use systems::Write;
 pub use systems::WriteOption;
-pub use systems::DispatchControl;
 
 #[cfg(feature = "async_support")]
 pub use systems::async_dispatch as dispatch;
