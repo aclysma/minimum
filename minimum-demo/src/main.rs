@@ -86,6 +86,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component(<components::PlayerComponent as Component>::Storage::new())
         .with_component(<components::BulletComponent as Component>::Storage::new())
         .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
+        .with_component(<components::EditorSelectedComponent as Component>::Storage::new())
         .with_component_and_free_handler::<_, _, components::PhysicsBodyComponentFreeHandler>(
             <components::PhysicsBodyComponent as Component>::Storage::new(),
         )
@@ -215,6 +216,20 @@ fn dispatcher_thread(world: minimum::systems::World) -> minimum::systems::World 
             dispatch_ctx.run_task(tasks::EditorDrawShapes),
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_world(|world| {
+
+                //TODO: Figure out a way to fetch all components
+                {
+                    let selected_components = world.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
+                    let entity_set = world.fetch::<minimum::EntitySet>();
+
+                    let mut selected_count = 0;
+                    for (entity_handle, selected) in selected_components.iter(&entity_set) {
+                        selected_count += 1;
+                    }
+
+                    println!("selected: {}", selected_count);
+                }
+
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("render");
                     render(world);

@@ -55,7 +55,7 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
     ) {
         let mut editor_collision_world =
             world.fetch_mut::<crate::resources::EditorCollisionWorld>();
-        let physics_world: &mut ncollide2d::world::CollisionWorld<f32, ()> =
+        let physics_world: &mut ncollide2d::world::CollisionWorld<f32, EntityHandle> =
             editor_collision_world.world_mut();
 
         for entity_handle in entity_handles {
@@ -123,7 +123,7 @@ impl ComponentFactory<EditorShapeComponentPrototype> for EditorShapeComponentFac
                     data.shape_handle.clone(),
                     CollisionGroups::new(),
                     GeometricQueryType::Proximity(0.001),
-                    (),
+                    entity_handle,
                 );
 
                 entity.add_component(

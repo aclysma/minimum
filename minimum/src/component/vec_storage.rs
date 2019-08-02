@@ -128,6 +128,12 @@ impl<T: Component> VecComponentStorage<T> {
             .iter_mut()
             .filter_map(|component_key| component_key.as_mut())
     }
+
+    pub fn free_all(&mut self) {
+        for component in &mut self.components {
+            *component = None;
+        }
+    }
 }
 
 impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {

@@ -27,7 +27,7 @@ impl Task for GatherInput {
         let (window, window_interface, mut imgui_manager, mut input_manager, mut game_control) =
             data;
 
-        input_manager.clear_events_from_previous_frame();
+        input_manager.pre_handle_events();
         let mut is_close_requested = false;
 
         let imgui_want_capture_keyboard = imgui_manager.want_capture_keyboard();
