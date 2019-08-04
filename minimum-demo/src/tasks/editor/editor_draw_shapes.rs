@@ -1,5 +1,5 @@
 use minimum::component::ComponentStorage;
-use minimum::systems::{DataRequirement, Read, Write};
+use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{EntityHandle, ReadComponent, Task, TaskContext};
 
 use crate::components;

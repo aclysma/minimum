@@ -1,4 +1,4 @@
-use minimum::systems::{DataRequirement, Write};
+use minimum::resource::{DataRequirement, Write};
 
 use crate::resources::EditorCollisionWorld;
 

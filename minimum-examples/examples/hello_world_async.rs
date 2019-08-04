@@ -1,7 +1,7 @@
-use minimum::systems::{DataRequirement, Write};
+use minimum::resource::{DataRequirement, Write};
 
 use minimum::async_dispatcher::ExecuteSequential;
-use minimum::systems::async_dispatch::{MinimumDispatcher, Task};
+use minimum::resource::async_dispatch::{MinimumDispatcher, Task};
 use minimum::WorldBuilder;
 
 // Mock a physics system

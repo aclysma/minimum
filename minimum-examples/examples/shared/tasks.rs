@@ -1,4 +1,4 @@
-//use minimum::systems::{
+//use minimum::resource::{
 //    Task,
 //    DataRequirement,
 //    Write

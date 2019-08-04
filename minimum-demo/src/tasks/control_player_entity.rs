@@ -1,4 +1,4 @@
-use minimum::systems::{DataRequirement, Read, Write};
+use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
 use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState, TimeState};

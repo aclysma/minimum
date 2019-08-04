@@ -1,4 +1,4 @@
-use minimum::systems::{DataRequirement, Read, Write};
+use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ComponentStorage, ReadComponent, Task, TaskContext};
 
 use crate::components;

@@ -1,4 +1,4 @@
-use minimum::systems::{DataRequirement, Read};
+use minimum::resource::{DataRequirement, Read};
 use minimum::{Task, TaskContext};
 
 use crate::resources::TimeState;

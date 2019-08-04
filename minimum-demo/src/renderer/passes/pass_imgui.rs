@@ -13,7 +13,7 @@ use rendy::{
     util::types::vertex,
 };
 
-use minimum::systems::World;
+use minimum::resource::World;
 
 use nalgebra_glm as glm;
 
@@ -46,7 +46,7 @@ const UNIFORM_SIZE: u64 = std::mem::size_of::<UniformArgs>() as u64;
 #[derive(Debug, Default)]
 pub struct ImguiRenderPipelineDesc;
 
-impl<B> SimpleGraphicsPipelineDesc<B, minimum::systems::World> for ImguiRenderPipelineDesc
+impl<B> SimpleGraphicsPipelineDesc<B, minimum::resource::World> for ImguiRenderPipelineDesc
 where
     B: gfx_hal::Backend,
 {

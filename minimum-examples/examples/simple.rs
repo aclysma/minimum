@@ -1,6 +1,6 @@
-use minimum::systems::{DataRequirement, Read, World, WorldBuilder, Write};
+use minimum::resource::{DataRequirement, Read, World, WorldBuilder, Write};
 
-use minimum::systems::simple_dispatch::Task;
+use minimum::resource::simple_dispatch::Task;
 
 use minimum::component::{Component, ComponentStorage};
 use minimum::EntitySet;
@@ -121,7 +121,7 @@ fn main() {
     // Create a bunch of objects
     create_objects(&world);
 
-    use minimum::systems::simple_dispatch::MinimumDispatcher;
+    use minimum::resource::simple_dispatch::MinimumDispatcher;
     let dispatcher = MinimumDispatcher::new(world);
 
     // Run

@@ -1,6 +1,6 @@
-use minimum::systems::{DataRequirement, Read, World, WorldBuilder, Write};
+use minimum::resource::{DataRequirement, Read, World, WorldBuilder, Write};
 
-use minimum::systems::async_dispatch::Task;
+use minimum::resource::async_dispatch::Task;
 
 use minimum::async_dispatcher::ExecuteSequential;
 
@@ -123,7 +123,7 @@ fn main() {
     // Create a bunch of objects
     create_objects(&world);
 
-    use minimum::systems::async_dispatch::MinimumDispatcher;
+    use minimum::resource::async_dispatch::MinimumDispatcher;
     let dispatcher = MinimumDispatcher::new(world);
 
     dispatcher.enter_game_loop(|ctx| {

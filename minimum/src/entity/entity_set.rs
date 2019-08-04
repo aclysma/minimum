@@ -5,7 +5,7 @@ use super::Entity;
 use super::EntityFactory;
 use super::EntityHandle;
 use super::EntityRef;
-use crate::systems;
+use crate::resource;
 
 use crate::component;
 use component::Component;
@@ -84,12 +84,12 @@ impl EntitySet {
         Some(EntityRef::new(e, handle))
     }
 
-    pub fn clear(&mut self, world: &systems::World) {
+    pub fn clear(&mut self, world: &resource::World) {
         let entity_handles: Vec<_> = self.iter().map(|x| x.handle()).collect();
         self.do_flush_free(world, entity_handles.as_slice());
     }
 
-    pub fn flush_free(&mut self, world: &systems::World) {
+    pub fn flush_free(&mut self, world: &resource::World) {
         let entity_handles: Vec<_> = {
             let delete_components =
                 world.fetch_mut::<<PendingDeleteComponent as Component>::Storage>();
@@ -99,7 +99,7 @@ impl EntitySet {
         self.do_flush_free(world, &entity_handles);
     }
 
-    pub fn do_flush_free(&mut self, world: &systems::World, entity_handles: &[EntityHandle]) {
+    pub fn do_flush_free(&mut self, world: &resource::World, entity_handles: &[EntityHandle]) {
         self.component_registry
             .on_entities_free(world, entity_handles);
 
@@ -108,18 +108,18 @@ impl EntitySet {
         }
     }
 
-    pub fn flush_creates(&mut self, world: &systems::World) {
+    pub fn flush_creates(&mut self, world: &resource::World) {
         world
             .fetch_mut::<EntityFactory>()
             .flush_creates(world, self);
         self.component_registry.on_flush_creates(world, self);
     }
 
-    pub fn visit_components(&self, world: &systems::World, entity_handles: &[EntityHandle]) {
+    pub fn visit_components(&self, world: &resource::World, entity_handles: &[EntityHandle]) {
         self.component_registry.visit_components(world, entity_handles);
     }
 
-    pub fn update(&mut self, world: &systems::World) {
+    pub fn update(&mut self, world: &resource::World) {
         self.flush_free(world);
         self.flush_creates(world);
     }

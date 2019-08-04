@@ -1,4 +1,4 @@
-use minimum::systems::{DataRequirement, Read};
+use minimum::resource::{DataRequirement, Read};
 
 use crate::resources::PhysicsManager;
 

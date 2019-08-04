@@ -20,7 +20,7 @@ pub type EntityHandle = GenSlabKey<Entity>;
 mod tests {
     use super::*;
     use crate::component;
-    use crate::systems;
+    use crate::resource;
     use component::Component;
     use component::ComponentStorage;
     use component::VecComponentStorage;
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn test_entity_count() {
-        let mut world = systems::World::new();
+        let mut world = resource::World::new();
         let mut entity_set = EntitySet::new();
         world.insert(<TestComponent as Component>::Storage::new());
         world.insert(<PendingDeleteComponent as Component>::Storage::new());
@@ -66,7 +66,7 @@ mod tests {
         // Save on typing..
         type Storage = <self::TestComponent as Component>::Storage;
 
-        let mut world = systems::World::new();
+        let mut world = resource::World::new();
         let mut entity_set = EntitySet::new();
         world.insert(<TestComponent as Component>::Storage::new());
         world.insert(<PendingDeleteComponent as Component>::Storage::new());
@@ -97,7 +97,7 @@ mod tests {
         // Save on typing..
         type Storage = <self::TestComponent as Component>::Storage;
 
-        let mut world = systems::World::new();
+        let mut world = resource::World::new();
         let mut entity_set = EntitySet::new();
         world.insert(<TestComponent as Component>::Storage::new());
         entity_set.register_component_type::<TestComponent>();

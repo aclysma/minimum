@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::systems;
+use super::resource;
 use crate::{async_dispatcher, DispatchControl};
 
 use async_dispatcher::{
@@ -11,7 +11,7 @@ use async_dispatcher::{
     DispatcherBuilder, RequiresResources,
 };
 
-use systems::ResourceId;
+use resource::ResourceId;
 
 //
 // Task
@@ -31,7 +31,7 @@ impl TaskContext {
 }
 
 pub trait Task: typename::TypeName {
-    type RequiredResources: for<'a> systems::DataRequirement<'a>
+    type RequiredResources: for<'a> resource::DataRequirement<'a>
         + crate::async_dispatcher::RequiresResources<ResourceId>
         + Send
         + 'static;
@@ -41,7 +41,7 @@ pub trait Task: typename::TypeName {
     fn run(
         &mut self,
         _task_context: &TaskContext,
-        data: <Self::RequiredResources as systems::DataRequirement>::Borrow,
+        data: <Self::RequiredResources as resource::DataRequirement>::Borrow,
     );
 }
 
@@ -50,7 +50,7 @@ impl crate::async_dispatcher::ResourceIdTrait for ResourceId {}
 //
 // Hook up Read/Write to the resource system
 //
-impl<T: systems::Resource> RequiresResources<ResourceId> for systems::Read<T> {
+impl<T: resource::Resource> RequiresResources<ResourceId> for resource::Read<T> {
     fn reads() -> Vec<ResourceId> {
         vec![ResourceId::new::<T>()]
     }
@@ -59,7 +59,7 @@ impl<T: systems::Resource> RequiresResources<ResourceId> for systems::Read<T> {
     }
 }
 
-impl<T: systems::Resource> RequiresResources<ResourceId> for systems::Write<T> {
+impl<T: resource::Resource> RequiresResources<ResourceId> for resource::Write<T> {
     fn reads() -> Vec<ResourceId> {
         vec![]
     }
@@ -68,7 +68,7 @@ impl<T: systems::Resource> RequiresResources<ResourceId> for systems::Write<T> {
     }
 }
 
-impl<T: systems::Resource> RequiresResources<ResourceId> for Option<systems::Read<T>> {
+impl<T: resource::Resource> RequiresResources<ResourceId> for Option<resource::Read<T>> {
     fn reads() -> Vec<ResourceId> {
         vec![ResourceId::new::<T>()]
     }
@@ -77,7 +77,7 @@ impl<T: systems::Resource> RequiresResources<ResourceId> for Option<systems::Rea
     }
 }
 
-impl<T: systems::Resource> RequiresResources<ResourceId> for Option<systems::Write<T>> {
+impl<T: resource::Resource> RequiresResources<ResourceId> for Option<resource::Write<T>> {
     fn reads() -> Vec<ResourceId> {
         vec![]
     }
@@ -94,7 +94,7 @@ where
     T: RequiresResources<ResourceId> + 'static + Send,
 {
     _lock_guards: AcquiredResourcesLockGuards<T>,
-    world: Arc<systems::TrustCell<systems::World>>,
+    world: Arc<resource::TrustCell<resource::World>>,
 }
 
 impl<T> AcquiredResources<T>
@@ -105,7 +105,7 @@ where
     where
         'a: 'b,
         F: FnOnce(T::Borrow),
-        T: systems::DataRequirement<'b>,
+        T: resource::DataRequirement<'b>,
     {
         let trust_cell_ref = (*self.world).borrow();
         let world_ref = trust_cell_ref.value();
@@ -121,7 +121,7 @@ where
 //
 pub fn acquire_resources<T>(
     dispatcher: Arc<Dispatcher<ResourceId>>,
-    world: Arc<systems::TrustCell<systems::World>>,
+    world: Arc<crate::util::TrustCell<resource::World>>,
 ) -> impl futures::future::Future<Item = AcquiredResources<T>, Error = ()>
 where
     T: RequiresResources<ResourceId> + 'static + Send,
@@ -152,11 +152,11 @@ pub fn acquire_critical_section_write(
 
 pub struct MinimumDispatcher {
     dispatcher: Dispatcher<ResourceId>,
-    world: Arc<systems::TrustCell<systems::World>>,
+    world: Arc<crate::util::TrustCell<resource::World>>,
 }
 
 impl MinimumDispatcher {
-    pub fn new(mut world: systems::World, context_flags: usize) -> MinimumDispatcher {
+    pub fn new(mut world: resource::World, context_flags: usize) -> MinimumDispatcher {
         let mut dispatcher_builder = DispatcherBuilder::new();
         for resource in world.keys() {
             dispatcher_builder.register_resource_id(resource.clone());
@@ -171,12 +171,12 @@ impl MinimumDispatcher {
 
         MinimumDispatcher {
             dispatcher: dispatcher_builder.build(),
-            world: Arc::new(systems::TrustCell::new(world)),
+            world: Arc::new(crate::util::TrustCell::new(world)),
         }
     }
 
     // Call this to kick off processing.
-    pub fn enter_game_loop<F, FutureT>(self, /* context_flags: usize,*/ f: F) -> systems::World
+    pub fn enter_game_loop<F, FutureT>(self, /* context_flags: usize,*/ f: F) -> resource::World
     where
         F: Fn(Arc<MinimumDispatcherContext>) -> FutureT + Send + Sync + 'static,
         FutureT: futures::future::Future<Item = (), Error = ()> + Send + Sync + 'static,
@@ -217,7 +217,7 @@ impl MinimumDispatcher {
 
 pub struct MinimumDispatcherContext {
     dispatcher: Arc<Dispatcher<ResourceId>>,
-    world: Arc<systems::TrustCell<systems::World>>,
+    world: Arc<resource::TrustCell<resource::World>>,
     context_flags: usize,
 }
 
@@ -225,7 +225,7 @@ pub struct MinimumDispatcherContext {
 impl MinimumDispatcherContext {
     pub fn has_resource<T>(&self) -> bool
     where
-        T: systems::Resource,
+        T: resource::Resource,
     {
         (*self.world).borrow().value().has_value::<T>()
     }
@@ -233,7 +233,7 @@ impl MinimumDispatcherContext {
     //WARNING: Using the trust cell here is a bit dangerous, it's much
     //safer to use visit_world and visit_world_mut as they appropriately
     //wait to acquire locks to ensure safety
-    pub fn world(&self) -> Arc<systems::TrustCell<systems::World>> {
+    pub fn world(&self) -> Arc<crate::util::TrustCell<resource::World>> {
         self.world.clone()
     }
 
@@ -294,7 +294,7 @@ impl MinimumDispatcherContext {
     //inner arc.
     pub fn visit_world<F>(&self, f: F) -> Box<impl futures::future::Future<Item = (), Error = ()>>
     where
-        F: FnOnce(&systems::World),
+        F: FnOnce(&resource::World),
     {
         use futures::future::Future;
 
@@ -314,7 +314,7 @@ impl MinimumDispatcherContext {
         f: F,
     ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
     where
-        F: FnOnce(&mut systems::World),
+        F: FnOnce(&mut resource::World),
     {
         use futures::future::Future;
 

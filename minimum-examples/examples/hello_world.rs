@@ -1,4 +1,4 @@
-use minimum::systems::{
+use minimum::resource::{
     simple_dispatch::MinimumDispatcher, simple_dispatch::Task, DataRequirement, WorldBuilder, Write,
 };
 

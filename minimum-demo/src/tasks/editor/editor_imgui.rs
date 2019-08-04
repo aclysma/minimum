@@ -1,4 +1,4 @@
-use minimum::systems::{DataRequirement, Read, Write, WriteBorrow};
+use minimum::resource::{DataRequirement, Read, Write, WriteBorrow};
 use minimum::ComponentStorage;
 use minimum::{EntityHandle, Task, TaskContext, WriteComponent};
 

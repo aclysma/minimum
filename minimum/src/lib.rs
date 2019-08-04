@@ -11,7 +11,7 @@ pub mod async_dispatcher;
 pub mod component;
 pub mod entity;
 pub mod slab;
-pub mod systems;
+pub mod resource;
 pub mod util;
 
 pub use entity::Entity;
@@ -29,29 +29,29 @@ pub use component::ComponentPrototype;
 pub use component::ComponentStorage;
 pub use component::{ReadComponent, ReadComponentOption, WriteComponent, WriteComponentOption};
 
-pub use systems::DispatchControl;
-pub use systems::Read;
-pub use systems::ReadOption;
-pub use systems::Resource;
-pub use systems::World;
-pub use systems::WorldBuilder;
-pub use systems::Write;
-pub use systems::WriteOption;
+pub use resource::DispatchControl;
+pub use resource::Read;
+pub use resource::ReadOption;
+pub use resource::Resource;
+pub use resource::World;
+pub use resource::WorldBuilder;
+pub use resource::Write;
+pub use resource::WriteOption;
 
 #[cfg(feature = "async_support")]
-pub use systems::async_dispatch as dispatch;
-
-#[cfg(not(feature = "async_support"))]
-pub use systems::simple_dispatch as dispatch;
-
-#[cfg(feature = "async_support")]
-pub use systems::async_dispatch::MinimumDispatcher;
-#[cfg(feature = "async_support")]
-pub use systems::async_dispatch::Task;
-#[cfg(feature = "async_support")]
-pub use systems::async_dispatch::TaskContext;
+pub use resource::async_dispatch as dispatch;
 
 #[cfg(not(feature = "async_support"))]
-pub use systems::simple_dispatch::MinimumDispatcher;
+pub use resource::simple_dispatch as dispatch;
+
+#[cfg(feature = "async_support")]
+pub use resource::async_dispatch::MinimumDispatcher;
+#[cfg(feature = "async_support")]
+pub use resource::async_dispatch::Task;
+#[cfg(feature = "async_support")]
+pub use resource::async_dispatch::TaskContext;
+
 #[cfg(not(feature = "async_support"))]
-pub use systems::simple_dispatch::Task;
+pub use resource::simple_dispatch::MinimumDispatcher;
+#[cfg(not(feature = "async_support"))]
+pub use resource::simple_dispatch::Task;

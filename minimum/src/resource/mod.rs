@@ -8,10 +8,6 @@ use mopa::Any;
 
 use std::marker::PhantomData;
 
-mod trust_cell;
-pub use trust_cell::Ref;
-pub use trust_cell::RefMut;
-pub use trust_cell::TrustCell;
 
 #[cfg(feature = "async_support")]
 pub mod async_dispatch;
@@ -21,10 +17,12 @@ pub mod simple_dispatch;
 pub use dispatch_control::DispatchControl;
 
 use crate::EntitySet;
-use crate::{systems, EntityFactory, PendingDeleteComponent};
+use crate::{resource, EntityFactory, PendingDeleteComponent};
 
 use crate::component::ComponentFactory;
 use crate::component::ComponentPrototype;
+
+use crate::util::{TrustCell, Ref, RefMut};
 
 //
 // ResourceId

@@ -76,7 +76,7 @@ pub trait Component: Sized + Send + Sync + 'static {
 
 }
 
-pub type ReadComponent<T> = crate::systems::Read<<T as Component>::Storage>;
-pub type WriteComponent<T> = crate::systems::Write<<T as Component>::Storage>;
-pub type ReadComponentOption<T> = crate::systems::ReadOption<<T as Component>::Storage>;
-pub type WriteComponentOption<T> = crate::systems::WriteOption<<T as Component>::Storage>;
+pub type ReadComponent<T> = crate::resource::Read<<T as Component>::Storage>;
+pub type WriteComponent<T> = crate::resource::Write<<T as Component>::Storage>;
+pub type ReadComponentOption<T> = crate::resource::ReadOption<<T as Component>::Storage>;
+pub type WriteComponentOption<T> = crate::resource::WriteOption<<T as Component>::Storage>;

@@ -13,10 +13,10 @@ mod renderer;
 mod resources;
 mod tasks;
 
-use minimum::systems::async_dispatch::MinimumDispatcher;
+use minimum::resource::async_dispatch::MinimumDispatcher;
 
 use minimum::component::Component;
-use minimum::systems::World;
+use minimum::resource::World;
 use minimum::CloneComponentFactory;
 
 #[derive(Copy, Clone, strum_macros::EnumCount)]
@@ -69,7 +69,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_title("Vore")
         .build(&event_loop)?;
 
-    let mut world = minimum::systems::WorldBuilder::new()
+    let mut world = minimum::resource::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
         .with_resource(resources::DebugDraw::new())
         .with_resource(resources::InputManager::new())
@@ -186,7 +186,7 @@ fn create_objects(world: &World) {
     );
 }
 
-fn dispatcher_thread(world: minimum::systems::World) -> minimum::systems::World {
+fn dispatcher_thread(world: minimum::resource::World) -> minimum::resource::World {
     info!("dispatch thread started");
 
     let context_flags = crate::context_flags::AUTHORITY_CLIENT
@@ -284,7 +284,7 @@ fn dispatcher_thread(world: minimum::systems::World) -> minimum::systems::World 
     world
 }
 
-pub fn render(world: &minimum::systems::World) {
+pub fn render(world: &minimum::resource::World) {
     let window = world.fetch::<winit::window::Window>();
     let mut renderer = world.fetch_mut::<crate::renderer::Renderer>();
     renderer.render(&window, &world);

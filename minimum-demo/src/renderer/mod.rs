@@ -17,7 +17,7 @@ use rendy::{
     graph::GraphBuilder,
 };
 
-use minimum::systems::World;
+use minimum::resource::World;
 
 use crate::renderer::passes::{DebugDrawRenderPipeline, ImguiRenderPipeline};
 
@@ -62,7 +62,7 @@ impl Renderer {
     pub fn init_render_graph(
         &mut self,
         window: &winit::window::Window,
-        world: &minimum::systems::World,
+        world: &minimum::resource::World,
     ) {
         let surface = self.factory.create_surface(window);
 
@@ -133,7 +133,7 @@ impl Renderer {
     //        self.factory.maintain(&mut self.families);
     //    }
 
-    pub fn render(&mut self, window: &winit::window::Window, world: &minimum::systems::World) {
+    pub fn render(&mut self, window: &winit::window::Window, world: &minimum::resource::World) {
         self.factory.maintain(&mut self.families);
 
         // Update the render state
@@ -167,7 +167,7 @@ impl Renderer {
         }
     }
 
-    pub fn dispose(mut self, world: &minimum::systems::World) {
+    pub fn dispose(mut self, world: &minimum::resource::World) {
         match self.graph {
             Some(x) => x.dispose(&mut self.factory, world),
             _ => {}
