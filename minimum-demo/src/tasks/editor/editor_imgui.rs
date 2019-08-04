@@ -1,14 +1,9 @@
 use minimum::resource::{DataRequirement, Read, Write, WriteBorrow};
-use minimum::ComponentStorage;
-use minimum::{EntityHandle, Task, TaskContext, WriteComponent};
+use minimum::{Task, TaskContext, WriteComponent};
 
-use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, MouseButtons, RenderState, ImguiManager};
+use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, RenderState, ImguiManager};
 
 use crate::components::EditorSelectedComponent;
-use crate::tasks::DebugDrawComponents;
-use ncollide2d::world::CollisionGroups;
-
-use winit::event::VirtualKeyCode;
 
 #[derive(typename::TypeName)]
 pub struct EditorImgui;
@@ -50,7 +45,6 @@ impl Task for EditorImgui {
 
         let mut imgui_manager : WriteBorrow<ImguiManager> = imgui_manager;
         imgui_manager.with_ui(|ui| {
-            use imgui::im_str;
             ui.window(im_str!("Editor")).build((|| {
                 ui.text(format!("Selected Entities: {}", editor_selected_components.count()));
 //unsafe {

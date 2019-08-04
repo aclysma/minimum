@@ -1,4 +1,4 @@
-use super::resource;
+use crate::resource;
 use std::sync::Arc;
 use resource::ResourceMap;
 
@@ -52,9 +52,9 @@ pub struct MinimumDispatcherContext {
 //
 
 pub trait Task {
-    type RequiredResources: for<'a> super::DataRequirement<'a> + Send + 'static;
+    type RequiredResources: for<'a> crate::resource::DataRequirement<'a> + Send + 'static;
 
-    fn run(&mut self, data: <Self::RequiredResources as super::DataRequirement>::Borrow);
+    fn run(&mut self, data: <Self::RequiredResources as crate::resource::DataRequirement>::Borrow);
 }
 
 impl MinimumDispatcherContext {

@@ -1,11 +1,10 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
-use minimum::{EntityHandle, Task, TaskContext, WriteComponent};
+use minimum::{Task, TaskContext, WriteComponent};
 
 use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, MouseButtons, RenderState};
 
 use crate::components::EditorSelectedComponent;
-use crate::tasks::DebugDrawComponents;
 use ncollide2d::world::CollisionGroups;
 
 use winit::event::VirtualKeyCode;

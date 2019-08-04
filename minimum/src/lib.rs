@@ -5,14 +5,15 @@
 #[macro_use]
 extern crate log;
 
-#[cfg(feature = "async_support")]
-pub mod async_dispatcher;
-
 pub mod component;
+pub mod dispatch;
 pub mod entity;
 pub mod slab;
 pub mod resource;
 pub mod util;
+pub mod world;
+
+pub use dispatch::DispatchControl;
 
 pub use entity::Entity;
 pub use entity::EntityFactory;
@@ -29,7 +30,6 @@ pub use component::ComponentPrototype;
 pub use component::ComponentStorage;
 pub use component::{ReadComponent, ReadComponentOption, WriteComponent, WriteComponentOption};
 
-pub use resource::DispatchControl;
 pub use resource::Read;
 pub use resource::ReadOption;
 pub use resource::Resource;
@@ -39,19 +39,20 @@ pub use resource::Write;
 pub use resource::WriteOption;
 
 #[cfg(feature = "async_support")]
-pub use resource::async_dispatch as dispatch;
+pub use dispatch::async_dispatch;
 
-#[cfg(not(feature = "async_support"))]
-pub use resource::simple_dispatch as dispatch;
+pub use dispatch::simple_dispatch;
 
 #[cfg(feature = "async_support")]
-pub use resource::async_dispatch::MinimumDispatcher;
+pub use dispatch::async_dispatch::MinimumDispatcher;
 #[cfg(feature = "async_support")]
-pub use resource::async_dispatch::Task;
+pub use dispatch::async_dispatch::Task;
 #[cfg(feature = "async_support")]
-pub use resource::async_dispatch::TaskContext;
+pub use dispatch::async_dispatch::TaskContext;
 
 #[cfg(not(feature = "async_support"))]
-pub use resource::simple_dispatch::MinimumDispatcher;
+pub use dispatch::simple_dispatch::MinimumDispatcher;
 #[cfg(not(feature = "async_support"))]
-pub use resource::simple_dispatch::Task;
+pub use dispatch::simple_dispatch::Task;
+
+//pub use world::World;

@@ -1,6 +1,6 @@
 use minimum::resource::{DataRequirement, Read, ResourceMap, ResourceMapBuilder, Write};
 
-use minimum::resource::simple_dispatch::Task;
+use minimum::dispatch::simple_dispatch::Task;
 
 use minimum::component::{Component, ComponentStorage};
 use minimum::EntitySet;
@@ -121,7 +121,7 @@ fn main() {
     // Create a bunch of objects
     create_objects(&resource_map_builder);
 
-    use minimum::resource::simple_dispatch::MinimumDispatcher;
+    use minimum::dispatch::simple_dispatch::MinimumDispatcher;
     let dispatcher = MinimumDispatcher::new(resource_map_builder);
 
     // Run

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use super::resource;
-use crate::{async_dispatcher, DispatchControl};
+use crate::resource;
+use super::DispatchControl;
 
-use async_dispatcher::{
+use super::async_dispatcher::{
     acquire_critical_section_read as do_acquire_critical_section_read,
     acquire_critical_section_write as do_acquire_critical_section_write,
     acquire_resources as do_acquire_resources, AcquireCriticalSectionReadLockGuard,
@@ -12,6 +12,9 @@ use async_dispatcher::{
 };
 
 use resource::ResourceId;
+
+pub use super::async_dispatcher::ExecuteSequential;
+pub use super::async_dispatcher::ExecuteParallel;
 
 //
 // Task
@@ -32,7 +35,7 @@ impl TaskContext {
 
 pub trait Task: typename::TypeName {
     type RequiredResources: for<'a> resource::DataRequirement<'a>
-        + crate::async_dispatcher::RequiresResources<ResourceId>
+        + super::async_dispatcher::RequiresResources<ResourceId>
         + Send
         + 'static;
 
@@ -45,7 +48,7 @@ pub trait Task: typename::TypeName {
     );
 }
 
-impl crate::async_dispatcher::ResourceIdTrait for ResourceId {}
+impl super::async_dispatcher::ResourceIdTrait for ResourceId {}
 
 //
 // Hook up Read/Write to the resource system
@@ -94,7 +97,7 @@ where
     T: RequiresResources<ResourceId> + 'static + Send,
 {
     _lock_guards: AcquiredResourcesLockGuards<T>,
-    resource_map: Arc<resource::TrustCell<resource::ResourceMap>>,
+    resource_map: Arc<crate::util::TrustCell<resource::ResourceMap>>,
 }
 
 impl<T> AcquiredResources<T>
@@ -217,7 +220,7 @@ impl MinimumDispatcher {
 
 pub struct MinimumDispatcherContext {
     dispatcher: Arc<Dispatcher<ResourceId>>,
-    resource_map: Arc<resource::TrustCell<resource::ResourceMap>>,
+    resource_map: Arc<crate::util::TrustCell<resource::ResourceMap>>,
     context_flags: usize,
 }
 

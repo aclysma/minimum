@@ -13,7 +13,7 @@ mod renderer;
 mod resources;
 mod tasks;
 
-use minimum::resource::async_dispatch::MinimumDispatcher;
+use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
 use minimum::component::Component;
 use minimum::resource::ResourceMap;
@@ -199,7 +199,7 @@ fn dispatcher_thread(resource_map: minimum::resource::ResourceMap) -> minimum::r
     let mut resource_map = dispatcher.enter_game_loop(move |dispatch_ctx| {
         //TODO: Explore non-intrusive method for defining task dependencies
         //TODO: Explore flags to turn steps on/off
-        minimum::async_dispatcher::ExecuteSequential::new(vec![
+        minimum::async_dispatch::ExecuteSequential::new(vec![
             dispatch_ctx.run_task(tasks::ClearDebugDraw),
             dispatch_ctx.run_task(tasks::ImguiBeginFrame),
             dispatch_ctx.run_task(tasks::UpdateTimeState),

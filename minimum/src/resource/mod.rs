@@ -9,15 +9,10 @@ use mopa::Any;
 use std::marker::PhantomData;
 
 
-#[cfg(feature = "async_support")]
-pub mod async_dispatch;
-
-pub mod dispatch_control;
-pub mod simple_dispatch;
-pub use dispatch_control::DispatchControl;
+pub use crate::DispatchControl;
 
 use crate::EntitySet;
-use crate::{resource, EntityFactory, PendingDeleteComponent};
+use crate::{EntityFactory, PendingDeleteComponent};
 
 use crate::component::ComponentFactory;
 use crate::component::ComponentPrototype;

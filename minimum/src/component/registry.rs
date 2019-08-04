@@ -5,7 +5,6 @@ use super::ComponentStorage;
 use std::marker::PhantomData;
 
 use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
-use crate::entity::EntityRef;
 
 //
 // Handler can be implemented to run custom logic when entities are being destroyed

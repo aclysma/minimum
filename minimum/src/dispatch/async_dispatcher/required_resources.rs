@@ -1,5 +1,5 @@
 //use super::ResourceId;
-use crate::async_dispatcher::ResourceIdTrait;
+use super::ResourceIdTrait;
 use std::marker::PhantomData;
 
 // This is a helper that determines the reads/writes required for a system. I would have preferred

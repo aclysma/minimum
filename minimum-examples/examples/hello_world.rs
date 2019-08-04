@@ -1,6 +1,8 @@
 use minimum::resource::{
-    simple_dispatch::MinimumDispatcher, simple_dispatch::Task, DataRequirement, ResourceMapBuilder, Write,
+    DataRequirement, ResourceMapBuilder, Write,
 };
+
+use minimum::dispatch::simple_dispatch::{MinimumDispatcher, Task};
 
 //
 // This is an example resource. Resources contain data that tasks can operate on.
