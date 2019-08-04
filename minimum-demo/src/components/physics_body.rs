@@ -1,4 +1,5 @@
 use minimum::component::SlabComponentStorage;
+use minimum::component::DefaultComponentReflector;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
 use minimum::EntityHandle;
@@ -12,7 +13,7 @@ use nphysics2d::object::RigidBodyDesc;
 
 use std::collections::VecDeque;
 
-#[derive(Debug)]
+#[derive(Debug, typename::TypeName)]
 pub struct PhysicsBodyComponent {
     body_handle: BodyHandle,
 }
@@ -38,7 +39,8 @@ impl PhysicsBodyComponent {
 }
 
 impl minimum::Component for PhysicsBodyComponent {
-    type Storage = SlabComponentStorage<PhysicsBodyComponent>;
+    type Storage = SlabComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }
 
 //

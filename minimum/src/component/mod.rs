@@ -18,6 +18,7 @@ pub use registry::ComponentFreeHandler;
 pub use registry::ComponentRegistry;
 pub use slab_storage::SlabComponentStorage;
 pub use vec_storage::VecComponentStorage;
+use std::marker::PhantomData;
 
 //TODO: Make these take some sort of private index type to prevent someone from
 // trying to fetch components directly (these are not checking generation.. it's assumed
@@ -34,8 +35,45 @@ where
     fn get_mut(&mut self, entity: &EntityHandle) -> Option<&mut T>;
 }
 
+pub trait ComponentReflector: Send + Sync
+{
+    fn type_name() -> String;
+    fn to_string() -> String;
+}
+
+pub struct DefaultComponentReflector<T>
+where
+    T: Component
+{
+    phantom_data: PhantomData<T>
+}
+
+impl<T> ComponentReflector for DefaultComponentReflector<T>
+where
+    T: Component + typename::TypeName
+{
+    fn type_name() -> String {
+        T::type_name()
+    }
+
+    fn to_string() -> String {
+        "".to_string()
+    }
+
+//    pub fn new() ->  {
+//
+//    }
+}
+
 pub trait Component: Sized + Send + Sync + 'static {
     type Storage: ComponentStorage<Self>;
+    type Reflector: ComponentReflector;
+
+    fn get_name(&self) -> String {
+        <Self::Reflector as ComponentReflector>::type_name()
+    }
+
+
 }
 
 pub type ReadComponent<T> = crate::systems::Read<<T as Component>::Storage>;

@@ -32,3 +32,4 @@ pub use editor::EditorDrawShapes;
 pub use editor::EditorHandleInput;
 pub use editor::EditorUpdateCollisionWorld;
 pub use editor::EditorUpdateShapesWithPosition;
+pub use editor::EditorImgui;

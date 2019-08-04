@@ -1,8 +1,11 @@
 use super::Vec2;
 
 use minimum::component::Component;
+use minimum::component::VecComponentStorage;
+use minimum::component::SlabComponentStorage;
+use minimum::component::DefaultComponentReflector;
 
-#[derive(Debug)]
+#[derive(Debug, typename::TypeName)]
 pub struct PositionComponent {
     pub position: Vec2,
 }
@@ -14,10 +17,11 @@ impl PositionComponent {
 }
 
 impl Component for PositionComponent {
-    type Storage = minimum::component::VecComponentStorage<PositionComponent>;
+    type Storage = VecComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, typename::TypeName)]
 pub struct VelocityComponent {
     pub velocity: Vec2,
 }
@@ -29,10 +33,11 @@ impl VelocityComponent {
 }
 
 impl Component for VelocityComponent {
-    type Storage = minimum::component::SlabComponentStorage<VelocityComponent>;
+    type Storage = SlabComponentStorage<VelocityComponent>;
+    type Reflector = DefaultComponentReflector<Self>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, typename::TypeName)]
 pub struct SpeedMultiplierComponent {
     pub multiplier: f32,
 }
@@ -44,5 +49,6 @@ impl SpeedMultiplierComponent {
 }
 
 impl Component for SpeedMultiplierComponent {
-    type Storage = minimum::component::SlabComponentStorage<SpeedMultiplierComponent>;
+    type Storage = SlabComponentStorage<SpeedMultiplierComponent>;
+    type Reflector = DefaultComponentReflector<Self>;
 }

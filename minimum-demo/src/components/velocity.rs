@@ -1,6 +1,7 @@
 use minimum::component::SlabComponentStorage;
+use minimum::component::DefaultComponentReflector;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, typename::TypeName)]
 pub struct VelocityComponent {
     velocity: glm::Vec2,
 }
@@ -20,5 +21,6 @@ impl VelocityComponent {
 }
 
 impl minimum::Component for VelocityComponent {
-    type Storage = SlabComponentStorage<VelocityComponent>;
+    type Storage = SlabComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }

@@ -1,5 +1,6 @@
 use minimum::component::ComponentStorage;
 use minimum::component::VecComponentStorage;
+use minimum::component::DefaultComponentReflector;
 use minimum::Component;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
@@ -13,7 +14,7 @@ use ncollide2d::shape::ShapeHandle;
 use ncollide2d::world::{CollisionGroups, GeometricQueryType};
 use std::collections::VecDeque;
 
-#[derive(Clone)]
+#[derive(Clone, typename::TypeName)]
 pub struct EditorShapeComponent {
     shape_handle: ShapeHandle<f32>,
     collider_handle: ColliderHandle,
@@ -37,7 +38,8 @@ impl EditorShapeComponent {
 }
 
 impl minimum::Component for EditorShapeComponent {
-    type Storage = VecComponentStorage<EditorShapeComponent>;
+    type Storage = VecComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }
 
 //

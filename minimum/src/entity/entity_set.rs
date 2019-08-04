@@ -115,6 +115,10 @@ impl EntitySet {
         self.component_registry.on_flush_creates(world, self);
     }
 
+    pub fn visit_components(&self, world: &systems::World, entity_handles: &[EntityHandle]) {
+        self.component_registry.visit_components(world, entity_handles);
+    }
+
     pub fn update(&mut self, world: &systems::World) {
         self.flush_free(world);
         self.flush_creates(world);

@@ -1,6 +1,7 @@
 use minimum::component::SlabComponentStorage;
+use minimum::component::DefaultComponentReflector;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, typename::TypeName)]
 pub struct DebugDrawRectComponent {
     size: glm::Vec2,
     color: glm::Vec4,
@@ -21,5 +22,6 @@ impl DebugDrawRectComponent {
 }
 
 impl minimum::Component for DebugDrawRectComponent {
-    type Storage = SlabComponentStorage<DebugDrawRectComponent>;
+    type Storage = SlabComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }

@@ -5,6 +5,7 @@ use super::ComponentStorage;
 use std::marker::PhantomData;
 
 use crate::{EntityHandle, EntitySet, Resource, World};
+use crate::entity::EntityRef;
 
 //
 // Handler can be implemented to run custom logic when entities are being destroyed
@@ -40,18 +41,18 @@ struct CustomFreeHandler<T: Component, F: ComponentFreeHandler<T>> {
     phantom_data2: PhantomData<F>,
 }
 
-impl<T, F> CustomFreeHandler<T, F>
-where
-    T: Component,
-    F: ComponentFreeHandler<T>,
-{
-    //    fn new() -> Self {
-    //        CustomFreeHandler::<T, F> {
-    //            phantom_data1: PhantomData,
-    //            phantom_data2: PhantomData
-    //        }
-    //    }
-}
+//impl<T, F> CustomFreeHandler<T, F>
+//where
+//    T: Component,
+//    F: ComponentFreeHandler<T>,
+//{
+//    //    fn new() -> Self {
+//    //        CustomFreeHandler::<T, F> {
+//    //            phantom_data1: PhantomData,
+//    //            phantom_data2: PhantomData
+//    //        }
+//    //    }
+//}
 
 impl<T, F> ComponentFreeHandler<T> for CustomFreeHandler<T, F>
 where
@@ -73,6 +74,8 @@ where
 //
 trait RegisteredComponentTrait: Send + Sync {
     fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]);
+
+    fn visit_component(&self, world: &World, entity_handles: &[EntityHandle]);
 }
 
 pub struct RegisteredComponent<T, F>
@@ -108,6 +111,18 @@ where
 
         for entity_handle in entity_handles {
             storage.free_if_exists(entity_handle);
+        }
+    }
+
+    fn visit_component(&self, world: &World, entity_handles: &[EntityHandle]) {
+        let storage = world.fetch::<<T as Component>::Storage>();
+
+        for entity_handle in entity_handles {
+            let comp = storage.get(&entity_handle);
+
+            if let Some(comp) = comp {
+                println!("found a name {}", comp.get_name());
+            }
         }
     }
 }
@@ -191,6 +206,12 @@ impl ComponentRegistry {
     pub fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]) {
         for rc in &self.registered_components {
             rc.on_entities_free(world, entity_handles);
+        }
+    }
+
+    pub fn visit_components(&self, world: &World, entity_handles: &[EntityHandle]) {
+        for rc in &self.registered_components {
+            rc.visit_component(world, entity_handles);
         }
     }
 

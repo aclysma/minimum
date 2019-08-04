@@ -9,3 +9,6 @@ pub use editor_update_shapes_with_position::EditorUpdateShapesWithPosition;
 
 mod editor_update_collision_world;
 pub use editor_update_collision_world::EditorUpdateCollisionWorld;
+
+mod editor_imgui;
+pub use editor_imgui::EditorImgui;

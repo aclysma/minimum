@@ -1,9 +1,10 @@
 //TODO: Use this rather than the queue in entity_set
 
 use crate::component::SlabComponentStorage;
+use crate::component::DefaultComponentReflector;
 use crate::Component;
 
-#[derive(Debug)]
+#[derive(Debug, typename::TypeName)]
 pub struct PendingDeleteComponent {}
 
 impl PendingDeleteComponent {
@@ -13,5 +14,6 @@ impl PendingDeleteComponent {
 }
 
 impl Component for PendingDeleteComponent {
-    type Storage = SlabComponentStorage<PendingDeleteComponent>;
+    type Storage = SlabComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }

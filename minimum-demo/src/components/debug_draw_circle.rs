@@ -1,6 +1,7 @@
 use minimum::component::SlabComponentStorage;
+use minimum::component::DefaultComponentReflector;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, typename::TypeName)]
 pub struct DebugDrawCircleComponent {
     radius: f32,
     color: glm::Vec4,
@@ -21,5 +22,6 @@ impl DebugDrawCircleComponent {
 }
 
 impl minimum::Component for DebugDrawCircleComponent {
-    type Storage = SlabComponentStorage<DebugDrawCircleComponent>;
+    type Storage = SlabComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }

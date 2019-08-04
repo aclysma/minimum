@@ -24,7 +24,9 @@ mod tests {
     use component::Component;
     use component::ComponentStorage;
     use component::VecComponentStorage;
+    use component::DefaultComponentReflector;
 
+    #[derive(typename::TypeName)]
     struct TestComponent {
         _value: i32,
     }
@@ -37,6 +39,7 @@ mod tests {
 
     impl Component for TestComponent {
         type Storage = VecComponentStorage<Self>;
+        type Reflector = DefaultComponentReflector<Self>;
     }
 
     #[test]

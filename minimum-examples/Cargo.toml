@@ -11,6 +11,7 @@ async_support = ["minimum/async_support"]
 [dev-dependencies]
 minimum = { path = "../minimum" }
 futures = "0.1"
+typename = "0.1"
 
 [[example]]
 name = "hello_world_async"

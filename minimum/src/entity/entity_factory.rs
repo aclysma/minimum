@@ -71,21 +71,24 @@ impl EntityFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::component::CloneComponentFactory;
+    use crate::component::{CloneComponentFactory, DefaultComponentReflector};
     use crate::component::CloneComponentPrototype;
     use crate::component::ComponentStorage;
     use crate::component::SlabComponentStorage;
     use crate::Component;
 
-    #[derive(Clone)]
+    #[derive(Clone, typename::TypeName)]
     struct TestComponent1;
     impl Component for TestComponent1 {
-        type Storage = SlabComponentStorage<TestComponent1>;
+        type Storage = SlabComponentStorage<Self>;
+        type Reflector = DefaultComponentReflector<Self>;
     }
-    #[derive(Clone)]
+
+    #[derive(Clone, typename::TypeName)]
     struct TestComponent2;
     impl Component for TestComponent2 {
-        type Storage = SlabComponentStorage<TestComponent2>;
+        type Storage = SlabComponentStorage<Self>;
+        type Reflector = DefaultComponentReflector<Self>;
     }
 
     #[test]

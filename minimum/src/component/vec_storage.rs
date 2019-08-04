@@ -134,6 +134,10 @@ impl<T: Component> VecComponentStorage<T> {
             *component = None;
         }
     }
+
+    pub fn count(&self) -> usize {
+        self.components.iter().filter(|x| x.is_some()).count()
+    }
 }
 
 impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {

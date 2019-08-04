@@ -1,7 +1,7 @@
-use minimum::component::SlabComponentStorage;
+use minimum::component::{SlabComponentStorage, DefaultComponentReflector};
 
 // This component contains no data, however an empty component can still be useful to "tag" entities
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, typename::TypeName)]
 pub struct BulletComponent {}
 
 impl BulletComponent {
@@ -11,5 +11,6 @@ impl BulletComponent {
 }
 
 impl minimum::Component for BulletComponent {
-    type Storage = SlabComponentStorage<BulletComponent>;
+    type Storage = SlabComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }

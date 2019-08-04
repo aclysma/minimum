@@ -214,20 +214,24 @@ fn dispatcher_thread(world: minimum::systems::World) -> minimum::systems::World 
             dispatch_ctx.run_task(tasks::EditorUpdateCollisionWorld),
             dispatch_ctx.run_task(tasks::EditorHandleInput),
             dispatch_ctx.run_task(tasks::EditorDrawShapes),
+            dispatch_ctx.run_task(tasks::EditorImgui),
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_world(|world| {
 
                 //TODO: Figure out a way to fetch all components
                 {
-                    let selected_components = world.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
                     let entity_set = world.fetch::<minimum::EntitySet>();
+                    let selected_entity_handles = {
+                        let selected_components = world.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
+                        let mut selected = vec![];
+                        for (entity_handle, _) in selected_components.iter(&entity_set) {
+                            selected.push(entity_handle);
+                        }
+                        selected
+                    };
 
-                    let mut selected_count = 0;
-                    for (entity_handle, selected) in selected_components.iter(&entity_set) {
-                        selected_count += 1;
-                    }
-
-                    println!("selected: {}", selected_count);
+                    entity_set.visit_components(world, &selected_entity_handles);
+                    println!("selected: {}", selected_entity_handles.len());
                 }
 
                 {

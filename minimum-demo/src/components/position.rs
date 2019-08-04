@@ -1,6 +1,7 @@
 use minimum::component::VecComponentStorage;
+use minimum::component::DefaultComponentReflector;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, typename::TypeName)]
 pub struct PositionComponent {
     position: glm::Vec2,
 }
@@ -20,5 +21,6 @@ impl PositionComponent {
 }
 
 impl minimum::Component for PositionComponent {
-    type Storage = VecComponentStorage<PositionComponent>;
+    type Storage = VecComponentStorage<Self>;
+    type Reflector = DefaultComponentReflector<Self>;
 }

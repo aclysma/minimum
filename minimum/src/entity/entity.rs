@@ -40,6 +40,10 @@ impl<'e> EntityRef<'e> {
         }
     }
 
+    pub fn handle(&self) -> EntityHandle {
+        self.handle.clone()
+    }
+
     pub fn add_component<T: Component>(&self, storage: &mut T::Storage, data: T) {
         storage.allocate(&self.handle, data);
     }
