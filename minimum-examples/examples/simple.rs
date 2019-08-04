@@ -4,6 +4,7 @@ use minimum::dispatch::simple_dispatch::Task;
 
 use minimum::component::{Component, ComponentStorage};
 use minimum::EntitySet;
+use minimum::WorldBuilder;
 
 mod shared;
 
@@ -110,7 +111,7 @@ fn create_objects(resource_map: &ResourceMap) {
 
 fn main() {
     // Register global systems
-    let resource_map_builder = ResourceMapBuilder::new()
+    let resource_map = WorldBuilder::new()
         .with_resource(UpdateCount::new())
         .with_resource(TimeState::new())
         .with_component(<PositionComponent as Component>::Storage::new())
@@ -119,10 +120,10 @@ fn main() {
         .build();
 
     // Create a bunch of objects
-    create_objects(&resource_map_builder);
+    create_objects(&resource_map);
 
     use minimum::dispatch::simple_dispatch::MinimumDispatcher;
-    let dispatcher = MinimumDispatcher::new(resource_map_builder);
+    let dispatcher = MinimumDispatcher::new(resource_map);
 
     // Run
     dispatcher.enter_game_loop(|ctx| {

@@ -38,6 +38,8 @@ pub use resource::ResourceMapBuilder;
 pub use resource::Write;
 pub use resource::WriteOption;
 
+pub use world::WorldBuilder;
+
 #[cfg(feature = "async_support")]
 pub use dispatch::async_dispatch;
 

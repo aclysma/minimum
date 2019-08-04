@@ -69,7 +69,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_title("Vore")
         .build(&event_loop)?;
 
-    let mut resource_map_builder = minimum::resource::ResourceMapBuilder::new()
+    let mut resource_map = minimum::WorldBuilder::new()
         .with_resource(resources::GameControl::new())
         .with_resource(resources::DebugDraw::new())
         .with_resource(resources::InputManager::new())
@@ -109,17 +109,17 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     // Assets you want to always have available could be loaded here
 
-    resource_map_builder.insert(init::init_imgui_manager(&resource_map_builder));
-    resource_map_builder.insert(init::create_renderer(&resource_map_builder));
+    resource_map.insert(init::init_imgui_manager(&resource_map));
+    resource_map.insert(init::create_renderer(&resource_map));
 
-    create_objects(&resource_map_builder);
+    create_objects(&resource_map);
 
     // Wrap the threadsafe interface to the window in WindowInterface and add it to the resource map
     // Return the event_tx which needs to be given to the event loop
-    let winit_event_tx = init::create_window_interface(&mut resource_map_builder, &event_loop);
+    let winit_event_tx = init::create_window_interface(&mut resource_map, &event_loop);
 
     // Start the game loop thread
-    let _join_handle = std::thread::spawn(|| dispatcher_thread(resource_map_builder));
+    let _join_handle = std::thread::spawn(|| dispatcher_thread(resource_map));
 
     // Hand control of the main thread to winit
     event_loop.run(move |event, _, control_flow| match event {

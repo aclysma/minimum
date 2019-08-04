@@ -93,7 +93,7 @@ mod tests {
 
     #[test]
     fn test_entity_prototype() {
-        let resource_map = crate::ResourceMapBuilder::new()
+        let resource_map = crate::WorldBuilder::new()
             .with_component(<TestComponent1 as Component>::Storage::new())
             .with_component(<TestComponent2 as Component>::Storage::new())
             .with_component_factory(CloneComponentFactory::<TestComponent1>::new())

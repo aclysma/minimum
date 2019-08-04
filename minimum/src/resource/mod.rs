@@ -17,7 +17,7 @@ use crate::{EntityFactory, PendingDeleteComponent};
 use crate::component::ComponentFactory;
 use crate::component::ComponentPrototype;
 
-use crate::util::{TrustCell, Ref, RefMut};
+use crate::util::{TrustCell, TrustCellRef as Ref, TrustCellRefMut as RefMut};
 
 //
 // ResourceId
@@ -57,15 +57,13 @@ mod __resource_mopafy_scope {
 impl<T> Resource for T where T: Any + Send + Sync {}
 
 pub struct ResourceMapBuilder {
-    resource_map: ResourceMap,
-    default_entity_set: crate::EntitySet,
+    resource_map: ResourceMap
 }
 
 impl ResourceMapBuilder {
     pub fn new() -> Self {
         ResourceMapBuilder {
-            resource_map: ResourceMap::new(),
-            default_entity_set: EntitySet::new(),
+            resource_map: ResourceMap::new()
         }
     }
 
@@ -77,40 +75,6 @@ impl ResourceMapBuilder {
         self
     }
 
-    //TODO: The storage/factory types here are rendundant and a user could possibly pass a component/storage that doesn't match
-    //TODO: I'd rather not have the systems layer aware of entities/components.
-    pub fn with_component<C: crate::Component, S: crate::ComponentStorage<C> + 'static>(
-        mut self,
-        component_storage: S,
-    ) -> Self {
-        self.resource_map.insert(component_storage);
-        self.default_entity_set.register_component_type::<C>();
-        self
-    }
-
-    pub fn with_component_and_free_handler<
-        C: crate::Component,
-        S: crate::ComponentStorage<C> + 'static,
-        F: crate::component::ComponentFreeHandler<C> + 'static,
-    >(
-        mut self,
-        component_storage: S,
-    ) -> Self {
-        self.resource_map.insert(component_storage);
-        self.default_entity_set
-            .register_component_type_with_free_handler::<C, F>();
-        self
-    }
-
-    pub fn with_component_factory<P: ComponentPrototype, F: ComponentFactory<P>>(
-        mut self,
-        component_factory: F,
-    ) -> Self {
-        self.resource_map.insert(component_factory);
-        self.default_entity_set.register_component_factory::<P, F>();
-        self
-    }
-
     pub fn insert<R>(&mut self, r: R)
     where
         R: Resource,
@@ -119,25 +83,6 @@ impl ResourceMapBuilder {
     }
 
     pub fn build(mut self) -> ResourceMap {
-        // If no entity factory was inserted, insert the default
-        if !self.resource_map.has_value::<EntityFactory>() {
-            self = self.with_resource(EntityFactory::new());
-        }
-
-        // If no pending delete component was inserted, insert the default
-        if !self
-            .resource_map
-            .has_value::<<PendingDeleteComponent as crate::Component>::Storage>()
-        {
-            self =
-                self.with_component(<PendingDeleteComponent as crate::Component>::Storage::new());
-        }
-
-        // If no entity set was created, insert the default
-        if !self.resource_map.has_value::<EntitySet>() {
-            self.resource_map.insert(self.default_entity_set);
-        }
-
         self.resource_map
     }
 }
