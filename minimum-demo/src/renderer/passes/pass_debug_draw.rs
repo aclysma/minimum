@@ -12,7 +12,7 @@ use rendy::{
     util::types::vertex,
 };
 
-use minimum::resource::World;
+use minimum::resource::ResourceMap;
 
 use nalgebra_glm as glm;
 
@@ -45,7 +45,7 @@ const UNIFORM_SIZE: u64 = std::mem::size_of::<UniformArgs>() as u64;
 #[derive(Debug, Default)]
 pub struct DebugDrawRenderPipelineDesc;
 
-impl<B> SimpleGraphicsPipelineDesc<B, minimum::resource::World> for DebugDrawRenderPipelineDesc
+impl<B> SimpleGraphicsPipelineDesc<B, minimum::resource::ResourceMap> for DebugDrawRenderPipelineDesc
 where
     B: gfx_hal::Backend,
 {
@@ -58,7 +58,7 @@ where
     fn load_shader_set(
         &self,
         factory: &mut Factory<B>,
-        _aux: &World,
+        _aux: &ResourceMap,
     ) -> rendy::shader::ShaderSet<B> {
         SHADERS.build(factory, Default::default()).unwrap()
     }
@@ -114,7 +114,7 @@ where
         _ctx: &GraphContext<B>,
         factory: &mut Factory<B>,
         _queue: QueueId,
-        aux: &World,
+        aux: &ResourceMap,
         buffers: Vec<NodeBuffer>,
         images: Vec<NodeImage>,
         set_layouts: &[Handle<DescriptorSetLayout<B>>],
@@ -208,7 +208,7 @@ pub struct DebugDrawRenderPipeline<B: gfx_hal::Backend> {
     draw_list_cmds: Vec<Vec<DrawCommand>>,
 }
 
-impl<B> SimpleGraphicsPipeline<B, World> for DebugDrawRenderPipeline<B>
+impl<B> SimpleGraphicsPipeline<B, ResourceMap> for DebugDrawRenderPipeline<B>
 where
     B: gfx_hal::Backend,
 {
@@ -220,7 +220,7 @@ where
         _queue: QueueId,
         _set_layouts: &[Handle<DescriptorSetLayout<B>>],
         index: usize,
-        aux: &World,
+        aux: &ResourceMap,
     ) -> PrepareResult {
         log::trace!("prepare");
 
@@ -329,7 +329,7 @@ where
         layout: &B::PipelineLayout,
         mut encoder: RenderPassEncoder<'_, B>,
         index: usize,
-        _aux: &World,
+        _aux: &ResourceMap,
     ) {
         log::trace!("draw");
 
@@ -366,5 +366,5 @@ where
         }
     }
 
-    fn dispose(self, _factory: &mut Factory<B>, _aux: &World) {}
+    fn dispose(self, _factory: &mut Factory<B>, _aux: &ResourceMap) {}
 }

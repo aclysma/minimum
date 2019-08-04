@@ -4,7 +4,7 @@ use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
 use minimum::EntityHandle;
 use minimum::EntitySet;
-use minimum::World;
+use minimum::ResourceMap;
 use minimum::{Component, ComponentStorage};
 
 use nphysics2d::object::BodyHandle;
@@ -52,11 +52,11 @@ impl minimum::component::ComponentFreeHandler<PhysicsBodyComponent>
     for PhysicsBodyComponentFreeHandler
 {
     fn on_entities_free(
-        world: &minimum::World,
+        resource_map: &minimum::ResourceMap,
         entity_handles: &[minimum::EntityHandle],
         storage: &mut <PhysicsBodyComponent as Component>::Storage,
     ) {
-        let mut physics_manager = world.fetch_mut::<crate::resources::PhysicsManager>();
+        let mut physics_manager = resource_map.fetch_mut::<crate::resources::PhysicsManager>();
         let physics_world: &mut nphysics2d::world::World<f32> = physics_manager.world_mut();
 
         for entity_handle in entity_handles {
@@ -156,13 +156,13 @@ impl ComponentFactory<PhysicsBodyComponentPrototype> for PhysicsBodyComponentFac
             .push_back((entity_handle.clone(), prototype.clone()));
     }
 
-    fn flush_creates(&mut self, world: &World, entity_set: &EntitySet) {
+    fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         if self.prototypes.is_empty() {
             return;
         }
 
-        let mut physics = world.fetch_mut::<crate::resources::PhysicsManager>();
-        let mut storage = world.fetch_mut::<<PhysicsBodyComponent as Component>::Storage>();
+        let mut physics = resource_map.fetch_mut::<crate::resources::PhysicsManager>();
+        let mut storage = resource_map.fetch_mut::<<PhysicsBodyComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
                 let body = physics.world_mut().add_body(data.desc.rigid_body_desc());

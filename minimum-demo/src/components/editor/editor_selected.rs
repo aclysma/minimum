@@ -4,7 +4,7 @@ use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
 use minimum::EntityHandle;
 use minimum::EntitySet;
-use minimum::World;
+use minimum::ResourceMap;
 
 use nphysics2d::object::ColliderHandle;
 

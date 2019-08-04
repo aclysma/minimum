@@ -94,7 +94,7 @@ where
     T: RequiresResources<ResourceId> + 'static + Send,
 {
     _lock_guards: AcquiredResourcesLockGuards<T>,
-    world: Arc<resource::TrustCell<resource::World>>,
+    resource_map: Arc<resource::TrustCell<resource::ResourceMap>>,
 }
 
 impl<T> AcquiredResources<T>
@@ -107,9 +107,9 @@ where
         F: FnOnce(T::Borrow),
         T: resource::DataRequirement<'b>,
     {
-        let trust_cell_ref = (*self.world).borrow();
-        let world_ref = trust_cell_ref.value();
-        let fetched = T::fetch(world_ref);
+        let trust_cell_ref = (*self.resource_map).borrow();
+        let resource_map_ref = trust_cell_ref.value();
+        let fetched = T::fetch(resource_map_ref);
         (f)(fetched);
     }
 
@@ -121,7 +121,7 @@ where
 //
 pub fn acquire_resources<T>(
     dispatcher: Arc<Dispatcher<ResourceId>>,
-    world: Arc<crate::util::TrustCell<resource::World>>,
+    resource_map: Arc<crate::util::TrustCell<resource::ResourceMap>>,
 ) -> impl futures::future::Future<Item = AcquiredResources<T>, Error = ()>
 where
     T: RequiresResources<ResourceId> + 'static + Send,
@@ -132,7 +132,7 @@ where
         do_acquire_resources::<ResourceId, T>(dispatcher).map(move |lock_guards| {
             AcquiredResources {
                 _lock_guards: lock_guards,
-                world,
+                resource_map,
             }
         }),
     )
@@ -152,44 +152,44 @@ pub fn acquire_critical_section_write(
 
 pub struct MinimumDispatcher {
     dispatcher: Dispatcher<ResourceId>,
-    world: Arc<crate::util::TrustCell<resource::World>>,
+    resource_map: Arc<crate::util::TrustCell<resource::ResourceMap>>,
 }
 
 impl MinimumDispatcher {
-    pub fn new(mut world: resource::World, context_flags: usize) -> MinimumDispatcher {
+    pub fn new(mut resource_map: resource::ResourceMap, context_flags: usize) -> MinimumDispatcher {
         let mut dispatcher_builder = DispatcherBuilder::new();
-        for resource in world.keys() {
+        for resource in resource_map.keys() {
             dispatcher_builder.register_resource_id(resource.clone());
         }
 
-        if world.has_value::<DispatchControl>() {
-            let dispatch_control = world.try_fetch_mut::<DispatchControl>();
+        if resource_map.has_value::<DispatchControl>() {
+            let dispatch_control = resource_map.try_fetch_mut::<DispatchControl>();
             *dispatch_control.unwrap().next_frame_context_flags_mut() = context_flags;
         } else {
-            world.insert(DispatchControl::new(context_flags));
+            resource_map.insert(DispatchControl::new(context_flags));
         }
 
         MinimumDispatcher {
             dispatcher: dispatcher_builder.build(),
-            world: Arc::new(crate::util::TrustCell::new(world)),
+            resource_map: Arc::new(crate::util::TrustCell::new(resource_map)),
         }
     }
 
     // Call this to kick off processing.
-    pub fn enter_game_loop<F, FutureT>(self, /* context_flags: usize,*/ f: F) -> resource::World
+    pub fn enter_game_loop<F, FutureT>(self, /* context_flags: usize,*/ f: F) -> resource::ResourceMap
     where
         F: Fn(Arc<MinimumDispatcherContext>) -> FutureT + Send + Sync + 'static,
         FutureT: futures::future::Future<Item = (), Error = ()> + Send + Sync + 'static,
     {
-        let world = self.world.clone();
+        let resource_map = self.resource_map.clone();
 
         self.dispatcher.enter_game_loop(move |dispatcher| {
-            if world.borrow().fetch::<DispatchControl>().should_terminate() {
+            if resource_map.borrow().fetch::<DispatchControl>().should_terminate() {
                 return None;
             }
 
             let context_flags = {
-                world
+                resource_map
                     .borrow()
                     .fetch::<DispatchControl>()
                     .next_frame_context_flags()
@@ -198,26 +198,26 @@ impl MinimumDispatcher {
             info!("starting frame with context_flags {}", context_flags);
             let ctx = Arc::new(MinimumDispatcherContext {
                 dispatcher: dispatcher.clone(),
-                world: world.clone(),
+                resource_map: resource_map.clone(),
                 context_flags,
             });
 
             Some((f)(ctx))
         });
 
-        // Then unwrap the world inside it
-        let world = Arc::try_unwrap(self.world).unwrap_or_else(|_| {
+        // Then unwrap the resource_map inside it
+        let resource_map = Arc::try_unwrap(self.resource_map).unwrap_or_else(|_| {
             unreachable!();
         });
 
-        // Return the world
-        world.into_inner()
+        // Return the resource_map
+        resource_map.into_inner()
     }
 }
 
 pub struct MinimumDispatcherContext {
     dispatcher: Arc<Dispatcher<ResourceId>>,
-    world: Arc<resource::TrustCell<resource::World>>,
+    resource_map: Arc<resource::TrustCell<resource::ResourceMap>>,
     context_flags: usize,
 }
 
@@ -227,14 +227,14 @@ impl MinimumDispatcherContext {
     where
         T: resource::Resource,
     {
-        (*self.world).borrow().value().has_value::<T>()
+        (*self.resource_map).borrow().value().has_value::<T>()
     }
 
     //WARNING: Using the trust cell here is a bit dangerous, it's much
-    //safer to use visit_world and visit_world_mut as they appropriately
+    //safer to use visit_resources and visit_resources_mut as they appropriately
     //wait to acquire locks to ensure safety
-    pub fn world(&self) -> Arc<crate::util::TrustCell<resource::World>> {
-        self.world.clone()
+    pub fn resource_map(&self) -> Arc<crate::util::TrustCell<resource::ResourceMap>> {
+        self.resource_map.clone()
     }
 
     pub fn run_fn<RequirementT, F>(
@@ -248,7 +248,7 @@ impl MinimumDispatcherContext {
         use futures::future::Future;
 
         Box::new(
-            acquire_resources::<RequirementT>(self.dispatcher.clone(), Arc::clone(&self.world))
+            acquire_resources::<RequirementT>(self.dispatcher.clone(), Arc::clone(&self.resource_map))
                 .map(move |acquired_resources| {
                     (f)(acquired_resources);
                 }),
@@ -268,7 +268,7 @@ impl MinimumDispatcherContext {
         Box::new(
             acquire_resources::<T::RequiredResources>(
                 self.dispatcher.clone(),
-                Arc::clone(&self.world),
+                Arc::clone(&self.resource_map),
             )
             .map(move |acquired_resources| {
                 acquired_resources.visit(move |resources| {
@@ -292,37 +292,37 @@ impl MinimumDispatcherContext {
 
     //TODO: It would be nice to pass the context into the callback, but need to refactor to use
     //inner arc.
-    pub fn visit_world<F>(&self, f: F) -> Box<impl futures::future::Future<Item = (), Error = ()>>
+    pub fn visit_resources<F>(&self, f: F) -> Box<impl futures::future::Future<Item = (), Error = ()>>
     where
-        F: FnOnce(&resource::World),
+        F: FnOnce(&resource::ResourceMap),
     {
         use futures::future::Future;
 
-        let world = self.world.clone();
+        let resource_map = self.resource_map.clone();
 
         Box::new(acquire_critical_section_read(self.dispatcher.clone()).map(
             move |_acquire_critical_section| {
-                (f)(&(*world).borrow());
+                (f)(&(*resource_map).borrow());
             },
         ))
     }
 
     //TODO: It would be nice to pass the context into the callback, but need to refactor to use
     //inner arc.
-    pub fn visit_world_mut<F>(
+    pub fn visit_resources_mut<F>(
         &self,
         f: F,
     ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
     where
-        F: FnOnce(&mut resource::World),
+        F: FnOnce(&mut resource::ResourceMap),
     {
         use futures::future::Future;
 
-        let world = self.world.clone();
+        let resource_map = self.resource_map.clone();
 
         Box::new(acquire_critical_section_write(self.dispatcher.clone()).map(
             move |_acquire_critical_section| {
-                (f)(&mut (*world).borrow_mut());
+                (f)(&mut (*resource_map).borrow_mut());
             },
         ))
     }

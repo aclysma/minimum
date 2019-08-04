@@ -46,7 +46,7 @@ where
 }
 
 // Create using DispatcherBuilder. This keeps track of which tasks are wanting to read/write to
-// the shred world and provides locks to them in a way that does not deadlock. This is done
+// the resource_map and provides locks to them in a way that does not deadlock. This is done
 // by only allowing a single task to try to acquire locks at the same time. If a task fails to
 // acquire a task, it drops any locks it has already acquired and awaits the lock it couldn't get.
 // This way it's not blocking any other tasks that are able to proceed, and it's not spinning while

@@ -4,7 +4,7 @@ use super::ComponentPrototype;
 use super::ComponentStorage;
 use std::marker::PhantomData;
 
-use crate::{EntityHandle, EntitySet, Resource, World};
+use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
 use crate::entity::EntityRef;
 
 //
@@ -12,7 +12,7 @@ use crate::entity::EntityRef;
 //
 pub trait ComponentFreeHandler<T: Component>: Send + Sync {
     fn on_entities_free(
-        world: &World,
+        resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         storage: &mut <T as Component>::Storage,
     );
@@ -25,7 +25,7 @@ struct DefaultFreeHandler {}
 
 impl<T: Component> ComponentFreeHandler<T> for DefaultFreeHandler {
     fn on_entities_free(
-        _world: &World,
+        _resource_map: &ResourceMap,
         _entity_handles: &[EntityHandle],
         _storage: &mut <T as Component>::Storage,
     ) {
@@ -60,12 +60,12 @@ where
     F: ComponentFreeHandler<T> + 'static,
 {
     fn on_entities_free(
-        world: &World,
+        resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         storage: &mut <T as Component>::Storage,
     ) {
         // The custom behavior proxies the call to the provided type
-        F::on_entities_free(world, entity_handles, storage);
+        F::on_entities_free(resource_map, entity_handles, storage);
     }
 }
 
@@ -73,9 +73,9 @@ where
 // Interface for a registered component type
 //
 trait RegisteredComponentTrait: Send + Sync {
-    fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]);
+    fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]);
 
-    fn visit_component(&self, world: &World, entity_handles: &[EntityHandle]);
+    fn visit_component(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]);
 }
 
 pub struct RegisteredComponent<T, F>
@@ -105,17 +105,17 @@ where
     T: Component,
     F: ComponentFreeHandler<T>,
 {
-    fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]) {
-        let mut storage = world.fetch_mut::<T::Storage>();
-        F::on_entities_free(world, entity_handles, &mut *storage);
+    fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
+        let mut storage = resource_map.fetch_mut::<T::Storage>();
+        F::on_entities_free(resource_map, entity_handles, &mut *storage);
 
         for entity_handle in entity_handles {
             storage.free_if_exists(entity_handle);
         }
     }
 
-    fn visit_component(&self, world: &World, entity_handles: &[EntityHandle]) {
-        let storage = world.fetch::<<T as Component>::Storage>();
+    fn visit_component(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
+        let storage = resource_map.fetch::<<T as Component>::Storage>();
 
         for entity_handle in entity_handles {
             let comp = storage.get(&entity_handle);
@@ -132,7 +132,7 @@ where
 //
 
 trait RegisteredComponentFactoryTrait: Resource {
-    fn flush_creates(&self, world: &World, entity_set: &EntitySet);
+    fn flush_creates(&self, resource_map: &ResourceMap, entity_set: &EntitySet);
 }
 
 #[derive(typename::TypeName)]
@@ -163,9 +163,9 @@ where
     P: ComponentPrototype,
     F: ComponentFactory<P>,
 {
-    fn flush_creates(&self, world: &World, entity_set: &EntitySet) {
-        let mut factory = world.fetch_mut::<F>();
-        factory.flush_creates(world, entity_set);
+    fn flush_creates(&self, resource_map: &ResourceMap, entity_set: &EntitySet) {
+        let mut factory = resource_map.fetch_mut::<F>();
+        factory.flush_creates(resource_map, entity_set);
     }
 }
 
@@ -203,21 +203,21 @@ impl ComponentRegistry {
             .push(Box::new(RegisteredComponentFactory::<P, F>::new()));
     }
 
-    pub fn on_entities_free(&self, world: &World, entity_handles: &[EntityHandle]) {
+    pub fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
         for rc in &self.registered_components {
-            rc.on_entities_free(world, entity_handles);
+            rc.on_entities_free(resource_map, entity_handles);
         }
     }
 
-    pub fn visit_components(&self, world: &World, entity_handles: &[EntityHandle]) {
+    pub fn visit_components(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
         for rc in &self.registered_components {
-            rc.visit_component(world, entity_handles);
+            rc.visit_component(resource_map, entity_handles);
         }
     }
 
-    pub fn on_flush_creates(&self, world: &World, entity_set: &EntitySet) {
+    pub fn on_flush_creates(&self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         for rf in &self.registered_factories {
-            rf.flush_creates(world, entity_set);
+            rf.flush_creates(resource_map, entity_set);
         }
     }
 }

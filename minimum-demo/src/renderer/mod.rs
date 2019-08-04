@@ -17,7 +17,7 @@ use rendy::{
     graph::GraphBuilder,
 };
 
-use minimum::resource::World;
+use minimum::resource::ResourceMap;
 
 use crate::renderer::passes::{DebugDrawRenderPipeline, ImguiRenderPipeline};
 
@@ -26,7 +26,7 @@ use crate::resources;
 pub struct Renderer {
     factory: Factory<Backend>,
     families: Families<Backend>,
-    graph: Option<Graph<Backend, World>>,
+    graph: Option<Graph<Backend, ResourceMap>>,
     camera_position: glm::Vec3,
     camera_zoom: f32,
 }
@@ -62,14 +62,14 @@ impl Renderer {
     pub fn init_render_graph(
         &mut self,
         window: &winit::window::Window,
-        world: &minimum::resource::World,
+        resource_map: &minimum::resource::ResourceMap,
     ) {
         let surface = self.factory.create_surface(window);
 
         // GraphBuilder gives us a declarative interface for describing what/how to render. Using this
         // structure rather than directly making calls on a GPU backend means much of the error
         // handling and recovery (such as the device being lost) are automatically handled
-        let mut graph_builder = GraphBuilder::<Backend, World>::new();
+        let mut graph_builder = GraphBuilder::<Backend, ResourceMap>::new();
 
         // The frame starts with a cleared color buffer
         let color = graph_builder.create_image(
@@ -110,7 +110,7 @@ impl Renderer {
             PresentNode::builder(&self.factory, surface, color).with_dependency(pass1);
 
         let swapchain_backbuffer_count = present_builder.image_count();
-        world.fetch_mut::<resources::RenderState>().init(
+        resource_map.fetch_mut::<resources::RenderState>().init(
             swapchain_backbuffer_count,
             Renderer::calculate_ui_space_matrix(window),
             Renderer::calculate_screen_space_matrix(window),
@@ -124,7 +124,7 @@ impl Renderer {
 
         self.graph = Some(
             graph_builder
-                .build(&mut self.factory, &mut self.families, world)
+                .build(&mut self.factory, &mut self.families, resource_map)
                 .unwrap(),
         );
     }
@@ -133,7 +133,7 @@ impl Renderer {
     //        self.factory.maintain(&mut self.families);
     //    }
 
-    pub fn render(&mut self, window: &winit::window::Window, world: &minimum::resource::World) {
+    pub fn render(&mut self, window: &winit::window::Window, resource_map: &minimum::resource::ResourceMap) {
         self.factory.maintain(&mut self.families);
 
         // Update the render state
@@ -144,7 +144,7 @@ impl Renderer {
             // Zoom in/out
             self.camera_zoom = 1.0;
 
-            let mut renderer_state = world.fetch_mut::<resources::RenderState>();
+            let mut renderer_state = resource_map.fetch_mut::<resources::RenderState>();
             renderer_state.set_ui_space_view(Renderer::calculate_ui_space_matrix(window));
             renderer_state.set_screen_space_view(
                 Renderer::calculate_screen_space_matrix(window),
@@ -162,14 +162,14 @@ impl Renderer {
 
         // Kick off rendering
         match &mut self.graph {
-            Some(x) => x.run(&mut self.factory, &mut self.families, world),
+            Some(x) => x.run(&mut self.factory, &mut self.families, resource_map),
             _ => {}
         }
     }
 
-    pub fn dispose(mut self, world: &minimum::resource::World) {
+    pub fn dispose(mut self, resource_map: &minimum::resource::ResourceMap) {
         match self.graph {
-            Some(x) => x.dispose(&mut self.factory, world),
+            Some(x) => x.dispose(&mut self.factory, resource_map),
             _ => {}
         }
     }

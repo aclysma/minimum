@@ -2,7 +2,7 @@ use minimum::resource::{DataRequirement, Write};
 
 use minimum::async_dispatcher::ExecuteSequential;
 use minimum::resource::async_dispatch::{MinimumDispatcher, Task};
-use minimum::WorldBuilder;
+use minimum::ResourceMapBuilder;
 
 // Mock a physics system
 pub struct ExampleResource;
@@ -29,11 +29,11 @@ impl Task for ExampleTask {
 
 fn main() {
     // Set up a dispatcher with the example resource in it
-    let world = WorldBuilder::new()
+    let resource_map_builder = ResourceMapBuilder::new()
         .with_resource(ExampleResource::new())
         .build();
 
-    let dispatcher = MinimumDispatcher::new(world);
+    let dispatcher = MinimumDispatcher::new(resource_map_builder);
 
     // Start the game loop
     dispatcher.enter_game_loop(|ctx| {

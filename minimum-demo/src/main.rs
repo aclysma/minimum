@@ -16,7 +16,7 @@ mod tasks;
 use minimum::resource::async_dispatch::MinimumDispatcher;
 
 use minimum::component::Component;
-use minimum::resource::World;
+use minimum::resource::ResourceMap;
 use minimum::CloneComponentFactory;
 
 #[derive(Copy, Clone, strum_macros::EnumCount)]
@@ -69,7 +69,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_title("Vore")
         .build(&event_loop)?;
 
-    let mut world = minimum::resource::WorldBuilder::new()
+    let mut resource_map_builder = minimum::resource::ResourceMapBuilder::new()
         .with_resource(resources::GameControl::new())
         .with_resource(resources::DebugDraw::new())
         .with_resource(resources::InputManager::new())
@@ -109,17 +109,17 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     // Assets you want to always have available could be loaded here
 
-    world.insert(init::init_imgui_manager(&world));
-    world.insert(init::create_renderer(&world));
+    resource_map_builder.insert(init::init_imgui_manager(&resource_map_builder));
+    resource_map_builder.insert(init::create_renderer(&resource_map_builder));
 
-    create_objects(&world);
+    create_objects(&resource_map_builder);
 
-    // Wrap the threadsafe interface to the window in WindowInterface and add it to the world
+    // Wrap the threadsafe interface to the window in WindowInterface and add it to the resource map
     // Return the event_tx which needs to be given to the event loop
-    let winit_event_tx = init::create_window_interface(&mut world, &event_loop);
+    let winit_event_tx = init::create_window_interface(&mut resource_map_builder, &event_loop);
 
     // Start the game loop thread
-    let _join_handle = std::thread::spawn(|| dispatcher_thread(world));
+    let _join_handle = std::thread::spawn(|| dispatcher_thread(resource_map_builder));
 
     // Hand control of the main thread to winit
     event_loop.run(move |event, _, control_flow| match event {
@@ -134,8 +134,8 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     //NOTE: The game terminates when the event_loop halts, so any code here onwards won't execute
 }
 
-fn create_objects(world: &World) {
-    let mut entity_factory = world.fetch_mut::<minimum::EntityFactory>();
+fn create_objects(resource_map: &ResourceMap) {
+    let mut entity_factory = resource_map.fetch_mut::<minimum::EntityFactory>();
     constructors::create_player(&mut *entity_factory);
 
     constructors::create_wall(
@@ -186,7 +186,7 @@ fn create_objects(world: &World) {
     );
 }
 
-fn dispatcher_thread(world: minimum::resource::World) -> minimum::resource::World {
+fn dispatcher_thread(resource_map: minimum::resource::ResourceMap) -> minimum::resource::ResourceMap {
     info!("dispatch thread started");
 
     let context_flags = crate::context_flags::AUTHORITY_CLIENT
@@ -195,8 +195,8 @@ fn dispatcher_thread(world: minimum::resource::World) -> minimum::resource::Worl
         | crate::context_flags::PLAYMODE_PAUSED
         | crate::context_flags::PLAYMODE_SYSTEM;
 
-    let dispatcher = MinimumDispatcher::new(world, context_flags);
-    let mut world = dispatcher.enter_game_loop(move |dispatch_ctx| {
+    let dispatcher = MinimumDispatcher::new(resource_map, context_flags);
+    let mut resource_map = dispatcher.enter_game_loop(move |dispatch_ctx| {
         //TODO: Explore non-intrusive method for defining task dependencies
         //TODO: Explore flags to turn steps on/off
         minimum::async_dispatcher::ExecuteSequential::new(vec![
@@ -216,13 +216,13 @@ fn dispatcher_thread(world: minimum::resource::World) -> minimum::resource::Worl
             dispatch_ctx.run_task(tasks::EditorDrawShapes),
             dispatch_ctx.run_task(tasks::EditorImgui),
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
-            dispatch_ctx.visit_world(|world| {
+            dispatch_ctx.visit_resources(|resource_map| {
 
                 //TODO: Figure out a way to fetch all components
                 {
-                    let entity_set = world.fetch::<minimum::EntitySet>();
+                    let entity_set = resource_map.fetch::<minimum::EntitySet>();
                     let selected_entity_handles = {
-                        let selected_components = world.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
+                        let selected_components = resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
                         let mut selected = vec![];
                         for (entity_handle, _) in selected_components.iter(&entity_set) {
                             selected.push(entity_handle);
@@ -230,39 +230,39 @@ fn dispatcher_thread(world: minimum::resource::World) -> minimum::resource::Worl
                         selected
                     };
 
-                    entity_set.visit_components(world, &selected_entity_handles);
+                    entity_set.visit_components(resource_map, &selected_entity_handles);
                     println!("selected: {}", selected_entity_handles.len());
                 }
 
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("render");
-                    render(world);
+                    render(resource_map);
                 }
 
                 // This must be called once per frame to create/destroy entities
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("entity update");
-                    let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();
-                    entity_set.update(world);
+                    let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
+                    entity_set.update(resource_map);
                 }
             }),
             // This checks if we need to load a different level or kill the process
-            dispatch_ctx.visit_world_mut(move |world| {
+            dispatch_ctx.visit_resources_mut(move |resource_map| {
                 let _scope_timer = minimum::util::ScopeTimer::new("end frame");
-                let mut game_control = world.fetch_mut::<resources::GameControl>();
-                let mut dispatch_control = world.fetch_mut::<minimum::DispatchControl>();
+                let mut game_control = resource_map.fetch_mut::<resources::GameControl>();
+                let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
 
                 if game_control.terminate_process() {
                     dispatch_control.end_game_loop();
                 } else if game_control.has_load_level() {
                     // Unload game state
-                    let mut entity_set = world.fetch_mut::<minimum::entity::EntitySet>();
-                    entity_set.clear(world);
-                    //world.remove::<game::GameState>();
+                    let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
+                    entity_set.clear(resource_map);
+                    //resource_map.remove::<game::GameState>();
 
                     // Setup game state
                     let _level_to_load = game_control.take_load_level();
-                    //world.insert::<physics::Physics>();
+                    //resource_map.insert::<physics::Physics>();
                 }
             }),
         ])
@@ -271,21 +271,21 @@ fn dispatcher_thread(world: minimum::resource::World) -> minimum::resource::Worl
     // This would be a good spot to flush anything out like saved progress
 
     // Manual dispose is required for rendy
-    let renderer = world.remove::<renderer::Renderer>();
-    renderer.unwrap().dispose(&world);
+    let renderer = resource_map.remove::<renderer::Renderer>();
+    renderer.unwrap().dispose(&resource_map);
 
-    world
+    resource_map
         .fetch_mut::<resources::WindowInterface>()
         .event_loop_proxy
         .send_event(resources::WindowUserEvent::Terminate)
         .unwrap();
 
     info!("dispatch thread is done");
-    world
+    resource_map
 }
 
-pub fn render(world: &minimum::resource::World) {
-    let window = world.fetch::<winit::window::Window>();
-    let mut renderer = world.fetch_mut::<crate::renderer::Renderer>();
-    renderer.render(&window, &world);
+pub fn render(resource_map: &minimum::resource::ResourceMap) {
+    let window = resource_map.fetch::<winit::window::Window>();
+    let mut renderer = resource_map.fetch_mut::<crate::renderer::Renderer>();
+    renderer.render(&window, &resource_map);
 }

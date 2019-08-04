@@ -6,7 +6,7 @@ use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
 use minimum::EntityHandle;
 use minimum::EntitySet;
-use minimum::World;
+use minimum::ResourceMap;
 
 use nphysics2d::object::ColliderHandle;
 
@@ -51,12 +51,12 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
     for EditorShapeComponentFreeHandler
 {
     fn on_entities_free(
-        world: &minimum::World,
+        resource_map: &minimum::ResourceMap,
         entity_handles: &[minimum::EntityHandle],
         storage: &mut <EditorShapeComponent as Component>::Storage,
     ) {
         let mut editor_collision_world =
-            world.fetch_mut::<crate::resources::EditorCollisionWorld>();
+            resource_map.fetch_mut::<crate::resources::EditorCollisionWorld>();
         let physics_world: &mut ncollide2d::world::CollisionWorld<f32, EntityHandle> =
             editor_collision_world.world_mut();
 
@@ -111,13 +111,13 @@ impl ComponentFactory<EditorShapeComponentPrototype> for EditorShapeComponentFac
             .push_back((entity_handle.clone(), prototype.clone()));
     }
 
-    fn flush_creates(&mut self, world: &World, entity_set: &EntitySet) {
+    fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         if self.prototypes.is_empty() {
             return;
         }
 
-        let mut collision_world = world.fetch_mut::<crate::resources::EditorCollisionWorld>();
-        let mut storage = world.fetch_mut::<<EditorShapeComponent as Component>::Storage>();
+        let mut collision_world = resource_map.fetch_mut::<crate::resources::EditorCollisionWorld>();
+        let mut storage = resource_map.fetch_mut::<<EditorShapeComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
                 let collider = collision_world.world_mut().add(

@@ -61,15 +61,15 @@ mod __resource_mopafy_scope {
 
 impl<T> Resource for T where T: Any + Send + Sync {}
 
-pub struct WorldBuilder {
-    world: World,
+pub struct ResourceMapBuilder {
+    resource_map: ResourceMap,
     default_entity_set: crate::EntitySet,
 }
 
-impl WorldBuilder {
+impl ResourceMapBuilder {
     pub fn new() -> Self {
-        WorldBuilder {
-            world: World::new(),
+        ResourceMapBuilder {
+            resource_map: ResourceMap::new(),
             default_entity_set: EntitySet::new(),
         }
     }
@@ -78,7 +78,7 @@ impl WorldBuilder {
     where
         R: Resource,
     {
-        self.world.insert(r);
+        self.resource_map.insert(r);
         self
     }
 
@@ -88,7 +88,7 @@ impl WorldBuilder {
         mut self,
         component_storage: S,
     ) -> Self {
-        self.world.insert(component_storage);
+        self.resource_map.insert(component_storage);
         self.default_entity_set.register_component_type::<C>();
         self
     }
@@ -101,7 +101,7 @@ impl WorldBuilder {
         mut self,
         component_storage: S,
     ) -> Self {
-        self.world.insert(component_storage);
+        self.resource_map.insert(component_storage);
         self.default_entity_set
             .register_component_type_with_free_handler::<C, F>();
         self
@@ -111,7 +111,7 @@ impl WorldBuilder {
         mut self,
         component_factory: F,
     ) -> Self {
-        self.world.insert(component_factory);
+        self.resource_map.insert(component_factory);
         self.default_entity_set.register_component_factory::<P, F>();
         self
     }
@@ -120,19 +120,18 @@ impl WorldBuilder {
     where
         R: Resource,
     {
-        self.world.insert(r);
+        self.resource_map.insert(r);
     }
 
-    pub fn build(mut self) -> World {
+    pub fn build(mut self) -> ResourceMap {
         // If no entity factory was inserted, insert the default
-        if !self.world.has_value::<EntityFactory>() {
-            //self.world.insert(EntityFactory::new());
+        if !self.resource_map.has_value::<EntityFactory>() {
             self = self.with_resource(EntityFactory::new());
         }
 
         // If no pending delete component was inserted, insert the default
         if !self
-            .world
+            .resource_map
             .has_value::<<PendingDeleteComponent as crate::Component>::Storage>()
         {
             self =
@@ -140,25 +139,25 @@ impl WorldBuilder {
         }
 
         // If no entity set was created, insert the default
-        if !self.world.has_value::<EntitySet>() {
-            self.world.insert(self.default_entity_set);
+        if !self.resource_map.has_value::<EntitySet>() {
+            self.resource_map.insert(self.default_entity_set);
         }
 
-        self.world
+        self.resource_map
     }
 }
 
 //
-// World
+// ResourceMap
 //
 #[derive(Default)]
-pub struct World {
+pub struct ResourceMap {
     resources: HashMap<ResourceId, TrustCell<Box<dyn Resource>>>,
 }
 
-impl World {
+impl ResourceMap {
     pub fn new() -> Self {
-        World {
+        ResourceMap {
             resources: HashMap::new(),
         }
     }
@@ -263,13 +262,13 @@ impl World {
 pub trait DataRequirement<'a> {
     type Borrow: DataBorrow;
 
-    fn fetch(world: &'a World) -> Self::Borrow;
+    fn fetch(resource_map: &'a ResourceMap) -> Self::Borrow;
 }
 
 impl<'a> DataRequirement<'a> for () {
     type Borrow = ();
 
-    fn fetch(_: &'a World) -> Self::Borrow {}
+    fn fetch(_: &'a ResourceMap) -> Self::Borrow {}
 }
 
 //
@@ -284,16 +283,16 @@ pub type ReadOption<T> = Option<Read<T>>;
 impl<'a, T: Resource> DataRequirement<'a> for Read<T> {
     type Borrow = ReadBorrow<'a, T>;
 
-    fn fetch(world: &'a World) -> Self::Borrow {
-        world.fetch::<T>()
+    fn fetch(resource_map: &'a ResourceMap) -> Self::Borrow {
+        resource_map.fetch::<T>()
     }
 }
 
 impl<'a, T: Resource> DataRequirement<'a> for Option<Read<T>> {
     type Borrow = Option<ReadBorrow<'a, T>>;
 
-    fn fetch(world: &'a World) -> Self::Borrow {
-        world.try_fetch::<T>()
+    fn fetch(resource_map: &'a ResourceMap) -> Self::Borrow {
+        resource_map.try_fetch::<T>()
     }
 }
 
@@ -309,16 +308,16 @@ pub type WriteOption<T> = Option<Write<T>>;
 impl<'a, T: Resource> DataRequirement<'a> for Write<T> {
     type Borrow = WriteBorrow<'a, T>;
 
-    fn fetch(world: &'a World) -> Self::Borrow {
-        world.fetch_mut::<T>()
+    fn fetch(resource_map: &'a ResourceMap) -> Self::Borrow {
+        resource_map.fetch_mut::<T>()
     }
 }
 
 impl<'a, T: Resource> DataRequirement<'a> for Option<Write<T>> {
     type Borrow = Option<WriteBorrow<'a, T>>;
 
-    fn fetch(world: &'a World) -> Self::Borrow {
-        world.try_fetch_mut::<T>()
+    fn fetch(resource_map: &'a ResourceMap) -> Self::Borrow {
+        resource_map.try_fetch_mut::<T>()
     }
 }
 
@@ -412,9 +411,9 @@ macro_rules! impl_data {
         {
             type Borrow = ( $( <$ty as DataRequirement<'a>>::Borrow, )* );
 
-            fn fetch(world: &'a World) -> Self::Borrow {
+            fn fetch(resource_map: &'a ResourceMap) -> Self::Borrow {
                 #![allow(unused_variables)]
-                ( $( <$ty as DataRequirement<'a>>::fetch(world), )* )
+                ( $( <$ty as DataRequirement<'a>>::fetch(resource_map), )* )
             }
         }
     };

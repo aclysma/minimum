@@ -1,4 +1,4 @@
-use minimum::resource::{DataRequirement, Read, World, WorldBuilder, Write};
+use minimum::resource::{DataRequirement, Read, ResourceMap, ResourceMapBuilder, Write};
 
 use minimum::resource::simple_dispatch::Task;
 
@@ -74,12 +74,12 @@ impl Task for UpdatePositions {
 }
 
 //TODO: Rewrite to use an entity prototype
-fn create_objects(world: &World) {
-    let mut game_entities = world.fetch_mut::<minimum::EntitySet>();
-    let mut pos_components = world.fetch_mut::<<PositionComponent as Component>::Storage>();
-    let mut vel_components = world.fetch_mut::<<VelocityComponent as Component>::Storage>();
+fn create_objects(resource_map: &ResourceMap) {
+    let mut game_entities = resource_map.fetch_mut::<minimum::EntitySet>();
+    let mut pos_components = resource_map.fetch_mut::<<PositionComponent as Component>::Storage>();
+    let mut vel_components = resource_map.fetch_mut::<<VelocityComponent as Component>::Storage>();
     let mut speed_multiplier_components =
-        world.fetch_mut::<<SpeedMultiplierComponent as Component>::Storage>();
+        resource_map.fetch_mut::<<SpeedMultiplierComponent as Component>::Storage>();
 
     for i in 0..10 {
         let entity = game_entities.allocate_get();
@@ -110,7 +110,7 @@ fn create_objects(world: &World) {
 
 fn main() {
     // Register global systems
-    let world = WorldBuilder::new()
+    let resource_map_builder = ResourceMapBuilder::new()
         .with_resource(UpdateCount::new())
         .with_resource(TimeState::new())
         .with_component(<PositionComponent as Component>::Storage::new())
@@ -119,24 +119,24 @@ fn main() {
         .build();
 
     // Create a bunch of objects
-    create_objects(&world);
+    create_objects(&resource_map_builder);
 
     use minimum::resource::simple_dispatch::MinimumDispatcher;
-    let dispatcher = MinimumDispatcher::new(world);
+    let dispatcher = MinimumDispatcher::new(resource_map_builder);
 
     // Run
     dispatcher.enter_game_loop(|ctx| {
         ctx.run_task(UpdatePositions);
 
         {
-            let world = ctx.world();
-            let mut entity_set = world.fetch_mut::<minimum::EntitySet>();
-            entity_set.flush_free(&world);
+            let resource_map = ctx.resource_map();
+            let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
+            entity_set.flush_free(&resource_map);
         }
 
         {
-            let world = ctx.world();
-            let mut update_count = world.fetch_mut::<UpdateCount>();
+            let resource_map = ctx.resource_map();
+            let mut update_count = resource_map.fetch_mut::<UpdateCount>();
             println!("update {}", update_count.count);
             update_count.count += 1;
             if update_count.count > 10 {

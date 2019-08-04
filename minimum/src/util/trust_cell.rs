@@ -71,9 +71,9 @@ pub struct Ref<'a, T: ?Sized + 'a> {
 impl<'a, T: ?Sized> Ref<'a, T> {
     // ADDED: I had some code like this:
     //
-    //   let w : &'a systems::TrustCell<systems::World> = &*self.world;
-    //   let w_borrow : systems::trust_cell::Ref<'a, systems::World> = w.borrow();
-    //   let w_ref : &'a systems::World = &*w_borrow;
+    //   let w : &'a systems::TrustCell<resource::ResourceMap> = &*self.resource_map;
+    //   let w_borrow : systems::trust_cell::Ref<'a, resource::ResourceMap> = w.borrow();
+    //   let w_ref : &'a resource::ResourceMap = &*w_borrow;
     //
     // It did not compile because it complained w_borrow did not live long enough.
     // Adding this getter allowed me to use the ref as-is.

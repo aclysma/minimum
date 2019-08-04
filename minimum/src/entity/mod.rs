@@ -44,20 +44,20 @@ mod tests {
 
     #[test]
     fn test_entity_count() {
-        let mut world = resource::World::new();
+        let mut resource_map = resource::ResourceMap::new();
         let mut entity_set = EntitySet::new();
-        world.insert(<TestComponent as Component>::Storage::new());
-        world.insert(<PendingDeleteComponent as Component>::Storage::new());
+        resource_map.insert(<TestComponent as Component>::Storage::new());
+        resource_map.insert(<PendingDeleteComponent as Component>::Storage::new());
         entity_set.register_component_type::<TestComponent>();
 
         let entity = entity_set.allocate();
         assert_eq!(entity_set.entity_count(), 1);
         entity_set.enqueue_free(
             &entity,
-            &mut *world.fetch_mut::<<PendingDeleteComponent as Component>::Storage>(),
+            &mut *resource_map.fetch_mut::<<PendingDeleteComponent as Component>::Storage>(),
         );
         assert_eq!(entity_set.entity_count(), 1);
-        entity_set.flush_free(&world);
+        entity_set.flush_free(&resource_map);
         assert_eq!(entity_set.entity_count(), 0);
     }
 
@@ -66,10 +66,10 @@ mod tests {
         // Save on typing..
         type Storage = <self::TestComponent as Component>::Storage;
 
-        let mut world = resource::World::new();
+        let mut resource_map = resource::ResourceMap::new();
         let mut entity_set = EntitySet::new();
-        world.insert(<TestComponent as Component>::Storage::new());
-        world.insert(<PendingDeleteComponent as Component>::Storage::new());
+        resource_map.insert(<TestComponent as Component>::Storage::new());
+        resource_map.insert(<PendingDeleteComponent as Component>::Storage::new());
         entity_set.register_component_type::<TestComponent>();
 
         // Create an entity
@@ -78,18 +78,18 @@ mod tests {
 
         // Add the component
         {
-            let mut test_component_storage = world.fetch_mut::<Storage>();
+            let mut test_component_storage = resource_map.fetch_mut::<Storage>();
             entity.add_component(&mut *test_component_storage, TestComponent::new(1));
         }
 
         // Ensure after we enqueue free and flush free, the component is released
         entity_set.enqueue_free(
             &entity_handle,
-            &mut *world.fetch_mut::<<PendingDeleteComponent as Component>::Storage>(),
+            &mut *resource_map.fetch_mut::<<PendingDeleteComponent as Component>::Storage>(),
         );
-        assert!(world.fetch::<Storage>().get(&entity_handle).is_some());
-        entity_set.flush_free(&world);
-        assert!(world.fetch::<Storage>().get(&entity_handle).is_none());
+        assert!(resource_map.fetch::<Storage>().get(&entity_handle).is_some());
+        entity_set.flush_free(&resource_map);
+        assert!(resource_map.fetch::<Storage>().get(&entity_handle).is_none());
     }
 
     #[test]
@@ -97,16 +97,16 @@ mod tests {
         // Save on typing..
         type Storage = <self::TestComponent as Component>::Storage;
 
-        let mut world = resource::World::new();
+        let mut resource_map = resource::ResourceMap::new();
         let mut entity_set = EntitySet::new();
-        world.insert(<TestComponent as Component>::Storage::new());
+        resource_map.insert(<TestComponent as Component>::Storage::new());
         entity_set.register_component_type::<TestComponent>();
 
         // Create an entity
         let entity_handle = entity_set.allocate();
         let entity = entity_set.get_entity_ref(&entity_handle).unwrap();
 
-        let mut test_component_storage = world.fetch_mut::<Storage>();
+        let mut test_component_storage = resource_map.fetch_mut::<Storage>();
 
         // Fail to find the component
         let component = entity.get_component::<TestComponent>(&test_component_storage);

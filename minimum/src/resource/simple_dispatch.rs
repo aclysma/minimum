@@ -1,26 +1,26 @@
 use super::resource;
 use std::sync::Arc;
-use resource::World;
+use resource::ResourceMap;
 
 pub struct MinimumDispatcher {
-    world: Arc<World>,
+    resource_map: Arc<ResourceMap>,
 }
 
 impl MinimumDispatcher {
-    pub fn new(world: World) -> MinimumDispatcher {
+    pub fn new(resource_map: ResourceMap) -> MinimumDispatcher {
         MinimumDispatcher {
-            world: Arc::new(world),
+            resource_map: Arc::new(resource_map),
         }
     }
 
     // Call this to kick off processing.
-    pub fn enter_game_loop<F>(self, f: F) -> World
+    pub fn enter_game_loop<F>(self, f: F) -> ResourceMap
     where
         F: Fn(&MinimumDispatcherContext),
     {
         {
             let ctx = MinimumDispatcherContext {
-                world: self.world.clone(),
+                resource_map: self.resource_map.clone(),
                 should_terminate: std::cell::Cell::new(false),
             };
 
@@ -32,18 +32,18 @@ impl MinimumDispatcher {
             }
         }
 
-        // Then unwrap the world inside it
-        let world = Arc::try_unwrap(self.world).unwrap_or_else(|_| {
+        // Then unwrap the resource_map inside it
+        let resource_map = Arc::try_unwrap(self.resource_map).unwrap_or_else(|_| {
             unreachable!();
         });
 
-        // Return the world
-        world
+        // Return the resource_map
+        resource_map
     }
 }
 
 pub struct MinimumDispatcherContext {
-    world: Arc<World>,
+    resource_map: Arc<ResourceMap>,
     should_terminate: std::cell::Cell<bool>,
 }
 
@@ -62,8 +62,8 @@ impl MinimumDispatcherContext {
         self.should_terminate.set(true);
     }
 
-    pub fn world(&self) -> Arc<World> {
-        self.world.clone()
+    pub fn resource_map(&self) -> Arc<ResourceMap> {
+        self.resource_map.clone()
     }
 
     pub fn run_task<T>(&self, mut task: T)
@@ -71,7 +71,7 @@ impl MinimumDispatcherContext {
         T: Task,
     {
         use resource::DataRequirement;
-        let required_data = <<T as Task>::RequiredResources>::fetch(&self.world);
+        let required_data = <<T as Task>::RequiredResources>::fetch(&self.resource_map);
         task.run(required_data);
     }
 }

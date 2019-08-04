@@ -2,7 +2,7 @@ use crate::Component;
 use crate::EntityHandle;
 use crate::EntitySet;
 use crate::Resource;
-use crate::World;
+use crate::ResourceMap;
 use std::collections::VecDeque;
 
 //TODO: Change naming from prototype to definition
@@ -14,8 +14,8 @@ use std::collections::VecDeque;
 pub trait ComponentPrototype: Sized + Send + Sync + 'static {
     type Factory: ComponentFactory<Self>;
 
-    fn enqueue_create(&self, world: &World, entity_handle: &EntityHandle) {
-        let mut factory = world.fetch_mut::<Self::Factory>();
+    fn enqueue_create(&self, resource_map: &ResourceMap, entity_handle: &EntityHandle) {
+        let mut factory = resource_map.fetch_mut::<Self::Factory>();
         factory.enqueue_create(entity_handle, self);
     }
 }
@@ -26,7 +26,7 @@ pub trait ComponentPrototype: Sized + Send + Sync + 'static {
 pub trait ComponentFactory<P: ComponentPrototype>: Resource {
     fn enqueue_create(&mut self, entity_handle: &EntityHandle, prototype: &P);
 
-    fn flush_creates(&mut self, world: &World, entity_set: &EntitySet);
+    fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet);
 }
 
 //
@@ -73,12 +73,12 @@ impl<T: Component + Clone> ComponentFactory<CloneComponentPrototype<T>>
             .push_back((entity_handle.clone(), prototype.clone.clone()));
     }
 
-    fn flush_creates(&mut self, world: &World, entity_set: &EntitySet) {
+    fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         if self.prototypes.is_empty() {
             return;
         }
 
-        let mut storage = world.fetch_mut::<<T as Component>::Storage>();
+        let mut storage = resource_map.fetch_mut::<<T as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
                 entity.add_component(&mut *storage, data);

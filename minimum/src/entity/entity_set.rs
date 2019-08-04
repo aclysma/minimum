@@ -84,44 +84,44 @@ impl EntitySet {
         Some(EntityRef::new(e, handle))
     }
 
-    pub fn clear(&mut self, world: &resource::World) {
+    pub fn clear(&mut self, resource_map: &resource::ResourceMap) {
         let entity_handles: Vec<_> = self.iter().map(|x| x.handle()).collect();
-        self.do_flush_free(world, entity_handles.as_slice());
+        self.do_flush_free(resource_map, entity_handles.as_slice());
     }
 
-    pub fn flush_free(&mut self, world: &resource::World) {
+    pub fn flush_free(&mut self, resource_map: &resource::ResourceMap) {
         let entity_handles: Vec<_> = {
             let delete_components =
-                world.fetch_mut::<<PendingDeleteComponent as Component>::Storage>();
+                resource_map.fetch_mut::<<PendingDeleteComponent as Component>::Storage>();
             delete_components.iter(&self).map(|x| x.0).collect()
         };
 
-        self.do_flush_free(world, &entity_handles);
+        self.do_flush_free(resource_map, &entity_handles);
     }
 
-    pub fn do_flush_free(&mut self, world: &resource::World, entity_handles: &[EntityHandle]) {
+    pub fn do_flush_free(&mut self, resource_map: &resource::ResourceMap, entity_handles: &[EntityHandle]) {
         self.component_registry
-            .on_entities_free(world, entity_handles);
+            .on_entities_free(resource_map, entity_handles);
 
         for pending_delete in entity_handles {
             self.slab.free(pending_delete);
         }
     }
 
-    pub fn flush_creates(&mut self, world: &resource::World) {
-        world
+    pub fn flush_creates(&mut self, resource_map: &resource::ResourceMap) {
+        resource_map
             .fetch_mut::<EntityFactory>()
-            .flush_creates(world, self);
-        self.component_registry.on_flush_creates(world, self);
+            .flush_creates(resource_map, self);
+        self.component_registry.on_flush_creates(resource_map, self);
     }
 
-    pub fn visit_components(&self, world: &resource::World, entity_handles: &[EntityHandle]) {
-        self.component_registry.visit_components(world, entity_handles);
+    pub fn visit_components(&self, resource_map: &resource::ResourceMap, entity_handles: &[EntityHandle]) {
+        self.component_registry.visit_components(resource_map, entity_handles);
     }
 
-    pub fn update(&mut self, world: &resource::World) {
-        self.flush_free(world);
-        self.flush_creates(world);
+    pub fn update(&mut self, resource_map: &resource::ResourceMap) {
+        self.flush_free(resource_map);
+        self.flush_creates(resource_map);
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Entity> {

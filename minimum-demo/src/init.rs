@@ -41,8 +41,8 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     return imgui;
 }
 
-pub fn init_imgui_manager(world: &minimum::resource::World) -> ImguiManager {
-    let window = world.fetch::<winit::window::Window>();
+pub fn init_imgui_manager(resource_map: &minimum::resource::ResourceMap) -> ImguiManager {
+    let window = resource_map.fetch::<winit::window::Window>();
     let mut imgui_context = init_imgui(&window);
     let mut imgui_platform = imgui_winit_support::WinitPlatform::init(&mut imgui_context);
     imgui_platform.attach_window(
@@ -55,7 +55,7 @@ pub fn init_imgui_manager(world: &minimum::resource::World) -> ImguiManager {
 }
 
 pub fn create_window_interface(
-    world: &mut minimum::resource::World,
+    resource_map: &mut minimum::resource::ResourceMap,
     event_loop: &winit::event_loop::EventLoop<WindowUserEvent>,
 ) -> std::sync::mpsc::Sender<winit::event::Event<WindowUserEvent>> {
     let (winit_event_tx, winit_event_rx) =
@@ -67,16 +67,16 @@ pub fn create_window_interface(
         std::sync::Mutex::new(winit_event_rx),
         event_loop_proxy,
     );
-    world.insert(window_interface);
+    resource_map.insert(window_interface);
 
     winit_event_tx
 }
 
-pub fn create_renderer(world: &minimum::resource::World) -> crate::renderer::Renderer {
-    let window = world.fetch::<winit::window::Window>();
+pub fn create_renderer(resource_map: &minimum::resource::ResourceMap) -> crate::renderer::Renderer {
+    let window = resource_map.fetch::<winit::window::Window>();
     let window = &*window;
 
     let mut renderer = crate::renderer::Renderer::new();
-    renderer.init_render_graph(&window, &world);
+    renderer.init_render_graph(&window, &resource_map);
     renderer
 }

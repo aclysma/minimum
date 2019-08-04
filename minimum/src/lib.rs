@@ -33,8 +33,8 @@ pub use resource::DispatchControl;
 pub use resource::Read;
 pub use resource::ReadOption;
 pub use resource::Resource;
-pub use resource::World;
-pub use resource::WorldBuilder;
+pub use resource::ResourceMap;
+pub use resource::ResourceMapBuilder;
 pub use resource::Write;
 pub use resource::WriteOption;
 
