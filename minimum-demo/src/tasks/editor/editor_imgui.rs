@@ -4,8 +4,9 @@ use minimum::{Task, TaskContext, WriteComponent};
 use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, RenderState, ImguiManager};
 
 use crate::components::EditorSelectedComponent;
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct EditorImgui;
 impl Task for EditorImgui {
     type RequiredResources = (

@@ -1,7 +1,8 @@
 use minimum::component::SlabComponentStorage;
 use minimum::component::DefaultComponentReflector;
+use named_type::NamedType;
 
-#[derive(Debug, Clone, typename::TypeName)]
+#[derive(Debug, Clone, NamedType)]
 pub struct DebugDrawRectComponent {
     size: glm::Vec2,
     color: glm::Vec4,

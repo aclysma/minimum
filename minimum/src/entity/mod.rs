@@ -11,6 +11,8 @@ pub use entity_factory::EntityFactory;
 pub use entity_factory::EntityPrototype;
 pub use entity_set::EntitySet;
 
+use named_type::NamedType;
+
 mod pending_delete;
 pub use pending_delete::PendingDeleteComponent;
 
@@ -25,8 +27,9 @@ mod tests {
     use component::ComponentStorage;
     use component::VecComponentStorage;
     use component::DefaultComponentReflector;
+    use crate::component::ComponentRegistry;
 
-    #[derive(typename::TypeName)]
+    #[derive(NamedType)]
     struct TestComponent {
         _value: i32,
     }
@@ -45,10 +48,11 @@ mod tests {
     #[test]
     fn test_entity_count() {
         let mut resource_map = resource::ResourceMap::new();
-        let mut entity_set = EntitySet::new();
+        let mut component_registry = ComponentRegistry::new();
+        component_registry.register_component::<TestComponent>();
+        let mut entity_set = EntitySet::new(component_registry);
         resource_map.insert(<TestComponent as Component>::Storage::new());
         resource_map.insert(<PendingDeleteComponent as Component>::Storage::new());
-        entity_set.register_component_type::<TestComponent>();
 
         let entity = entity_set.allocate();
         assert_eq!(entity_set.entity_count(), 1);
@@ -66,11 +70,13 @@ mod tests {
         // Save on typing..
         type Storage = <self::TestComponent as Component>::Storage;
 
+        let mut component_registry = ComponentRegistry::new();
+        component_registry.register_component::<TestComponent>();
+
         let mut resource_map = resource::ResourceMap::new();
-        let mut entity_set = EntitySet::new();
+        let mut entity_set = EntitySet::new(component_registry);
         resource_map.insert(<TestComponent as Component>::Storage::new());
         resource_map.insert(<PendingDeleteComponent as Component>::Storage::new());
-        entity_set.register_component_type::<TestComponent>();
 
         // Create an entity
         let entity_handle = entity_set.allocate();
@@ -97,10 +103,12 @@ mod tests {
         // Save on typing..
         type Storage = <self::TestComponent as Component>::Storage;
 
+        let mut component_registry = ComponentRegistry::new();
+        component_registry.register_component::<TestComponent>();
+
         let mut resource_map = resource::ResourceMap::new();
-        let mut entity_set = EntitySet::new();
+        let mut entity_set = EntitySet::new(component_registry);
         resource_map.insert(<TestComponent as Component>::Storage::new());
-        entity_set.register_component_type::<TestComponent>();
 
         // Create an entity
         let entity_handle = entity_set.allocate();

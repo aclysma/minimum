@@ -13,8 +13,9 @@ use nphysics2d::object::ColliderHandle;
 use ncollide2d::shape::ShapeHandle;
 use ncollide2d::world::{CollisionGroups, GeometricQueryType};
 use std::collections::VecDeque;
+use named_type::NamedType;
 
-#[derive(Clone, typename::TypeName)]
+#[derive(Clone, NamedType)]
 pub struct EditorShapeComponent {
     shape_handle: ShapeHandle<f32>,
     collider_handle: ColliderHandle,

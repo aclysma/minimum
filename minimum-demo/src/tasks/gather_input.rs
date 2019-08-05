@@ -2,8 +2,9 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
 use crate::resources::{GameControl, ImguiManager, InputManager, WindowInterface};
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct GatherInput;
 impl Task for GatherInput {
     type RequiredResources = (

@@ -1,7 +1,8 @@
 use minimum::component::{VecComponentStorage, DefaultComponentReflector};
 use minimum::Component;
+use named_type::NamedType;
 
-#[derive(Clone, typename::TypeName)]
+#[derive(Clone, NamedType)]
 pub struct EditorSelectedComponent {}
 
 impl EditorSelectedComponent {

@@ -3,11 +3,12 @@ use super::ComponentFactory;
 use super::ComponentPrototype;
 use super::ComponentStorage;
 use std::marker::PhantomData;
+use named_type::NamedType;
 
 use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
 
 //
-// Handler can be implemented to run custom logic when entities are being destroyed
+// Handler can be implemented to run custom logic just before entities are destroyed
 //
 pub trait ComponentFreeHandler<T: Component>: Send + Sync {
     fn on_entities_free(
@@ -17,9 +18,7 @@ pub trait ComponentFreeHandler<T: Component>: Send + Sync {
     );
 }
 
-//
 // Default handler, does nothing but removes the component from the storage
-//
 struct DefaultFreeHandler {}
 
 impl<T: Component> ComponentFreeHandler<T> for DefaultFreeHandler {
@@ -32,26 +31,11 @@ impl<T: Component> ComponentFreeHandler<T> for DefaultFreeHandler {
     }
 }
 
-//
 // Custom handler, calls on_entities_free on the given type
-//
 struct CustomFreeHandler<T: Component, F: ComponentFreeHandler<T>> {
     phantom_data1: PhantomData<T>,
     phantom_data2: PhantomData<F>,
 }
-
-//impl<T, F> CustomFreeHandler<T, F>
-//where
-//    T: Component,
-//    F: ComponentFreeHandler<T>,
-//{
-//    //    fn new() -> Self {
-//    //        CustomFreeHandler::<T, F> {
-//    //            phantom_data1: PhantomData,
-//    //            phantom_data2: PhantomData
-//    //        }
-//    //    }
-//}
 
 impl<T, F> ComponentFreeHandler<T> for CustomFreeHandler<T, F>
 where
@@ -115,7 +99,6 @@ where
 
     fn visit_component(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
         let storage = resource_map.fetch::<<T as Component>::Storage>();
-
         for entity_handle in entity_handles {
             let comp = storage.get(&entity_handle);
 
@@ -127,14 +110,13 @@ where
 }
 
 //
-// Registered component factory
+// RegisteredComponentFactory - Used to walk across all component factories and flush pending creates
 //
-
 trait RegisteredComponentFactoryTrait: Resource {
     fn flush_creates(&self, resource_map: &ResourceMap, entity_set: &EntitySet);
 }
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct RegisteredComponentFactory<P, F>
 where
     P: ComponentPrototype,
@@ -168,6 +150,9 @@ where
     }
 }
 
+//
+// ComponentRegistry
+//
 pub struct ComponentRegistry {
     registered_components: Vec<Box<dyn RegisteredComponentTrait>>,
     registered_factories: Vec<Box<dyn RegisteredComponentFactoryTrait>>,
@@ -186,7 +171,7 @@ impl ComponentRegistry {
             .push(Box::new(RegisteredComponent::<T, DefaultFreeHandler>::new()));
     }
 
-    pub fn register_component_type_with_free_handler<
+    pub fn register_component_with_free_handler<
         T: Component + 'static,
         F: ComponentFreeHandler<T> + 'static,
     >(

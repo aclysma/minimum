@@ -5,10 +5,14 @@
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate named_type_derive;
+
 pub mod component;
 pub mod dispatch;
 pub mod entity;
 pub mod slab;
+pub mod reflect;
 pub mod resource;
 pub mod util;
 pub mod world;
@@ -56,5 +60,3 @@ pub use dispatch::async_dispatch::TaskContext;
 pub use dispatch::simple_dispatch::MinimumDispatcher;
 #[cfg(not(feature = "async_support"))]
 pub use dispatch::simple_dispatch::Task;
-
-//pub use world::World;

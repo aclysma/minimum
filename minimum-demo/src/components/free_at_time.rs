@@ -1,8 +1,9 @@
 use minimum::component::{SlabComponentStorage, DefaultComponentReflector};
 
 use crate::resources::TimeState;
+use named_type::NamedType;
 
-#[derive(Debug, Clone, typename::TypeName)]
+#[derive(Debug, Clone, NamedType)]
 pub struct FreeAtTimeComponent {
     free_time: std::time::Instant,
 }

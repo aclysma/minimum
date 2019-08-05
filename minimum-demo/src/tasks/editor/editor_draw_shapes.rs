@@ -7,8 +7,9 @@ use crate::resources::DebugDraw;
 use crate::resources::EditorCollisionWorld;
 use ncollide2d::shape::ShapeHandle;
 use nphysics2d::object::ColliderHandle;
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct EditorDrawShapes;
 impl Task for EditorDrawShapes {
     type RequiredResources = (

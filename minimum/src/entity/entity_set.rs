@@ -22,30 +22,19 @@ pub struct EntitySet {
 }
 
 impl EntitySet {
-    pub fn new() -> Self {
+    pub fn new(component_registry: ComponentRegistry) -> Self {
         EntitySet {
             slab: GenSlab::new(),
-            component_registry: ComponentRegistry::new(),
+            component_registry,
         }
     }
 
-    pub fn register_component_type<T: Component>(&mut self) {
-        self.component_registry.register_component::<T>();
+    fn component_registry(&self) -> &ComponentRegistry {
+        &self.component_registry
     }
 
-    //TODO: Improve this API
-    pub fn register_component_type_with_free_handler<
-        T: Component,
-        F: ComponentFreeHandler<T> + 'static,
-    >(
-        &mut self,
-    ) {
-        self.component_registry
-            .register_component_type_with_free_handler::<T, F>();
-    }
-
-    pub fn register_component_factory<P: ComponentPrototype, F: ComponentFactory<P>>(&mut self) {
-        self.component_registry.register_component_factory::<P, F>();
+    fn component_registry_mut(&mut self) -> &mut ComponentRegistry {
+        &mut self.component_registry
     }
 
     pub fn allocate(&mut self) -> EntityHandle {

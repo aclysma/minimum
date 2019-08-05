@@ -2,8 +2,9 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{DispatchControl, Task, TaskContext};
 
 use crate::resources::{InputManager, TimeState};
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct UpdateTimeState;
 impl Task for UpdateTimeState {
     type RequiredResources = (Write<TimeState>, Read<InputManager>, Write<DispatchControl>);

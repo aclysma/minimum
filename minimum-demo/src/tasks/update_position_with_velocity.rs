@@ -6,8 +6,9 @@ use crate::resources::TimeState;
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
 use minimum::ComponentStorage;
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct UpdatePositionWithVelocity;
 impl Task for UpdatePositionWithVelocity {
     type RequiredResources = (

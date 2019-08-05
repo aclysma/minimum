@@ -1,7 +1,8 @@
 use minimum::component::VecComponentStorage;
 use minimum::component::DefaultComponentReflector;
+use named_type::NamedType;
 
-#[derive(Debug, Clone, typename::TypeName)]
+#[derive(Debug, Clone, NamedType)]
 pub struct PositionComponent {
     position: glm::Vec2,
 }

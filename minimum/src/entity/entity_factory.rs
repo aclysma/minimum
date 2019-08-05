@@ -2,6 +2,7 @@ use crate::EntityHandle;
 use crate::EntitySet;
 use crate::ResourceMap;
 use std::collections::VecDeque;
+use named_type::NamedType;
 
 use crate::component::ComponentPrototype;
 
@@ -77,14 +78,14 @@ mod tests {
     use crate::component::SlabComponentStorage;
     use crate::Component;
 
-    #[derive(Clone, typename::TypeName)]
+    #[derive(Clone, NamedType)]
     struct TestComponent1;
     impl Component for TestComponent1 {
         type Storage = SlabComponentStorage<Self>;
         type Reflector = DefaultComponentReflector<Self>;
     }
 
-    #[derive(Clone, typename::TypeName)]
+    #[derive(Clone, NamedType)]
     struct TestComponent2;
     impl Component for TestComponent2 {
         type Storage = SlabComponentStorage<Self>;

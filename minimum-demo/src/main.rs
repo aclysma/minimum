@@ -6,6 +6,9 @@ extern crate nalgebra_glm as glm;
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate named_type_derive;
+
 mod components;
 mod constructors;
 mod init;

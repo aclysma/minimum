@@ -2,8 +2,9 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
 use crate::resources::ImguiManager;
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct ImguiBeginFrame;
 impl Task for ImguiBeginFrame {
     type RequiredResources = (Read<winit::window::Window>, Write<ImguiManager>);

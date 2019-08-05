@@ -8,15 +8,6 @@ use mopa::Any;
 
 use std::marker::PhantomData;
 
-
-pub use crate::DispatchControl;
-
-use crate::EntitySet;
-use crate::{EntityFactory, PendingDeleteComponent};
-
-use crate::component::ComponentFactory;
-use crate::component::ComponentPrototype;
-
 use crate::util::{TrustCell, TrustCellRef as Ref, TrustCellRefMut as RefMut};
 
 //

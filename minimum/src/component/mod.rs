@@ -35,10 +35,11 @@ where
     fn get_mut(&mut self, entity: &EntityHandle) -> Option<&mut T>;
 }
 
+//TODO: All the reflector stuff can be pulled into a top-level module
 pub trait ComponentReflector: Send + Sync
 {
-    fn type_name() -> String;
-    fn to_string() -> String;
+    fn type_name() -> &'static str;
+    //fn to_string() -> &'static str;
 }
 
 pub struct DefaultComponentReflector<T>
@@ -50,18 +51,14 @@ where
 
 impl<T> ComponentReflector for DefaultComponentReflector<T>
 where
-    T: Component + typename::TypeName
+    T: Component + named_type::NamedType
 {
-    fn type_name() -> String {
+    fn type_name() -> &'static str {
         T::type_name()
     }
 
-    fn to_string() -> String {
-        "".to_string()
-    }
-
-//    pub fn new() ->  {
-//
+//    fn to_string() -> &'static str {
+//        "".to_string()
 //    }
 }
 
@@ -69,11 +66,9 @@ pub trait Component: Sized + Send + Sync + 'static {
     type Storage: ComponentStorage<Self>;
     type Reflector: ComponentReflector;
 
-    fn get_name(&self) -> String {
+    fn get_name(&self) -> &'static str {
         <Self::Reflector as ComponentReflector>::type_name()
     }
-
-
 }
 
 pub type ReadComponent<T> = crate::resource::Read<<T as Component>::Storage>;

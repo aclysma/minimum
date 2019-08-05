@@ -9,11 +9,7 @@ use crate::resource::{
     WriteBorrow
 };
 
-use crate::component::{
-    Component, ComponentStorage,
-    ComponentPrototype, ComponentFreeHandler,
-    ComponentFactory
-};
+use crate::component::{Component, ComponentStorage, ComponentPrototype, ComponentFreeHandler, ComponentFactory, ComponentRegistry};
 
 use crate::entity::{
     EntitySet,
@@ -32,14 +28,16 @@ use std::marker::PhantomData;
 
 pub struct WorldBuilder {
     resource_map: ResourceMap,
-    default_entity_set: EntitySet,
+    default_component_registry: ComponentRegistry,
+    //default_entity_set: EntitySet,
 }
 
 impl WorldBuilder {
     pub fn new() -> Self {
         WorldBuilder {
             resource_map: ResourceMap::new(),
-            default_entity_set: EntitySet::new(),
+            default_component_registry: ComponentRegistry::new(),
+            //default_entity_set: EntitySet::new(),
         }
     }
 
@@ -58,7 +56,7 @@ impl WorldBuilder {
         component_storage: S,
     ) -> Self {
         self.resource_map.insert(component_storage);
-        self.default_entity_set.register_component_type::<C>();
+        self.default_component_registry.register_component::<C>();
         self
     }
 
@@ -71,8 +69,8 @@ impl WorldBuilder {
         component_storage: S,
     ) -> Self {
         self.resource_map.insert(component_storage);
-        self.default_entity_set
-            .register_component_type_with_free_handler::<C, F>();
+        self.default_component_registry
+            .register_component_with_free_handler::<C, F>();
         self
     }
 
@@ -81,7 +79,7 @@ impl WorldBuilder {
         component_factory: F,
     ) -> Self {
         self.resource_map.insert(component_factory);
-        self.default_entity_set.register_component_factory::<P, F>();
+        self.default_component_registry.register_component_factory::<P, F>();
         self
     }
 
@@ -93,24 +91,11 @@ impl WorldBuilder {
     }
 
     pub fn build(mut self) -> ResourceMap {
-        // If no entity factory was inserted, insert the default
-        if !self.resource_map.has_value::<EntityFactory>() {
-            self = self.with_resource(EntityFactory::new());
-        }
+        self = self.with_resource(EntityFactory::new());
+        self = self.with_component(<PendingDeleteComponent as Component>::Storage::new());
 
-        // If no pending delete component was inserted, insert the default
-        if !self
-            .resource_map
-            .has_value::<<PendingDeleteComponent as Component>::Storage>()
-        {
-            self =
-                self.with_component(<PendingDeleteComponent as Component>::Storage::new());
-        }
-
-        // If no entity set was created, insert the default
-        if !self.resource_map.has_value::<EntitySet>() {
-            self.resource_map.insert(self.default_entity_set);
-        }
+        let entity_set = EntitySet::new(self.default_component_registry);
+        self.resource_map.insert(entity_set);
 
         self.resource_map
     }

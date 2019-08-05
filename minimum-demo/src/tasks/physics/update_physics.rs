@@ -3,8 +3,9 @@ use minimum::resource::{DataRequirement, Read, Write};
 use crate::resources::{PhysicsManager, TimeState};
 
 use minimum::{Task, TaskContext};
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct UpdatePhysics;
 impl Task for UpdatePhysics {
     type RequiredResources = (Read<TimeState>, Write<PhysicsManager>);

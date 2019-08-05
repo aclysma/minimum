@@ -12,8 +12,9 @@ use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
 use std::collections::VecDeque;
+use named_type::NamedType;
 
-#[derive(Debug, typename::TypeName)]
+#[derive(Debug, NamedType)]
 pub struct PhysicsBodyComponent {
     body_handle: BodyHandle,
 }

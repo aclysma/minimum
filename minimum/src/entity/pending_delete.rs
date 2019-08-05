@@ -3,8 +3,9 @@
 use crate::component::SlabComponentStorage;
 use crate::component::DefaultComponentReflector;
 use crate::Component;
+use named_type::NamedType;
 
-#[derive(Debug, typename::TypeName)]
+#[derive(Debug, NamedType)]
 pub struct PendingDeleteComponent {}
 
 impl PendingDeleteComponent {

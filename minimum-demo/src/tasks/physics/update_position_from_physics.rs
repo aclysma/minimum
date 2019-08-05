@@ -5,8 +5,9 @@ use crate::resources::PhysicsManager;
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
 use minimum::{ComponentStorage, EntitySet, Task, TaskContext};
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct UpdatePositionFromPhysics;
 impl Task for UpdatePositionFromPhysics {
     type RequiredResources = (

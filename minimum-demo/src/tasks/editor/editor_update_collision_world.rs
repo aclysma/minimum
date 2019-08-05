@@ -3,8 +3,9 @@ use minimum::resource::{DataRequirement, Write};
 use crate::resources::EditorCollisionWorld;
 
 use minimum::{Task, TaskContext};
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct EditorUpdateCollisionWorld;
 impl Task for EditorUpdateCollisionWorld {
     type RequiredResources = (Write<EditorCollisionWorld>);

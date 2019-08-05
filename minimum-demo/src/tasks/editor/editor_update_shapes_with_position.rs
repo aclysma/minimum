@@ -5,8 +5,9 @@ use crate::resources::EditorCollisionWorld;
 use crate::components;
 use minimum::component::ReadComponent;
 use minimum::{ComponentStorage, EntitySet, Task, TaskContext};
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct EditorUpdateShapesWithPosition;
 impl Task for EditorUpdateShapesWithPosition {
     type RequiredResources = (

@@ -8,8 +8,9 @@ use crate::components::EditorSelectedComponent;
 use ncollide2d::world::CollisionGroups;
 
 use winit::event::VirtualKeyCode;
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct EditorHandleInput;
 impl Task for EditorHandleInput {
     type RequiredResources = (

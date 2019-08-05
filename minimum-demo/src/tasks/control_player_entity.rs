@@ -7,8 +7,9 @@ use crate::components;
 use minimum::component::ReadComponent;
 use minimum::ComponentStorage;
 use minimum::EntityFactory;
+use named_type::NamedType;
 
-#[derive(typename::TypeName)]
+#[derive(NamedType)]
 pub struct ControlPlayerEntity;
 impl Task for ControlPlayerEntity {
     type RequiredResources = (

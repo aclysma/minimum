@@ -1,7 +1,8 @@
 use minimum::component::{SlabComponentStorage, DefaultComponentReflector};
+use named_type::NamedType;
 
 // This component contains no data, however an empty component can still be useful to "tag" entities
-#[derive(Debug, Clone, typename::TypeName)]
+#[derive(Debug, Clone, NamedType)]
 pub struct BulletComponent {}
 
 impl BulletComponent {

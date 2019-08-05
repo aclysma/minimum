@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::resource;
 use super::DispatchControl;
+use named_type::NamedType;
 
 use super::async_dispatcher::{
     acquire_critical_section_read as do_acquire_critical_section_read,
@@ -33,7 +34,7 @@ impl TaskContext {
     }
 }
 
-pub trait Task: typename::TypeName {
+pub trait Task: NamedType {
     type RequiredResources: for<'a> resource::DataRequirement<'a>
         + super::async_dispatcher::RequiresResources<ResourceId>
         + Send
