@@ -48,7 +48,8 @@ imgui = "0.1.0-pre"
 imgui-winit-support = { version = "0.1.0-pre", default-features = false, features = ["winit-20"] }
 
 # minimum
-minimum = { path = "../minimum", features = ["async_support"] }
+minimum = { path = "../minimum", features = ["async_support", "nightly"] }
+minimum-derive = { path = "../minimum-derive" }
 
 
 [dependencies.gfx-backend-vulkan]

@@ -25,6 +25,7 @@ mopa = "0.2"
 log = "0.4"
 named_type = "0.2"
 named_type_derive = "0.2"
+minimum-derive = { path = "../minimum-derive" }
 
 # These are optional, used with async_support
 futures = { version = "0.1", optional = true }

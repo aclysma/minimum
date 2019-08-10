@@ -5,6 +5,7 @@ use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, RenderStat
 
 use crate::components::EditorSelectedComponent;
 use named_type::NamedType;
+use crate::inspect::InspectRenderDefault;
 
 #[derive(NamedType)]
 pub struct EditorImgui;
@@ -27,11 +28,11 @@ impl Task for EditorImgui {
     ) {
         let (
             _entity_set,
-            input_manager,
-            render_state,
-            editor_collision_world,
+            _input_manager,
+            _render_state,
+            _editor_collision_world,
             mut editor_selected_components,
-            mut debug_draw,
+            mut _debug_draw,
             mut imgui_manager
         ) = data;
 
@@ -46,7 +47,7 @@ impl Task for EditorImgui {
 
         let mut imgui_manager : WriteBorrow<ImguiManager> = imgui_manager;
         imgui_manager.with_ui(|ui| {
-            ui.window(im_str!("Editor")).build((|| {
+            ui.window(im_str!("Editor")).build(|| {
                 ui.text(format!("Selected Entities: {}", editor_selected_components.count()));
 //unsafe {
 //    imgui::sys::igListBoxHeaderInt(im_str!("entities").as_ptr(), 5, 20);
@@ -54,7 +55,13 @@ impl Task for EditorImgui {
 //    imgui::sys::igListBoxFooter();
 //
 //}
-            }))
+
+
+                let mut s1 = crate::inspect::MyStruct { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0) };
+                let mut s2 = crate::inspect::MyStruct2 { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0), s: s1 };
+                s2.render_mut("var", ui);
+
+            })
         })
     }
 }

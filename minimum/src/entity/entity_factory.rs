@@ -2,7 +2,6 @@ use crate::EntityHandle;
 use crate::EntitySet;
 use crate::ResourceMap;
 use std::collections::VecDeque;
-use named_type::NamedType;
 
 use crate::component::ComponentPrototype;
 
@@ -77,6 +76,7 @@ mod tests {
     use crate::component::ComponentStorage;
     use crate::component::SlabComponentStorage;
     use crate::Component;
+    use named_type::NamedType;
 
     #[derive(Clone, NamedType)]
     struct TestComponent1;

@@ -9,12 +9,16 @@ extern crate log;
 #[macro_use]
 extern crate named_type_derive;
 
+//#[macro_use]
+//extern crate minimum_derive;
+
 mod components;
 mod constructors;
 mod init;
 mod renderer;
 mod resources;
 mod tasks;
+mod inspect;
 
 use minimum::dispatch::async_dispatch::MinimumDispatcher;
 

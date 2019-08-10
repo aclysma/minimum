@@ -11,7 +11,6 @@ use crate::component;
 use component::Component;
 use component::ComponentFactory;
 use component::ComponentFreeHandler;
-use component::ComponentPrototype;
 use component::ComponentRegistry;
 
 use super::PendingDeleteComponent;

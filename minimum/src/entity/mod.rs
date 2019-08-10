@@ -11,7 +11,6 @@ pub use entity_factory::EntityFactory;
 pub use entity_factory::EntityPrototype;
 pub use entity_set::EntitySet;
 
-use named_type::NamedType;
 
 mod pending_delete;
 pub use pending_delete::PendingDeleteComponent;
@@ -28,6 +27,7 @@ mod tests {
     use component::VecComponentStorage;
     use component::DefaultComponentReflector;
     use crate::component::ComponentRegistry;
+    use named_type::NamedType;
 
     #[derive(NamedType)]
     struct TestComponent {
