@@ -7,3 +7,5 @@ pub use trust_cell::RefMut as TrustCellRefMut;
 pub use trust_cell::TrustCell;
 
 pub mod optionize;
+
+pub mod inspect;

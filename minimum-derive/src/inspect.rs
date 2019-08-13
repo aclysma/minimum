@@ -5,32 +5,23 @@ use syn::{Data, DataStruct, Fields, Token};
 use syn::parse::{Parse, ParseStream};
 
 #[derive(Debug)]
-struct InspectorArgs {
-    ident: syn::Ident,
+struct FieldArgs {
+    inspector: Option<syn::Ident>,
+    wrapping_type: Option<syn::Ident>
 }
 
 mod keyword {
     syn::custom_keyword!(inspector);
 }
 
-impl Parse for InspectorArgs {
-    fn parse(input: ParseStream) -> syn::parse::Result<Self> {
-
-        let content;
-        let _parens = syn::parenthesized!(content in input);
-
-        content.parse::<keyword::inspector>()?;
-        content.parse::<Token![=]>()?;
-        let ident: syn::Ident = content.parse()?;
-
-        Ok(InspectorArgs {
-            ident,
-        })
-    }
+struct ParsedField {
+    name: syn::Ident,
+    ty: syn::Type,
+    inspector: syn::Type,
+    wrapping_type: Option<syn::Type>
 }
 
 /*
-
 EXAMPLE INPUT:
 
     #[derive(minimum_derive::Inspect, minimum_derive::Optionize)]
@@ -64,8 +55,21 @@ EXAMPLE OUTPUT:
             ui.unindent();
         }
     }
-
 */
+
+fn get_lit_str<'a>(lit: &'a syn::Lit) -> Result<&'a syn::LitStr, ()> {
+    get_lit_str2( lit)
+}
+
+fn get_lit_str2<'a>(
+    lit: &'a syn::Lit,
+) -> Result<&'a syn::LitStr, ()> {
+    if let syn::Lit::Str(ref lit) = *lit {
+        Ok(lit)
+    } else {
+        Err(())
+    }
+}
 
 pub fn impl_inspect_macro(ast: &syn::DeriveInput) -> TokenStream {
 
@@ -74,48 +78,139 @@ pub fn impl_inspect_macro(ast: &syn::DeriveInput) -> TokenStream {
         _ => panic!("expected a struct with named fields"),
     };
 
+    let mut parsed_fields = vec![];
+
+
+    for field in fields {
+
+        let mut inspector : Option<syn::Type> = None;
+        let mut wrapping_type : Option<syn::Type> = None;
+
+        for attr in field.attrs.iter().filter(|x| x.path.is_ident("inspect")) {
+
+            let parsed_meta = attr.parse_meta();
+            if let Ok(syn::Meta::List(ref meta)) = parsed_meta {
+                let metas : Vec<_> = meta.nested.iter().cloned().collect();
+                for meta in metas {
+                    match meta {
+                        syn::NestedMeta::Meta(syn::Meta::NameValue(ref m)) if &m.ident.to_string() == "inspector" => {
+                            use quote::ToTokens;
+                            let str = get_lit_str(&m.lit).expect("could not convert inspector value to ListStr");
+                            let ty = str.parse();
+                            if ty.is_err() {
+                                println!("ERROR");
+                                return TokenStream::from(quote!(compile_error!(format!("{:?}", ty.err);)));
+                            }
+
+                            if inspector.is_some() {
+                                return TokenStream::from(quote!(compile_error!("inspector specified more than once!")));
+                            }
+
+                            inspector = Some(ty.unwrap());
+                        },
+                        syn::NestedMeta::Meta(syn::Meta::NameValue(ref m)) if &m.ident.to_string() == "wrapping_type" => {
+                            use quote::ToTokens;
+                            let str = get_lit_str(&m.lit).unwrap();
+                            let ty = str.parse();
+                            if ty.is_err() {
+                                println!("ERROR");
+                                return TokenStream::from(quote!(compile_error!(format!("{:?}", ty.err);)));
+                            }
+
+                            if wrapping_type.is_some() {
+                                return TokenStream::from(quote!(compile_error!("wrapping_type specified more than once!")));
+                            }
+
+                            wrapping_type = Some(ty.unwrap());
+                        },
+                        _ => {
+                            println!("ERROR {:?}", meta);
+                            return TokenStream::from(quote!(compile_error!("Unrecognized metadata in inspect field attribute");));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Inspector must be non-null, default to "InspectRenderDefault"
+        let inspector = inspector.unwrap_or_else(||
+            syn::parse2::<syn::Type>(quote!(InspectRenderDefault)).unwrap()
+        );
+
+        parsed_fields.push(ParsedField {
+            name: field.ident.as_ref().unwrap().clone(),
+            ty: field.ty.clone(),
+            inspector,
+            wrapping_type
+
+        });
+    }
+
     let struct_name1 = &ast.ident;
     let struct_name2 = &ast.ident;
     let struct_name3 = &ast.ident;
 
-    let field_name1 = fields.iter().map(|field| &field.ident);
-    let field_name2 = fields.iter().map(|field| &field.ident);
-    let field_name3 = fields.iter().map(|field| &field.ident);
-    let field_name4 = fields.iter().map(|field| &field.ident);
-    let field_type1 = fields.iter().map(|field| &field.ty);
-    let field_type2 = fields.iter().map(|field| &field.ty);
+    let mut render_impls = vec![];
+    let mut render_mut_impls = vec![];
 
-    let mut inspector_names = vec![];
+    for parsed_field in &parsed_fields {
+        let render = if let Some(value) = &parsed_field.wrapping_type {
+            let inspector = &parsed_field.inspector;
+            let field_name1 = &parsed_field.name;
+            let field_name2 = &parsed_field.name;
+            let field_name3 = &parsed_field.name;
+            let wrapping_type1 = &parsed_field.wrapping_type;
+            let wrapping_type2 = &parsed_field.wrapping_type;
+            quote! {
+                let mut reffed = <#wrapping_type1>::from(&self.#field_name1);
+                <#wrapping_type2 as #inspector>::render(&reffed, stringify!(#field_name3), ui);
+            }
+        } else {
+            let inspector = &parsed_field.inspector;
+            let field_type = &parsed_field.ty;
+            let field_name1 = &parsed_field.name;
+            let field_name2 = &parsed_field.name;
 
-    for field in fields {
-        let mut inspector_name : Option<InspectorArgs> = None;
+            quote! {
+                <#field_type as #inspector>::render(&self.#field_name1, stringify!(#field_name2), ui);
+            }
+        };
 
-        for attr in field.attrs.iter().filter(|x| x.path.is_ident("inspect")) {
-            let args = syn::parse2::<InspectorArgs>(attr.tts.clone());
-            let args = match args {
-                Ok(data) => data,
-                Err(err) => {
-                    return TokenStream::from(err.to_compile_error());
-                }
-            };
-            inspector_name = Some(args);
-        }
+        let render_mut = if let Some(value) = &parsed_field.wrapping_type {
+            let inspector = &parsed_field.inspector;
+            let field_name1 = &parsed_field.name;
+            let field_name2 = &parsed_field.name;
+            let field_name3 = &parsed_field.name;
+            let wrapping_type1 = &parsed_field.wrapping_type;
+            let wrapping_type2 = &parsed_field.wrapping_type;
+            quote! {
+                let mut reffed = <#wrapping_type1>::from(&self.#field_name1);
+                <#wrapping_type2 as #inspector>::render_mut(&mut reffed, stringify!(#field_name3), ui);
+            }
+        } else {
+            let inspector = &parsed_field.inspector;
+            let field_type = &parsed_field.ty;
+            let field_name1 = &parsed_field.name;
+            let field_name2 = &parsed_field.name;
 
-        inspector_names.push(inspector_name.unwrap_or_else(|| InspectorArgs { ident: syn::Ident::new("InspectRenderDefault", proc_macro2::Span::call_site()) }));
+            quote! {
+                <#field_type as #inspector>::render_mut(&mut self.#field_name1, stringify!(#field_name2), ui);
+            }
+        };
+
+        render_impls.push(render);
+        render_mut_impls.push(render_mut);
     }
-
-    let inspector_name1 = inspector_names.iter().map(|x| x.ident.clone());
-    let inspector_name2 = inspector_names.iter().map(|x| x.ident.clone());
 
     TokenStream::from(quote! {
 
         impl InspectRenderDefault for #struct_name1 {
             fn render(&self, label: &'static str, ui: &imgui::Ui) {
                 let header_name = stringify!(#struct_name2);
-                let header = ui.collapsing_header(&imgui::im_str!( "{}", header_name      )).build();
+                let header = ui.collapsing_header(&imgui::im_str!( "{}", header_name)).build();
                 ui.indent();
                 #(
-                    <#field_type1 as #inspector_name1>::render(&self.#field_name1, stringify!(#field_name2), ui);
+                    #render_impls
                 )*
                 ui.unindent();
             }
@@ -125,7 +220,7 @@ pub fn impl_inspect_macro(ast: &syn::DeriveInput) -> TokenStream {
                 let header = ui.collapsing_header(&imgui::im_str!("{}", header_name)).build();
                 ui.indent();
                 #(
-                    <#field_type2 as #inspector_name2>::render_mut(&mut self.#field_name3, stringify!(#field_name4), ui);
+                    #render_mut_impls
                 )*
                 ui.unindent();
             }
