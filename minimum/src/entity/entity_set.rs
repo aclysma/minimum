@@ -9,8 +9,6 @@ use crate::resource;
 
 use crate::component;
 use component::Component;
-use component::ComponentFactory;
-use component::ComponentFreeHandler;
 use component::ComponentRegistry;
 
 use super::PendingDeleteComponent;
@@ -28,10 +26,12 @@ impl EntitySet {
         }
     }
 
+    #[allow(dead_code)]
     fn component_registry(&self) -> &ComponentRegistry {
         &self.component_registry
     }
 
+    #[allow(dead_code)]
     fn component_registry_mut(&mut self) -> &mut ComponentRegistry {
         &mut self.component_registry
     }

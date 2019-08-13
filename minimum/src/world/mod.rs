@@ -1,12 +1,7 @@
 
 use crate::resource::{
     Resource,
-    ResourceMap,
-    ResourceId,
-    Read,
-    ReadBorrow,
-    Write,
-    WriteBorrow
+    ResourceMap
 };
 
 use crate::component::{Component, ComponentStorage, ComponentPrototype, ComponentFreeHandler, ComponentFactory, ComponentRegistry};
@@ -16,15 +11,6 @@ use crate::entity::{
     EntityFactory,
     PendingDeleteComponent
 };
-
-use crate::util::{
-    TrustCell,
-    TrustCellRef as Ref,
-    TrustCellRef as RefMut
-};
-
-use std::marker::PhantomData;
-
 
 pub struct WorldBuilder {
     resource_map: ResourceMap,

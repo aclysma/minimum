@@ -1,4 +1,5 @@
 
+use minimum::util::optionize::*;
 
 pub trait InspectRenderDefault {
     fn render(&self, label: &'static str, ui: &imgui::Ui);
@@ -10,11 +11,6 @@ pub trait InspectRenderAsSlider {
     fn render_mut(&mut self, label: &'static str, ui: &imgui::Ui);
 }
 
-
-
-
-
-
 impl InspectRenderDefault for f32 {
     fn render(&self, label: &'static str, ui: &imgui::Ui) {
         ui.text(&imgui::im_str!("{}: {}", label, self));
@@ -22,6 +18,32 @@ impl InspectRenderDefault for f32 {
 
     fn render_mut(&mut self, label: &'static str, ui: &imgui::Ui) {
         ui.input_float(&imgui::im_str!("{}", label), self).build();
+    }
+}
+
+impl<T : InspectRenderDefault> InspectRenderDefault for Option<T> {
+    fn render(&self, label: &'static str, ui: &imgui::Ui) {
+        match self {
+            Some(value) => InspectRenderDefault::render(value, label, ui),
+            None => ui.text(&imgui::im_str!("{}: None", label)),
+        };
+    }
+
+    fn render_mut(&mut self, label: &'static str, ui: &imgui::Ui) {
+        match self {
+            Some(value) => InspectRenderDefault::render_mut(value, label, ui),
+            None => ui.text(&imgui::im_str!("{}: None", label))
+        }
+    }
+}
+
+impl<T : InspectRenderDefault> InspectRenderDefault for DefaultOptionized<T> {
+    fn render(&self, label: &'static str, ui: &imgui::Ui) {
+        InspectRenderDefault::render(&self.value, label, ui)
+    }
+
+    fn render_mut(&mut self, label: &'static str, ui: &imgui::Ui) {
+        InspectRenderDefault::render_mut(&mut self.value, label, ui)
     }
 }
 
@@ -64,57 +86,15 @@ impl InspectRenderDefault for glm::Vec3 {
     }
 }
 
-
-
-/*
-pub trait InspectRenderRanged {
-    fn render(&self, label: &'static str, ui: &imgui::Ui);
-    fn render_mut(&mut self, label: &'static str, ui: &imgui::Ui);
-}
-
-impl InspectRenderRanged for f32 {
-    fn render(&self, label: &'static str, ui: &imgui::Ui) {
-        ui.text(&imgui::im_str!("{}: {}", label, self));
-    }
-
-    fn render_mut(&mut self, label: &'static str, ui: &imgui::Ui) {
-        ui.input_float(&imgui::im_str!("{}", label), self).build();
-    }
-}
-*/
-
-#[derive(minimum_derive::Inspect)]
+#[derive(minimum_derive::Inspect, minimum_derive::Optionize)]
 pub struct MyStruct {
     pub a: f32,
     pub b: f32,
     pub c: glm::Vec2,
     pub d: glm::Vec3
 }
-/*
-impl InspectRenderDefault for MyStruct {
-    fn render(&self, _label: &'static str, ui: &imgui::Ui) {
-        let header = ui.collapsing_header(imgui::im_str!("MyStruct")).build();
-        ui.indent();
-        InspectRenderDefault::render(&self.a, "a", ui);
-        InspectRenderAsSlider::render(&self.b, "b", ui);
-        InspectRenderDefault::render(&self.c, "c", ui);
-        InspectRenderDefault::render(&self.d, "d", ui);
-        ui.unindent();
-    }
 
-    fn render_mut(&mut self, _label: &'static str, ui: &imgui::Ui) {
-        let header = ui.collapsing_header(imgui::im_str!("MyStruct")).build();
-        ui.indent();
-        InspectRenderDefault::render_mut(&mut self.a, "a", ui);
-        InspectRenderAsSlider::render_mut(&mut self.b, "b", ui);
-        InspectRenderDefault::render_mut(&mut self.c, "c", ui);
-        InspectRenderDefault::render_mut(&mut self.d, "d", ui);
-        ui.unindent();
-    }
-}
-*/
-
-#[derive(minimum_derive::Inspect)]
+#[derive(minimum_derive::Inspect, minimum_derive::Optionize)]
 pub struct MyStruct2 {
 
     #[inspect(inspector = InspectRenderAsSlider)]
@@ -122,9 +102,9 @@ pub struct MyStruct2 {
     pub b: f32,
     pub c: glm::Vec2,
     pub d: glm::Vec3,
+    #[optionize(optionized_type = MyStructOptionized)]
     pub s: MyStruct
 }
-
 
 
 /*

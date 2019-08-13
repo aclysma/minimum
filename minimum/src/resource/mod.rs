@@ -73,7 +73,7 @@ impl ResourceMapBuilder {
         self.resource_map.insert(r);
     }
 
-    pub fn build(mut self) -> ResourceMap {
+    pub fn build(self) -> ResourceMap {
         self.resource_map
     }
 }

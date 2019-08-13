@@ -15,7 +15,6 @@ pub mod component;
 pub mod dispatch;
 pub mod entity;
 pub mod slab;
-pub mod reflect;
 pub mod resource;
 pub mod util;
 pub mod world;

@@ -102,9 +102,7 @@ where
         for entity_handle in entity_handles {
             let comp = storage.get(&entity_handle);
 
-            if let Some(comp) = comp {
-                println!("found a name {}", comp.get_name());
-            }
+            //TODO: Do something here
         }
     }
 }
