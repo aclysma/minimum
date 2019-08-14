@@ -5,7 +5,7 @@ use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, RenderStat
 
 use crate::components::EditorSelectedComponent;
 use named_type::NamedType;
-use crate::inspect::{InspectRenderDefault, MyStruct2Optionized};
+use crate::inspect::{InspectRenderDefault};
 
 #[derive(NamedType)]
 pub struct EditorImgui;
@@ -63,11 +63,15 @@ impl Task for EditorImgui {
                 let s3_internal = crate::inspect::MyStruct { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0) };
                 let mut s3 = crate::inspect::MyStruct2 { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0), s: s3_internal };
                 let s4_internal = crate::inspect::MyStruct { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0) };
-                let mut s4 = crate::inspect::MyStruct2 { a: 1.0, b: 3.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0), s: s4_internal };
+                let mut s4 = crate::inspect::MyStruct2 { a: 4.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 201.0, 300.0), s: s4_internal };
 
-                let mut optionized = minimum::util::optionize::create_optionized_from_set::<MyStruct2Optionized, _>(&[&s3, &s4]);
 
-                optionized.render_mut("var", ui);
+                //let mut s3 = crate::inspect::MyStruct2 { b: 3.0 };
+                //let mut s4 = crate::inspect::MyStruct2 { b: 3.0 };
+
+                //let mut optionized = minimum::util::optionize::create_optionized_from_set::<MyStruct2Optionized, _>(&[&s3, &s4]);
+
+                crate::inspect::MyStruct2::render_mut(&mut [&mut s3, &mut s4], "var", ui);
 
             })
         })
