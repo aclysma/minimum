@@ -1,27 +1,40 @@
 
+#[derive(Debug, Default)]
+pub struct InspectArgsDefault {
+    min_value: Option<f32>,
+    max_value: Option<f32>,
+    step: Option<f32>,
+}
+
+#[derive(Debug, Default)]
+pub struct InspectArgsSlider {
+    min_value: Option<f32>,
+    max_value: Option<f32>
+}
+
 pub trait InspectRenderDefault<T> {
-    fn render(data: &[&T], label: &'static str, ui: &imgui::Ui);
-    fn render_mut(data: &mut [&mut T], label: &'static str, ui: &imgui::Ui);
+    fn render(data: &[&T], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault);
+    fn render_mut(data: &mut [&mut T], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault);
 }
 
-pub trait InspectRenderAsSlider<T> {
-    fn render(data: &[&T], label: &'static str, ui: &imgui::Ui);
-    fn render_mut(data: &mut [&mut T], label: &'static str, ui: &imgui::Ui);
+pub trait InspectRenderSlider<T> {
+    fn render(data: &[&T], label: &'static str, ui: &imgui::Ui, args: &InspectArgsSlider);
+    fn render_mut(data: &mut [&mut T], label: &'static str, ui: &imgui::Ui, args: &InspectArgsSlider);
 }
 
-fn get_same_or_none<'r, 'a : 'r, 'b : 'r, T : PartialEq>(data: &'a[&'b T]) -> Option<&'r T> {
+fn get_same_or_none<T : PartialEq + Clone>(data: &[&T]) -> Option<T> {
     if data.len() == 0 {
         return None;
     }
 
-    let first = data[0];
+    let first = data[0].clone();
     for d in data {
-        if **d != *first {
+        if **d != first {
             return None;
         }
     }
 
-    Some(data[0])
+    Some(first)
 }
 
 fn get_same_or_none_mut<T : PartialEq + Clone>(data: &mut [&mut T]) -> Option<T> {
@@ -40,20 +53,33 @@ fn get_same_or_none_mut<T : PartialEq + Clone>(data: &mut [&mut T]) -> Option<T>
 }
 
 impl InspectRenderDefault<f32> for f32 {
-    fn render(data: &[&f32], label: &'static str, ui: &imgui::Ui) {
+    fn render(data: &[&f32], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
         match get_same_or_none(data) {
-            Some(v) => ui.text(&imgui::im_str!("{}: {}", label, data[0])),
-            None => ui.text(&imgui::im_str!("{}: ", label))
+            Some(v) => {
+                // Values are consistent
+                ui.text(&imgui::im_str!("{}: {}", label, data[0]))
+            },
+            None => {
+                // Values are inconsistent
+                let style_token = ui.push_style_color(imgui::StyleColor::Text, [1.0, 1.0, 0.0, 1.0]);
+                ui.text(&imgui::im_str!("{}: ", label));
+            }
         }
     }
 
-    fn render_mut(data: &mut [&mut f32], label: &'static str, ui: &imgui::Ui) {
-        let value = get_same_or_none_mut(data);
+    fn render_mut(data: &mut [&mut f32], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
+        let same_or_none_value = get_same_or_none_mut(data);
 
-        //TODO: What to do about inconsistent values?
-        let mut value = match value {
-            Some(mut v) => { v },
-            None => 0.0
+        let mut value = match same_or_none_value {
+            Some(mut v) => v,
+            None => 0.0 // Some reasonable default
+        };
+
+        let style_token = if same_or_none_value.is_none() {
+            // If values are inconsistent, push a style
+            Some(ui.push_style_color(imgui::StyleColor::Text, [1.0, 1.0, 0.0, 1.0]))
+        } else {
+            None
         };
 
         if ui.input_float(&imgui::im_str!("{}", label), &mut value).build() {
@@ -65,40 +91,51 @@ impl InspectRenderDefault<f32> for f32 {
 }
 
 impl<T : InspectRenderDefault<T>> InspectRenderDefault<Option<T>> for Option<T> {
-    fn render(data: &[&Option<T>], label: &'static str, ui: &imgui::Ui) {
+    fn render(data: &[&Option<T>], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
         let d = data[0];
         match d {
-            Some(value) => <T as InspectRenderDefault<T>>::render(&[value], label, ui),
+            Some(value) => <T as InspectRenderDefault<T>>::render(&[value], label, ui, args),
             None => ui.text(&imgui::im_str!("{}: None", label)),
         };
     }
 
-    fn render_mut(data: &mut [&mut Option<T>], label: &'static str, ui: &imgui::Ui) {
+    fn render_mut(data: &mut [&mut Option<T>], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
         let d = &mut data[0];
         match d {
-            Some(value) => <T as InspectRenderDefault<T>>::render_mut(&mut [value], label, ui),
+            Some(value) => <T as InspectRenderDefault<T>>::render_mut(&mut [value], label, ui, args),
             None => ui.text(&imgui::im_str!("{}: None", label))
         }
     }
 }
 
-impl InspectRenderAsSlider<f32> for f32 {
-    fn render(data: &[&Self], label: &'static str, ui: &imgui::Ui) {
+impl InspectRenderSlider<f32> for f32 {
+    fn render(data: &[&Self], label: &'static str, ui: &imgui::Ui, args: &InspectArgsSlider) {
         ui.text(&imgui::im_str!("{}: {}", label, data[0]));
     }
 
-    fn render_mut(data: &mut [&mut Self], label: &'static str, ui: &imgui::Ui) {
-        ui.slider_float(&imgui::im_str!("{}", label), data[0], -100.0, 100.0).build();
+    fn render_mut(data: &mut [&mut Self], label: &'static str, ui: &imgui::Ui, args: &InspectArgsSlider) {
+        println!("{:#?}", args);
+        let mut min = -100.0;
+        let mut max = 100.0;
+        if let Some(min_value) = args.min_value {
+            min = min_value;
+        }
+
+        if let Some(max_value) = args.max_value {
+            max = max_value;
+        }
+
+        let slider = ui.slider_float(&imgui::im_str!("{}", label), data[0], min, max).build();
     }
 }
 
 
 impl InspectRenderDefault<glm::Vec2> for glm::Vec2 {
-    fn render(data: &[&Self], label: &'static str, ui: &imgui::Ui) {
+    fn render(data: &[&Self], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
         ui.text(&imgui::im_str!("{}: {}", label, data[0]));
     }
 
-    fn render_mut(data: &mut [&mut Self], label: &'static str, ui: &imgui::Ui) {
+    fn render_mut(data: &mut [&mut Self], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
         let mut val = [data[0].x, data[0].y];
         ui.input_float2(&imgui::im_str!("{}", label), &mut val).build();
         data[0].x = val[0];
@@ -107,11 +144,11 @@ impl InspectRenderDefault<glm::Vec2> for glm::Vec2 {
 }
 
 impl InspectRenderDefault<glm::Vec3> for glm::Vec3 {
-    fn render(data: &[&Self], label: &'static str, ui: &imgui::Ui) {
+    fn render(data: &[&Self], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
         ui.text(&imgui::im_str!("{}: {}", label, data[0]));
     }
 
-    fn render_mut(data: &mut [&mut Self], label: &'static str, ui: &imgui::Ui) {
+    fn render_mut(data: &mut [&mut Self], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
         let mut val = [data[0].x, data[0].y, data[0].z];
         ui.input_float3(&imgui::im_str!("{}", label), &mut val).build();
         data[0].x = val[0];
@@ -120,7 +157,7 @@ impl InspectRenderDefault<glm::Vec3> for glm::Vec3 {
     }
 }
 
-#[derive(minimum_derive::Inspect)]
+#[derive(minimum_derive::Inspect, Clone)]
 pub struct MyStruct {
     pub a: f32,
     pub b: f32,
@@ -128,89 +165,37 @@ pub struct MyStruct {
     pub d: glm::Vec3
 }
 
-#[derive(minimum_derive::Inspect)]
+#[derive(minimum_derive::Inspect, Clone)]
 pub struct MyStruct2 {
 
-    //#[inspect(inspector = "InspectRenderAsSlider")]
+    #[inspect(min_value = 5.0, max_value = 42.0)]
     pub a: f32,
-    #[inspect(inspector = "InspectRenderAsSlider", wrapping_type = "Testingf32")] //TODO: Carry these into the optionized struct
+    #[inspect_slider(wrapping_type = "Testingf32", min_value = 5.0, max_value = 53.0)]
     pub b: f32,
     #[inspect(wrapping_type = "TestingVec2")]
     pub c: glm::Vec2,
+    #[inspect(min_value = 100.0)]
     pub d: glm::Vec3,
-    //#[optionize(optionized_type = MyStructOptionized)]
+
     pub s: MyStruct
 }
 
 struct Testingf32;
-impl InspectRenderAsSlider<f32> for Testingf32 {
-    fn render(data: &[&f32], label: &'static str, ui: &imgui::Ui) {
-        <f32 as InspectRenderAsSlider<f32>>::render(data, label, ui);
+impl InspectRenderSlider<f32> for Testingf32 {
+    fn render(data: &[&f32], label: &'static str, ui: &imgui::Ui, args: &InspectArgsSlider) {
+        <f32 as InspectRenderSlider<f32>>::render(data, label, ui, args);
     }
-    fn render_mut(data: &mut [&mut f32], label: &'static str, ui: &imgui::Ui) {
-        <f32 as InspectRenderAsSlider<f32>>::render_mut(data, label, ui);
+    fn render_mut(data: &mut [&mut f32], label: &'static str, ui: &imgui::Ui, args: &InspectArgsSlider) {
+        <f32 as InspectRenderSlider<f32>>::render_mut(data, label, ui, args);
     }
 }
 
 struct TestingVec2;
 impl InspectRenderDefault<glm::Vec2> for TestingVec2 {
-    fn render(data: &[&glm::Vec2], label: &'static str, ui: &imgui::Ui) {
-        <glm::Vec2 as InspectRenderDefault<glm::Vec2>>::render(data, label, ui);
+    fn render(data: &[&glm::Vec2], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
+        <glm::Vec2 as InspectRenderDefault<glm::Vec2>>::render(data, label, ui, args);
     }
-    fn render_mut(data: &mut [&mut glm::Vec2], label: &'static str, ui: &imgui::Ui) {
-        <glm::Vec2 as InspectRenderDefault<glm::Vec2>>::render_mut(data, label, ui);
-    }
-}
-/*
-struct WrappedType<'a>(&'a Option<f32>);
-
-impl<'a> From<&'a Option<f32>> for WrappedType<'a> {
-    fn from(value: &'a Option<f32>) -> Self {
-        WrappedType(value)
+    fn render_mut(data: &mut [&mut glm::Vec2], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) {
+        <glm::Vec2 as InspectRenderDefault<glm::Vec2>>::render_mut(data, label, ui, args);
     }
 }
-
-impl<'a> minimum::util::inspect::InspectTestTrait for WrappedType<'a> {
-
-    fn visit(&self, label: &'static str) {
-        let opt : Option<f32> = Some(1.0);
-        let reffed = WrappedType::from(&opt);
-    }
-
-    fn visit_mut(&mut self, label: &'static str) {
-
-    }
-}
-*/
-
-/*
-use minimum_derive::inspect;
-
-#[derive(Inspect)]
-pub struct MyStruct2 {
-    #[inspect(inspector_type = DefaultRenderer)]
-    #[inspect(label = "hi")]
-    #[inspect(min = 100.0, max = 200.0)]
-    #[inspect(tooltip = "tessdfsd fas ")]
-    pub a: f32,
-
-    #[inspect(inspector_type = DefaultRenderer)]
-    #[inspect(label = "hi")]
-    #[inspect(min = 100.0, max = 200.0)]
-    #[inspect(tooltip = "tessdfsd fas ")]
-    pub b: f32,
-
-    #[inspect(inspector_type = DefaultRenderer)]
-    #[inspect(label = "hi")]
-    #[inspect(min = 100.0, max = 200.0)]
-    #[inspect(tooltip = "tessdfsd fas ")]
-    pub c: glm::Vec2,
-
-    #[inspect(inspector_type = DefaultRenderer)]
-    #[inspect(label = "hi")]
-    #[inspect(min = 100.0, max = 200.0)]
-    #[inspect(tooltip = "tessdfsd fas ")]
-    pub d: glm::Vec3
-}
-
-*/

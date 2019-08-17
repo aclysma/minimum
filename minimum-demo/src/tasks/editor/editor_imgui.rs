@@ -5,7 +5,6 @@ use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, RenderStat
 
 use crate::components::EditorSelectedComponent;
 use named_type::NamedType;
-use crate::inspect::{InspectRenderDefault};
 
 #[derive(NamedType)]
 pub struct EditorImgui;
@@ -45,6 +44,8 @@ impl Task for EditorImgui {
 
         use imgui::im_str;
 
+        let mut dupes = imgui_manager.dummy_values.clone();
+
         let mut imgui_manager : WriteBorrow<ImguiManager> = imgui_manager;
         imgui_manager.with_ui(|ui| {
             ui.window(im_str!("Editor")).build(|| {
@@ -71,9 +72,20 @@ impl Task for EditorImgui {
 
                 //let mut optionized = minimum::util::optionize::create_optionized_from_set::<MyStruct2Optionized, _>(&[&s3, &s4]);
 
-                crate::inspect::MyStruct2::render_mut(&mut [&mut s3, &mut s4], "var", ui);
+                let mut slice : Vec<_> = dupes.iter_mut().map(|x| x).collect();
 
+                //let mut objs = &mut [&mut imgui_manager.dummy_values[0], &mut imgui_manager.dummy_values[1]];
+
+                use crate::inspect::InspectRenderDefault;
+                crate::inspect::MyStruct2::render_mut(slice.as_mut_slice(), "var", ui, &crate::inspect::InspectArgsDefault::default());
+
+                //crate::inspect::InspectRenderDefaultMember::render_self(&s4, "var", ui);
+                //use crate::inspect::InspectRenderDefaultMember;
+                //s4.render_self_mut("var", ui, &crate::inspect::InspectArgs::default());
+                //s4.render_self("var", ui);
             })
-        })
+        });
+
+        imgui_manager.dummy_values = dupes;
     }
 }
