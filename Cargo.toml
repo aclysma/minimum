@@ -1,4 +1,4 @@
-cargo-features = ["profile-overrides"]
+#cargo-features = ["profile-overrides"]
 
 
 [workspace]
@@ -24,21 +24,9 @@ imgui = { git = 'https://github.com/aclysma/imgui-rs.git' }
 imgui-winit-support = { git = 'https://github.com/aclysma/imgui-rs.git' }
 
 
-[profile.dev]
-opt-level = 0
-debug = true
+#[profile.dev]
+#opt-level = 0
+#debug = true
 
-#[profile.dev.overrides.nalgebra]
+#[profile.dev.overrides."*"]
 #opt-level = 3
-#
-#[profile.dev.overrides.nalgebra-glm]
-#opt-level = 3
-#
-#[profile.dev.overrides.nphysics2d]
-#opt-level = 3
-#
-#[profile.dev.overrides.ncollide2d]
-#opt-level = 3
-
-[profile.dev.overrides."*"]
-opt-level = 3

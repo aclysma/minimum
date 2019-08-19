@@ -28,8 +28,7 @@ unsafe impl Send for Inner {}
 
 //TODO: Investigate usage of channels/draw lists
 pub struct ImguiManager {
-    inner: std::sync::Mutex<Inner>,
-    pub dummy_values: Vec<crate::inspect::MyStruct2>
+    inner: std::sync::Mutex<Inner>
 }
 
 // Wraps imgui (and winit integration logic)
@@ -54,15 +53,6 @@ impl ImguiManager {
             font_atlas_texture
         };
 
-        let dummy_values = vec![
-            crate::inspect::MyStruct2 { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0),
-                s: crate::inspect::MyStruct { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0) }
-            },
-            crate::inspect::MyStruct2 { a: 4.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 201.0, 300.0),
-                s: crate::inspect::MyStruct { a: 1.0, b: 2.0, c: glm::vec2(2.5, 4.3), d: glm::vec3(100.0, 200.0, 300.0) }
-            }
-        ];
-
         ImguiManager {
             inner: std::sync::Mutex::new(Inner {
                 context: imgui_context,
@@ -73,8 +63,7 @@ impl ImguiManager {
                 want_capture_mouse: false,
                 want_set_mouse_pos: false,
                 want_text_input: false,
-            }),
-            dummy_values
+            })
         }
     }
 

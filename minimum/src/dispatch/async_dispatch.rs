@@ -199,7 +199,7 @@ impl MinimumDispatcher {
                     .next_frame_context_flags()
             };
 
-            info!("starting frame with context_flags {}", context_flags);
+            trace!("starting frame with context_flags {}", context_flags);
             let ctx = Arc::new(MinimumDispatcherContext {
                 dispatcher: dispatcher.clone(),
                 resource_map: resource_map.clone(),

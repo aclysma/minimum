@@ -47,9 +47,15 @@ rendy = { version="0.3", features = ["winit-20"]}
 imgui = "0.1.0-pre"
 imgui-winit-support = { version = "0.1.0-pre", default-features = false, features = ["winit-20"] }
 
+#imgui = { git = 'https://github.com/aclysma/imgui-rs.git' }
+#imgui-winit-support = { git = 'https://github.com/aclysma/imgui-rs.git', default-features = false, features = ["winit-20"] }
+
 # minimum
 minimum = { path = "../minimum", features = ["async_support", "nightly"] }
-minimum-derive = { path = "../minimum-derive" }
+#minimum-derive = { path = "../minimum-derive" }
+
+imgui-inspect = { path = "../../imgui-inspect/imgui-inspect" }
+imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive" }
 
 
 [dependencies.gfx-backend-vulkan]

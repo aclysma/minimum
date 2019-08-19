@@ -103,10 +103,6 @@ impl EntitySet {
         self.component_registry.on_flush_creates(resource_map, self);
     }
 
-    pub fn visit_components(&self, resource_map: &resource::ResourceMap, entity_handles: &[EntityHandle]) {
-        self.component_registry.visit_components(resource_map, entity_handles);
-    }
-
     pub fn update(&mut self, resource_map: &resource::ResourceMap) {
         self.flush_free(resource_map);
         self.flush_creates(resource_map);

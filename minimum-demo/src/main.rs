@@ -9,6 +9,9 @@ extern crate log;
 #[macro_use]
 extern crate named_type_derive;
 
+#[macro_use]
+extern crate imgui_inspect_derive;
+
 //#[macro_use]
 //extern crate minimum_derive;
 
@@ -114,8 +117,13 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(components::EditorShapeComponentFactory::new())
         .build();
 
+    let mut inspect_component_registry = inspect::InspectorComponentRegistry::new();
+    inspect_component_registry.register_component::<components::PositionComponent>();
+    inspect_component_registry.register_component::<components::VelocityComponent>();
+
     // Assets you want to always have available could be loaded here
 
+    resource_map.insert(inspect_component_registry);
     resource_map.insert(init::init_imgui_manager(&resource_map));
     resource_map.insert(init::create_renderer(&resource_map));
 
@@ -237,10 +245,19 @@ fn dispatcher_thread(resource_map: minimum::resource::ResourceMap) -> minimum::r
                         selected
                     };
 
-                    entity_set.visit_components(resource_map, &selected_entity_handles);
+                    let inspect_registry = resource_map.fetch::<inspect::InspectorComponentRegistry>();
+                    let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
+                    imgui_manager.with_ui(|ui| {
+                        inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui);
+                    });
+
+
+
+                    //entity_set.visit_components(resource_map, &selected_entity_handles);
                     println!("selected: {}", selected_entity_handles.len());
                 }
 
+                // Render
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("render");
                     render(resource_map);

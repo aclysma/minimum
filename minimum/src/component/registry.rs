@@ -57,8 +57,6 @@ where
 //
 trait RegisteredComponentTrait: Send + Sync {
     fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]);
-
-    fn visit_component(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]);
 }
 
 pub struct RegisteredComponent<T, F>
@@ -94,15 +92,6 @@ where
 
         for entity_handle in entity_handles {
             storage.free_if_exists(entity_handle);
-        }
-    }
-
-    fn visit_component(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
-        let storage = resource_map.fetch::<<T as Component>::Storage>();
-        for entity_handle in entity_handles {
-            let comp = storage.get(&entity_handle);
-
-            //TODO: Do something here
         }
     }
 }
@@ -188,12 +177,6 @@ impl ComponentRegistry {
     pub fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
         for rc in &self.registered_components {
             rc.on_entities_free(resource_map, entity_handles);
-        }
-    }
-
-    pub fn visit_components(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
-        for rc in &self.registered_components {
-            rc.visit_component(resource_map, entity_handles);
         }
     }
 

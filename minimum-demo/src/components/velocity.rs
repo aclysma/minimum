@@ -1,9 +1,11 @@
 use minimum::component::SlabComponentStorage;
 use minimum::component::DefaultComponentReflector;
 use named_type::NamedType;
+use crate::inspect::common_types::*;
 
-#[derive(Debug, Clone, NamedType)]
+#[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
 pub struct VelocityComponent {
+    #[inspect(proxy_type = "ImGlmVec2")]
     velocity: glm::Vec2,
 }
 
