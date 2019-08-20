@@ -1,5 +1,8 @@
 mod update_physics;
 pub use update_physics::UpdatePhysics;
 
-mod update_position_from_physics;
-pub use update_position_from_physics::UpdatePositionFromPhysics;
+mod physics_sync_pre;
+pub use physics_sync_pre::PhysicsSyncPre;
+
+mod physics_sync_post;
+pub use physics_sync_post::PhysicsSyncPost;

@@ -22,6 +22,7 @@ mod renderer;
 mod resources;
 mod tasks;
 mod inspect;
+mod imgui_themes;
 
 use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
@@ -29,7 +30,7 @@ use minimum::component::Component;
 use minimum::resource::ResourceMap;
 use minimum::CloneComponentFactory;
 
-#[derive(Copy, Clone, strum_macros::EnumCount)]
+#[derive(Copy, Clone, PartialEq, strum_macros::EnumCount)]
 pub enum PlayMode {
     // Represents the game being frozen for debug purposes
     System,
@@ -120,6 +121,9 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     let mut inspect_component_registry = inspect::InspectorComponentRegistry::new();
     inspect_component_registry.register_component::<components::PositionComponent>();
     inspect_component_registry.register_component::<components::VelocityComponent>();
+    inspect_component_registry.register_component::<components::DebugDrawCircleComponent>();
+    inspect_component_registry.register_component::<components::DebugDrawRectComponent>();
+    inspect_component_registry.register_component::<components::BulletComponent>();
 
     // Assets you want to always have available could be loaded here
 
@@ -222,18 +226,19 @@ fn dispatcher_thread(resource_map: minimum::resource::ResourceMap) -> minimum::r
             dispatch_ctx.run_task(tasks::ControlPlayerEntity),
             dispatch_ctx.run_task(tasks::UpdatePositionWithVelocity),
             dispatch_ctx.run_task(tasks::HandleFreeAtTimeComponents),
+            dispatch_ctx.run_task(tasks::PhysicsSyncPre),
             dispatch_ctx.run_task(tasks::UpdatePhysics),
-            dispatch_ctx.run_task(tasks::UpdatePositionFromPhysics),
+            dispatch_ctx.run_task(tasks::PhysicsSyncPost),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::EditorUpdateShapesWithPosition),
             dispatch_ctx.run_task(tasks::EditorUpdateCollisionWorld),
             dispatch_ctx.run_task(tasks::EditorHandleInput),
             dispatch_ctx.run_task(tasks::EditorDrawShapes),
-            dispatch_ctx.run_task(tasks::EditorImgui),
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_resources(|resource_map| {
 
-                //TODO: Figure out a way to fetch all components
+                // Draw Inspector
+                if resource_map.fetch::<resources::TimeState>().play_mode == PlayMode::System
                 {
                     let entity_set = resource_map.fetch::<minimum::EntitySet>();
                     let selected_entity_handles = {
@@ -248,13 +253,17 @@ fn dispatcher_thread(resource_map: minimum::resource::ResourceMap) -> minimum::r
                     let inspect_registry = resource_map.fetch::<inspect::InspectorComponentRegistry>();
                     let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
                     imgui_manager.with_ui(|ui| {
-                        inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui);
+
+                        //ui.set
+                        ui.window(imgui::im_str!("Inspector"))
+                            .position([0.0, 50.0], imgui::Condition::Once)
+                            .size([200.0, 450.0], imgui::Condition::Once)
+                            .build(|| {
+
+                            inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui);
+                        })
+
                     });
-
-
-
-                    //entity_set.visit_components(resource_map, &selected_entity_handles);
-                    println!("selected: {}", selected_entity_handles.len());
                 }
 
                 // Render

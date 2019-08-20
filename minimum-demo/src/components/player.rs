@@ -2,7 +2,7 @@ use minimum::component::SlabComponentStorage;
 use minimum::component::DefaultComponentReflector;
 use named_type::NamedType;
 
-#[derive(Debug, Clone, NamedType)]
+#[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
 pub struct PlayerComponent {}
 
 impl PlayerComponent {

@@ -1,10 +1,14 @@
 use minimum::component::SlabComponentStorage;
 use minimum::component::DefaultComponentReflector;
 use named_type::NamedType;
+use crate::inspect::common_types::*;
 
-#[derive(Debug, Clone, NamedType)]
+#[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
 pub struct DebugDrawRectComponent {
+    #[inspect(proxy_type = "ImGlmVec2")]
     size: glm::Vec2,
+
+    #[inspect(proxy_type = "ImGlmColor4")]
     color: glm::Vec4,
 }
 

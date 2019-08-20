@@ -49,8 +49,9 @@ impl<T> RegisteredInspectorComponentTrait for RegisteredInspectorComponent<T>
             }
         }
 
-        //TODO: Do something here
-        <T as imgui_inspect::InspectRenderDefault<T>>::render(data.as_slice(), "label", ui, &imgui_inspect::InspectArgsDefault::default());
+        if data.len() > 0 {
+            <T as imgui_inspect::InspectRenderDefault<T>>::render(data.as_slice(), "label", ui, &imgui_inspect::InspectArgsDefault::default());
+        }
     }
 
     fn render_mut(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle], ui: &imgui::Ui) {
@@ -73,8 +74,9 @@ impl<T> RegisteredInspectorComponentTrait for RegisteredInspectorComponent<T>
             }
         }
 
-        //TODO: Do something here
-        <T as imgui_inspect::InspectRenderDefault<T>>::render_mut(data.as_mut_slice(), "label", ui, &imgui_inspect::InspectArgsDefault::default());
+        if data.len() > 0 {
+            <T as imgui_inspect::InspectRenderDefault<T>>::render_mut(data.as_mut_slice(), "label", ui, &imgui_inspect::InspectArgsDefault::default());
+        }
     }
 }
 

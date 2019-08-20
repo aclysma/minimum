@@ -8,16 +8,16 @@ pub struct PositionComponent {
     #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_position_updated")]
     position: glm::Vec2,
 
-
-    //TODO: Use Skip
-    //TODO: Find a better way to handle this
-    //#[inspect(skip)]
-    moved: bool
+    #[inspect(skip)]
+    requires_sync_to_physics: bool
 }
 
 impl PositionComponent {
     pub fn new(position: glm::Vec2) -> Self {
-        PositionComponent { position, moved: false }
+        PositionComponent {
+            position,
+            requires_sync_to_physics: false
+        }
     }
 
     pub fn position(&self) -> glm::Vec2 {
@@ -28,9 +28,20 @@ impl PositionComponent {
         &mut self.position
     }
 
+    pub fn requires_sync_to_physics(&self) -> bool {
+        self.requires_sync_to_physics
+    }
+
+    pub fn clear_requires_sync_to_physics(&mut self) {
+        self.requires_sync_to_physics = false
+    }
+
+    //TODO: Replace with a better solution that doesn't require O(n) iteration
+    // - Allow register callback on inspector?
+    // - Some sort of flagging system?
+    // - Attach an extra component?
     pub fn inspect_position_updated(&mut self) {
-        println!("posiiton updated");
-        self.moved = true;
+        self.requires_sync_to_physics = true;
     }
 }
 

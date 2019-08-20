@@ -1,10 +1,14 @@
 use minimum::component::SlabComponentStorage;
 use minimum::component::DefaultComponentReflector;
 use named_type::NamedType;
+use crate::inspect::common_types::*;
 
-#[derive(Debug, Clone, NamedType)]
+#[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
 pub struct DebugDrawCircleComponent {
+    #[inspect_slider(min_value = 0.0, max_value = 100.0)]
     radius: f32,
+
+    #[inspect(proxy_type = "ImGlmColor4")]
     color: glm::Vec4,
 }
 

@@ -28,7 +28,7 @@ impl Task for RenderImguiMainMenu {
 
     fn run(
         &mut self,
-        _task_context: &TaskContext,
+        task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (
@@ -48,30 +48,47 @@ impl Task for RenderImguiMainMenu {
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             use imgui::im_str;
 
-            ui.main_menu_bar(|| {
-                ui.menu(im_str!("File")).build(|| {
-                    ui.menu(im_str!("Load")).build(|| {
-                        for pack in &["placeholder1", "placeholder2", "placeholder3"] {
-                            ui.menu(&im_str!("{}", pack)).build(|| {
-                                for level in &["level1", "level2", "level3"] {
-                                    let selected = ui.menu_item(&im_str!("{}", level)).build();
-                                    if selected {
-                                        info!("Loading {} {}", pack, level);
-                                        //game_control.set_load_level(level.path.clone());
+//            ui.window(im_str!("Editor")).build(|| {
+//                let mut b = true;
+//                ui.show_metrics_window(&mut b);
+//                ui.show_default_style_editor();
+//            });
+
+            let paused = time_state.play_mode == crate::PlayMode::System;
+
+            {
+                let _style_token = if paused {
+                    Some(ui.push_style_color(imgui::StyleColor::MenuBarBg, [0.2, 0.2, 0.2, 1.0]))
+                } else {
+                    None
+                };
+
+                ui.main_menu_bar(|| {
+
+                    ui.menu(im_str!("File")).build(|| {
+                        ui.menu(im_str!("Load")).build(|| {
+                            for pack in &["placeholder1", "placeholder2", "placeholder3"] {
+                                ui.menu(&im_str!("{}", pack)).build(|| {
+                                    for level in &["level1", "level2", "level3"] {
+                                        let selected = ui.menu_item(&im_str!("{}", level)).build();
+                                        if selected {
+                                            info!("Loading {} {}", pack, level);
+                                            //game_control.set_load_level(level.path.clone());
+                                        }
                                     }
-                                }
-                            });
-                        }
+                                });
+                            }
+                        });
                     });
+                    ui.separator();
+
+                    ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_window);
+                    ui.separator();
+
+                    ui.text(im_str!("FPS: {:.1}", time_state.system().fps_smoothed));
+                    ui.separator();
                 });
-                ui.separator();
-
-                ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_window);
-                ui.separator();
-
-                ui.text(im_str!("FPS: {:.1}", time_state.system().fps_smoothed));
-                ui.separator();
-            });
+            }
 
             if debug_options.show_window {
                 let bullet_count = bullet_components.count();

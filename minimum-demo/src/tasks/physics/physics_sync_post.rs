@@ -8,8 +8,8 @@ use minimum::{ComponentStorage, EntitySet, Task, TaskContext};
 use named_type::NamedType;
 
 #[derive(NamedType)]
-pub struct UpdatePositionFromPhysics;
-impl Task for UpdatePositionFromPhysics {
+pub struct PhysicsSyncPost;
+impl Task for PhysicsSyncPost {
     type RequiredResources = (
         Read<EntitySet>,
         Read<PhysicsManager>,

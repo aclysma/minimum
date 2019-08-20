@@ -9,7 +9,8 @@ pub use gather_input::GatherInput;
 
 mod physics;
 pub use physics::UpdatePhysics;
-pub use physics::UpdatePositionFromPhysics;
+pub use physics::PhysicsSyncPre;
+pub use physics::PhysicsSyncPost;
 
 mod update_time_state;
 pub use update_time_state::UpdateTimeState;
@@ -32,4 +33,3 @@ pub use editor::EditorDrawShapes;
 pub use editor::EditorHandleInput;
 pub use editor::EditorUpdateCollisionWorld;
 pub use editor::EditorUpdateShapesWithPosition;
-pub use editor::EditorImgui;
