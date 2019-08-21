@@ -29,6 +29,8 @@ strum = "0.15"
 strum_macros = "0.15"
 named_type = "0.2"
 named_type_derive = "0.2"
+mopa = "0.2"
+hashbrown = "0.5"
 
 # async
 futures = "0.1"
@@ -45,6 +47,7 @@ rendy = { version="0.3", features = ["winit-20"]}
 
 # imgui
 imgui = "0.1.0-pre"
+imgui-sys = "0.1.0-pre"
 imgui-winit-support = { version = "0.1.0-pre", default-features = false, features = ["winit-20"] }
 
 #imgui = { git = 'https://github.com/aclysma/imgui-rs.git' }

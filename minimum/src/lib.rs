@@ -25,11 +25,14 @@ pub use entity::Entity;
 pub use entity::EntityFactory;
 pub use entity::EntityHandle;
 pub use entity::EntityPrototype;
+pub use entity::SimpleEntityPrototype;
 pub use entity::EntitySet;
 pub use entity::PendingDeleteComponent;
+pub use entity::EntityRef;
 
-pub use component::CloneComponentFactory;
-pub use component::CloneComponentPrototype;
+pub use component::BasicComponentFactory;
+pub use component::BasicComponentPrototype;
+pub use component::ComponentCreator;
 pub use component::Component;
 pub use component::ComponentFactory;
 pub use component::ComponentPrototype;

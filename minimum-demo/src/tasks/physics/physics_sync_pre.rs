@@ -13,7 +13,7 @@ impl Task for PhysicsSyncPre {
     type RequiredResources = (
         Read<EntitySet>,
         Write<PhysicsManager>,
-        WriteComponent<components::PhysicsBodyComponent>,
+        ReadComponent<components::PhysicsBodyComponent>,
         WriteComponent<components::PositionComponent>,
         WriteComponent<components::VelocityComponent>,
     );
@@ -27,7 +27,7 @@ impl Task for PhysicsSyncPre {
         let (
             entity_set,
             mut physics_manager,
-            mut physics_body_components,
+            physics_body_components,
             mut pos_components,
             mut vel_components,
         ) = data;
@@ -42,7 +42,7 @@ impl Task for PhysicsSyncPre {
                 if pos_component.requires_sync_to_physics() {
                     body.set_position(
                         nphysics2d::math::Isometry::from_parts(
-                            nphysics2d::math::Translation::from_vector(pos_component.position()),
+                            nphysics2d::math::Translation::from(pos_component.position()),
                             body.position().rotation));
 
                     pos_component.clear_requires_sync_to_physics();

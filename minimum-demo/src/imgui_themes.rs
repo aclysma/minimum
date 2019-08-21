@@ -122,7 +122,7 @@ pub fn charcoal_theme(style: &mut imgui::Style) {
 pub fn corporate_gray_theme(style: &mut imgui::Style) {
     // 0 = FLAT APPEARENCE
     // 1 = MORE "3D" LOOK
-    let is3D = 0.0;
+    let is_3d = 0.0;
 
     style[imgui::StyleColor::Text]                   = [1.00, 1.00, 1.00, 1.00];
     style[imgui::StyleColor::TextDisabled]           = [0.40, 0.40, 0.40, 1.00];
@@ -179,7 +179,7 @@ pub fn corporate_gray_theme(style: &mut imgui::Style) {
     style.window_border_size = 1.0;
     style.child_border_size  = 1.0;
     style.popup_border_size  = 1.0;
-    style.frame_border_size  = is3D;
+    style.frame_border_size  = is_3d;
 
     style.window_rounding    = 3.0;
     style.child_rounding     = 3.0;
@@ -205,7 +205,7 @@ pub fn corporate_gray_theme(style: &mut imgui::Style) {
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
         #endif
-        */
+    */
 }
 
 pub fn custom_theme(style: &mut imgui::Style) {
@@ -221,6 +221,7 @@ pub fn custom_theme(style: &mut imgui::Style) {
     }
 
     let header = unconvert_imgui_gamma_to_linear([0.106, 0.188, 0.270, 0.827]);
+    let resize_grip = unconvert_imgui_gamma_to_linear([0.0, 0.0, 0.0, 0.0]);
 
     style.frame_rounding = 4.0;
     style.grab_rounding = 4.0;
@@ -234,4 +235,5 @@ pub fn custom_theme(style: &mut imgui::Style) {
     style[imgui::StyleColor::HeaderActive] = style[imgui::StyleColor::SeparatorHovered];
     style[imgui::StyleColor::TabHovered] = style[imgui::StyleColor::SeparatorHovered];
     style[imgui::StyleColor::Header] = header;
+    style[imgui::StyleColor::ResizeGrip] = resize_grip;
 }

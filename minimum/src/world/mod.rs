@@ -6,24 +6,18 @@ use crate::resource::{
 
 use crate::component::{Component, ComponentStorage, ComponentPrototype, ComponentFreeHandler, ComponentFactory, ComponentRegistry};
 
-use crate::entity::{
-    EntitySet,
-    EntityFactory,
-    PendingDeleteComponent
-};
+use crate::entity::{EntitySet, EntityFactory, PendingDeleteComponent};
 
 pub struct WorldBuilder {
     resource_map: ResourceMap,
-    default_component_registry: ComponentRegistry,
-    //default_entity_set: EntitySet,
+    default_component_registry: ComponentRegistry
 }
 
 impl WorldBuilder {
     pub fn new() -> Self {
         WorldBuilder {
             resource_map: ResourceMap::new(),
-            default_component_registry: ComponentRegistry::new(),
-            //default_entity_set: EntitySet::new(),
+            default_component_registry: ComponentRegistry::new()
         }
     }
 
@@ -86,75 +80,3 @@ impl WorldBuilder {
         self.resource_map
     }
 }
-/*
-//
-// ResourceMap
-//
-#[derive(Default)]
-pub struct World {
-    resources: ResourceMap,
-}
-
-impl World {
-    pub fn new() -> Self {
-        World {
-            resources: ResourceMap::new(),
-        }
-    }
-
-    pub fn resources(&self) -> &ResourceMap {
-        &self.resources
-    }
-
-    pub fn resources_mut(&mut self) -> &mut ResourceMap {
-        &mut self.resources
-    }
-
-    /*
-    pub fn insert<R>(&mut self, r: R)
-        where
-            R: Resource,
-    {
-        self.resource_map.insert(r);
-    }
-
-    pub fn remove<R>(&mut self) -> Option<R>
-        where
-            R: Resource,
-    {
-        self.resource_map.remove::<R>()
-    }
-
-    pub fn fetch<R: Resource>(&self) -> ReadBorrow<R> {
-        self.resource_map.fetch::<R>()
-    }
-
-    pub fn try_fetch<R: Resource>(&self) -> Option<ReadBorrow<R>> {
-        self.resource_map.try_fetch::<R>()
-    }
-
-    pub fn fetch_mut<R: Resource>(&self) -> WriteBorrow<R> {
-        self.resource_map.fetch_mut::<R>()
-    }
-
-    pub fn try_fetch_mut<R: Resource>(&self) -> Option<WriteBorrow<R>> {
-        self.resource_map.try_fetch_mut::<R>()
-    }
-
-    pub fn has_value<R>(&self) -> bool
-        where
-            R: Resource,
-    {
-        self.has_value_raw(ResourceId::new::<R>())
-    }
-
-    pub fn has_value_raw(&self, id: ResourceId) -> bool {
-        self.resource_map.has_value_raw(id)
-    }
-
-    pub fn keys(&self) -> impl Iterator<Item = &ResourceId> {
-        self.resource_map.keys()
-    }
-    */
-}
-*/

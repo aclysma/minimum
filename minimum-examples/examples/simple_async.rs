@@ -138,7 +138,6 @@ fn main() {
             }),
             ctx.visit_resources_mut(move |resource_map| {
                 let mut update_count = resource_map.fetch_mut::<UpdateCount>();
-                println!("update {}", update_count.count);
                 update_count.count += 1;
                 if update_count.count > 10 {
                     ctx1.end_game_loop();

@@ -1,46 +1,43 @@
-use crate::EntityHandle;
+use crate::{EntityHandle, BasicComponentPrototype, EntityRef};
 use crate::EntitySet;
 use crate::ResourceMap;
-use std::collections::VecDeque;
+use crate::Component;
+use crate::ComponentPrototype;
+use crate::ComponentCreator;
 
-use crate::component::ComponentPrototype;
+use std::collections::VecDeque;
+use std::sync::Mutex;
 
 //
 // Create entity with list of components
 //
-pub struct EntityPrototype {
-    components: Vec<Box<dyn ComponentPrototypeWrapper>>,
+pub struct SimpleEntityPrototype {
+    components: Vec<Box<dyn ComponentCreator>>
 }
 
-impl EntityPrototype {
-    pub fn new(components: Vec<Box<dyn ComponentPrototypeWrapper>>) -> Self {
-        EntityPrototype { components }
+impl SimpleEntityPrototype {
+    pub fn new(components: Vec<Box<dyn ComponentCreator>>) -> Self {
+        SimpleEntityPrototype { components }
     }
 }
 
-//
-// ComponentListEntityPrototype wants to hold a list of component prototypes, but this trait has an
-// associated type and it's not currently possible to have a Box<dyn Trait> without specifying the
-// associated type. This trait just
-//
-pub trait ComponentPrototypeWrapper: Sync + Send {
-    fn enqueue_create(&self, resource_map: &ResourceMap, entity_handle: &EntityHandle);
+impl EntityPrototype for SimpleEntityPrototype {
+    fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
+        for c in &self.components {
+            c.enqueue_create(resource_map, &entity.handle());
+        }
+    }
 }
 
-impl<T> ComponentPrototypeWrapper for T
-where
-    T: ComponentPrototype + Sync + Send,
-{
-    fn enqueue_create(&self, resource_map: &ResourceMap, entity_handle: &EntityHandle) {
-        <T as ComponentPrototype>::enqueue_create(&self, resource_map, entity_handle);
-    }
+pub trait EntityPrototype : Send + Sync {
+    fn create(&self, resource_map: &ResourceMap, entity: &EntityRef);
 }
 
 //
 // Entity factory
 //
 pub struct EntityFactory {
-    prototypes: VecDeque<EntityPrototype>,
+    prototypes: VecDeque<Box<dyn EntityPrototype>>,
 }
 
 impl EntityFactory {
@@ -50,7 +47,7 @@ impl EntityFactory {
         }
     }
 
-    pub fn enqueue_create(&mut self, prototype: EntityPrototype) {
+    pub fn enqueue_create(&mut self, prototype: Box<dyn EntityPrototype>) {
         self.prototypes.push_back(prototype);
     }
 
@@ -60,10 +57,8 @@ impl EntityFactory {
         }
 
         for p in self.prototypes.drain(..) {
-            let entity_handle = entity_set.allocate();
-            for c in p.components {
-                c.enqueue_create(resource_map, &entity_handle);
-            }
+            let entity = entity_set.allocate_get();
+            p.create(resource_map, &entity);
         }
     }
 }
@@ -71,8 +66,8 @@ impl EntityFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::component::{CloneComponentFactory, DefaultComponentReflector};
-    use crate::component::CloneComponentPrototype;
+    use crate::component::{BasicComponentFactory, DefaultComponentReflector};
+    use crate::component::BasicComponentPrototype;
     use crate::component::ComponentStorage;
     use crate::component::SlabComponentStorage;
     use crate::Component;
@@ -97,22 +92,22 @@ mod tests {
         let resource_map = crate::WorldBuilder::new()
             .with_component(<TestComponent1 as Component>::Storage::new())
             .with_component(<TestComponent2 as Component>::Storage::new())
-            .with_component_factory(CloneComponentFactory::<TestComponent1>::new())
-            .with_component_factory(CloneComponentFactory::<TestComponent2>::new())
+            .with_component_factory(BasicComponentFactory::<TestComponent1>::new())
+            .with_component_factory(BasicComponentFactory::<TestComponent2>::new())
             .with_resource(EntityFactory::new())
             .build();
 
         {
-            let c1_prototype = CloneComponentPrototype::new(TestComponent1);
-            let c2_prototype = CloneComponentPrototype::new(TestComponent2);
+            let c1_prototype = BasicComponentPrototype::new(TestComponent1);
+            let c2_prototype = BasicComponentPrototype::new(TestComponent2);
 
-            let c_list: Vec<Box<dyn ComponentPrototypeWrapper>> =
+            let c_list: Vec<Box<dyn ComponentCreator>> =
                 vec![Box::new(c1_prototype), Box::new(c2_prototype)];
 
-            let e_prototype = EntityPrototype::new(c_list);
+            let e_prototype = SimpleEntityPrototype::new(c_list);
             resource_map
                 .fetch_mut::<EntityFactory>()
-                .enqueue_create(e_prototype);
+                .enqueue_create(Box::new(e_prototype));
             //e_prototype.enqueue_create(&resource_map);
         }
 

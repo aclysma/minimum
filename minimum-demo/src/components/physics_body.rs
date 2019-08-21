@@ -13,6 +13,7 @@ use nphysics2d::object::RigidBodyDesc;
 
 use std::collections::VecDeque;
 use named_type::NamedType;
+use crate::constructors::PersistentComponentPrototype;
 
 #[derive(Debug, NamedType)]
 pub struct PhysicsBodyComponent {
@@ -115,12 +116,13 @@ impl PhysicsBodyComponentDesc {
 //
 // Creates a component for an entity by copying it
 //
-#[derive(Clone)]
+#[derive(Clone, NamedType, Inspect)]
 pub struct PhysicsBodyComponentPrototype {
+    #[inspect(skip)]
     desc: std::sync::Arc<PhysicsBodyComponentDesc>,
 }
 
-impl<'a> PhysicsBodyComponentPrototype {
+impl PhysicsBodyComponentPrototype {
     pub fn new(desc: PhysicsBodyComponentDesc) -> Self {
         PhysicsBodyComponentPrototype {
             desc: std::sync::Arc::new(desc),
@@ -128,8 +130,12 @@ impl<'a> PhysicsBodyComponentPrototype {
     }
 }
 
-impl<'a> ComponentPrototype for PhysicsBodyComponentPrototype {
+impl ComponentPrototype for PhysicsBodyComponentPrototype {
     type Factory = PhysicsBodyComponentFactory;
+}
+
+impl PersistentComponentPrototype for PhysicsBodyComponentPrototype {
+
 }
 
 //

@@ -28,7 +28,7 @@ impl Task for RenderImguiMainMenu {
 
     fn run(
         &mut self,
-        task_context: &TaskContext,
+        _task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (

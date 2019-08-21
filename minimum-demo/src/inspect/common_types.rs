@@ -1,13 +1,11 @@
 
 use imgui_inspect::InspectRenderDefault;
-use imgui_inspect::InspectRenderSlider;
 use imgui_inspect::InspectArgsDefault;
-use imgui_inspect::InspectArgsSlider;
 
 pub struct ImGlmVec2;
 impl InspectRenderDefault<glm::Vec2> for ImGlmVec2 {
     fn render(data: &[&glm::Vec2], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return;
         }
 
@@ -15,7 +13,7 @@ impl InspectRenderDefault<glm::Vec2> for ImGlmVec2 {
     }
 
     fn render_mut(data: &mut [&mut glm::Vec2], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) -> bool {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return false;
         }
 
@@ -36,7 +34,7 @@ impl InspectRenderDefault<glm::Vec2> for ImGlmVec2 {
 pub struct ImGlmVec3;
 impl InspectRenderDefault<glm::Vec3> for ImGlmVec3 {
     fn render(data: &[&glm::Vec3], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return;
         }
 
@@ -44,7 +42,7 @@ impl InspectRenderDefault<glm::Vec3> for ImGlmVec3 {
     }
 
     fn render_mut(data: &mut [&mut glm::Vec3], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) -> bool {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return false;
         }
 
@@ -67,7 +65,7 @@ impl InspectRenderDefault<glm::Vec3> for ImGlmVec3 {
 pub struct ImGlmVec4;
 impl InspectRenderDefault<glm::Vec4> for ImGlmVec4 {
     fn render(data: &[&glm::Vec4], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return;
         }
 
@@ -75,7 +73,7 @@ impl InspectRenderDefault<glm::Vec4> for ImGlmVec4 {
     }
 
     fn render_mut(data: &mut [&mut glm::Vec4], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) -> bool {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return false;
         }
 
@@ -98,7 +96,7 @@ impl InspectRenderDefault<glm::Vec4> for ImGlmVec4 {
 pub struct ImGlmColor4;
 impl InspectRenderDefault<glm::Vec4> for ImGlmColor4 {
     fn render(data: &[&glm::Vec4], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return;
         }
 
@@ -106,7 +104,7 @@ impl InspectRenderDefault<glm::Vec4> for ImGlmColor4 {
     }
 
     fn render_mut(data: &mut [&mut glm::Vec4], label: &'static str, ui: &imgui::Ui, _args: &InspectArgsDefault) -> bool {
-        if (data.len() == 0) {
+        if data.len() == 0 {
             return false;
         }
 

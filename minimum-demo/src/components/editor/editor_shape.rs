@@ -14,6 +14,7 @@ use ncollide2d::shape::ShapeHandle;
 use ncollide2d::world::{CollisionGroups, GeometricQueryType};
 use std::collections::VecDeque;
 use named_type::NamedType;
+use crate::constructors::PersistentComponentPrototype;
 
 #[derive(Clone, NamedType)]
 pub struct EditorShapeComponent {
@@ -72,7 +73,7 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
 //
 // Creates a component
 //
-#[derive(Clone)]
+#[derive(Clone, NamedType)]
 pub struct EditorShapeComponentPrototype {
     shape_handle: ShapeHandle<f32>,
 }
@@ -85,6 +86,10 @@ impl EditorShapeComponentPrototype {
 
 impl ComponentPrototype for EditorShapeComponentPrototype {
     type Factory = EditorShapeComponentFactory;
+}
+
+impl PersistentComponentPrototype for EditorShapeComponentPrototype {
+
 }
 
 //

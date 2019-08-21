@@ -12,10 +12,14 @@ extern crate named_type_derive;
 #[macro_use]
 extern crate imgui_inspect_derive;
 
+#[macro_use]
+extern crate mopa;
+
 //#[macro_use]
 //extern crate minimum_derive;
 
 mod components;
+mod framework;
 mod constructors;
 mod init;
 mod renderer;
@@ -28,7 +32,7 @@ use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
 use minimum::component::Component;
 use minimum::resource::ResourceMap;
-use minimum::CloneComponentFactory;
+use framework::{CloneComponentFactory, CloneComponentPrototype};
 
 #[derive(Copy, Clone, PartialEq, strum_macros::EnumCount)]
 pub enum PlayMode {
@@ -98,6 +102,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component(<components::BulletComponent as Component>::Storage::new())
         .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
         .with_component(<components::EditorSelectedComponent as Component>::Storage::new())
+        .with_component(<components::PersistentEntityComponent as Component>::Storage::new())
         .with_component_and_free_handler::<_, _, components::PhysicsBodyComponentFreeHandler>(
             <components::PhysicsBodyComponent as Component>::Storage::new(),
         )
@@ -116,18 +121,28 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
         .with_component_factory(components::PhysicsBodyComponentFactory::new())
         .with_component_factory(components::EditorShapeComponentFactory::new())
+        .with_component_factory(CloneComponentFactory::<components::PersistentEntityComponent>::new())
         .build();
 
-    let mut inspect_component_registry = inspect::InspectorComponentRegistry::new();
-    inspect_component_registry.register_component::<components::PositionComponent>();
-    inspect_component_registry.register_component::<components::VelocityComponent>();
-    inspect_component_registry.register_component::<components::DebugDrawCircleComponent>();
-    inspect_component_registry.register_component::<components::DebugDrawRectComponent>();
-    inspect_component_registry.register_component::<components::BulletComponent>();
+    let mut inspect_registry = inspect::InspectorRegistry::new();
+    inspect_registry.register_component::<components::PositionComponent>();
+    inspect_registry.register_component::<components::VelocityComponent>();
+    inspect_registry.register_component::<components::DebugDrawCircleComponent>();
+    inspect_registry.register_component::<components::DebugDrawRectComponent>();
+    inspect_registry.register_component::<components::BulletComponent>();
+
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>();
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>();
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>();
+    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototype>();
+
+
 
     // Assets you want to always have available could be loaded here
 
-    resource_map.insert(inspect_component_registry);
+    resource_map.insert(inspect_registry);
     resource_map.insert(init::init_imgui_manager(&resource_map));
     resource_map.insert(init::create_renderer(&resource_map));
 
@@ -250,7 +265,7 @@ fn dispatcher_thread(resource_map: minimum::resource::ResourceMap) -> minimum::r
                         selected
                     };
 
-                    let inspect_registry = resource_map.fetch::<inspect::InspectorComponentRegistry>();
+                    let inspect_registry = resource_map.fetch::<inspect::InspectorRegistry>();
                     let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
                     imgui_manager.with_ui(|ui| {
 

@@ -2,7 +2,7 @@
 pub mod common_types;
 mod entity_inspector;
 
-pub use entity_inspector::InspectorComponentRegistry;
+pub use entity_inspector::InspectorRegistry;
 
 //use imgui_inspect_derive::Inspect;
 /*

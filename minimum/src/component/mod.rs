@@ -10,15 +10,20 @@ use slab::RawSlabKey;
 use crate::entity;
 use entity::EntityHandle;
 
-pub use component_factory::CloneComponentFactory;
-pub use component_factory::CloneComponentPrototype;
 pub use component_factory::ComponentFactory;
 pub use component_factory::ComponentPrototype;
+pub use component_factory::ComponentCreator;
 pub use registry::ComponentFreeHandler;
 pub use registry::ComponentRegistry;
 pub use slab_storage::SlabComponentStorage;
 pub use vec_storage::VecComponentStorage;
 use std::marker::PhantomData;
+
+// This is a trivial factory/prototype. It's usable, but non-trivial downstream projects should probably
+// implement their own version of this so that cross-cutting concerns like persistence can be handled
+mod basic;
+pub use basic::BasicComponentFactory;
+pub use basic::BasicComponentPrototype;
 
 //TODO: Make these take some sort of private index type to prevent someone from
 // trying to fetch components directly (these are not checking generation.. it's assumed
