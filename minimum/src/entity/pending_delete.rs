@@ -1,4 +1,3 @@
-use crate::component::DefaultComponentReflector;
 use crate::component::SlabComponentStorage;
 use crate::Component;
 use named_type::NamedType;
@@ -14,5 +13,4 @@ impl PendingDeleteComponent {
 
 impl Component for PendingDeleteComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

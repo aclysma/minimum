@@ -8,9 +8,9 @@ use named_type::NamedType;
 
 use std::collections::VecDeque;
 
-//
-// Creates a component for an entity by copying it
-//
+/// Creates a component for an entity by cloning it. This is a basic implementation for unit tests and
+/// examples. Downstream code would likely want to duplicate or wrap this so that other cross-cutting
+/// functionality (i.e. serialization, editing) can be implemented
 #[derive(Clone, NamedType)]
 pub struct BasicComponentPrototype<T: Component + Clone> {
     data: T,

@@ -1,4 +1,3 @@
-use minimum::component::DefaultComponentReflector;
 use minimum::component::SlabComponentStorage;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
@@ -42,7 +41,6 @@ impl PhysicsBodyComponent {
 
 impl minimum::Component for PhysicsBodyComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }
 
 //

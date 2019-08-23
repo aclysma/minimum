@@ -1,5 +1,4 @@
 use crate::inspect::common_types::*;
-use minimum::component::DefaultComponentReflector;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 
@@ -28,5 +27,4 @@ impl DebugDrawRectComponent {
 
 impl minimum::Component for DebugDrawRectComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

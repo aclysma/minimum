@@ -1,4 +1,4 @@
-use minimum::component::{DefaultComponentReflector, SlabComponentStorage};
+use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 
 // This component contains no data, however an empty component can still be useful to "tag" entities
@@ -13,5 +13,4 @@ impl BulletComponent {
 
 impl minimum::Component for BulletComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

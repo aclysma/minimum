@@ -1,7 +1,6 @@
 use super::Vec2;
 
 use minimum::component::Component;
-use minimum::component::DefaultComponentReflector;
 use minimum::component::SlabComponentStorage;
 use minimum::component::VecComponentStorage;
 
@@ -20,7 +19,6 @@ impl PositionComponent {
 
 impl Component for PositionComponent {
     type Storage = VecComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }
 
 #[derive(Debug, named_type_derive::NamedType)]
@@ -36,7 +34,6 @@ impl VelocityComponent {
 
 impl Component for VelocityComponent {
     type Storage = SlabComponentStorage<VelocityComponent>;
-    type Reflector = DefaultComponentReflector<Self>;
 }
 
 #[derive(Debug, named_type_derive::NamedType)]
@@ -52,5 +49,4 @@ impl SpeedMultiplierComponent {
 
 impl Component for SpeedMultiplierComponent {
     type Storage = SlabComponentStorage<SpeedMultiplierComponent>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

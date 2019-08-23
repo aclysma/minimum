@@ -1,5 +1,4 @@
 use crate::inspect::common_types::*;
-use minimum::component::DefaultComponentReflector;
 use minimum::component::VecComponentStorage;
 use named_type::NamedType;
 
@@ -47,7 +46,6 @@ impl PositionComponent {
 
 impl minimum::Component for PositionComponent {
     type Storage = VecComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }
 
 use minimum::component::SlabComponentStorage;
@@ -65,5 +63,4 @@ impl PositionChangedComponent {
 
 impl minimum::Component for PositionChangedComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

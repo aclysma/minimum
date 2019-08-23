@@ -19,8 +19,6 @@ pub use slab_storage::SlabComponentStorage;
 use std::marker::PhantomData;
 pub use vec_storage::VecComponentStorage;
 
-// This is a trivial factory/prototype. It's usable, but non-trivial downstream projects should probably
-// implement their own version of this so that cross-cutting concerns like persistence can be handled
 mod basic;
 pub use basic::BasicComponentFactory;
 pub use basic::BasicComponentPrototype;
@@ -40,39 +38,8 @@ where
     fn get_mut(&mut self, entity: &EntityHandle) -> Option<&mut T>;
 }
 
-//TODO: All the reflector stuff can be pulled into a top-level module
-pub trait ComponentReflector: Send + Sync {
-    fn type_name() -> &'static str;
-    //fn to_string() -> &'static str;
-}
-
-pub struct DefaultComponentReflector<T>
-where
-    T: Component,
-{
-    phantom_data: PhantomData<T>,
-}
-
-impl<T> ComponentReflector for DefaultComponentReflector<T>
-where
-    T: Component + named_type::NamedType,
-{
-    fn type_name() -> &'static str {
-        T::type_name()
-    }
-
-    //    fn to_string() -> &'static str {
-    //        "".to_string()
-    //    }
-}
-
 pub trait Component: Sized + Send + Sync + 'static {
     type Storage: ComponentStorage<Self>;
-    type Reflector: ComponentReflector;
-
-    fn get_name(&self) -> &'static str {
-        <Self::Reflector as ComponentReflector>::type_name()
-    }
 }
 
 pub type ReadComponent<T> = crate::resource::Read<<T as Component>::Storage>;

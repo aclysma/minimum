@@ -1,4 +1,4 @@
-use minimum::component::{DefaultComponentReflector, SlabComponentStorage};
+use minimum::component::SlabComponentStorage;
 
 use crate::resources::TimeState;
 use named_type::NamedType;
@@ -20,5 +20,4 @@ impl FreeAtTimeComponent {
 
 impl minimum::Component for FreeAtTimeComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

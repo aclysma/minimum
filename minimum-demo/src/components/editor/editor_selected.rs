@@ -1,4 +1,4 @@
-use minimum::component::{DefaultComponentReflector, VecComponentStorage};
+use minimum::component::VecComponentStorage;
 use minimum::Component;
 use named_type::NamedType;
 
@@ -14,5 +14,4 @@ impl EditorSelectedComponent {
 impl Component for EditorSelectedComponent {
     //TODO: HashMap storage
     type Storage = VecComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

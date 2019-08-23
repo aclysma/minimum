@@ -1,4 +1,3 @@
-use minimum::component::DefaultComponentReflector;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 
@@ -13,5 +12,4 @@ impl PlayerComponent {
 
 impl minimum::Component for PlayerComponent {
     type Storage = SlabComponentStorage<PlayerComponent>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

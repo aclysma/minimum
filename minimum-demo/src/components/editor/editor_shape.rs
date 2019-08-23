@@ -1,5 +1,4 @@
 use minimum::component::ComponentStorage;
-use minimum::component::DefaultComponentReflector;
 use minimum::component::VecComponentStorage;
 use minimum::Component;
 use minimum::ComponentFactory;
@@ -41,7 +40,6 @@ impl EditorShapeComponent {
 
 impl minimum::Component for EditorShapeComponent {
     type Storage = VecComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }
 
 //

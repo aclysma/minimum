@@ -1,5 +1,4 @@
 use crate::constructors::PersistentEntityPrototype;
-use minimum::component::DefaultComponentReflector;
 use minimum::component::SlabComponentStorage;
 use minimum::Component;
 use named_type::NamedType;
@@ -21,5 +20,4 @@ impl PersistentEntityComponent {
 
 impl Component for PersistentEntityComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

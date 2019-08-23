@@ -66,10 +66,10 @@ impl EntityFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::component::BasicComponentFactory;
     use crate::component::BasicComponentPrototype;
     use crate::component::ComponentStorage;
     use crate::component::SlabComponentStorage;
-    use crate::component::{BasicComponentFactory, DefaultComponentReflector};
     use crate::Component;
     use named_type::NamedType;
 
@@ -77,14 +77,12 @@ mod tests {
     struct TestComponent1;
     impl Component for TestComponent1 {
         type Storage = SlabComponentStorage<Self>;
-        type Reflector = DefaultComponentReflector<Self>;
     }
 
     #[derive(Clone, NamedType)]
     struct TestComponent2;
     impl Component for TestComponent2 {
         type Storage = SlabComponentStorage<Self>;
-        type Reflector = DefaultComponentReflector<Self>;
     }
 
     #[test]

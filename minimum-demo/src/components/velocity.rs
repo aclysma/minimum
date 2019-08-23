@@ -1,5 +1,4 @@
 use crate::inspect::common_types::*;
-use minimum::component::DefaultComponentReflector;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 
@@ -47,5 +46,4 @@ impl VelocityComponent {
 
 impl minimum::Component for VelocityComponent {
     type Storage = SlabComponentStorage<Self>;
-    type Reflector = DefaultComponentReflector<Self>;
 }

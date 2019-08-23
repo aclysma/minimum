@@ -24,7 +24,6 @@ mod tests {
     use crate::resource;
     use component::Component;
     use component::ComponentStorage;
-    use component::DefaultComponentReflector;
     use component::VecComponentStorage;
     use named_type::NamedType;
 
@@ -41,7 +40,6 @@ mod tests {
 
     impl Component for TestComponent {
         type Storage = VecComponentStorage<Self>;
-        type Reflector = DefaultComponentReflector<Self>;
     }
 
     #[test]
