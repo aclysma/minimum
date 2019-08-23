@@ -1,6 +1,4 @@
-use minimum::resource::{
-    DataRequirement, ResourceMapBuilder, Write,
-};
+use minimum::resource::{DataRequirement, ResourceMapBuilder, Write};
 
 use minimum::dispatch::simple_dispatch::{MinimumDispatcher, Task};
 

@@ -11,7 +11,6 @@ pub use entity_factory::EntityPrototype;
 pub use entity_factory::SimpleEntityPrototype;
 pub use entity_set::EntitySet;
 
-
 mod pending_delete;
 pub use pending_delete::PendingDeleteComponent;
 
@@ -21,12 +20,12 @@ pub type EntityHandle = GenSlabKey<Entity>;
 mod tests {
     use super::*;
     use crate::component;
+    use crate::component::ComponentRegistry;
     use crate::resource;
     use component::Component;
     use component::ComponentStorage;
-    use component::VecComponentStorage;
     use component::DefaultComponentReflector;
-    use crate::component::ComponentRegistry;
+    use component::VecComponentStorage;
     use named_type::NamedType;
 
     #[derive(NamedType)]
@@ -93,9 +92,15 @@ mod tests {
             &entity_handle,
             &mut *resource_map.fetch_mut::<<PendingDeleteComponent as Component>::Storage>(),
         );
-        assert!(resource_map.fetch::<Storage>().get(&entity_handle).is_some());
+        assert!(resource_map
+            .fetch::<Storage>()
+            .get(&entity_handle)
+            .is_some());
         entity_set.flush_free(&resource_map);
-        assert!(resource_map.fetch::<Storage>().get(&entity_handle).is_none());
+        assert!(resource_map
+            .fetch::<Storage>()
+            .get(&entity_handle)
+            .is_none());
     }
 
     #[test]

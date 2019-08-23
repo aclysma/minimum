@@ -14,8 +14,8 @@ extern crate named_type_derive;
 pub mod component;
 pub mod dispatch;
 pub mod entity;
-pub mod slab;
 pub mod resource;
+pub mod slab;
 pub mod util;
 pub mod world;
 
@@ -25,15 +25,15 @@ pub use entity::Entity;
 pub use entity::EntityFactory;
 pub use entity::EntityHandle;
 pub use entity::EntityPrototype;
-pub use entity::SimpleEntityPrototype;
+pub use entity::EntityRef;
 pub use entity::EntitySet;
 pub use entity::PendingDeleteComponent;
-pub use entity::EntityRef;
+pub use entity::SimpleEntityPrototype;
 
 pub use component::BasicComponentFactory;
 pub use component::BasicComponentPrototype;
-pub use component::ComponentCreator;
 pub use component::Component;
+pub use component::ComponentCreator;
 pub use component::ComponentFactory;
 pub use component::ComponentPrototype;
 pub use component::ComponentStorage;

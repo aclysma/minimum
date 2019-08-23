@@ -1,9 +1,9 @@
 use super::Vec2;
 
 use minimum::component::Component;
-use minimum::component::VecComponentStorage;
-use minimum::component::SlabComponentStorage;
 use minimum::component::DefaultComponentReflector;
+use minimum::component::SlabComponentStorage;
+use minimum::component::VecComponentStorage;
 
 use named_type::NamedType;
 

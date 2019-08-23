@@ -1,4 +1,4 @@
-use minimum::component::{SlabComponentStorage, DefaultComponentReflector};
+use minimum::component::{DefaultComponentReflector, SlabComponentStorage};
 
 use crate::resources::TimeState;
 use named_type::NamedType;

@@ -1,20 +1,20 @@
 use crate::components;
-use crate::resources;
 use crate::framework::CloneComponentPrototype;
+use crate::resources;
 use minimum::entity::EntityPrototype;
 use minimum::Component;
-use minimum::ResourceMap;
-use minimum::EntityRef;
-use minimum::SimpleEntityPrototype;
 use minimum::EntityHandle;
+use minimum::EntityRef;
+use minimum::ResourceMap;
+use minimum::SimpleEntityPrototype;
 
 use std::sync::Arc;
 use std::sync::Mutex;
 
+use crate::components::PersistentEntityComponent;
 use components::EditorShapeComponentPrototype;
 use components::PhysicsBodyComponentPrototype;
 use rand::Rng;
-use crate::components::PersistentEntityComponent;
 
 use imgui_inspect::InspectRenderDefault;
 
@@ -22,23 +22,21 @@ const COLLISION_GROUP_PLAYER: usize = 0;
 const COLLISION_GROUP_BULLETS: usize = 1;
 const COLLISION_GROUP_WALL: usize = 2;
 
-pub trait PersistentComponentPrototype :
-    minimum::component::ComponentCreator +
-    named_type::NamedType +
-    mopa::Any
+pub trait PersistentComponentPrototype:
+    minimum::component::ComponentCreator + named_type::NamedType + mopa::Any
 {
-
 }
 
 mopafy!(PersistentComponentPrototype);
 
-impl<T : Component + Clone + InspectRenderDefault<T>> PersistentComponentPrototype for CloneComponentPrototype<T> {
-
+impl<T: Component + Clone + InspectRenderDefault<T>> PersistentComponentPrototype
+    for CloneComponentPrototype<T>
+{
 }
 
 pub struct PersistentEntityPrototypeInner {
     path: std::path::PathBuf,
-    component_prototypes: Vec<Box<dyn PersistentComponentPrototype>>
+    component_prototypes: Vec<Box<dyn PersistentComponentPrototype>>,
 }
 
 impl PersistentEntityPrototypeInner {
@@ -50,26 +48,28 @@ impl PersistentEntityPrototypeInner {
         &self.component_prototypes
     }
 
-    pub fn component_prototypes_mut<'a : 'b, 'b>(&'a mut self) -> &'b mut Vec<Box<dyn PersistentComponentPrototype>> {
+    pub fn component_prototypes_mut<'a: 'b, 'b>(
+        &'a mut self,
+    ) -> &'b mut Vec<Box<dyn PersistentComponentPrototype>> {
         &mut self.component_prototypes
     }
 }
 
 #[derive(Clone)]
 pub struct PersistentEntityPrototype {
-    inner: Arc<Mutex<PersistentEntityPrototypeInner>>
+    inner: Arc<Mutex<PersistentEntityPrototypeInner>>,
 }
 
 impl PersistentEntityPrototype {
     pub fn new(
         path: std::path::PathBuf,
-        component_prototypes: Vec<Box<dyn PersistentComponentPrototype>>
+        component_prototypes: Vec<Box<dyn PersistentComponentPrototype>>,
     ) -> Self {
         PersistentEntityPrototype {
             inner: Arc::new(Mutex::new(PersistentEntityPrototypeInner {
                 path,
-                component_prototypes
-            }))
+                component_prototypes,
+            })),
         }
     }
 
@@ -89,7 +89,8 @@ impl EntityPrototype for PersistentEntityPrototype {
             c.enqueue_create(resource_map, &entity.handle());
         }
 
-        let mut storage = resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
+        let mut storage =
+            resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
         entity.add_component(&mut *storage, PersistentEntityComponent::new(self.clone()));
     }
 }
@@ -137,7 +138,7 @@ pub fn create_wall(
             )),
             Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
             Box::new(EditorShapeComponentPrototype::new(shape)),
-        ]
+        ],
     );
 
     entity_factory.enqueue_create(Box::new(pec));

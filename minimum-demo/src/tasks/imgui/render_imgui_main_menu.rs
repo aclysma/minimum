@@ -48,11 +48,11 @@ impl Task for RenderImguiMainMenu {
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             use imgui::im_str;
 
-//            ui.window(im_str!("Editor")).build(|| {
-//                let mut b = true;
-//                ui.show_metrics_window(&mut b);
-//                ui.show_default_style_editor();
-//            });
+            //            ui.window(im_str!("Editor")).build(|| {
+            //                let mut b = true;
+            //                ui.show_metrics_window(&mut b);
+            //                ui.show_default_style_editor();
+            //            });
 
             let paused = time_state.play_mode == crate::PlayMode::System;
 
@@ -64,7 +64,6 @@ impl Task for RenderImguiMainMenu {
                 };
 
                 ui.main_menu_bar(|| {
-
                     ui.menu(im_str!("File")).build(|| {
                         ui.menu(im_str!("Load")).build(|| {
                             for pack in &["placeholder1", "placeholder2", "placeholder3"] {

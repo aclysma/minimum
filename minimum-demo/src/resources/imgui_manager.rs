@@ -28,7 +28,7 @@ unsafe impl Send for Inner {}
 
 //TODO: Investigate usage of channels/draw lists
 pub struct ImguiManager {
-    inner: std::sync::Mutex<Inner>
+    inner: std::sync::Mutex<Inner>,
 }
 
 // Wraps imgui (and winit integration logic)
@@ -63,7 +63,7 @@ impl ImguiManager {
                 want_capture_mouse: false,
                 want_set_mouse_pos: false,
                 want_text_input: false,
-            })
+            }),
         }
     }
 

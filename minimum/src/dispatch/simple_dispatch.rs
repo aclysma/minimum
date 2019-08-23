@@ -1,6 +1,6 @@
 use crate::resource;
-use std::sync::Arc;
 use resource::ResourceMap;
+use std::sync::Arc;
 
 pub struct MinimumDispatcher {
     resource_map: Arc<ResourceMap>,

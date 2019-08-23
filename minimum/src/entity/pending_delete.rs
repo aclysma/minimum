@@ -1,6 +1,5 @@
-
-use crate::component::SlabComponentStorage;
 use crate::component::DefaultComponentReflector;
+use crate::component::SlabComponentStorage;
 use crate::Component;
 use named_type::NamedType;
 

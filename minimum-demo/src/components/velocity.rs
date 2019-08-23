@@ -1,7 +1,7 @@
-use minimum::component::SlabComponentStorage;
-use minimum::component::DefaultComponentReflector;
-use named_type::NamedType;
 use crate::inspect::common_types::*;
+use minimum::component::DefaultComponentReflector;
+use minimum::component::SlabComponentStorage;
+use named_type::NamedType;
 
 #[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
 pub struct VelocityComponent {
@@ -9,12 +9,15 @@ pub struct VelocityComponent {
     velocity: glm::Vec2,
 
     #[inspect(skip)]
-    requires_sync_to_physics: bool
+    requires_sync_to_physics: bool,
 }
 
 impl VelocityComponent {
     pub fn new(velocity: glm::Vec2) -> Self {
-        VelocityComponent { velocity, requires_sync_to_physics: false }
+        VelocityComponent {
+            velocity,
+            requires_sync_to_physics: false,
+        }
     }
 
     pub fn velocity(&self) -> glm::Vec2 {

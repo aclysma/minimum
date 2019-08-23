@@ -1,9 +1,9 @@
-use crate::{EntityHandle, BasicComponentPrototype, EntityRef};
+use crate::Component;
+use crate::ComponentCreator;
+use crate::ComponentPrototype;
 use crate::EntitySet;
 use crate::ResourceMap;
-use crate::Component;
-use crate::ComponentPrototype;
-use crate::ComponentCreator;
+use crate::{BasicComponentPrototype, EntityHandle, EntityRef};
 
 use std::collections::VecDeque;
 use std::sync::Mutex;
@@ -12,7 +12,7 @@ use std::sync::Mutex;
 // Create entity with list of components
 //
 pub struct SimpleEntityPrototype {
-    components: Vec<Box<dyn ComponentCreator>>
+    components: Vec<Box<dyn ComponentCreator>>,
 }
 
 impl SimpleEntityPrototype {
@@ -29,7 +29,7 @@ impl EntityPrototype for SimpleEntityPrototype {
     }
 }
 
-pub trait EntityPrototype : Send + Sync {
+pub trait EntityPrototype: Send + Sync {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef);
 }
 
@@ -66,10 +66,10 @@ impl EntityFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::component::{BasicComponentFactory, DefaultComponentReflector};
     use crate::component::BasicComponentPrototype;
     use crate::component::ComponentStorage;
     use crate::component::SlabComponentStorage;
+    use crate::component::{BasicComponentFactory, DefaultComponentReflector};
     use crate::Component;
     use named_type::NamedType;
 
@@ -111,7 +111,9 @@ mod tests {
             //e_prototype.enqueue_create(&resource_map);
         }
 
-        resource_map.fetch_mut::<EntitySet>().flush_creates(&resource_map);
+        resource_map
+            .fetch_mut::<EntitySet>()
+            .flush_creates(&resource_map);
 
         let entity_set = resource_map.fetch::<EntitySet>();
         let c1_storage = resource_map.fetch::<<TestComponent1 as Component>::Storage>();

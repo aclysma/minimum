@@ -87,7 +87,11 @@ impl EntitySet {
         self.do_flush_free(resource_map, &entity_handles);
     }
 
-    pub fn do_flush_free(&mut self, resource_map: &resource::ResourceMap, entity_handles: &[EntityHandle]) {
+    pub fn do_flush_free(
+        &mut self,
+        resource_map: &resource::ResourceMap,
+        entity_handles: &[EntityHandle],
+    ) {
         self.component_registry
             .on_entities_free(resource_map, entity_handles);
 

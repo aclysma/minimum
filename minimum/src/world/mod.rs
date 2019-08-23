@@ -1,29 +1,28 @@
+use crate::resource::{Resource, ResourceMap};
 
-use crate::resource::{
-    Resource,
-    ResourceMap
+use crate::component::{
+    Component, ComponentFactory, ComponentFreeHandler, ComponentPrototype, ComponentRegistry,
+    ComponentStorage,
 };
 
-use crate::component::{Component, ComponentStorage, ComponentPrototype, ComponentFreeHandler, ComponentFactory, ComponentRegistry};
-
-use crate::entity::{EntitySet, EntityFactory, PendingDeleteComponent};
+use crate::entity::{EntityFactory, EntitySet, PendingDeleteComponent};
 
 pub struct WorldBuilder {
     resource_map: ResourceMap,
-    default_component_registry: ComponentRegistry
+    default_component_registry: ComponentRegistry,
 }
 
 impl WorldBuilder {
     pub fn new() -> Self {
         WorldBuilder {
             resource_map: ResourceMap::new(),
-            default_component_registry: ComponentRegistry::new()
+            default_component_registry: ComponentRegistry::new(),
         }
     }
 
     pub fn with_resource<R>(mut self, r: R) -> Self
-        where
-            R: Resource,
+    where
+        R: Resource,
     {
         self.resource_map.insert(r);
         self
@@ -59,13 +58,14 @@ impl WorldBuilder {
         component_factory: F,
     ) -> Self {
         self.resource_map.insert(component_factory);
-        self.default_component_registry.register_component_factory::<P, F>();
+        self.default_component_registry
+            .register_component_factory::<P, F>();
         self
     }
 
     pub fn insert<R>(&mut self, r: R)
-        where
-            R: Resource,
+    where
+        R: Resource,
     {
         self.resource_map.insert(r);
     }

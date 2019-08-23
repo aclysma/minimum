@@ -7,8 +7,8 @@ use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, MouseButto
 use crate::components::EditorSelectedComponent;
 use ncollide2d::world::CollisionGroups;
 
-use winit::event::VirtualKeyCode;
 use named_type::NamedType;
+use winit::event::VirtualKeyCode;
 
 #[derive(NamedType)]
 pub struct EditorHandleInput;
@@ -106,9 +106,10 @@ impl Task for EditorHandleInput {
         }
 
         if let Some(entities) = new_selection {
-
-            let add_to_selection = input_manager.is_key_down(VirtualKeyCode::LShift) || input_manager.is_key_down(VirtualKeyCode::RShift);
-            let subtract_from_selection = input_manager.is_key_down(VirtualKeyCode::LAlt) || input_manager.is_key_down(VirtualKeyCode::RAlt);
+            let add_to_selection = input_manager.is_key_down(VirtualKeyCode::LShift)
+                || input_manager.is_key_down(VirtualKeyCode::RShift);
+            let subtract_from_selection = input_manager.is_key_down(VirtualKeyCode::LAlt)
+                || input_manager.is_key_down(VirtualKeyCode::RAlt);
 
             // default selecting behavior is to drop the old selection
             if !add_to_selection && !subtract_from_selection {

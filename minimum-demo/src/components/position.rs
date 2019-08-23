@@ -1,7 +1,7 @@
-use minimum::component::VecComponentStorage;
-use minimum::component::DefaultComponentReflector;
-use named_type::NamedType;
 use crate::inspect::common_types::*;
+use minimum::component::DefaultComponentReflector;
+use minimum::component::VecComponentStorage;
+use named_type::NamedType;
 
 #[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
 pub struct PositionComponent {
@@ -9,14 +9,14 @@ pub struct PositionComponent {
     position: glm::Vec2,
 
     #[inspect(skip)]
-    requires_sync_to_physics: bool
+    requires_sync_to_physics: bool,
 }
 
 impl PositionComponent {
     pub fn new(position: glm::Vec2) -> Self {
         PositionComponent {
             position,
-            requires_sync_to_physics: false
+            requires_sync_to_physics: false,
         }
     }
 
@@ -56,7 +56,6 @@ use minimum::component::SlabComponentStorage;
 pub struct PositionChangedComponent {
     position: glm::Vec2,
 }
-
 
 impl PositionChangedComponent {
     pub fn new(position: glm::Vec2) -> Self {

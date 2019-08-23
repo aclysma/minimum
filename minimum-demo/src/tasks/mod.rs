@@ -8,9 +8,9 @@ mod gather_input;
 pub use gather_input::GatherInput;
 
 mod physics;
-pub use physics::UpdatePhysics;
-pub use physics::PhysicsSyncPre;
 pub use physics::PhysicsSyncPost;
+pub use physics::PhysicsSyncPre;
+pub use physics::UpdatePhysics;
 
 mod update_time_state;
 pub use update_time_state::UpdateTimeState;

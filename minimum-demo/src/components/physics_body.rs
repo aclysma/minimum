@@ -1,5 +1,5 @@
-use minimum::component::SlabComponentStorage;
 use minimum::component::DefaultComponentReflector;
+use minimum::component::SlabComponentStorage;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
 use minimum::EntityHandle;
@@ -11,9 +11,9 @@ use nphysics2d::object::BodyHandle;
 use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
-use std::collections::VecDeque;
-use named_type::NamedType;
 use crate::constructors::PersistentComponentPrototype;
+use named_type::NamedType;
+use std::collections::VecDeque;
 
 #[derive(Debug, NamedType)]
 pub struct PhysicsBodyComponent {
@@ -134,9 +134,7 @@ impl ComponentPrototype for PhysicsBodyComponentPrototype {
     type Factory = PhysicsBodyComponentFactory;
 }
 
-impl PersistentComponentPrototype for PhysicsBodyComponentPrototype {
-
-}
+impl PersistentComponentPrototype for PhysicsBodyComponentPrototype {}
 
 //
 // Factory for PhysicsBody components

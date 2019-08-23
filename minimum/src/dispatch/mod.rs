@@ -1,5 +1,3 @@
-
-
 #[cfg(feature = "async_support")]
 pub mod async_dispatch;
 

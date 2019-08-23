@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use crate::resource;
 use super::DispatchControl;
+use crate::resource;
 use named_type::NamedType;
 
 use super::async_dispatcher::{
@@ -14,8 +14,8 @@ use super::async_dispatcher::{
 
 use resource::ResourceId;
 
-pub use super::async_dispatcher::ExecuteSequential;
 pub use super::async_dispatcher::ExecuteParallel;
+pub use super::async_dispatcher::ExecuteSequential;
 
 //
 // Task
@@ -180,7 +180,10 @@ impl MinimumDispatcher {
     }
 
     // Call this to kick off processing.
-    pub fn enter_game_loop<F, FutureT>(self, /* context_flags: usize,*/ f: F) -> resource::ResourceMap
+    pub fn enter_game_loop<F, FutureT>(
+        self,
+        /* context_flags: usize,*/ f: F,
+    ) -> resource::ResourceMap
     where
         F: Fn(Arc<MinimumDispatcherContext>) -> FutureT + Send + Sync + 'static,
         FutureT: futures::future::Future<Item = (), Error = ()> + Send + Sync + 'static,
@@ -188,7 +191,11 @@ impl MinimumDispatcher {
         let resource_map = self.resource_map.clone();
 
         self.dispatcher.enter_game_loop(move |dispatcher| {
-            if resource_map.borrow().fetch::<DispatchControl>().should_terminate() {
+            if resource_map
+                .borrow()
+                .fetch::<DispatchControl>()
+                .should_terminate()
+            {
                 return None;
             }
 
@@ -252,10 +259,13 @@ impl MinimumDispatcherContext {
         use futures::future::Future;
 
         Box::new(
-            acquire_resources::<RequirementT>(self.dispatcher.clone(), Arc::clone(&self.resource_map))
-                .map(move |acquired_resources| {
-                    (f)(acquired_resources);
-                }),
+            acquire_resources::<RequirementT>(
+                self.dispatcher.clone(),
+                Arc::clone(&self.resource_map),
+            )
+            .map(move |acquired_resources| {
+                (f)(acquired_resources);
+            }),
         )
     }
 
@@ -296,7 +306,10 @@ impl MinimumDispatcherContext {
 
     //TODO: It would be nice to pass the context into the callback, but need to refactor to use
     //inner arc.
-    pub fn visit_resources<F>(&self, f: F) -> Box<impl futures::future::Future<Item = (), Error = ()>>
+    pub fn visit_resources<F>(
+        &self,
+        f: F,
+    ) -> Box<impl futures::future::Future<Item = (), Error = ()>>
     where
         F: FnOnce(&resource::ResourceMap),
     {

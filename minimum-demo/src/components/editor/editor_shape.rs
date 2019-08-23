@@ -1,6 +1,6 @@
 use minimum::component::ComponentStorage;
-use minimum::component::VecComponentStorage;
 use minimum::component::DefaultComponentReflector;
+use minimum::component::VecComponentStorage;
 use minimum::Component;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
@@ -10,11 +10,11 @@ use minimum::ResourceMap;
 
 use nphysics2d::object::ColliderHandle;
 
+use crate::constructors::PersistentComponentPrototype;
+use named_type::NamedType;
 use ncollide2d::shape::ShapeHandle;
 use ncollide2d::world::{CollisionGroups, GeometricQueryType};
 use std::collections::VecDeque;
-use named_type::NamedType;
-use crate::constructors::PersistentComponentPrototype;
 
 #[derive(Clone, NamedType)]
 pub struct EditorShapeComponent {
@@ -88,9 +88,7 @@ impl ComponentPrototype for EditorShapeComponentPrototype {
     type Factory = EditorShapeComponentFactory;
 }
 
-impl PersistentComponentPrototype for EditorShapeComponentPrototype {
-
-}
+impl PersistentComponentPrototype for EditorShapeComponentPrototype {}
 
 //
 // Factory for PhysicsBody components
@@ -122,7 +120,8 @@ impl ComponentFactory<EditorShapeComponentPrototype> for EditorShapeComponentFac
             return;
         }
 
-        let mut collision_world = resource_map.fetch_mut::<crate::resources::EditorCollisionWorld>();
+        let mut collision_world =
+            resource_map.fetch_mut::<crate::resources::EditorCollisionWorld>();
         let mut storage = resource_map.fetch_mut::<<EditorShapeComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {

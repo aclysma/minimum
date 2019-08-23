@@ -48,13 +48,13 @@ mod __resource_mopafy_scope {
 impl<T> Resource for T where T: Any + Send + Sync {}
 
 pub struct ResourceMapBuilder {
-    resource_map: ResourceMap
+    resource_map: ResourceMap,
 }
 
 impl ResourceMapBuilder {
     pub fn new() -> Self {
         ResourceMapBuilder {
-            resource_map: ResourceMap::new()
+            resource_map: ResourceMap::new(),
         }
     }
 

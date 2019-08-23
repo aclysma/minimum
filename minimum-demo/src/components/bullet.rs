@@ -1,4 +1,4 @@
-use minimum::component::{SlabComponentStorage, DefaultComponentReflector};
+use minimum::component::{DefaultComponentReflector, SlabComponentStorage};
 use named_type::NamedType;
 
 // This component contains no data, however an empty component can still be useful to "tag" entities

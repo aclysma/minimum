@@ -2,8 +2,8 @@ use super::Component;
 use super::ComponentFactory;
 use super::ComponentPrototype;
 use super::ComponentStorage;
-use std::marker::PhantomData;
 use named_type::NamedType;
+use std::marker::PhantomData;
 
 use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
 

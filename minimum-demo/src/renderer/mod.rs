@@ -133,7 +133,11 @@ impl Renderer {
     //        self.factory.maintain(&mut self.families);
     //    }
 
-    pub fn render(&mut self, window: &winit::window::Window, resource_map: &minimum::resource::ResourceMap) {
+    pub fn render(
+        &mut self,
+        window: &winit::window::Window,
+        resource_map: &minimum::resource::ResourceMap,
+    ) {
         self.factory.maintain(&mut self.families);
 
         // Update the render state

@@ -1,20 +1,17 @@
-
+use crate::constructors::PersistentEntityPrototype;
+use minimum::component::DefaultComponentReflector;
 use minimum::component::SlabComponentStorage;
 use minimum::Component;
 use named_type::NamedType;
-use crate::constructors::PersistentEntityPrototype;
-use minimum::component::DefaultComponentReflector;
 
 #[derive(NamedType, Clone)]
 pub struct PersistentEntityComponent {
-    prototype: PersistentEntityPrototype
+    prototype: PersistentEntityPrototype,
 }
 
 impl PersistentEntityComponent {
     pub fn new(prototype: PersistentEntityPrototype) -> Self {
-        PersistentEntityComponent {
-            prototype
-        }
+        PersistentEntityComponent { prototype }
     }
 
     pub fn prototype(&self) -> &PersistentEntityPrototype {

@@ -1,10 +1,9 @@
-
 use crate::Component;
-use crate::ComponentPrototype;
 use crate::ComponentFactory;
+use crate::ComponentPrototype;
 use crate::EntityHandle;
-use crate::ResourceMap;
 use crate::EntitySet;
+use crate::ResourceMap;
 use named_type::NamedType;
 
 use std::collections::VecDeque;
@@ -51,7 +50,7 @@ impl<T: Component> BasicComponentFactory<T> {
 }
 
 impl<T: Component + Clone> ComponentFactory<BasicComponentPrototype<T>>
-for BasicComponentFactory<T>
+    for BasicComponentFactory<T>
 {
     fn enqueue_create(
         &mut self,

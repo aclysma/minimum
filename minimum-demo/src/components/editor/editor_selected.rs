@@ -1,4 +1,4 @@
-use minimum::component::{VecComponentStorage, DefaultComponentReflector};
+use minimum::component::{DefaultComponentReflector, VecComponentStorage};
 use minimum::Component;
 use named_type::NamedType;
 

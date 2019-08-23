@@ -40,10 +40,10 @@ impl Task for PhysicsSyncPre {
 
             if let Some(pos_component) = pos_components.get_mut(&entity) {
                 if pos_component.requires_sync_to_physics() {
-                    body.set_position(
-                        nphysics2d::math::Isometry::from_parts(
-                            nphysics2d::math::Translation::from(pos_component.position()),
-                            body.position().rotation));
+                    body.set_position(nphysics2d::math::Isometry::from_parts(
+                        nphysics2d::math::Translation::from(pos_component.position()),
+                        body.position().rotation,
+                    ));
 
                     pos_component.clear_requires_sync_to_physics();
                 }

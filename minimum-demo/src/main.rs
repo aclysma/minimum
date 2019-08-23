@@ -19,20 +19,20 @@ extern crate mopa;
 //extern crate minimum_derive;
 
 mod components;
-mod framework;
 mod constructors;
+mod framework;
+mod imgui_themes;
 mod init;
+mod inspect;
 mod renderer;
 mod resources;
 mod tasks;
-mod inspect;
-mod imgui_themes;
 
 use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
+use framework::{CloneComponentFactory, CloneComponentPrototype};
 use minimum::component::Component;
 use minimum::resource::ResourceMap;
-use framework::{CloneComponentFactory, CloneComponentPrototype};
 
 #[derive(Copy, Clone, PartialEq, strum_macros::EnumCount)]
 pub enum PlayMode {
@@ -121,7 +121,9 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
         .with_component_factory(components::PhysicsBodyComponentFactory::new())
         .with_component_factory(components::EditorShapeComponentFactory::new())
-        .with_component_factory(CloneComponentFactory::<components::PersistentEntityComponent>::new())
+        .with_component_factory(
+            CloneComponentFactory::<components::PersistentEntityComponent>::new(),
+        )
         .build();
 
     let mut inspect_registry = inspect::InspectorRegistry::new();
@@ -137,8 +139,6 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototype>();
-
-
 
     // Assets you want to always have available could be loaded here
 
@@ -220,7 +220,9 @@ fn create_objects(resource_map: &ResourceMap) {
     );
 }
 
-fn dispatcher_thread(resource_map: minimum::resource::ResourceMap) -> minimum::resource::ResourceMap {
+fn dispatcher_thread(
+    resource_map: minimum::resource::ResourceMap,
+) -> minimum::resource::ResourceMap {
     info!("dispatch thread started");
 
     let context_flags = crate::context_flags::AUTHORITY_CLIENT

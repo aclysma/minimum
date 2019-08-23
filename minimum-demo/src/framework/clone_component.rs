@@ -1,17 +1,16 @@
-
 use minimum::Component;
-use minimum::ComponentPrototype;
 use minimum::ComponentFactory;
+use minimum::ComponentPrototype;
 use minimum::EntityHandle;
-use minimum::ResourceMap;
 use minimum::EntitySet;
+use minimum::ResourceMap;
 use named_type::NamedType;
 
-use std::collections::VecDeque;
 use imgui_inspect::InspectRenderDefault;
+use std::collections::VecDeque;
 
-use imgui_inspect::InspectArgsDefault;
 use failure::_core::marker::PhantomData;
+use imgui_inspect::InspectArgsDefault;
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
@@ -23,7 +22,9 @@ pub struct CloneComponentPrototype<T: Component + Clone> {
 
 impl<T: Component + Clone> CloneComponentPrototype<T> {
     pub fn new(clone: T) -> Self {
-        CloneComponentPrototype::<T> { inner: minimum::BasicComponentPrototype::new(clone) }
+        CloneComponentPrototype::<T> {
+            inner: minimum::BasicComponentPrototype::new(clone),
+        }
     }
 
     pub fn data(&self) -> &T {
@@ -39,10 +40,17 @@ impl<T: Component + Clone> ComponentPrototype for CloneComponentPrototype<T> {
     type Factory = CloneComponentFactory<T>;
 }
 
-impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>> for CloneComponentPrototype<T>
-    where T: Component + Clone + InspectRenderDefault<T> + named_type::NamedType
+impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>>
+    for CloneComponentPrototype<T>
+where
+    T: Component + Clone + InspectRenderDefault<T> + named_type::NamedType,
 {
-    fn render(data: &[&CloneComponentPrototype<T>], label: &'static str, ui: &imgui::Ui, args: &imgui_inspect::InspectArgsDefault) {
+    fn render(
+        data: &[&CloneComponentPrototype<T>],
+        label: &'static str,
+        ui: &imgui::Ui,
+        args: &imgui_inspect::InspectArgsDefault,
+    ) {
         let mut r = vec![];
         for d in data {
             let v = d.data();
@@ -52,7 +60,12 @@ impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>> for Clon
         <T as imgui_inspect::InspectRenderDefault<T>>::render(r.as_slice(), label, ui, args)
     }
 
-    fn render_mut(data: &mut [&mut CloneComponentPrototype<T>], label: &'static str, ui: &imgui::Ui, args: &InspectArgsDefault) -> bool {
+    fn render_mut(
+        data: &mut [&mut CloneComponentPrototype<T>],
+        label: &'static str,
+        ui: &imgui::Ui,
+        args: &InspectArgsDefault,
+    ) -> bool {
         let mut r = vec![];
         for d in data {
             let v = d.data_mut();
@@ -63,21 +76,20 @@ impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>> for Clon
     }
 }
 
-
 pub struct CloneComponentFactory<T: Component> {
-    inner: minimum::BasicComponentFactory<T>
+    inner: minimum::BasicComponentFactory<T>,
 }
 
 impl<T: Component> CloneComponentFactory<T> {
     pub fn new() -> Self {
         CloneComponentFactory::<T> {
-            inner: minimum::BasicComponentFactory::new()
+            inner: minimum::BasicComponentFactory::new(),
         }
     }
 }
 
 impl<T: Component + Clone> ComponentFactory<CloneComponentPrototype<T>>
-for CloneComponentFactory<T>
+    for CloneComponentFactory<T>
 {
     fn enqueue_create(
         &mut self,

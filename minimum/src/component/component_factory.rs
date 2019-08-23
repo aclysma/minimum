@@ -31,8 +31,8 @@ pub trait ComponentPrototype: ComponentCreator + Sized + Send + Sync + 'static {
 }
 
 impl<T> ComponentCreator for T
-    where
-        T: ComponentPrototype + Sync + Send,
+where
+    T: ComponentPrototype + Sync + Send,
 {
     fn enqueue_create(&self, resource_map: &ResourceMap, entity_handle: &EntityHandle) {
         <T as ComponentPrototype>::enqueue_create(&self, resource_map, entity_handle);

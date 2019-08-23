@@ -10,14 +10,14 @@ use slab::RawSlabKey;
 use crate::entity;
 use entity::EntityHandle;
 
+pub use component_factory::ComponentCreator;
 pub use component_factory::ComponentFactory;
 pub use component_factory::ComponentPrototype;
-pub use component_factory::ComponentCreator;
 pub use registry::ComponentFreeHandler;
 pub use registry::ComponentRegistry;
 pub use slab_storage::SlabComponentStorage;
-pub use vec_storage::VecComponentStorage;
 use std::marker::PhantomData;
+pub use vec_storage::VecComponentStorage;
 
 // This is a trivial factory/prototype. It's usable, but non-trivial downstream projects should probably
 // implement their own version of this so that cross-cutting concerns like persistence can be handled
@@ -41,30 +41,29 @@ where
 }
 
 //TODO: All the reflector stuff can be pulled into a top-level module
-pub trait ComponentReflector: Send + Sync
-{
+pub trait ComponentReflector: Send + Sync {
     fn type_name() -> &'static str;
     //fn to_string() -> &'static str;
 }
 
 pub struct DefaultComponentReflector<T>
 where
-    T: Component
+    T: Component,
 {
-    phantom_data: PhantomData<T>
+    phantom_data: PhantomData<T>,
 }
 
 impl<T> ComponentReflector for DefaultComponentReflector<T>
 where
-    T: Component + named_type::NamedType
+    T: Component + named_type::NamedType,
 {
     fn type_name() -> &'static str {
         T::type_name()
     }
 
-//    fn to_string() -> &'static str {
-//        "".to_string()
-//    }
+    //    fn to_string() -> &'static str {
+    //        "".to_string()
+    //    }
 }
 
 pub trait Component: Sized + Send + Sync + 'static {

@@ -5,9 +5,9 @@ use minimum::{EntityHandle, ReadComponent, Task, TaskContext};
 use crate::components;
 use crate::resources::DebugDraw;
 use crate::resources::EditorCollisionWorld;
+use named_type::NamedType;
 use ncollide2d::shape::ShapeHandle;
 use nphysics2d::object::ColliderHandle;
-use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct EditorDrawShapes;
