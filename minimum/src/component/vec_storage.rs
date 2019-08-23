@@ -2,6 +2,7 @@ use super::Component;
 use super::ComponentStorage;
 use super::EntityHandle;
 
+/// Allows iteration of all components
 pub struct VecComponentIterator<'a, T, I>
 where
     T: Component,
@@ -41,6 +42,7 @@ where
     }
 }
 
+/// Allows mutable iteration of all components
 pub struct VecComponentIteratorMut<'a, T, I>
 where
     T: Component,
@@ -80,17 +82,22 @@ where
     }
 }
 
+/// Implements a component storage using a simple array parallel to the entity array. This storage
+/// is fast, but can use an unnecessary amount of memory
 pub struct VecComponentStorage<T: Component> {
     components: Vec<Option<T>>,
 }
 
 impl<T: Component> VecComponentStorage<T> {
+    //TODO: Allow overriding capacity
+    /// Create storage for T
     pub fn new() -> Self {
         VecComponentStorage::<T> {
-            components: Vec::with_capacity(32), //TODO: Hardcoded value
+            components: Vec::with_capacity(32),
         }
     }
 
+    /// Iterate all Ts, returning (EntityHandle, &T) pair
     pub fn iter<'a>(
         &'a self,
         entity_set: &'a super::entity::EntitySet,
@@ -104,6 +111,7 @@ impl<T: Component> VecComponentStorage<T> {
         )
     }
 
+    /// Iterate all Ts mutably, returning (EntityHandle, &T) pair
     pub fn iter_mut<'a>(
         &'a mut self,
         entity_set: &'a super::entity::EntitySet,
@@ -117,24 +125,28 @@ impl<T: Component> VecComponentStorage<T> {
         )
     }
 
+    /// Iterate just the components
     pub fn iter_values<'a>(&'a self) -> impl Iterator<Item = &'a T> {
         self.components
             .iter()
             .filter_map(|component_key| component_key.as_ref())
     }
 
+    /// Iterate just the components mutably
     pub fn iter_values_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut T> {
         self.components
             .iter_mut()
             .filter_map(|component_key| component_key.as_mut())
     }
 
+    /// Removes all components of type T from all entities
     pub fn free_all(&mut self) {
         for component in &mut self.components {
             *component = None;
         }
     }
 
+    /// Returns count of allocated components
     pub fn count(&self) -> usize {
         self.components.iter().filter(|x| x.is_some()).count()
     }

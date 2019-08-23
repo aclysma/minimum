@@ -11,17 +11,17 @@ use std::sync::Mutex;
 //
 // Create entity with list of components
 //
-pub struct SimpleEntityPrototype {
+pub struct BasicEntityPrototype {
     components: Vec<Box<dyn ComponentCreator>>,
 }
 
-impl SimpleEntityPrototype {
+impl BasicEntityPrototype {
     pub fn new(components: Vec<Box<dyn ComponentCreator>>) -> Self {
-        SimpleEntityPrototype { components }
+        BasicEntityPrototype { components }
     }
 }
 
-impl EntityPrototype for SimpleEntityPrototype {
+impl EntityPrototype for BasicEntityPrototype {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
         for c in &self.components {
             c.enqueue_create(resource_map, &entity.handle());
@@ -102,7 +102,7 @@ mod tests {
             let c_list: Vec<Box<dyn ComponentCreator>> =
                 vec![Box::new(c1_prototype), Box::new(c2_prototype)];
 
-            let e_prototype = SimpleEntityPrototype::new(c_list);
+            let e_prototype = BasicEntityPrototype::new(c_list);
             resource_map
                 .fetch_mut::<EntityFactory>()
                 .enqueue_create(Box::new(e_prototype));

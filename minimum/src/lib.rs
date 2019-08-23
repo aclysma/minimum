@@ -28,7 +28,7 @@ pub use entity::EntityPrototype;
 pub use entity::EntityRef;
 pub use entity::EntitySet;
 pub use entity::PendingDeleteComponent;
-pub use entity::SimpleEntityPrototype;
+pub use entity::BasicEntityPrototype;
 
 pub use component::BasicComponentFactory;
 pub use component::BasicComponentPrototype;

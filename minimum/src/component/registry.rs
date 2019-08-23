@@ -7,9 +7,7 @@ use std::marker::PhantomData;
 
 use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
 
-//
-// Handler can be implemented to run custom logic just before entities are destroyed
-//
+/// Handler can be implemented to run custom logic just before entities are destroyed
 pub trait ComponentFreeHandler<T: Component>: Send + Sync {
     fn on_entities_free(
         resource_map: &ResourceMap,
@@ -18,7 +16,7 @@ pub trait ComponentFreeHandler<T: Component>: Send + Sync {
     );
 }
 
-// Default handler, does nothing but removes the component from the storage
+/// Default handler, does nothing but removes the component from the storage
 struct DefaultFreeHandler {}
 
 impl<T: Component> ComponentFreeHandler<T> for DefaultFreeHandler {
@@ -31,7 +29,7 @@ impl<T: Component> ComponentFreeHandler<T> for DefaultFreeHandler {
     }
 }
 
-// Custom handler, calls on_entities_free on the given type
+/// Custom handler, calls on_entities_free on the given type
 struct CustomFreeHandler<T: Component, F: ComponentFreeHandler<T>> {
     phantom_data1: PhantomData<T>,
     phantom_data2: PhantomData<F>,
@@ -52,14 +50,13 @@ where
     }
 }
 
-//
-// Interface for a registered component type
-//
+/// Interface for a registered component type
 trait RegisteredComponentTrait: Send + Sync {
     fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]);
 }
 
-pub struct RegisteredComponent<T, F>
+/// Represents a component that has been registered.
+struct RegisteredComponent<T, F>
 where
     T: Component,
     F: ComponentFreeHandler<T>,
@@ -96,13 +93,13 @@ where
     }
 }
 
-//
-// RegisteredComponentFactory - Used to walk across all component factories and flush pending creates
-//
+/// Used to walk across all component factories and flush pending creates
 trait RegisteredComponentFactoryTrait: Resource {
     fn flush_creates(&self, resource_map: &ResourceMap, entity_set: &EntitySet);
 }
 
+/// Represents a registered component factory, used to allow iterating all registered factories and
+/// calling `flush_creates` on them
 #[derive(NamedType)]
 pub struct RegisteredComponentFactory<P, F>
 where
@@ -137,9 +134,8 @@ where
     }
 }
 
-//
-// ComponentRegistry
-//
+/// Allows registration of component types. Registering a type allows us to iterate and execute code
+/// for every type (mostly to handle deferred create/destroy)
 pub struct ComponentRegistry {
     registered_components: Vec<Box<dyn RegisteredComponentTrait>>,
     registered_factories: Vec<Box<dyn RegisteredComponentFactoryTrait>>,
@@ -153,11 +149,14 @@ impl ComponentRegistry {
         }
     }
 
+    /// All components must be registered
     pub fn register_component<T: Component + 'static>(&mut self) {
         self.registered_components
             .push(Box::new(RegisteredComponent::<T, DefaultFreeHandler>::new()));
     }
 
+    //TODO: This API is sub-par, a builder might be better?
+    /// If the component has its own custom free handler, call this rather than `register_component`
     pub fn register_component_with_free_handler<
         T: Component + 'static,
         F: ComponentFreeHandler<T> + 'static,
@@ -169,20 +168,24 @@ impl ComponentRegistry {
         ));
     }
 
+    /// All factories must be registered. (Multiple components may exist for each component type. This
+    /// allows multiple distinct prototype types to be supported per component type)
     pub fn register_component_factory<P: ComponentPrototype, F: ComponentFactory<P>>(&mut self) {
         self.registered_factories
             .push(Box::new(RegisteredComponentFactory::<P, F>::new()));
     }
 
-    pub fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
-        for rc in &self.registered_components {
-            rc.on_entities_free(resource_map, entity_handles);
-        }
-    }
-
+    /// Handle any deferred component allocations
     pub fn on_flush_creates(&self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         for rf in &self.registered_factories {
             rf.flush_creates(resource_map, entity_set);
+        }
+    }
+
+    /// Free components of every type for the given entities
+    pub fn on_entities_free(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle]) {
+        for rc in &self.registered_components {
+            rc.on_entities_free(resource_map, entity_handles);
         }
     }
 }

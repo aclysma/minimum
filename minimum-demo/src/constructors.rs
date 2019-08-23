@@ -6,7 +6,7 @@ use minimum::Component;
 use minimum::EntityHandle;
 use minimum::EntityRef;
 use minimum::ResourceMap;
-use minimum::SimpleEntityPrototype;
+use minimum::BasicEntityPrototype;
 
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -177,7 +177,7 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
         body_component_desc
     };
 
-    let entity_prototype = SimpleEntityPrototype::new(vec![
+    let entity_prototype = BasicEntityPrototype::new(vec![
         Box::new(CloneComponentPrototype::new(
             components::PlayerComponent::new(),
         )),
@@ -235,7 +235,7 @@ pub fn create_bullet(
         body_component_desc
     };
 
-    let entity_prototype = SimpleEntityPrototype::new(vec![
+    let entity_prototype = BasicEntityPrototype::new(vec![
         Box::new(CloneComponentPrototype::new(
             components::PositionComponent::new(position),
         )),

@@ -4,6 +4,7 @@ use super::EntityHandle;
 use super::RawSlab;
 use super::RawSlabKey;
 
+/// Allows iteration of all components
 pub struct SlabComponentIterator<'a, T, I>
 where
     T: Component,
@@ -49,6 +50,7 @@ where
     }
 }
 
+/// Allows mutable iteration of all components
 pub struct SlabComponentIteratorMut<'a, T, I>
 where
     T: Component,
@@ -103,12 +105,16 @@ where
     }
 }
 
+/// Implements dense storage of components. slab holds the component values, and slab_keys is a
+/// parallel array with entities. This allows 1:1 lookup, but with reduced memory requirements
 pub struct SlabComponentStorage<T: Component> {
     slab: RawSlab<T>,
     slab_keys: Vec<Option<RawSlabKey<T>>>,
 }
 
 impl<T: Component> SlabComponentStorage<T> {
+    //TODO: Allow overriding capacity
+    /// Create storage for T
     pub fn new() -> Self {
         SlabComponentStorage::<T> {
             slab: RawSlab::new(),
@@ -116,6 +122,7 @@ impl<T: Component> SlabComponentStorage<T> {
         }
     }
 
+    /// Iterate all Ts, returning (EntityHandle, &T) pair
     pub fn iter<'a>(
         &'a self,
         entity_set: &'a super::entity::EntitySet,
@@ -130,6 +137,7 @@ impl<T: Component> SlabComponentStorage<T> {
         )
     }
 
+    /// Iterate all Ts mutably, returning (EntityHandle, &mut T) pair
     pub fn iter_mut<'a>(
         &'a mut self,
         entity_set: &'a super::entity::EntitySet,
@@ -144,14 +152,17 @@ impl<T: Component> SlabComponentStorage<T> {
         )
     }
 
+    /// Iterate just the components
     pub fn iter_values<'a>(&'a self) -> impl Iterator<Item = &'a T> {
         self.slab.iter().map(|(_key, value)| value)
     }
 
+    /// Iterate just the components mutably
     pub fn iter_values_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut T> {
         self.slab.iter_mut().map(|(_key, value)| value)
     }
 
+    /// Returns count of allocated components
     pub fn count(&self) -> usize {
         self.slab.count()
     }
