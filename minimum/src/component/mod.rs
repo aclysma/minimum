@@ -5,15 +5,16 @@
 //! allocation/deallocation happen at a consistent point in the update loop,
 //! which can lead to eliminating some timing bugs.
 //!
-//! Minimum is responsible for
-//! * An interface for storing/retrieving components (and a few commonly desired implementations)
-//! * A pipeline for deferred creation components (ComponentFactory)
+//! With respect to components, Minimum is responsible for:
+//! * Defining a basic interface for storing/retrieving components
+//! * A pipeline for deferred component creation (ComponentFactory)
 //! * A hook for handling destruction of components (ComponentFreeHandler)
 //! * Automatic destruction when entities are destroyed
 //!
-//! Some ECS libraries abstract/hide some of the concepts here. Minimum makes no attempt to hide the
-//! underlying data structures. This is purposeful, allowing users to choose exactly what order they
-//! want to grab the data in.
+//! Some ECS libraries abstract/hide some of the concepts here, in particular how components are stored
+//! and joined/iterated over. Minimum makes no attempt to hide the underlying data structures or logic.
+//! This is by design, and allows users to choose exactly what order they want to grab the data in
+//! and understand what a join actually entails.
 //!
 //! A 3-way join might look something like this. In this example, we search by position first, then
 //! we try to find velocity and speed multiplier components. (If the speed multiplier component doesn't
@@ -32,7 +33,8 @@
 //! }
 //! ```
 //!
-//! Users can implement custom storages which expose different ways to query the data
+//! Users can implement custom storages which expose different ways to query the data. Since the storage
+//! type is not abstracted away, it's easy to create and use custom containers.
 
 mod component_factory;
 mod registry;
@@ -96,7 +98,15 @@ pub trait Component: Sized + Send + Sync + 'static {
 }
 
 //These are shorthand for specifying reading/writing components from a resource map
+
+/// Gets read access to a component storage. Panics if the storage is not registered.
 pub type ReadComponent<T> = crate::resource::Read<<T as Component>::Storage>;
+
+/// Gets read/write access to a component storage. Panics if the storage is not registered.
 pub type WriteComponent<T> = crate::resource::Write<<T as Component>::Storage>;
+
+/// Gets read access to a component storage. Returns none if the storage is not registered.
 pub type ReadComponentOption<T> = crate::resource::ReadOption<<T as Component>::Storage>;
+
+/// Gets read/write access to a component storage. Returns none if the storage is not registered.
 pub type WriteComponentOption<T> = crate::resource::WriteOption<<T as Component>::Storage>;

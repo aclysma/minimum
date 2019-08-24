@@ -1,3 +1,5 @@
+//! Several Slab types with their own APIs/tradeoffs.
+
 // u32 should be enough, even at 120fps, one allocation per frame, it would take
 // more than a year to exhaust
 type GenerationCounterT = u32;

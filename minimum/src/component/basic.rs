@@ -11,7 +11,7 @@ use named_type::NamedType;
 
 use std::collections::VecDeque;
 
-/// Represents a component that will be created in the future by cloning `data`.
+/// Basic component prototype that creates components by cloning `data`.
 ///
 /// This is a basic implementation that may be used, but downstream code would likely want to
 /// duplicate or wrap this so that other cross-cutting functionality (i.e. serialization, editing)
@@ -43,7 +43,7 @@ impl<T: Component + Clone> ComponentPrototype for BasicComponentPrototype<T> {
     type Factory = BasicComponentFactory<T>;
 }
 
-/// Factory for clone components
+/// Factory to create components from BasicComponentPrototypes
 pub struct BasicComponentFactory<T: Component> {
     /// Queue of BasicComponentPrototypes to create
     prototypes: VecDeque<(EntityHandle, T)>,

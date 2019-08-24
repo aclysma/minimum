@@ -36,7 +36,8 @@ impl ResourceId {
     }
 }
 
-// Any data that can be stored in the ResourceMap must implement this trait
+/// Any data that can be stored in the ResourceMap must implement this trait. There is a blanket
+/// implementation provided for all compatible types
 pub trait Resource: Any + Send + Sync + 'static {}
 
 impl<T> Resource for T where T: Any + Send + Sync {}
@@ -51,16 +52,19 @@ mod __resource_mopafy_scope {
 
 /// Builder for creating a ResourceMap
 pub struct ResourceMapBuilder {
+    /// The ResourceMap being built
     resource_map: ResourceMap,
 }
 
 impl ResourceMapBuilder {
+    /// Creates an empty builder
     pub fn new() -> Self {
         ResourceMapBuilder {
             resource_map: ResourceMap::new(),
         }
     }
 
+    /// Builder-style API that adds the resource to the map
     pub fn with_resource<R>(mut self, r: R) -> Self
     where
         R: Resource,
@@ -69,6 +73,7 @@ impl ResourceMapBuilder {
         self
     }
 
+    /// Adds the resource to the map
     pub fn insert<R>(&mut self, r: R)
     where
         R: Resource,
@@ -76,24 +81,27 @@ impl ResourceMapBuilder {
         self.resource_map.insert(r);
     }
 
+    /// Consume this builder, returning the resource map
     pub fn build(self) -> ResourceMap {
         self.resource_map
     }
 }
 
-/// ResourceMap
+/// A key-value structure. The key is a type, and the value is a single object of that type
 #[derive(Default)]
 pub struct ResourceMap {
     resources: HashMap<ResourceId, TrustCell<Box<dyn Resource>>>,
 }
 
 impl ResourceMap {
+    /// Creates an empty resource map
     pub fn new() -> Self {
         ResourceMap {
             resources: HashMap::new(),
         }
     }
 
+    /// Add a type/resource instance to the map
     pub fn insert<R>(&mut self, r: R)
     where
         R: Resource,
@@ -101,6 +109,7 @@ impl ResourceMap {
         self.insert_by_id(ResourceId::new::<R>(), r);
     }
 
+    /// Remove a type/resource instance from the map
     pub fn remove<R>(&mut self) -> Option<R>
     where
         R: Resource,
@@ -127,6 +136,7 @@ impl ResourceMap {
             .map(|x| *x)
     }
 
+    // Use optional nightly support for access to std::intrinsics::type_name
     #[cfg(feature = "nightly")]
     fn unwrap_resource<R>(resource: Option<R>) -> R {
         if resource.is_none() {
@@ -144,11 +154,16 @@ impl ResourceMap {
         resource.unwrap()
     }
 
+    /// Read-only fetch of a resource. Trying to get a resource that is not in the map is fatal. Use
+    /// try_fetch if unsure whether the resource exists. Requesting read access to a resource that
+    /// has any concurrently active writer is fatal.
     pub fn fetch<R: Resource>(&self) -> ReadBorrow<R> {
         let result = self.try_fetch();
         Self::unwrap_resource(result)
     }
 
+    /// Read-only fetch of a resource. Requesting read access to a resource that has a concurrently
+    /// active writer is fatal. Returns None if the type is not registered.
     pub fn try_fetch<R: Resource>(&self) -> Option<ReadBorrow<R>> {
         let res_id = ResourceId::new::<R>();
 
@@ -158,11 +173,16 @@ impl ResourceMap {
         })
     }
 
+    /// Read/Write fetch of a resource. Trying to get a resource that is not in the map is fatal. Use
+    /// try_fetch if unsure whether the resource exists. Requesting write access to a resource with
+    /// any concurrently active read/write is fatal
     pub fn fetch_mut<R: Resource>(&self) -> WriteBorrow<R> {
         let result = self.try_fetch_mut();
         Self::unwrap_resource(result)
     }
 
+    /// Read/Write fetch of a resource. Requesting write access to a resource with
+    /// any concurrently active read/write is fatal. Returns None if the type is not registered.
     pub fn try_fetch_mut<R: Resource>(&self) -> Option<WriteBorrow<R>> {
         let res_id = ResourceId::new::<R>();
 
@@ -172,6 +192,7 @@ impl ResourceMap {
         })
     }
 
+    /// Returns true if the resource is registered.
     pub fn has_value<R>(&self) -> bool
     where
         R: Resource,
@@ -179,37 +200,37 @@ impl ResourceMap {
         self.has_value_raw(ResourceId::new::<R>())
     }
 
-    pub fn has_value_raw(&self, id: ResourceId) -> bool {
+    fn has_value_raw(&self, id: ResourceId) -> bool {
         self.resources.contains_key(&id)
     }
 
+    /// Iterate all ResourceIds within the dictionary
     pub fn keys(&self) -> impl Iterator<Item = &ResourceId> {
         self.resources.iter().map(|x| x.0)
     }
 }
 
-//
-// DataRequirement base trait
-//
+/// DataRequirement base trait, which underlies Read<T> and Write<T> requests
 pub trait DataRequirement<'a> {
     type Borrow: DataBorrow;
 
     fn fetch(resource_map: &'a ResourceMap) -> Self::Borrow;
 }
 
+// Implementation for () required because we build support for (), (A), (A, B), (A, B, ...) inductively
 impl<'a> DataRequirement<'a> for () {
     type Borrow = ();
 
     fn fetch(_: &'a ResourceMap) -> Self::Borrow {}
 }
 
-//
-// Read
-//
+/// This type represents requesting read access to T. If T is not registered, trying to fill this
+/// request will be fatal
 pub struct Read<T: Resource> {
     phantom_data: PhantomData<T>,
 }
 
+/// Same as `Read`, but will return None rather than being fatal
 pub type ReadOption<T> = Option<Read<T>>;
 
 impl<'a, T: Resource> DataRequirement<'a> for Read<T> {
@@ -228,13 +249,13 @@ impl<'a, T: Resource> DataRequirement<'a> for Option<Read<T>> {
     }
 }
 
-//
-// Write
-//
+/// This type represents requesting write access to T. If T is not registered, trying to fill this
+/// request will be fatal
 pub struct Write<T: Resource> {
     phantom_data: PhantomData<T>,
 }
 
+/// Same as `Write`, but will return None rather than being fatal
 pub type WriteOption<T> = Option<Write<T>>;
 
 impl<'a, T: Resource> DataRequirement<'a> for Write<T> {
@@ -253,16 +274,14 @@ impl<'a, T: Resource> DataRequirement<'a> for Option<Write<T>> {
     }
 }
 
-//
-// Borrow base trait
-//
+/// Borrow base trait. This base trait is required to allow inductively composing tuples of ReadBorrow/WriteBorrow
+/// i.e. (), (A), (A, B), (A, B, ...) inductively
 pub trait DataBorrow {}
 
+// Implementation for () required because we build support for (), (A), (A, B), (A, B, ...) inductively
 impl DataBorrow for () {}
 
-//
-// ReadBorrow
-//
+/// Represents a filled read-only request for T
 pub struct ReadBorrow<'a, T> {
     inner: Ref<'a, dyn Resource>,
     phantom: PhantomData<&'a T>,
@@ -291,9 +310,7 @@ impl<'a, T> Clone for ReadBorrow<'a, T> {
     }
 }
 
-//
-// WriteBorrow
-//
+/// Represents a filled read/write request for T
 pub struct WriteBorrow<'a, T> {
     inner: RefMut<'a, dyn Resource>,
     phantom: PhantomData<&'a mut T>,
@@ -322,6 +339,7 @@ where
     }
 }
 
+// This macro is used to inductively build tuples i.e. (), (A), (A, B), (A, B, ...) inductively
 macro_rules! impl_data {
     ( $($ty:ident),* ) => {
 
@@ -356,6 +374,7 @@ mod impl_data {
 
     use super::*;
 
+    // Build tuples for DataBorrow/DataRequirement i.e. (), (A), (A, B), (A, B, ...) inductively
     impl_data!(A);
     impl_data!(A, B);
     impl_data!(A, B, C);

@@ -1,3 +1,5 @@
+//! A collection of utilities used within minimum
+
 mod scope_timer;
 pub use scope_timer::ScopeTimer;
 

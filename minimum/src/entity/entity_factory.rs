@@ -1,3 +1,8 @@
+//! This module implements support for deferred construction of entities and their components.
+//!
+//! For the time being, minimum will only be aware of `EntityFactory.` You can write your own factories
+//! but minimum would not be aware of them, so you'd need to be responsible for triggering the creation
+//! logic yourself.
 use crate::ComponentCreator;
 use crate::EntityRef;
 use crate::EntitySet;
@@ -5,10 +10,52 @@ use crate::ResourceMap;
 
 use std::collections::VecDeque;
 
-//
-// Create entity with list of components
-//
+/// Interface for any EntityPrototype, which allows for deferred construction of entities/components.
+///
+/// Construction is deferred until EntitySet::update is called.
+pub trait EntityPrototype: Send + Sync {
+    fn create(&self, resource_map: &ResourceMap, entity: &EntityRef);
+}
+
+/// A factory for EntityPrototype. EntitySet takes care of calling flush_creates for you.
+///
+/// This class, and its integration with EntitySet, is a convenience for allowing deferred entity construction.
+/// It is not necessary to use it or EntityPrototype.
+pub struct EntityFactory {
+    /// Entities that we should create
+    prototypes: VecDeque<Box<dyn EntityPrototype>>,
+}
+
+impl EntityFactory {
+    /// Creates an empty factory
+    pub(crate) fn new() -> Self {
+        EntityFactory {
+            prototypes: VecDeque::new(),
+        }
+    }
+
+    /// Enqueues an entity to create. This will occur when flush_creates is called.
+    pub fn enqueue_create(&mut self, prototype: Box<dyn EntityPrototype>) {
+        self.prototypes.push_back(prototype);
+    }
+
+    //TODO: Redesign this so that we batch-create all components/entities rather than do them one-by-one
+    /// Creates all queue entities
+    pub(crate) fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &mut EntitySet) {
+        if self.prototypes.is_empty() {
+            return;
+        }
+
+        for p in self.prototypes.drain(..) {
+            let entity = entity_set.allocate_get();
+            p.create(resource_map, &entity);
+        }
+    }
+}
+
+/// Represents an entity that can be created and the components it should start out with
 pub struct BasicEntityPrototype {
+    /// Prototypes for the components to place on the entity
     components: Vec<Box<dyn ComponentCreator>>,
 }
 
@@ -22,40 +69,6 @@ impl EntityPrototype for BasicEntityPrototype {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
         for c in &self.components {
             c.enqueue_create(resource_map, &entity.handle());
-        }
-    }
-}
-
-pub trait EntityPrototype: Send + Sync {
-    fn create(&self, resource_map: &ResourceMap, entity: &EntityRef);
-}
-
-//
-// Entity factory
-//
-pub struct EntityFactory {
-    prototypes: VecDeque<Box<dyn EntityPrototype>>,
-}
-
-impl EntityFactory {
-    pub fn new() -> Self {
-        EntityFactory {
-            prototypes: VecDeque::new(),
-        }
-    }
-
-    pub fn enqueue_create(&mut self, prototype: Box<dyn EntityPrototype>) {
-        self.prototypes.push_back(prototype);
-    }
-
-    pub fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &mut EntitySet) {
-        if self.prototypes.is_empty() {
-            return;
-        }
-
-        for p in self.prototypes.drain(..) {
-            let entity = entity_set.allocate_get();
-            p.create(resource_map, &entity);
         }
     }
 }

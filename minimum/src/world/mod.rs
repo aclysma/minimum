@@ -1,3 +1,4 @@
+//! Stitches together all components of minimum.
 use crate::resource::{Resource, ResourceMap};
 
 use crate::component::{
@@ -7,12 +8,15 @@ use crate::component::{
 
 use crate::entity::{EntityFactory, EntitySet, PendingDeleteComponent};
 
+/// A builder for setting up a `World`
 pub struct WorldBuilder {
     resource_map: ResourceMap,
     default_component_registry: ComponentRegistry,
 }
 
 impl WorldBuilder {
+    /// Creates an empty world builder.. without resources and without any components registered.
+    /// Internal-only resources/components will be set up as well.
     pub fn new() -> Self {
         WorldBuilder {
             resource_map: ResourceMap::new(),
@@ -20,6 +24,7 @@ impl WorldBuilder {
         }
     }
 
+    // Add a resource to the map
     pub fn with_resource<R>(mut self, r: R) -> Self
     where
         R: Resource,
@@ -29,7 +34,7 @@ impl WorldBuilder {
     }
 
     //TODO: The storage/factory types here are rendundant and a user could possibly pass a component/storage that doesn't match
-    //TODO: I'd rather not have the systems layer aware of entities/components.
+    /// Add a component type
     pub fn with_component<C: Component, S: ComponentStorage<C> + 'static>(
         mut self,
         component_storage: S,
@@ -39,6 +44,8 @@ impl WorldBuilder {
         self
     }
 
+    /// Add a component type, but set it up with a custom ComponentFreeHandler. This is an extension point for handling
+    /// custom cleanup logic for components
     pub fn with_component_and_free_handler<
         C: Component,
         S: ComponentStorage<C> + 'static,
@@ -53,6 +60,7 @@ impl WorldBuilder {
         self
     }
 
+    /// Adds a component factory. Multiple factories are allowed per component type.
     pub fn with_component_factory<P: ComponentPrototype, F: ComponentFactory<P>>(
         mut self,
         component_factory: F,
@@ -63,13 +71,15 @@ impl WorldBuilder {
         self
     }
 
-    pub fn insert<R>(&mut self, r: R)
+    /// Adds a resource type/instance
+    pub fn insert_resource<R>(&mut self, r: R)
     where
         R: Resource,
     {
         self.resource_map.insert(r);
     }
 
+    /// Constructs a resource map with all minimum types properly set up
     pub fn build(mut self) -> ResourceMap {
         self = self.with_resource(EntityFactory::new());
         self = self.with_component(<PendingDeleteComponent as Component>::Storage::new());
