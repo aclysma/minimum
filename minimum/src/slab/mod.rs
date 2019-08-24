@@ -1,11 +1,26 @@
-//! Several Slab types with their own APIs/tradeoffs.
+//! Several slab types with their own APIs/tradeoffs.
+//!
+//! Some attempt is made to have the reuse/build on each other. For example:
+//! * KeyedRcSlab -> RcSlab -> GenSlab
+//!
+//! GenSlab probably could contain a RawSlab, but doesn't for now
+//!
+//! Most operations are O(1), but there is risk of having to resize a vector. It's recommended in
+//! a shipped game that you pre-allocate the size you need to avoid this.
 
-// u32 should be enough, even at 120fps, one allocation per frame, it would take
-// more than a year to exhaust
+///TODO: In debug mode, we could put protections for using a key with the wrong slab
+///TODO: Better diagnostics/tracking
+
+/// Scalar type for tracking element generation
+///
+/// u32 should be enough, even at 120fps, one allocation per frame, it would take
+/// more than a year to exhaust
 type GenerationCounterT = u32;
 
-// Realistically we shouldn't have 4 billion of something.. (if that's not the case.. probably
-// want bespoke storage for it in any case)
+/// Scalar type for the count of elements of a T
+///
+/// Realistically we shouldn't have 4 billion of something.. and if we do, it's reasonable to expect
+/// someone to write custom storage code for it
 type SlabIndexT = u32;
 
 mod gen_slab;

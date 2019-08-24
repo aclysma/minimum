@@ -4,7 +4,7 @@ use super::SlabIndexT;
 use std::sync::Arc;
 use std::sync::Weak;
 
-//TODO: Since we have Arc indirection, is a generation index really necessary?
+/// A key to access values in RcSlab
 pub struct RcSlabEntry<T> {
     slab_key: Arc<GenSlabKey<T>>,
 }
@@ -49,6 +49,7 @@ impl<T> std::fmt::Debug for RcSlabEntry<T> {
     }
 }
 
+/// A key to access values in RcSlab
 pub struct WeakSlabEntry<T> {
     slab_key: Weak<GenSlabKey<T>>,
 }
@@ -80,22 +81,41 @@ impl<T> WeakSlabEntry<T> {
 //    }
 //}
 
+//TODO: Would it be safe to simply use RawSlab here? The current API might make it impossible to end
+// up with stale keys
+
+/// A GenSlab where rather than explicitly calling allocate/free, allocate returns a reference-counted
+/// handle. Update() must be called regularly. This frees elements that are no longer referenced.
+///
+/// You must call update to flush any old values. There are a few reasons why this design was chosen:
+/// - Mutating any state within RcSlab can be tricky
+/// - Don't want overhead of RcSlabKey keeping a pointer back to its owner.
 pub struct RcSlab<T> {
     slab: GenSlab<T>,
     entries: Vec<RcSlabEntry<T>>,
 }
 
 impl<T> RcSlab<T> {
+
+    /// Returns an empty RcSlab
     pub fn new() -> Self {
-        let initial_count: SlabIndexT = 32;
-        let entries = Vec::with_capacity(initial_count as usize);
+        Self::with_capacity(32)
+    }
+
+    /// Return an empty but presized RcSlab
+    pub fn with_capacity(capacity: SlabIndexT) -> Self {
+        let entries = Vec::with_capacity(capacity as usize);
 
         RcSlab::<T> {
-            slab: GenSlab::<T>::new(),
+            slab: GenSlab::<T>::with_capacity(capacity),
             entries: entries,
         }
     }
 
+    /// Allocates a slot, returning a SlabEntry. Elements in this slab are reference-counted.
+    /// Unreferenced elements are removed when update() is called
+    ///
+    /// Allocation can cause vectors to be resized. Use `with_capacity` to avoid this.
     pub fn allocate(&mut self, value: T) -> RcSlabEntry<T> {
         let key = self.slab.allocate(value);
         let entry = RcSlabEntry::new(key);
@@ -103,30 +123,38 @@ impl<T> RcSlab<T> {
         entry
     }
 
+    /// Returns true if the entry exists. If it doesn't exist, it implies you've used the
+    /// wrong key with the wrong slab
     pub fn exists(&self, slab_entry: &RcSlabEntry<T>) -> bool {
         self.slab.exists(&*slab_entry.slab_key)
     }
 
+    /// Get the element associated with the given key
     pub fn get(&self, slab_entry: &RcSlabEntry<T>) -> &T {
         self.slab.get(&*slab_entry.slab_key).unwrap()
     }
 
+    /// Get the element associated with the given key
     pub fn get_mut(&mut self, slab_entry: &RcSlabEntry<T>) -> &mut T {
         self.slab.get_mut(&*slab_entry.slab_key).unwrap()
     }
 
+    /// Iterate all values
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.slab.iter()
     }
 
+    /// Iterate all values
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.slab.iter_mut()
     }
 
+    /// Return count of allocated values
     pub fn count(&self) -> usize {
         self.slab.count()
     }
 
+    /// Must be called regularly to detect and remove values that are no longer referenced
     pub fn update(&mut self) {
         for index in (0..self.entries.len()).rev() {
             if Arc::strong_count(&self.entries[index].slab_key) == 1 {

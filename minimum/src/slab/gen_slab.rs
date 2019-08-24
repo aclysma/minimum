@@ -3,13 +3,17 @@ use super::GenerationIndex;
 use super::SlabIndexT;
 use std::marker::PhantomData;
 
-//TODO: Do I need something that doesn't have generations in it?
-// Maybe this should be a DenseVec instead of a slab
+//TODO: Seems like this could be rewritten to use RawSlab internally?
 
+/// A key to use with a GenSlab. Internally, it holds an element index and a generation index
 #[derive(Copy, Eq)]
 pub struct GenSlabKey<T> {
+    /// Raw index to location within the slab
     index: SlabIndexT,
+
+    /// Generation index of this element
     generation_index: GenerationIndex,
+
     phantom_data: PhantomData<T>,
 }
 
@@ -62,24 +66,32 @@ impl<T> std::fmt::Debug for GenSlabKey<T> {
     }
 }
 
-// The pool is responsible for allocation and deletion
+/// A slab where each slot is a T with a generation
+///
+/// A typical use-case would be having a pool of elements where you explicitly want to control
+/// when allocation/deallocation happens, but other code could have indexes into the pool. This
+/// slab would prevent accessing a slot in the pool with a stale key
 pub struct GenSlab<T> {
-    // List of actual components
+    /// List of actual Ts
     storage: Vec<Generation<T>>,
 
-    // List of unused components, using VecDeque means we reuse values FIFO. This is helpful
-    // for debugging and slows down how quickly we go through generations
+    /// List of unused slot indexes
     free_list: Vec<SlabIndexT>,
 }
 
 impl<T> GenSlab<T> {
+    /// Create an empty GenSlab
     pub fn new() -> Self {
-        let initial_count: SlabIndexT = 32;
-        let mut storage = Vec::with_capacity(initial_count as usize);
-        let mut free_list = Vec::with_capacity(initial_count as usize);
+        GenSlab::with_capacity(32)
+    }
+
+    /// Create an empty but presized GenSlab
+    pub fn with_capacity(capacity: SlabIndexT) -> Self {
+        let mut storage = Vec::with_capacity(capacity as usize);
+        let mut free_list = Vec::with_capacity(capacity as usize);
 
         // reverse count so index 0 is at the top of the free list
-        for index in (0..initial_count).rev() {
+        for index in (0..capacity).rev() {
             storage.push(Generation::<T>::new());
             free_list.push(index);
         }
@@ -87,6 +99,9 @@ impl<T> GenSlab<T> {
         GenSlab { storage, free_list }
     }
 
+    /// Insert a T into the slab. A generation-aware key is returned
+    ///
+    /// Allocation can cause vectors to be resized. Use `with_capacity` to avoid this.
     pub fn allocate(&mut self, value: T) -> GenSlabKey<T> {
         let index = self.free_list.pop();
 
@@ -110,8 +125,8 @@ impl<T> GenSlab<T> {
         }
     }
 
+    /// Remove the T from the slab. Fatal is the element with the given generation does not exist
     pub fn free(&mut self, slab_key: &GenSlabKey<T>) {
-        //println!("push slab index {}", slab_key.index);
         assert!(
             self.storage[slab_key.index as usize]
                 .get(slab_key.generation_index)
@@ -122,34 +137,47 @@ impl<T> GenSlab<T> {
         self.free_list.push(slab_key.index);
     }
 
+    /// Determine if the given element/generation exists
     pub fn exists(&self, slab_key: &GenSlabKey<T>) -> bool {
         // Non-mutable return value so we can return a ref to the value in the vec
         self.storage[slab_key.index as usize].exists(slab_key.generation_index)
     }
 
+    /// Try to get the given element
     pub fn get(&self, slab_key: &GenSlabKey<T>) -> Option<&T> {
         // Non-mutable return value so we can return a ref to the value in the vec
         self.storage[slab_key.index as usize].get(slab_key.generation_index)
     }
 
+    /// Try to get the given element
     pub fn get_mut(&mut self, slab_key: &GenSlabKey<T>) -> Option<&mut T> {
         // Mutable reference, and we don't want the caller messing with the Option in the vec,
         // so create a new Option with a mut ref to the value in the vec
         self.storage[slab_key.index as usize].get_mut(slab_key.generation_index)
     }
 
+    /// Iterate all Ts
     pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.storage.iter().filter_map(|x| x.peek())
+        self.storage.iter().filter_map(|x| x.get_unchecked())
     }
 
+    /// Iterate all Ts
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.storage.iter_mut().filter_map(|x| x.peek_mut())
+        self.storage.iter_mut().filter_map(|x| x.get_unchecked_mut())
     }
 
+    /// Get the count of allocated Ts
     pub fn count(&self) -> usize {
         self.storage.len() - self.free_list.len()
     }
 
+
+    /// This is used to convert an index to the entity handle. It is dangerous but situationally useful.
+    ///
+    /// It can be dangerous to use since it's possible to use the wrong "version" of
+    /// an instance. (For example if entity in slot 5 is destroyed and created, and a component attached
+    /// to the "old" entity in slot 5 tried to get the entity handle of whatever is in slot 5, it
+    /// could end up getting associated with the wrong entity)
     pub fn upgrade_index_to_handle(&self, index: SlabIndexT) -> Option<GenSlabKey<T>> {
         let index_usize = index as usize;
         if !self.storage[index_usize].is_none() {

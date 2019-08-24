@@ -1,14 +1,26 @@
 use super::GenerationCounterT;
 
+/// Represents a particular instance of a Generation. For example, if a Generation is set,
+/// cleared, then set again, the second instance will have a different generation index than the first
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub struct GenerationIndex(GenerationCounterT);
 
+/// Wraps a T, requiring a generation index to access it. Used for scenarios where you have a pool of
+/// Ts that may change, and you want to index into a specific instance, but with detection for if
+/// the index is stale.
+///
+/// This data structure is assert/panic-happy because mistakes in using it can imply subtle bugs in
+/// downstream code.
 pub struct Generation<T> {
+    /// A counter that increments when free() is called
     generation_index: GenerationIndex,
+
+    /// Underlying T
     value: Option<T>,
 }
 
 impl<T> Generation<T> {
+    /// Create a cleared Generation<T>
     pub fn new() -> Self {
         Generation {
             generation_index: GenerationIndex(0),
@@ -16,10 +28,12 @@ impl<T> Generation<T> {
         }
     }
 
+    /// Returns true if the element is not None, and matches the given generation
     pub fn exists(&self, generation: GenerationIndex) -> bool {
         self.value.is_some() && self.generation_index == generation
     }
 
+    /// Get the value, but only if the given generation index isn't stale
     pub fn get(&self, generation: GenerationIndex) -> Option<&T> {
         //println!("get self: {} param: {}", self.generation_index.0, generation.0);
 
@@ -31,6 +45,7 @@ impl<T> Generation<T> {
         }
     }
 
+    /// Get the value, but only if the given generation index isn't stale
     pub fn get_mut(&mut self, generation: GenerationIndex) -> Option<&mut T> {
         //println!("get self: {} param: {}", self.generation_index.0, generation.0);
 
@@ -42,6 +57,9 @@ impl<T> Generation<T> {
         }
     }
 
+    /// Set the value. Fatal if a value already exists. It's called allocate to imply that you
+    /// must call free before calling allocate again. (Partly to detect errors in usage, and partly
+    /// because free increments generation_index
     pub fn allocate(&mut self, value: T) -> GenerationIndex {
         assert!(
             self.value.is_none(),
@@ -53,6 +71,7 @@ impl<T> Generation<T> {
         self.generation_index
     }
 
+    /// Clear the value. Fatal if the generation index is stale.
     pub fn free(&mut self, generation_index: GenerationIndex) {
         assert!(
             self.value.is_some(),
@@ -67,18 +86,22 @@ impl<T> Generation<T> {
         //println!("free generation {}", self.generation_index.0);
     }
 
+    /// Returns true if no value exists
     pub fn is_none(&self) -> bool {
         self.value.is_none()
     }
 
-    pub fn peek(&self) -> Option<&T> {
+    /// Get a ref to the inner value, but without checking the generation
+    pub fn get_unchecked(&self) -> Option<&T> {
         self.value.as_ref()
     }
 
-    pub fn peek_mut(&mut self) -> Option<&mut T> {
+    /// Get a mut ref to the inner value, but without checking the generation
+    pub fn get_unchecked_mut(&mut self) -> Option<&mut T> {
         self.value.as_mut()
     }
 
+    /// Get the current generation index.
     pub fn generation_index(&self) -> GenerationIndex {
         assert!(!self.is_none());
         self.generation_index

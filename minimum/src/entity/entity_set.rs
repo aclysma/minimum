@@ -73,7 +73,6 @@ impl EntitySet {
     /// Get an EntityRef for the given entity. Returns None if the entity cannot be found. The EntityRef
     /// allows for adding/removing components from the entity
     pub fn get_entity_ref(&self, entity_handle: &EntityHandle) -> Option<EntityRef> {
-        let handle = (*entity_handle).clone();
         let e = self.slab.get(entity_handle)?;
         Some(EntityRef::new(e))
     }
