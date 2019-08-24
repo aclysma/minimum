@@ -30,7 +30,7 @@ mod tasks;
 
 use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
-use framework::{CloneComponentFactory, CloneComponentPrototype};
+use framework::CloneComponentFactory;
 use minimum::component::Component;
 use minimum::resource::ResourceMap;
 

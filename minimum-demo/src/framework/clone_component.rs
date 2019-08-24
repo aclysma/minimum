@@ -7,9 +7,7 @@ use minimum::ResourceMap;
 use named_type::NamedType;
 
 use imgui_inspect::InspectRenderDefault;
-use std::collections::VecDeque;
 
-use failure::_core::marker::PhantomData;
 use imgui_inspect::InspectArgsDefault;
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits

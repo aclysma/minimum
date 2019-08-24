@@ -21,6 +21,7 @@ pub mod world;
 
 pub use dispatch::DispatchControl;
 
+pub use entity::BasicEntityPrototype;
 pub use entity::Entity;
 pub use entity::EntityFactory;
 pub use entity::EntityHandle;
@@ -28,7 +29,6 @@ pub use entity::EntityPrototype;
 pub use entity::EntityRef;
 pub use entity::EntitySet;
 pub use entity::PendingDeleteComponent;
-pub use entity::BasicEntityPrototype;
 
 pub use component::BasicComponentFactory;
 pub use component::BasicComponentPrototype;

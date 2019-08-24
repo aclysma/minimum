@@ -1,12 +1,9 @@
-use crate::Component;
 use crate::ComponentCreator;
-use crate::ComponentPrototype;
+use crate::EntityRef;
 use crate::EntitySet;
 use crate::ResourceMap;
-use crate::{BasicComponentPrototype, EntityHandle, EntityRef};
 
 use std::collections::VecDeque;
-use std::sync::Mutex;
 
 //
 // Create entity with list of components

@@ -6,9 +6,9 @@ mod entity_set;
 
 pub use entity::Entity;
 pub use entity::EntityRef;
+pub use entity_factory::BasicEntityPrototype;
 pub use entity_factory::EntityFactory;
 pub use entity_factory::EntityPrototype;
-pub use entity_factory::BasicEntityPrototype;
 pub use entity_set::EntitySet;
 
 mod pending_delete;

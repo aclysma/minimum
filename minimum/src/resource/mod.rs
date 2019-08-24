@@ -1,7 +1,11 @@
-// This implements a type system for expressing read/write dependencies.
-//
-// Lots of inspiration taken from shred for how to create a type system
-// to express read/write dependencies
+//! Allows placing resources (i.e. "global" data) in a dictionary and looking it up by type. The data
+//! could be "global" systems, component storages, component factories, etc.
+//!
+//! This implements a type system for expressing read/write dependencies. Many readers and single
+//! writers are allowed, but not both at the same time. This is checked at runtime, not compile time.
+//!
+//! Lots of inspiration taken from `shred` for how to create a type system
+//! to express read/write dependencies
 
 use hashbrown::HashMap;
 use mopa::Any;
@@ -15,6 +19,8 @@ use crate::util::{TrustCell, TrustCellRef as Ref, TrustCellRefMut as RefMut};
 //
 use std::any::TypeId;
 
+/// Every type can be converted to a `ResourceId`. The ResourceId is used to look up the type's value
+/// in the `ResourceMap`
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ResourceId {
     type_id: TypeId,
@@ -30,23 +36,20 @@ impl ResourceId {
     }
 }
 
-//
-// Resource
-//
+// Any data that can be stored in the ResourceMap must implement this trait
 pub trait Resource: Any + Send + Sync + 'static {}
-
-mod __resource_mopafy_scope {
-    #![allow(clippy::all)]
-
-    use mopa::mopafy;
-
-    use super::Resource;
-
-    mopafy!(Resource);
-}
 
 impl<T> Resource for T where T: Any + Send + Sync {}
 
+// Used for downcastic
+mod __resource_mopafy_scope {
+    #![allow(clippy::all)]
+    use super::Resource;
+    use mopa::mopafy;
+    mopafy!(Resource);
+}
+
+/// Builder for creating a ResourceMap
 pub struct ResourceMapBuilder {
     resource_map: ResourceMap,
 }
@@ -78,9 +81,7 @@ impl ResourceMapBuilder {
     }
 }
 
-//
-// ResourceMap
-//
+/// ResourceMap
 #[derive(Default)]
 pub struct ResourceMap {
     resources: HashMap<ResourceId, TrustCell<Box<dyn Resource>>>,

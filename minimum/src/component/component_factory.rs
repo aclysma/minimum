@@ -1,10 +1,7 @@
-use crate::Component;
 use crate::EntityHandle;
 use crate::EntitySet;
 use crate::Resource;
 use crate::ResourceMap;
-use named_type::NamedType;
-use std::collections::VecDeque;
 
 /// A minimal interface for attaching a component specified by a prototype to an entity
 ///
@@ -16,7 +13,6 @@ use std::collections::VecDeque;
 pub trait ComponentCreator: Sync + Send {
     fn enqueue_create(&self, resource_map: &ResourceMap, entity_handle: &EntityHandle);
 }
-
 
 /// General component prototype.. it knows the factory type that can construct it, and queue_create()
 /// is implemented so that we can simply dynamic dispatch to enqueue the prototype

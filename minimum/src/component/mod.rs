@@ -1,6 +1,8 @@
-//! Components can be added or removed from entities. When entities are destroyed, components owned by
-//! those entities are released. Allocation and deallocation by default are deferred by default. This
-//! improves efficiency, and makes allocation/deallocation happen at a consistent point in the update loop,
+//! Components can be added or removed from entities.
+//!
+//! When entities are destroyed, components owned by those entities are released. Allocation and
+//! deallocation by default are deferred by default. This improves efficiency, and makes
+//! allocation/deallocation happen at a consistent point in the update loop,
 //! which can lead to eliminating some timing bugs.
 //!
 //! Minimum is responsible for
@@ -50,7 +52,6 @@ pub use component_factory::ComponentPrototype;
 pub use registry::ComponentFreeHandler;
 pub use registry::ComponentRegistry;
 pub use slab_storage::SlabComponentStorage;
-use std::marker::PhantomData;
 pub use vec_storage::VecComponentStorage;
 
 mod basic;

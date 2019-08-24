@@ -7,7 +7,6 @@ use minimum::ResourceMap;
 use std::marker::PhantomData;
 
 use imgui_inspect::InspectArgsDefault;
-use mopa::Any;
 
 //
 // Interface for a registered component type
@@ -47,8 +46,6 @@ where
     fn render(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle], ui: &imgui::Ui) {
         let storage = resource_map.fetch::<<T as Component>::Storage>();
 
-        use minimum::component::ComponentStorage;
-
         let mut data: Vec<&T> = vec![];
         //let mut all_entities_have_component = true;
         for entity_handle in entity_handles {
@@ -75,8 +72,6 @@ where
         ui: &imgui::Ui,
     ) {
         let mut storage = resource_map.fetch_mut::<<T as Component>::Storage>();
-
-        use minimum::component::ComponentStorage;
 
         let mut data: Vec<&mut T> = vec![];
         //let mut all_entities_have_component = true;
@@ -107,12 +102,15 @@ where
 trait RegisteredComponentPrototypeTrait: Send + Sync {
     fn render(
         &self,
-        prototypes: &HashMap<core::any::TypeId, Vec<&Box<PersistentComponentPrototype>>>,
+        prototypes: &HashMap<core::any::TypeId, Vec<&Box<dyn PersistentComponentPrototype>>>,
         ui: &imgui::Ui,
     );
     fn render_mut(
         &self,
-        prototypes: &mut HashMap<core::any::TypeId, Vec<&mut Box<PersistentComponentPrototype>>>,
+        prototypes: &mut HashMap<
+            core::any::TypeId,
+            Vec<&mut Box<dyn PersistentComponentPrototype>>,
+        >,
         ui: &imgui::Ui,
     );
 }
@@ -143,7 +141,7 @@ where
 {
     fn render(
         &self,
-        prototypes: &HashMap<std::any::TypeId, Vec<&Box<PersistentComponentPrototype>>>,
+        prototypes: &HashMap<std::any::TypeId, Vec<&Box<dyn PersistentComponentPrototype>>>,
         ui: &imgui::Ui,
     ) {
         if let Some(values) = prototypes.get(&std::any::TypeId::of::<T>()) {
@@ -164,7 +162,7 @@ where
 
     fn render_mut(
         &self,
-        prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<PersistentComponentPrototype>>>,
+        prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn PersistentComponentPrototype>>>,
         ui: &imgui::Ui,
     ) {
         if let Some(values) = prototypes.get_mut(&std::any::TypeId::of::<T>()) {
@@ -280,7 +278,8 @@ impl InspectorRegistry {
             let mut locks = vec![];
 
             let mut prototypes =
-                HashMap::<core::any::TypeId, Vec<&mut Box<PersistentComponentPrototype>>>::new();
+                HashMap::<core::any::TypeId, Vec<&mut Box<dyn PersistentComponentPrototype>>>::new(
+                );
 
             // Gather all the prototype arcs we will be editing
             let mut storage = resource_map
@@ -309,7 +308,7 @@ impl InspectorRegistry {
                     // As long as we're holding the WriteBorrow on PersistentEntityComponent storage
                     //prototypes_entry.push(&mut *component_prototype);
                     unsafe {
-                        let component_prototype_ptr: *mut Box<PersistentComponentPrototype> =
+                        let component_prototype_ptr: *mut Box<dyn PersistentComponentPrototype> =
                             component_prototype;
                         prototypes_entry.push(&mut *component_prototype_ptr);
                     }

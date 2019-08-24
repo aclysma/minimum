@@ -3,10 +3,10 @@ use crate::framework::CloneComponentPrototype;
 use crate::resources;
 use minimum::entity::EntityPrototype;
 use minimum::Component;
-use minimum::EntityHandle;
+
+use minimum::BasicEntityPrototype;
 use minimum::EntityRef;
 use minimum::ResourceMap;
-use minimum::BasicEntityPrototype;
 
 use std::sync::Arc;
 use std::sync::Mutex;
