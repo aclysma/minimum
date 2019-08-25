@@ -163,14 +163,15 @@ impl<T> GenSlab<T> {
 
     /// Iterate all Ts
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.storage.iter_mut().filter_map(|x| x.get_unchecked_mut())
+        self.storage
+            .iter_mut()
+            .filter_map(|x| x.get_unchecked_mut())
     }
 
     /// Get the count of allocated Ts
     pub fn count(&self) -> usize {
         self.storage.len() - self.free_list.len()
     }
-
 
     /// This is used to convert an index to the entity handle. It is dangerous but situationally useful.
     ///

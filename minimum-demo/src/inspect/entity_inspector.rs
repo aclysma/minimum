@@ -234,8 +234,6 @@ impl InspectorRegistry {
         ui: &imgui::Ui,
     ) {
         let tab_bar_str = imgui::im_str!("Inspector");
-        let persistent_tab_str = imgui::im_str!("Persistent");
-        let runtime_tab_str = imgui::im_str!("Runtime");
 
         unsafe {
             imgui_sys::igBeginTabBar(
@@ -244,29 +242,27 @@ impl InspectorRegistry {
             );
         }
 
+        self.render_persistent_tab(resource_map, entity_handles, ui);
+        self.render_runtime_tab(resource_map, entity_handles, ui);
+
+        unsafe {
+            //imgui_sys::igEndTabItem();
+            imgui_sys::igEndTabBar();
+        }
+    }
+
+    fn render_persistent_tab(
+        &self,
+        resource_map: &ResourceMap,
+        entity_handles: &[EntityHandle],
+        ui: &imgui::Ui,
+    ) {
+        let persistent_tab_str = imgui::im_str!("Persistent");
+
         let tab_is_open;
         unsafe {
             tab_is_open = imgui_sys::igBeginTabItem(
                 persistent_tab_str.as_ptr(),
-                std::ptr::null_mut(),
-                imgui_sys::ImGuiTabItemFlags_None as i32,
-            );
-        }
-
-        if tab_is_open {
-            for rc in &self.registered_components {
-                rc.render_mut(resource_map, entity_handles, ui);
-            }
-
-            unsafe {
-                imgui_sys::igEndTabItem();
-            }
-        }
-
-        let tab_is_open;
-        unsafe {
-            tab_is_open = imgui_sys::igBeginTabItem(
-                runtime_tab_str.as_ptr(),
                 std::ptr::null_mut(),
                 imgui_sys::ImGuiTabItemFlags_None as i32,
             );
@@ -325,10 +321,33 @@ impl InspectorRegistry {
                 imgui_sys::igEndTabItem();
             }
         }
+    }
 
+    fn render_runtime_tab(
+        &self,
+        resource_map: &ResourceMap,
+        entity_handles: &[EntityHandle],
+        ui: &imgui::Ui,
+    ) {
+        let runtime_tab_str = imgui::im_str!("Runtime");
+
+        let tab_is_open;
         unsafe {
-            //imgui_sys::igEndTabItem();
-            imgui_sys::igEndTabBar();
+            tab_is_open = imgui_sys::igBeginTabItem(
+                runtime_tab_str.as_ptr(),
+                std::ptr::null_mut(),
+                imgui_sys::ImGuiTabItemFlags_None as i32,
+            );
+        }
+
+        if tab_is_open {
+            for rc in &self.registered_components {
+                rc.render_mut(resource_map, entity_handles, ui);
+            }
+
+            unsafe {
+                imgui_sys::igEndTabItem();
+            }
         }
     }
 }

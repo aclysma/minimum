@@ -74,9 +74,9 @@ impl<'e> EntityRef<'e> {
 
     // TODO: Cannot support this without calling free handler
     // Remove a component from the entity. Removal is immediate, but the free
-//    pub fn remove_component<T: Component>(&self, storage: &mut T::Storage) {
-//        storage.free(&self.handle);
-//    }
+    //    pub fn remove_component<T: Component>(&self, storage: &mut T::Storage) {
+    //        storage.free(&self.handle);
+    //    }
 
     /// Gets a component for the given entity
     pub fn get_component<'c, T: Component>(&self, storage: &'c T::Storage) -> Option<&'c T> {

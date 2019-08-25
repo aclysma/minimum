@@ -29,18 +29,57 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     // In the examples we only use integer DPI factors, because the UI can get very blurry
     // otherwise. This might or might not be what you want in a real application.
     let hidpi_factor = window.hidpi_factor().round();
-    let font_size = (16.0 * hidpi_factor) as f32;
-    imgui.fonts().add_font(&[imgui::FontSource::TtfData {
+    let font_size = (13.0 * hidpi_factor) as f32;
+
+    let font_1p = imgui::FontSource::TtfData {
         data: include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/assets/mplus-1p-regular.ttf"
         )),
         size_pixels: font_size,
         config: None,
-    }]);
+    };
 
+    // Feather icons
+    let font_feather = {
+        const ICON_GLYPH_RANGE_FEATHER: [u16; 3] = [0xe81b, 0xe92a, 0];
+        let mut font_config = imgui::FontConfig::default();
+        font_config.glyph_ranges = imgui::FontGlyphRanges::from_slice(&ICON_GLYPH_RANGE_FEATHER);
+
+        imgui::FontSource::TtfData {
+            data: include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/feather.ttf")),
+            size_pixels: font_size,
+            config: Some(font_config),
+        }
+    };
+
+    let font_material = {
+        // Material icons
+        const ICON_GLYPH_RANGE_MATERIAL: [u16; 7] = [
+            0xfd24, 0xfd34, // transform/rotate icons
+            0xf3e4, 0xf3e4, // pause
+            0xf40a, 0xf40a, // play
+            0,
+        ];
+        let mut font_config = imgui::FontConfig::default();
+        font_config.glyph_ranges = imgui::FontGlyphRanges::from_slice(&ICON_GLYPH_RANGE_MATERIAL);
+        font_config.glyph_offset = [0.0, 6.0];
+        font_config.glyph_min_advance_x = 16.0;
+
+        imgui::FontSource::TtfData {
+            data: include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/assets/materialdesignicons-webfont.ttf"
+            )),
+            size_pixels: font_size,
+            config: Some(font_config),
+        }
+    };
+
+    imgui
+        .fonts()
+        .add_font(&[font_1p, font_feather, font_material]);
     imgui.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
-
     return imgui;
 }
 

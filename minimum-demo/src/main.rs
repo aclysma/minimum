@@ -253,34 +253,10 @@ fn dispatcher_thread(
             dispatch_ctx.run_task(tasks::EditorDrawShapes),
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_resources(|resource_map| {
-
                 // Draw Inspector
-                if resource_map.fetch::<resources::TimeState>().play_mode == PlayMode::System
-                {
-                    let entity_set = resource_map.fetch::<minimum::EntitySet>();
-                    let selected_entity_handles = {
-                        let selected_components = resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
-                        let mut selected = vec![];
-                        for (entity_handle, _) in selected_components.iter(&entity_set) {
-                            selected.push(entity_handle);
-                        }
-                        selected
-                    };
-
-                    let inspect_registry = resource_map.fetch::<inspect::InspectorRegistry>();
-                    let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
-                    imgui_manager.with_ui(|ui| {
-
-                        //ui.set
-                        ui.window(imgui::im_str!("Inspector"))
-                            .position([0.0, 50.0], imgui::Condition::Once)
-                            .size([200.0, 450.0], imgui::Condition::Once)
-                            .build(|| {
-
-                            inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui);
-                        })
-
-                    });
+                if resource_map.fetch::<resources::TimeState>().play_mode == PlayMode::System {
+                    let _scope_timer = minimum::util::ScopeTimer::new("inspect");
+                    draw_inspector(&resource_map);
                 }
 
                 // Render
@@ -292,28 +268,13 @@ fn dispatcher_thread(
                 // This must be called once per frame to create/destroy entities
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("entity update");
-                    let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
-                    entity_set.update(resource_map);
+                    update_entity_set(resource_map);
                 }
             }),
             // This checks if we need to load a different level or kill the process
             dispatch_ctx.visit_resources_mut(move |resource_map| {
                 let _scope_timer = minimum::util::ScopeTimer::new("end frame");
-                let mut game_control = resource_map.fetch_mut::<resources::GameControl>();
-                let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
-
-                if game_control.terminate_process() {
-                    dispatch_control.end_game_loop();
-                } else if game_control.has_load_level() {
-                    // Unload game state
-                    let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
-                    entity_set.clear(resource_map);
-                    //resource_map.remove::<game::GameState>();
-
-                    // Setup game state
-                    let _level_to_load = game_control.take_load_level();
-                    //resource_map.insert::<physics::Physics>();
-                }
+                end_frame(resource_map)
             }),
         ])
     });
@@ -334,8 +295,56 @@ fn dispatcher_thread(
     resource_map
 }
 
-pub fn render(resource_map: &minimum::resource::ResourceMap) {
+pub fn render(resource_map: &ResourceMap) {
     let window = resource_map.fetch::<winit::window::Window>();
     let mut renderer = resource_map.fetch_mut::<crate::renderer::Renderer>();
     renderer.render(&window, &resource_map);
+}
+
+fn draw_inspector(resource_map: &ResourceMap) {
+    let entity_set = resource_map.fetch::<minimum::EntitySet>();
+    let selected_entity_handles = {
+        let selected_components =
+            resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
+        let mut selected = vec![];
+        for (entity_handle, _) in selected_components.iter(&entity_set) {
+            selected.push(entity_handle);
+        }
+        selected
+    };
+
+    let inspect_registry = resource_map.fetch::<inspect::InspectorRegistry>();
+    let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
+    imgui_manager.with_ui(|ui| {
+        //ui.set
+        ui.window(imgui::im_str!("Inspector"))
+            .position([0.0, 50.0], imgui::Condition::Once)
+            .size([200.0, 450.0], imgui::Condition::Once)
+            .build(|| {
+                inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui);
+            })
+    });
+}
+
+fn update_entity_set(resource_map: &ResourceMap) {
+    let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
+    entity_set.update(resource_map);
+}
+
+fn end_frame(resource_map: &mut ResourceMap) {
+    let mut game_control = resource_map.fetch_mut::<resources::GameControl>();
+    let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
+
+    if game_control.terminate_process() {
+        dispatch_control.end_game_loop();
+    } else if game_control.has_load_level() {
+        // Unload game state
+        let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
+        entity_set.clear(resource_map);
+        //resource_map.remove::<game::GameState>();
+
+        // Setup game state
+        let _level_to_load = game_control.take_load_level();
+        //resource_map.insert::<physics::Physics>();
+    }
 }

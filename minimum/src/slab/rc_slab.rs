@@ -96,7 +96,6 @@ pub struct RcSlab<T> {
 }
 
 impl<T> RcSlab<T> {
-
     /// Returns an empty RcSlab
     pub fn new() -> Self {
         Self::with_capacity(32)

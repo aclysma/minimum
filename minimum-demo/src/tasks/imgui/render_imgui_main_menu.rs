@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ComponentStorage, EntitySet, ReadComponent, Task, TaskContext};
+use minimum::{ComponentStorage, DispatchControl, EntitySet, ReadComponent, Task, TaskContext};
 
 use crate::resources::{
     DebugOptions, GameControl, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
@@ -23,6 +23,7 @@ impl Task for RenderImguiMainMenu {
         ReadComponent<PositionComponent>,
         Read<InputManager>,
         Read<RenderState>,
+        Write<DispatchControl>,
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
@@ -43,51 +44,85 @@ impl Task for RenderImguiMainMenu {
             position_components,
             input_manager,
             render_state,
+            mut dispatch_control,
         ) = data;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             use imgui::im_str;
 
-            //            ui.window(im_str!("Editor")).build(|| {
-            //                let mut b = true;
-            //                ui.show_metrics_window(&mut b);
-            //                ui.show_default_style_editor();
-            //            });
+            if debug_options.show_imgui_metrics {
+                ui.show_metrics_window(&mut debug_options.show_imgui_metrics);
+            }
 
-            let paused = time_state.play_mode == crate::PlayMode::System;
-
-            {
-                let _style_token = if paused {
-                    Some(ui.push_style_color(imgui::StyleColor::MenuBarBg, [0.2, 0.2, 0.2, 1.0]))
-                } else {
-                    None
-                };
-
-                ui.main_menu_bar(|| {
-                    ui.menu(im_str!("File")).build(|| {
-                        ui.menu(im_str!("Load")).build(|| {
-                            for pack in &["placeholder1", "placeholder2", "placeholder3"] {
-                                ui.menu(&im_str!("{}", pack)).build(|| {
-                                    for level in &["level1", "level2", "level3"] {
-                                        let selected = ui.menu_item(&im_str!("{}", level)).build();
-                                        if selected {
-                                            info!("Loading {} {}", pack, level);
-                                            //game_control.set_load_level(level.path.clone());
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                    });
-                    ui.separator();
-
-                    ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_window);
-                    ui.separator();
-
-                    ui.text(im_str!("FPS: {:.1}", time_state.system().fps_smoothed));
-                    ui.separator();
+            if debug_options.show_imgui_style_editor {
+                ui.window(im_str!("Editor")).build(|| {
+                    ui.show_default_style_editor();
                 });
             }
+
+            ui.main_menu_bar(|| {
+                ui.menu(im_str!("File")).build(|| {
+                    ui.menu(im_str!("Load")).build(|| {
+                        for pack in &["placeholder1", "placeholder2", "placeholder3"] {
+                            ui.menu(&im_str!("{}", pack)).build(|| {
+                                for level in &["level1", "level2", "level3"] {
+                                    let selected = ui.menu_item(&im_str!("{}", level)).build();
+                                    if selected {
+                                        info!("Loading {} {}", pack, level);
+                                        //game_control.set_load_level(level.path.clone());
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+
+                ui.menu(im_str!("Windows")).build(|| {
+                    ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_window);
+                    ui.checkbox(
+                        im_str!("ImGui Metrics"),
+                        &mut debug_options.show_imgui_metrics,
+                    );
+                    ui.checkbox(
+                        im_str!("ImGui Style Editor"),
+                        &mut debug_options.show_imgui_style_editor,
+                    );
+                });
+
+                ui.separator();
+
+                let editing = time_state.play_mode == crate::PlayMode::System;
+                if editing {
+                    if ui.menu_item(im_str!("\u{f40a} Play")).build() {
+                        // Clear playmode flags
+                        *dispatch_control.next_frame_context_flags_mut() &=
+                            !(crate::context_flags::PLAYMODE_SYSTEM
+                                | crate::context_flags::PLAYMODE_PAUSED
+                                | crate::context_flags::PLAYMODE_PLAYING);
+
+                        // Set the appropriate ones
+                        *dispatch_control.next_frame_context_flags_mut() |=
+                            crate::context_flags::PLAYMODE_SYSTEM
+                                | crate::context_flags::PLAYMODE_PAUSED
+                                | crate::context_flags::PLAYMODE_PLAYING
+                    }
+                } else {
+                    if ui.menu_item(im_str!("\u{f3e4} Pause")).build() {
+                        *dispatch_control.next_frame_context_flags_mut() &=
+                            !(crate::context_flags::PLAYMODE_SYSTEM
+                                | crate::context_flags::PLAYMODE_PAUSED
+                                | crate::context_flags::PLAYMODE_PLAYING);
+
+                        // Set the appropriate ones
+                        *dispatch_control.next_frame_context_flags_mut() |=
+                            crate::context_flags::PLAYMODE_SYSTEM
+                    }
+                }
+
+                ui.text(im_str!("FPS: {:.1}", time_state.system().fps_smoothed));
+                ui.separator();
+                ui.separator();
+            });
 
             if debug_options.show_window {
                 let bullet_count = bullet_components.count();

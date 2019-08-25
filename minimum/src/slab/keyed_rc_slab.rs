@@ -3,8 +3,8 @@ use std::hash::Hash;
 
 use super::RcSlab;
 use super::RcSlabEntry;
-use super::WeakSlabEntry;
 use super::SlabIndexT;
+use super::WeakSlabEntry;
 
 /// An RcSlab where every value has a unique key. A typical usecase for this would be loading assets
 /// and wanting to quickly determine if a certain asset already exists. Update() must be called regularly.
