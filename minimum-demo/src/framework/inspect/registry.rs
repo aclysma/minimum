@@ -1,4 +1,4 @@
-use crate::constructors::PersistentComponentPrototype;
+use crate::framework::PersistentComponentPrototype;
 use hashbrown::HashMap;
 use minimum::component::ComponentStorage;
 use minimum::Component;
@@ -185,14 +185,14 @@ where
 //
 // ComponentRegistry
 //
-pub struct InspectorRegistry {
+pub struct InspectRegistry {
     registered_components: Vec<Box<dyn RegisteredComponentTrait>>,
     registered_component_prototypes: Vec<Box<dyn RegisteredComponentPrototypeTrait>>,
 }
 
-impl InspectorRegistry {
+impl InspectRegistry {
     pub fn new() -> Self {
-        InspectorRegistry {
+        InspectRegistry {
             registered_components: vec![],
             registered_component_prototypes: vec![],
         }
@@ -206,7 +206,7 @@ impl InspectorRegistry {
     }
 
     pub fn register_component_prototype<
-        T: crate::constructors::PersistentComponentPrototype
+        T: PersistentComponentPrototype
             + 'static
             + imgui_inspect::InspectRenderDefault<T>,
     >(

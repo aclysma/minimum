@@ -1,13 +1,16 @@
-use crate::inspect::common_types::*;
+use crate::framework::inspect::common_types::*;
 use minimum::component::VecComponentStorage;
 use named_type::NamedType;
+use serde::{Serialize, Deserialize};
+use imgui_inspect_derive::Inspect;
 
-#[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
+#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
 pub struct PositionComponent {
     #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_position_updated")]
     position: glm::Vec2,
 
     #[inspect(skip)]
+    #[serde(skip)]
     requires_sync_to_physics: bool,
 }
 
@@ -46,21 +49,4 @@ impl PositionComponent {
 
 impl minimum::Component for PositionComponent {
     type Storage = VecComponentStorage<Self>;
-}
-
-use minimum::component::SlabComponentStorage;
-
-#[derive(Debug, Clone, NamedType)]
-pub struct PositionChangedComponent {
-    position: glm::Vec2,
-}
-
-impl PositionChangedComponent {
-    pub fn new(position: glm::Vec2) -> Self {
-        PositionChangedComponent { position }
-    }
-}
-
-impl minimum::Component for PositionChangedComponent {
-    type Storage = SlabComponentStorage<Self>;
 }

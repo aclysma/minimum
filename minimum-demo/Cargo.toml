@@ -12,7 +12,7 @@ vulkan = ["rendy/vulkan"]
 
 [dependencies]
 # math
-nalgebra        = { version = "0.18", features = [ "sparse" ] }
+nalgebra        = { version = "0.18", features = [ "serde-serialize" ] }
 nalgebra-glm    = "0.4"
 nphysics2d      = "0.11"
 ncollide2d      = "0.19"
@@ -50,9 +50,6 @@ imgui = "0.1.0-pre"
 imgui-sys = "0.1.0-pre"
 imgui-winit-support = { version = "0.1.0-pre", default-features = false, features = ["winit-20"] }
 
-#imgui = { git = 'https://github.com/aclysma/imgui-rs.git' }
-#imgui-winit-support = { git = 'https://github.com/aclysma/imgui-rs.git', default-features = false, features = ["winit-20"] }
-
 # minimum
 minimum = { path = "../minimum", features = ["async_support", "nightly"] }
 #minimum-derive = { path = "../minimum-derive" }
@@ -60,6 +57,8 @@ minimum = { path = "../minimum", features = ["async_support", "nightly"] }
 imgui-inspect = { path = "../../imgui-inspect/imgui-inspect" }
 imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive" }
 
+serde = "1.0"
+serde_json = "1.0"
 
 [dependencies.gfx-backend-vulkan]
 version = "0.2"

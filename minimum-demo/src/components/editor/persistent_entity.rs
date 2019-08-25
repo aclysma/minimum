@@ -1,4 +1,4 @@
-use crate::constructors::PersistentEntityPrototype;
+use crate::framework::PersistentEntityPrototype;
 use minimum::component::SlabComponentStorage;
 use minimum::Component;
 use named_type::NamedType;

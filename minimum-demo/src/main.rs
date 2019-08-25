@@ -23,7 +23,6 @@ mod constructors;
 mod framework;
 mod imgui_themes;
 mod init;
-mod inspect;
 mod renderer;
 mod resources;
 mod tasks;
@@ -31,6 +30,7 @@ mod tasks;
 use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
 use framework::CloneComponentFactory;
+//use framework::CloneComponentPrototypeSerializer;
 use minimum::component::Component;
 use minimum::resource::ResourceMap;
 
@@ -126,7 +126,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         )
         .build();
 
-    let mut inspect_registry = inspect::InspectorRegistry::new();
+    let mut inspect_registry = framework::inspect::InspectRegistry::new();
     inspect_registry.register_component::<components::PositionComponent>();
     inspect_registry.register_component::<components::VelocityComponent>();
     inspect_registry.register_component::<components::DebugDrawCircleComponent>();
@@ -140,9 +140,20 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototype>();
 
+    let mut persist_registry = framework::persist::PersistRegistry::new();
+
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>();
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>();
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>();
+    //persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototype>();
+    //persist_registry.register_component_prototype::<components::EditorShapeComponentPrototype>();
+
     // Assets you want to always have available could be loaded here
 
     resource_map.insert(inspect_registry);
+    resource_map.insert(persist_registry);
     resource_map.insert(init::init_imgui_manager(&resource_map));
     resource_map.insert(init::create_renderer(&resource_map));
 
@@ -313,7 +324,7 @@ fn draw_inspector(resource_map: &ResourceMap) {
         selected
     };
 
-    let inspect_registry = resource_map.fetch::<inspect::InspectorRegistry>();
+    let inspect_registry = resource_map.fetch::<framework::inspect::InspectRegistry>();
     let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
     imgui_manager.with_ui(|ui| {
         //ui.set
@@ -346,5 +357,14 @@ fn end_frame(resource_map: &mut ResourceMap) {
         // Setup game state
         let _level_to_load = game_control.take_load_level();
         //resource_map.insert::<physics::Physics>();
+    }
+
+    if let Some(_save_path) = game_control.take_save_level() {
+        println!("save");
+
+        //let entity_set = resource_map.fetch::<minimum::EntitySet>();
+
+        let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
+        persist_registry.save(resource_map);
     }
 }

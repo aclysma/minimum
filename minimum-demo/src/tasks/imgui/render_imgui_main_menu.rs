@@ -35,7 +35,7 @@ impl Task for RenderImguiMainMenu {
         let (
             time_state,
             mut imgui_manager,
-            mut _game_control,
+            mut game_control,
             mut debug_options,
             physics_manager,
             entity_set,
@@ -75,6 +75,10 @@ impl Task for RenderImguiMainMenu {
                             });
                         }
                     });
+
+                    if ui.menu_item(im_str!("Save")).build() {
+                        game_control.set_save_level(std::path::PathBuf::from("test_save"));
+                    }
                 });
 
                 ui.menu(im_str!("Windows")).build(|| {

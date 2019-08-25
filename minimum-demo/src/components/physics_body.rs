@@ -10,7 +10,7 @@ use nphysics2d::object::BodyHandle;
 use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
-use crate::constructors::PersistentComponentPrototype;
+use crate::framework::PersistentComponentPrototype;
 use named_type::NamedType;
 use std::collections::VecDeque;
 

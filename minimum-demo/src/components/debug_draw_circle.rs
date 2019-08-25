@@ -1,8 +1,10 @@
-use crate::inspect::common_types::*;
+use crate::framework::inspect::common_types::*;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
+use serde::{Serialize, Deserialize};
+use imgui_inspect_derive::Inspect;
 
-#[derive(Debug, Clone, NamedType, imgui_inspect_derive::Inspect)]
+#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
 pub struct DebugDrawCircleComponent {
     #[inspect_slider(min_value = 0.0, max_value = 100.0)]
     radius: f32,
