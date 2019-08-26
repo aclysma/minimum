@@ -9,7 +9,7 @@ use minimum::ResourceMap;
 
 use nphysics2d::object::ColliderHandle;
 
-use crate::framework::PersistentComponentPrototype;
+use crate::framework::FrameworkComponentPrototype;
 use named_type::NamedType;
 use ncollide2d::shape::ShapeHandle;
 use ncollide2d::world::{CollisionGroups, GeometricQueryType};
@@ -86,7 +86,7 @@ impl ComponentPrototype for EditorShapeComponentPrototype {
     type Factory = EditorShapeComponentFactory;
 }
 
-impl PersistentComponentPrototype for EditorShapeComponentPrototype {}
+impl FrameworkComponentPrototype for EditorShapeComponentPrototype {}
 
 //
 // Factory for PhysicsBody components

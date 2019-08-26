@@ -2,7 +2,7 @@ use crate::components;
 use crate::framework::CloneComponentPrototype;
 use crate::resources;
 
-use crate::framework::PersistentEntityPrototype;
+use crate::framework::FrameworkEntityPrototype;
 use minimum::BasicEntityPrototype;
 
 use components::EditorShapeComponentPrototype;
@@ -45,7 +45,7 @@ pub fn create_wall(
         body_component_desc
     };
 
-    let pec = PersistentEntityPrototype::new(
+    let pec = FrameworkEntityPrototype::new(
         std::path::PathBuf::from("testpath"),
         vec![
             Box::new(CloneComponentPrototype::new(

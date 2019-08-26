@@ -4,15 +4,13 @@ pub use registry::PersistRegistry;
 pub use serde::{Serialize, Deserialize};
 use serde::de::DeserializeOwned;
 
-
-//TODO: Get rid of "Typed" suffix
 /// Used for serialization of component prototypes
-pub trait ComponentPrototypeSerializerTyped<T> : Send + Sync {
+pub trait ComponentPrototypeSerializer<T> : Send + Sync {
     fn serialize(prototype: &T) -> Result<String, failure::Error>;
     fn deserialize(data: &str) -> Result<T, failure::Error>;
 }
 
-impl<T> ComponentPrototypeSerializerTyped<T> for T
+impl<T> ComponentPrototypeSerializer<T> for T
     where
         T : Serialize + DeserializeOwned + Sync + Send
 {

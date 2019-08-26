@@ -1,22 +1,22 @@
-use crate::framework::PersistentComponentPrototype;
+use crate::framework::FrameworkComponentPrototype;
 use hashbrown::HashMap;
 use minimum::Component;
 use minimum::ResourceMap;
 use minimum::EntitySet;
 use crate::components::PersistentEntityComponent;
 use std::marker::PhantomData;
-use crate::framework::persist::ComponentPrototypeSerializerTyped;
+use crate::framework::persist::ComponentPrototypeSerializer;
 
 trait RegisteredComponentPrototypeTrait: Send + Sync {
     fn serialize(
         &self,
-        component_prototype: &dyn PersistentComponentPrototype
+        component_prototype: &dyn FrameworkComponentPrototype
     ) -> Result<String, failure::Error>;
 
     fn deserialize(
         &self,
         data: &str
-    ) -> Result<Box<dyn PersistentComponentPrototype>, failure::Error>;
+    ) -> Result<Box<dyn FrameworkComponentPrototype>, failure::Error>;
 }
 
 struct RegisteredComponentPrototype<T>
@@ -35,23 +35,23 @@ impl<T> RegisteredComponentPrototype<T>
 
 impl<T> RegisteredComponentPrototypeTrait for RegisteredComponentPrototype<T>
     where
-        T: PersistentComponentPrototype,
-        T: ComponentPrototypeSerializerTyped<T>
+        T: FrameworkComponentPrototype,
+        T: ComponentPrototypeSerializer<T>
 {
     fn serialize(
         &self,
-        component_prototype: &dyn PersistentComponentPrototype
+        component_prototype: &dyn FrameworkComponentPrototype
     ) -> Result<String, failure::Error> {
         let t = component_prototype.downcast_ref::<T>().unwrap();
 
-        <T as ComponentPrototypeSerializerTyped<T>>::serialize(t)
+        <T as ComponentPrototypeSerializer<T>>::serialize(t)
     }
 
     fn deserialize(
         &self,
         data: &str
-    ) -> Result<Box<dyn PersistentComponentPrototype>, failure::Error> {
-        Ok(Box::new(<T as ComponentPrototypeSerializerTyped<T>>::deserialize(data)?))
+    ) -> Result<Box<dyn FrameworkComponentPrototype>, failure::Error> {
+        Ok(Box::new(<T as ComponentPrototypeSerializer<T>>::deserialize(data)?))
     }
 }
 
@@ -70,7 +70,7 @@ impl PersistRegistry {
         }
     }
 
-    pub fn register_component_prototype<T : PersistentComponentPrototype + ComponentPrototypeSerializerTyped<T>>(&mut self)
+    pub fn register_component_prototype<T : FrameworkComponentPrototype + ComponentPrototypeSerializer<T>>(&mut self)
     {
         self.registered_component_prototypes.insert(
             std::any::TypeId::of::<T>(),
@@ -95,7 +95,7 @@ impl PersistRegistry {
             // Iterate their component prototypes
             for component_prototype in pep.component_prototypes() {
                 let component_prototype_type =
-                    PersistentComponentPrototype::type_id(&**component_prototype);
+                    FrameworkComponentPrototype::type_id(&**component_prototype);
 
                 // Try to save each component prototype
                 println!("{:?} {:?}", entity_handle, component_prototype_type);

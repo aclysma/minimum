@@ -10,7 +10,7 @@ use nphysics2d::object::BodyHandle;
 use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
-use crate::framework::PersistentComponentPrototype;
+use crate::framework::FrameworkComponentPrototype;
 use named_type::NamedType;
 use std::collections::VecDeque;
 
@@ -132,7 +132,7 @@ impl ComponentPrototype for PhysicsBodyComponentPrototype {
     type Factory = PhysicsBodyComponentFactory;
 }
 
-impl PersistentComponentPrototype for PhysicsBodyComponentPrototype {}
+impl FrameworkComponentPrototype for PhysicsBodyComponentPrototype {}
 
 //
 // Factory for PhysicsBody components

@@ -5,8 +5,8 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 use named_type::NamedType;
-use crate::framework::PersistentComponentPrototype;
-use crate::framework::persist::ComponentPrototypeSerializerTyped;
+use crate::framework::FrameworkComponentPrototype;
+use crate::framework::persist::ComponentPrototypeSerializer;
 
 use imgui_inspect::InspectRenderDefault;
 
@@ -42,7 +42,7 @@ impl<T: Component + Clone> ComponentPrototype for CloneComponentPrototype<T> {
     type Factory = CloneComponentFactory<T>;
 }
 
-impl<T: Component + Clone + InspectRenderDefault<T>> PersistentComponentPrototype
+impl<T: Component + Clone + InspectRenderDefault<T>> FrameworkComponentPrototype
 for CloneComponentPrototype<T>
 {
 }
@@ -86,7 +86,7 @@ where
     }
 }
 
-impl<T: Component + Clone + Serialize + DeserializeOwned> ComponentPrototypeSerializerTyped<CloneComponentPrototype<T>> for CloneComponentPrototype<T> {
+impl<T: Component + Clone + Serialize + DeserializeOwned> ComponentPrototypeSerializer<CloneComponentPrototype<T>> for CloneComponentPrototype<T> {
     fn serialize(prototype: &CloneComponentPrototype<T>) -> Result<String, failure::Error> {
         Ok(serde_json::to_string(prototype.inner.data())?)
     }

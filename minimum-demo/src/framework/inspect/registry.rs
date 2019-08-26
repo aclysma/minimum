@@ -1,4 +1,4 @@
-use crate::framework::PersistentComponentPrototype;
+use crate::framework::FrameworkComponentPrototype;
 use hashbrown::HashMap;
 use minimum::component::ComponentStorage;
 use minimum::Component;
@@ -102,14 +102,14 @@ where
 trait RegisteredComponentPrototypeTrait: Send + Sync {
     fn render(
         &self,
-        prototypes: &HashMap<core::any::TypeId, Vec<&Box<dyn PersistentComponentPrototype>>>,
+        prototypes: &HashMap<core::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
     );
     fn render_mut(
         &self,
         prototypes: &mut HashMap<
             core::any::TypeId,
-            Vec<&mut Box<dyn PersistentComponentPrototype>>,
+            Vec<&mut Box<dyn FrameworkComponentPrototype>>,
         >,
         ui: &imgui::Ui,
     );
@@ -117,14 +117,14 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
 
 pub struct RegisteredComponentPrototype<T>
 where
-    T: PersistentComponentPrototype + imgui_inspect::InspectRenderDefault<T>,
+    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderDefault<T>,
 {
     phantom_data: PhantomData<T>,
 }
 
 impl<T> RegisteredComponentPrototype<T>
 where
-    T: PersistentComponentPrototype + imgui_inspect::InspectRenderDefault<T>,
+    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderDefault<T>,
 {
     fn new() -> Self {
         RegisteredComponentPrototype {
@@ -135,13 +135,13 @@ where
 
 impl<T> RegisteredComponentPrototypeTrait for RegisteredComponentPrototype<T>
 where
-    T: PersistentComponentPrototype
+    T: FrameworkComponentPrototype
         + imgui_inspect::InspectRenderDefault<T>
         + named_type::NamedType,
 {
     fn render(
         &self,
-        prototypes: &HashMap<std::any::TypeId, Vec<&Box<dyn PersistentComponentPrototype>>>,
+        prototypes: &HashMap<std::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
     ) {
         if let Some(values) = prototypes.get(&std::any::TypeId::of::<T>()) {
@@ -162,7 +162,7 @@ where
 
     fn render_mut(
         &self,
-        prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn PersistentComponentPrototype>>>,
+        prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
     ) {
         if let Some(values) = prototypes.get_mut(&std::any::TypeId::of::<T>()) {
@@ -206,7 +206,7 @@ impl InspectRegistry {
     }
 
     pub fn register_component_prototype<
-        T: PersistentComponentPrototype
+        T: FrameworkComponentPrototype
             + 'static
             + imgui_inspect::InspectRenderDefault<T>,
     >(
@@ -274,7 +274,7 @@ impl InspectRegistry {
             let mut locks = vec![];
 
             let mut prototypes =
-                HashMap::<core::any::TypeId, Vec<&mut Box<dyn PersistentComponentPrototype>>>::new(
+                HashMap::<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>::new(
                 );
 
             // Gather all the prototype arcs we will be editing
@@ -295,7 +295,7 @@ impl InspectRegistry {
                 let pep = &mut *guard;
                 for component_prototype in pep.component_prototypes_mut() {
                     let component_prototype_type =
-                        PersistentComponentPrototype::type_id(&**component_prototype);
+                        FrameworkComponentPrototype::type_id(&**component_prototype);
                     let prototypes_entry =
                         prototypes.entry(component_prototype_type).or_insert(vec![]);
 
@@ -304,7 +304,7 @@ impl InspectRegistry {
                     // As long as we're holding the WriteBorrow on PersistentEntityComponent storage
                     //prototypes_entry.push(&mut *component_prototype);
                     unsafe {
-                        let component_prototype_ptr: *mut Box<dyn PersistentComponentPrototype> =
+                        let component_prototype_ptr: *mut Box<dyn FrameworkComponentPrototype> =
                             component_prototype;
                         prototypes_entry.push(&mut *component_prototype_ptr);
                     }

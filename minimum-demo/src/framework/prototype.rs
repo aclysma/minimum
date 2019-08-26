@@ -10,10 +10,8 @@ use std::sync::Mutex;
 
 use crate::components::PersistentEntityComponent;
 
-//TODO: Rename these to Framework* i.e. FrameworkComponentPrototype, FrameworkEntityPrototype
-
-// impl ComponentPrototype for PersistentComponentPrototype?
-pub trait PersistentComponentPrototype:
+// impl ComponentPrototype for FrameworkComponentPrototype?
+pub trait FrameworkComponentPrototype:
     minimum::component::ComponentCreator +
     named_type::NamedType +
     mopa::Any
@@ -32,67 +30,67 @@ pub trait NamedType {
             Self: Sized;
 }
 
-impl<T : PersistentComponentPrototype> named_type::NamedType for T {
+impl<T : FrameworkComponentPrototype> named_type::NamedType for T {
     fn type_name() -> &'static str {
         core::any::type_name::<T>()
     }
 }
 */
 
-mopafy!(PersistentComponentPrototype);
+mopafy!(FrameworkComponentPrototype);
 
 
 
 
-pub struct PersistentEntityPrototypeInner {
+pub struct FrameworkEntityPrototypeInner {
     path: std::path::PathBuf,
-    component_prototypes: Vec<Box<dyn PersistentComponentPrototype>>,
+    component_prototypes: Vec<Box<dyn FrameworkComponentPrototype>>,
 }
 
-impl PersistentEntityPrototypeInner {
+impl FrameworkEntityPrototypeInner {
     pub fn path(&self) -> &std::path::PathBuf {
         &self.path
     }
 
-    pub fn component_prototypes(&self) -> &Vec<Box<dyn PersistentComponentPrototype>> {
+    pub fn component_prototypes(&self) -> &Vec<Box<dyn FrameworkComponentPrototype>> {
         &self.component_prototypes
     }
 
     pub fn component_prototypes_mut<'a: 'b, 'b>(
         &'a mut self,
-    ) -> &'b mut Vec<Box<dyn PersistentComponentPrototype>> {
+    ) -> &'b mut Vec<Box<dyn FrameworkComponentPrototype>> {
         &mut self.component_prototypes
     }
 }
 
 #[derive(Clone)]
-pub struct PersistentEntityPrototype {
-    inner: Arc<Mutex<PersistentEntityPrototypeInner>>,
+pub struct FrameworkEntityPrototype {
+    inner: Arc<Mutex<FrameworkEntityPrototypeInner>>,
 }
 
-impl PersistentEntityPrototype {
+impl FrameworkEntityPrototype {
     pub fn new(
         path: std::path::PathBuf,
-        component_prototypes: Vec<Box<dyn PersistentComponentPrototype>>,
+        component_prototypes: Vec<Box<dyn FrameworkComponentPrototype>>,
     ) -> Self {
-        PersistentEntityPrototype {
-            inner: Arc::new(Mutex::new(PersistentEntityPrototypeInner {
+        FrameworkEntityPrototype {
+            inner: Arc::new(Mutex::new(FrameworkEntityPrototypeInner {
                 path,
                 component_prototypes,
             })),
         }
     }
 
-    pub fn get_mut(&self) -> std::sync::MutexGuard<PersistentEntityPrototypeInner> {
+    pub fn get_mut(&self) -> std::sync::MutexGuard<FrameworkEntityPrototypeInner> {
         self.inner.lock().unwrap()
     }
 
-    pub fn inner(&self) -> &Arc<Mutex<PersistentEntityPrototypeInner>> {
+    pub fn inner(&self) -> &Arc<Mutex<FrameworkEntityPrototypeInner>> {
         &self.inner
     }
 }
 
-impl EntityPrototype for PersistentEntityPrototype {
+impl EntityPrototype for FrameworkEntityPrototype {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
         let p = self.get_mut();
         for c in p.component_prototypes() {
