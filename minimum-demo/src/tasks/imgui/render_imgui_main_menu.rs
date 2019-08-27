@@ -91,6 +91,10 @@ impl Task for RenderImguiMainMenu {
                         im_str!("ImGui Style Editor"),
                         &mut debug_options.show_imgui_style_editor,
                     );
+                    ui.checkbox(
+                        im_str!("Entity List"),
+                        &mut debug_options.show_entity_list,
+                    );
                 });
 
                 ui.separator();

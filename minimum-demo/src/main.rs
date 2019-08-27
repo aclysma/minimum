@@ -261,6 +261,7 @@ fn dispatcher_thread(
             dispatch_ctx.run_task(tasks::UpdatePhysics),
             dispatch_ctx.run_task(tasks::PhysicsSyncPost),
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
+            dispatch_ctx.run_task(tasks::RenderImguiEntityList),
             dispatch_ctx.run_task(tasks::EditorUpdateShapesWithPosition),
             dispatch_ctx.run_task(tasks::EditorUpdateCollisionWorld),
             dispatch_ctx.run_task(tasks::EditorHandleInput),
@@ -332,8 +333,8 @@ fn draw_inspector(resource_map: &ResourceMap) {
     imgui_manager.with_ui(|ui| {
         //ui.set
         ui.window(imgui::im_str!("Inspector"))
-            .position([0.0, 50.0], imgui::Condition::Once)
-            .size([200.0, 450.0], imgui::Condition::Once)
+            .position([0.0, 250.0], imgui::Condition::Once)
+            .size([200.0, 300.0], imgui::Condition::Once)
             .build(|| {
                 inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui);
             })

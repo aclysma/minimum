@@ -21,9 +21,6 @@ pub fn create_wall(
 ) {
     let color = glm::Vec4::new(0.0, 1.0, 1.0, 1.0);
 
-    use ncollide2d::shape::{Cuboid, ShapeHandle};
-    let shape = ShapeHandle::new(Cuboid::new(size / 2.0));
-
     let pec = FrameworkEntityPrototype::new(
         std::path::PathBuf::from("testpath"),
         vec![
@@ -37,7 +34,6 @@ pub fn create_wall(
                 size,
                 COLLISION_GROUP_WALL,
             )),
-            Box::new(EditorShapeComponentPrototype::new(shape)),
         ],
     );
 
