@@ -1,12 +1,15 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ComponentStorage, DispatchControl, EntitySet, ReadComponent, Task, TaskContext, WriteComponent};
+use minimum::{ComponentStorage, EntitySet, Task, TaskContext, WriteComponent, EntityFactory, PendingDeleteComponent};
 
 use crate::resources::{
-    DebugOptions, GameControl, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
+    DebugOptions, ImguiManager, InputManager, TimeState,
 };
 
-use crate::components::{BulletComponent, PlayerComponent, PositionComponent, EditorSelectedComponent};
+use crate::components::EditorSelectedComponent;
 use named_type::NamedType;
+
+use crate::framework::FrameworkEntityPrototype;
+use crate::framework::CloneComponentPrototype;
 
 #[derive(NamedType)]
 pub struct RenderImguiEntityList;
@@ -16,8 +19,10 @@ impl Task for RenderImguiEntityList {
         Write<ImguiManager>,
         Write<DebugOptions>,
         Read<EntitySet>,
+        Write<EntityFactory>,
         WriteComponent<EditorSelectedComponent>,
-        Read<InputManager>
+        Read<InputManager>,
+        WriteComponent<PendingDeleteComponent>
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
@@ -31,8 +36,10 @@ impl Task for RenderImguiEntityList {
             mut imgui_manager,
             mut debug_options,
             entity_set,
+            mut entity_factory,
             mut editor_selected_components,
-            input_manager
+            input_manager,
+            mut pending_delete_components
         ) = data;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
@@ -45,45 +52,64 @@ impl Task for RenderImguiEntityList {
                     .position([0.0, 50.0], imgui::Condition::Once)
                     .size([200.0, 200.0], imgui::Condition::Once)
                     .build(|| {
-//                    ui.button(im_str!("btn"), [50.0, 0.0]);
-//                    ui.same_line_with_spacing(50.0, 10.0);
-//                    ui.button(im_str!("btn"), [50.0, 0.0]);
 
-                    let name = im_str!("");
-                    if unsafe { imgui_sys::igListBoxHeaderVec2(name.as_ptr(), imgui_sys::ImVec2 {x: -1.0, y: -1.0}) } {
-                        for entity in entity_set.iter() {
-                            let is_selected = if let Some(selected_component) = editor_selected_components.get(&entity.handle()) {
-                                true
-                            } else {
-                                false
-                            };
+                        let add_entity = ui.button(im_str!("Add"), [50.0, 0.0]);
+                        ui.same_line_with_spacing(50.0, 10.0);
+                        let remove_entity = ui.button(im_str!("Delete"), [50.0, 0.0]);
 
-                            let s = im_str!("{:?}", entity.handle());
-                            let clicked = ui.selectable(&s, is_selected, ImGuiSelectableFlags::empty(), [0.0, 0.0]);
+                        if add_entity {
+                            editor_selected_components.free_all();
+                            let pec = FrameworkEntityPrototype::new(
+                                std::path::PathBuf::from("testpath"),
+                                vec![
+                                    Box::new(CloneComponentPrototype::new(
+                                        EditorSelectedComponent::new(),
+                                    )),
+                                ],
+                            );
+                            entity_factory.enqueue_create(Box::new(pec));
+                        }
 
-                            if clicked {
-
-                                let is_control_held = input_manager.is_key_down(winit::event::VirtualKeyCode::LControl);
-                                if is_control_held {
-                                    if !editor_selected_components.exists(&entity.handle()) {
-                                        editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
-                                    } else {
-                                        editor_selected_components.free(&entity.handle());
-                                    }
-                                } else {
-                                    editor_selected_components.free_all();
-                                    if !editor_selected_components.exists(&entity.handle()) {
-                                        editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
-                                    }
-                                }
+                        if remove_entity {
+                            for (entity_handle, c) in editor_selected_components.iter(&entity_set) {
+                                entity_set.enqueue_free(&entity_handle, &mut *pending_delete_components);
                             }
                         }
 
-                        unsafe {
-                            imgui_sys::igListBoxFooter();
+                        let name = im_str!("");
+                        if unsafe { imgui_sys::igListBoxHeaderVec2(name.as_ptr(), imgui_sys::ImVec2 {x: -1.0, y: -1.0}) } {
+                            for entity in entity_set.iter() {
+                                let is_selected = if let Some(selected_component) = editor_selected_components.get(&entity.handle()) {
+                                    true
+                                } else {
+                                    false
+                                };
+
+                                let s = im_str!("{:?}", entity.handle());
+                                let clicked = ui.selectable(&s, is_selected, ImGuiSelectableFlags::empty(), [0.0, 0.0]);
+
+                                if clicked {
+                                    let is_control_held = input_manager.is_key_down(winit::event::VirtualKeyCode::LControl);
+                                    if is_control_held {
+                                        if !editor_selected_components.exists(&entity.handle()) {
+                                            editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
+                                        } else {
+                                            editor_selected_components.free(&entity.handle());
+                                        }
+                                    } else {
+                                        editor_selected_components.free_all();
+                                        if !editor_selected_components.exists(&entity.handle()) {
+                                            editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
+                                        }
+                                    }
+                                }
+                            }
+
+                            unsafe {
+                                imgui_sys::igListBoxFooter();
+                            }
                         }
-                    }
-                });
+                    });
             }
         })
     }

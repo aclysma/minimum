@@ -119,6 +119,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(CloneComponentFactory::<components::PlayerComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::BulletComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
+        .with_component_factory(CloneComponentFactory::<components::EditorSelectedComponent>::new())
         .with_component_factory(components::PhysicsBodyComponentFactory::new())
         .with_component_factory(components::EditorShapeComponentFactory::new())
         .with_component_factory(

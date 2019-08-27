@@ -236,8 +236,6 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                         use nphysics2d::material::{BasicMaterial, MaterialHandle};
                         use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
-                        println!("create box {:?}", data.size);
-
                         let shape = ShapeHandle::new(Cuboid::new(data.size / 2.0));
 
                         let collider_desc = ColliderDesc::new(shape)

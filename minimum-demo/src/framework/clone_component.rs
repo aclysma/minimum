@@ -43,7 +43,7 @@ impl<T: Component + Clone> ComponentPrototype for CloneComponentPrototype<T> {
     type Factory = CloneComponentFactory<T>;
 }
 
-impl<T: Component + Clone + InspectRenderDefault<T>> FrameworkComponentPrototype
+impl<T: Component + Clone> FrameworkComponentPrototype
     for CloneComponentPrototype<T>
 {
 }
