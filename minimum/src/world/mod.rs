@@ -2,7 +2,7 @@
 use crate::resource::{Resource, ResourceMap};
 
 use crate::component::{
-    Component, ComponentFactory, ComponentFreeHandler, ComponentPrototype, ComponentRegistry,
+    Component, ComponentCreateQueueFlushListener, ComponentFreeHandler, ComponentPrototype, ComponentRegistry,
     ComponentStorage,
 };
 
@@ -61,13 +61,13 @@ impl WorldBuilder {
     }
 
     /// Adds a component factory. Multiple factories are allowed per component type.
-    pub fn with_component_factory<P: ComponentPrototype, F: ComponentFactory<P>>(
+    pub fn with_component_factory<F: ComponentCreateQueueFlushListener>(
         mut self,
         component_factory: F,
     ) -> Self {
         self.resource_map.insert(component_factory);
         self.default_component_registry
-            .register_component_factory::<P, F>();
+            .register_component_factory::<F>();
         self
     }
 

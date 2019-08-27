@@ -1,18 +1,21 @@
-use minimum::component::SlabComponentStorage;
+use minimum::component::{SlabComponentStorage, ComponentCreateQueueFlushListener};
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
 use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 use minimum::{Component, ComponentStorage};
+use serde::{Serialize, Deserialize};
 
 use nphysics2d::object::BodyHandle;
 use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
 use crate::framework::FrameworkComponentPrototype;
+use crate::framework::inspect::common_types::*;
 use named_type::NamedType;
 use std::collections::VecDeque;
+use crate::components::PositionComponent;
 
 #[derive(Debug, NamedType)]
 pub struct PhysicsBodyComponent {
@@ -115,30 +118,64 @@ impl PhysicsBodyComponentDesc {
 // Creates a component for an entity by copying it
 //
 #[derive(Clone, NamedType, Inspect)]
-pub struct PhysicsBodyComponentPrototype {
+pub struct PhysicsBodyComponentPrototypeCustom {
     #[inspect(skip)]
     desc: std::sync::Arc<PhysicsBodyComponentDesc>,
 }
 
-impl PhysicsBodyComponentPrototype {
+impl PhysicsBodyComponentPrototypeCustom {
     pub fn new(desc: PhysicsBodyComponentDesc) -> Self {
-        PhysicsBodyComponentPrototype {
+        PhysicsBodyComponentPrototypeCustom {
             desc: std::sync::Arc::new(desc),
         }
     }
 }
 
-impl ComponentPrototype for PhysicsBodyComponentPrototype {
+impl ComponentPrototype for PhysicsBodyComponentPrototypeCustom {
     type Factory = PhysicsBodyComponentFactory;
 }
 
-impl FrameworkComponentPrototype for PhysicsBodyComponentPrototype {}
+impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCustom {}
+
+
+
+//
+// Creates a component for an entity by copying it
+//
+#[derive(Clone, NamedType, Inspect, Serialize, Deserialize)]
+pub struct PhysicsBodyComponentPrototypeBox {
+    #[inspect(proxy_type = "ImGlmVec2")]
+    size: glm::Vec2,
+
+    //TODO: Support more than one!
+    collision_group_membership: usize
+}
+
+impl PhysicsBodyComponentPrototypeBox {
+    pub fn new(size: glm::Vec2, collision_group_membership: usize) -> Self {
+        PhysicsBodyComponentPrototypeBox {
+            size,
+            collision_group_membership
+        }
+    }
+}
+
+impl ComponentPrototype for PhysicsBodyComponentPrototypeBox {
+    type Factory = PhysicsBodyComponentFactory;
+}
+
+impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeBox {}
+
+enum QueuedPhysicsBodyPrototypes {
+    Box(PhysicsBodyComponentPrototypeBox),
+    Custom(PhysicsBodyComponentPrototypeCustom)
+}
 
 //
 // Factory for PhysicsBody components
 //
 pub struct PhysicsBodyComponentFactory {
-    prototypes: VecDeque<(EntityHandle, PhysicsBodyComponentPrototype)>,
+    prototypes: VecDeque<(EntityHandle, QueuedPhysicsBodyPrototypes)>,
 }
 
 impl PhysicsBodyComponentFactory {
@@ -149,27 +186,83 @@ impl PhysicsBodyComponentFactory {
     }
 }
 
-impl ComponentFactory<PhysicsBodyComponentPrototype> for PhysicsBodyComponentFactory {
+impl ComponentFactory<PhysicsBodyComponentPrototypeCustom> for PhysicsBodyComponentFactory {
     fn enqueue_create(
         &mut self,
         entity_handle: &EntityHandle,
-        prototype: &PhysicsBodyComponentPrototype,
+        prototype: &PhysicsBodyComponentPrototypeCustom,
     ) {
         self.prototypes
-            .push_back((entity_handle.clone(), prototype.clone()));
+            .push_back((
+                entity_handle.clone(),
+                QueuedPhysicsBodyPrototypes::Custom(prototype.clone())));
     }
+}
 
+impl ComponentFactory<PhysicsBodyComponentPrototypeBox> for PhysicsBodyComponentFactory {
+    fn enqueue_create(
+        &mut self,
+        entity_handle: &EntityHandle,
+        prototype: &PhysicsBodyComponentPrototypeBox,
+    ) {
+        self.prototypes
+            .push_back((
+                entity_handle.clone(),
+                QueuedPhysicsBodyPrototypes::Box(prototype.clone())));
+    }
+}
+
+impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
     fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         if self.prototypes.is_empty() {
             return;
         }
 
+        //TODO: Either need two-phase entity construction or deterministic construct order.
+        let position = resource_map.fetch::<<PositionComponent as Component>::Storage>();
+
         let mut physics = resource_map.fetch_mut::<crate::resources::PhysicsManager>();
         let mut storage = resource_map.fetch_mut::<<PhysicsBodyComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
-                let body = physics.world_mut().add_body(data.desc.rigid_body_desc());
-                entity.add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
+
+                let center : glm::Vec2 = if let Some(p) = entity.get_component::<PositionComponent>(&*position) {
+                    p.position()
+                } else {
+                    glm::zero()
+                };
+
+                match data {
+                    QueuedPhysicsBodyPrototypes::Box(data) => {
+                        use ncollide2d::shape::{Cuboid, ShapeHandle};
+                        use nphysics2d::material::{BasicMaterial, MaterialHandle};
+                        use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
+
+                        println!("create box {:?}", data.size);
+
+                        let shape = ShapeHandle::new(Cuboid::new(data.size / 2.0));
+
+                        let collider_desc = ColliderDesc::new(shape)
+                            .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
+                            .collision_groups(
+                                ncollide2d::world::CollisionGroups::new().with_membership(&[data.collision_group_membership]),
+                            );
+
+                        let body_desc = RigidBodyDesc::new()
+                            .translation(center)
+                            .kinematic_rotation(false)
+                            .collider(&collider_desc);
+
+                        let body = physics.world_mut().add_body(&body_desc);
+                        entity.add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
+                    }
+
+                    QueuedPhysicsBodyPrototypes::Custom(data) => {
+                        let body = physics.world_mut().add_body(data.desc.rigid_body_desc());
+                        entity.add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
+                    }
+                }
+
             }
         }
     }

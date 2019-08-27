@@ -1,4 +1,4 @@
-use minimum::component::ComponentStorage;
+use minimum::component::{ComponentStorage, ComponentCreateQueueFlushListener};
 use minimum::component::VecComponentStorage;
 use minimum::Component;
 use minimum::ComponentFactory;
@@ -112,7 +112,9 @@ impl ComponentFactory<EditorShapeComponentPrototype> for EditorShapeComponentFac
         self.prototypes
             .push_back((entity_handle.clone(), prototype.clone()));
     }
+}
 
+impl ComponentCreateQueueFlushListener for EditorShapeComponentFactory {
     fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         if self.prototypes.is_empty() {
             return;

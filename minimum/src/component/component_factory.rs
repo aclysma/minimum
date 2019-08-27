@@ -3,6 +3,7 @@ use crate::EntitySet;
 use crate::Resource;
 use crate::ResourceMap;
 
+//TODO: Move this back to BasicEntityPrototype
 /// A minimal interface for attaching a component specified by a prototype to an entity
 ///
 /// BasicEntityPrototype wants to hold a list of ComponentPrototype, but that trait has an
@@ -35,10 +36,16 @@ where
 }
 
 /// General purpose factory. Given a prototype, it can put a component on an entity
-pub trait ComponentFactory<P: ComponentPrototype>: Resource {
+///
+/// This is separated from ComponentCreateQueueFlushListener so that a single factory
+/// can support multiple prototypes
+pub trait ComponentFactory<P: ComponentPrototype> : Resource {
     /// Enqueue a prototype to put on the given entity later when `flush_creates` is called
     fn enqueue_create(&mut self, entity_handle: &EntityHandle, prototype: &P);
+}
 
+/// General purpose factory. Given a prototype, it can put a component on an entity
+pub trait ComponentCreateQueueFlushListener : Resource {
     /// Puts all queue components on their respective entities. If the entity does not exist, the
     /// component is not created
     fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet);

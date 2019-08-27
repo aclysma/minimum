@@ -6,6 +6,7 @@ use named_type::NamedType;
 use std::marker::PhantomData;
 
 use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
+use crate::component::component_factory::ComponentCreateQueueFlushListener;
 
 /// Handler can be implemented to run custom logic just before entities are destroyed
 pub trait ComponentFreeHandler<T: Component>: Send + Sync {
@@ -101,32 +102,27 @@ trait RegisteredComponentFactoryTrait: Resource {
 /// Represents a registered component factory, used to allow iterating all registered factories and
 /// calling `flush_creates` on them
 #[derive(NamedType)]
-pub struct RegisteredComponentFactory<P, F>
+pub struct RegisteredComponentFactory<F>
 where
-    P: ComponentPrototype,
-    F: ComponentFactory<P>,
+    F: ComponentCreateQueueFlushListener,
 {
-    phantom_data1: PhantomData<P>,
-    phantom_data2: PhantomData<F>,
+    phantom_data: PhantomData<F>,
 }
 
-impl<P, F> RegisteredComponentFactory<P, F>
+impl<F> RegisteredComponentFactory<F>
 where
-    P: ComponentPrototype,
-    F: ComponentFactory<P>,
+    F: ComponentCreateQueueFlushListener,
 {
     fn new() -> Self {
         RegisteredComponentFactory {
-            phantom_data1: PhantomData,
-            phantom_data2: PhantomData,
+            phantom_data: PhantomData,
         }
     }
 }
 
-impl<P, F> RegisteredComponentFactoryTrait for RegisteredComponentFactory<P, F>
+impl<F> RegisteredComponentFactoryTrait for RegisteredComponentFactory<F>
 where
-    P: ComponentPrototype,
-    F: ComponentFactory<P>,
+    F: ComponentCreateQueueFlushListener,
 {
     fn flush_creates(&self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         let mut factory = resource_map.fetch_mut::<F>();
@@ -170,9 +166,9 @@ impl ComponentRegistry {
 
     /// All factories must be registered. (Multiple components may exist for each component type. This
     /// allows multiple distinct prototype types to be supported per component type)
-    pub fn register_component_factory<P: ComponentPrototype, F: ComponentFactory<P>>(&mut self) {
+    pub fn register_component_factory<F: ComponentCreateQueueFlushListener>(&mut self) {
         self.registered_factories
-            .push(Box::new(RegisteredComponentFactory::<P, F>::new()));
+            .push(Box::new(RegisteredComponentFactory::<F>::new()));
     }
 
     /// Handle any deferred component allocations

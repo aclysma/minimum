@@ -35,6 +35,7 @@ pub use component::BasicComponentPrototype;
 pub use component::Component;
 pub use component::ComponentCreator;
 pub use component::ComponentFactory;
+pub use component::ComponentCreateQueueFlushListener;
 pub use component::ComponentPrototype;
 pub use component::ComponentStorage;
 pub use component::{ReadComponent, ReadComponentOption, WriteComponent, WriteComponentOption};

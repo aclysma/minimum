@@ -10,6 +10,7 @@ use crate::ResourceMap;
 use named_type::NamedType;
 
 use std::collections::VecDeque;
+use crate::component::component_factory::ComponentCreateQueueFlushListener;
 
 /// Basic component prototype that creates components by cloning `data`.
 ///
@@ -69,7 +70,9 @@ impl<T: Component + Clone> ComponentFactory<BasicComponentPrototype<T>>
         self.prototypes
             .push_back((entity_handle.clone(), prototype.data.clone()));
     }
+}
 
+impl<T: Component + Clone> ComponentCreateQueueFlushListener for BasicComponentFactory<T> {
     /// Kicks off creating all deferred components
     fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         // Bail if nothing to create

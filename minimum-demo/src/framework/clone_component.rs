@@ -13,6 +13,7 @@ use imgui_inspect::InspectRenderDefault;
 use imgui_inspect::InspectArgsDefault;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+use minimum::component::ComponentCreateQueueFlushListener;
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
@@ -118,7 +119,9 @@ impl<T: Component + Clone> ComponentFactory<CloneComponentPrototype<T>>
     ) {
         self.inner.enqueue_create(entity_handle, &prototype.inner);
     }
+}
 
+impl<T: Component + Clone> ComponentCreateQueueFlushListener for CloneComponentFactory<T> {
     fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         self.inner.flush_creates(resource_map, entity_set);
     }

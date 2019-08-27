@@ -6,7 +6,8 @@ use crate::framework::FrameworkEntityPrototype;
 use minimum::BasicEntityPrototype;
 
 use components::EditorShapeComponentPrototype;
-use components::PhysicsBodyComponentPrototype;
+use components::PhysicsBodyComponentPrototypeCustom;
+use components::PhysicsBodyComponentPrototypeBox;
 use rand::Rng;
 
 const COLLISION_GROUP_PLAYER: usize = 0;
@@ -23,28 +24,6 @@ pub fn create_wall(
     use ncollide2d::shape::{Cuboid, ShapeHandle};
     let shape = ShapeHandle::new(Cuboid::new(size / 2.0));
 
-    let body_component_desc = {
-        use nphysics2d::material::{BasicMaterial, MaterialHandle};
-        use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
-
-        let collider_desc = ColliderDesc::new(shape.clone())
-            .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
-            .collision_groups(
-                ncollide2d::world::CollisionGroups::new().with_membership(&[COLLISION_GROUP_WALL]),
-            )
-            .name("wall".to_string());
-
-        let body_desc = RigidBodyDesc::new()
-            .translation(center)
-            .kinematic_rotation(false)
-            .name("wall".to_string());
-
-        let mut body_component_desc = components::PhysicsBodyComponentDesc::new(body_desc);
-        body_component_desc.add_collider(collider_desc);
-
-        body_component_desc
-    };
-
     let pec = FrameworkEntityPrototype::new(
         std::path::PathBuf::from("testpath"),
         vec![
@@ -54,7 +33,7 @@ pub fn create_wall(
             Box::new(CloneComponentPrototype::new(
                 components::DebugDrawRectComponent::new(size, color),
             )),
-            Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
+            Box::new(PhysicsBodyComponentPrototypeBox::new(size, COLLISION_GROUP_WALL)),
             Box::new(EditorShapeComponentPrototype::new(shape)),
         ],
     );
@@ -105,7 +84,7 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
         Box::new(CloneComponentPrototype::new(
             components::DebugDrawCircleComponent::new(radius, color),
         )),
-        Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
+        Box::new(PhysicsBodyComponentPrototypeCustom::new(body_component_desc)),
         Box::new(EditorShapeComponentPrototype::new(shape)),
     ]);
     entity_factory.enqueue_create(Box::new(entity_prototype));
@@ -160,7 +139,7 @@ pub fn create_bullet(
         Box::new(CloneComponentPrototype::new(
             components::VelocityComponent::new(velocity),
         )),
-        Box::new(PhysicsBodyComponentPrototype::new(body_component_desc)),
+        Box::new(PhysicsBodyComponentPrototypeCustom::new(body_component_desc)),
         Box::new(EditorShapeComponentPrototype::new(shape)),
         Box::new(CloneComponentPrototype::new(
             components::DebugDrawCircleComponent::new(radius, color),
