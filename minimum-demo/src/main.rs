@@ -138,7 +138,8 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>();
-    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>();
+    inspect_registry
+        .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
 
     let mut persist_registry = framework::persist::PersistRegistry::new();

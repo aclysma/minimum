@@ -107,10 +107,7 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
     );
     fn render_mut(
         &self,
-        prototypes: &mut HashMap<
-            core::any::TypeId,
-            Vec<&mut Box<dyn FrameworkComponentPrototype>>,
-        >,
+        prototypes: &mut HashMap<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
     );
 }
@@ -135,9 +132,7 @@ where
 
 impl<T> RegisteredComponentPrototypeTrait for RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype
-        + imgui_inspect::InspectRenderDefault<T>
-        + named_type::NamedType,
+    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderDefault<T> + named_type::NamedType,
 {
     fn render(
         &self,
@@ -206,9 +201,7 @@ impl InspectRegistry {
     }
 
     pub fn register_component_prototype<
-        T: FrameworkComponentPrototype
-            + 'static
-            + imgui_inspect::InspectRenderDefault<T>,
+        T: FrameworkComponentPrototype + 'static + imgui_inspect::InspectRenderDefault<T>,
     >(
         &mut self,
     ) {
@@ -274,8 +267,7 @@ impl InspectRegistry {
             let mut locks = vec![];
 
             let mut prototypes =
-                HashMap::<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>::new(
-                );
+                HashMap::<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>::new();
 
             // Gather all the prototype arcs we will be editing
             let mut storage = resource_map

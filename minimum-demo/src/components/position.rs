@@ -1,8 +1,8 @@
 use crate::framework::inspect::common_types::*;
+use imgui_inspect_derive::Inspect;
 use minimum::component::VecComponentStorage;
 use named_type::NamedType;
-use serde::{Serialize, Deserialize};
-use imgui_inspect_derive::Inspect;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
 pub struct PositionComponent {

@@ -1,4 +1,3 @@
-
 use minimum::entity::EntityPrototype;
 use minimum::Component;
 
@@ -12,11 +11,8 @@ use crate::components::PersistentEntityComponent;
 
 // impl ComponentPrototype for FrameworkComponentPrototype?
 pub trait FrameworkComponentPrototype:
-    minimum::component::ComponentCreator +
-    named_type::NamedType +
-    mopa::Any
+    minimum::component::ComponentCreator + named_type::NamedType + mopa::Any
 {
-
 }
 
 //TODO: Get rid of NamedType
@@ -38,9 +34,6 @@ impl<T : FrameworkComponentPrototype> named_type::NamedType for T {
 */
 
 mopafy!(FrameworkComponentPrototype);
-
-
-
 
 pub struct FrameworkEntityPrototypeInner {
     path: std::path::PathBuf,

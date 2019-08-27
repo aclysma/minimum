@@ -1,3 +1,5 @@
+use crate::framework::persist::ComponentPrototypeSerializer;
+use crate::framework::FrameworkComponentPrototype;
 use minimum::Component;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
@@ -5,15 +7,13 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 use named_type::NamedType;
-use crate::framework::FrameworkComponentPrototype;
-use crate::framework::persist::ComponentPrototypeSerializer;
 
 use imgui_inspect::InspectRenderDefault;
 
 use imgui_inspect::InspectArgsDefault;
-use serde::Serialize;
-use serde::de::DeserializeOwned;
 use minimum::component::ComponentCreateQueueFlushListener;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
@@ -44,7 +44,7 @@ impl<T: Component + Clone> ComponentPrototype for CloneComponentPrototype<T> {
 }
 
 impl<T: Component + Clone + InspectRenderDefault<T>> FrameworkComponentPrototype
-for CloneComponentPrototype<T>
+    for CloneComponentPrototype<T>
 {
 }
 
@@ -87,13 +87,17 @@ where
     }
 }
 
-impl<T: Component + Clone + Serialize + DeserializeOwned> ComponentPrototypeSerializer<CloneComponentPrototype<T>> for CloneComponentPrototype<T> {
+impl<T: Component + Clone + Serialize + DeserializeOwned>
+    ComponentPrototypeSerializer<CloneComponentPrototype<T>> for CloneComponentPrototype<T>
+{
     fn serialize(prototype: &CloneComponentPrototype<T>) -> Result<String, failure::Error> {
         Ok(serde_json::to_string(prototype.inner.data())?)
     }
 
     fn deserialize(data: &str) -> Result<CloneComponentPrototype<T>, failure::Error> {
-        Ok(CloneComponentPrototype::<T>::new(serde_json::from_str(&data)?))
+        Ok(CloneComponentPrototype::<T>::new(serde_json::from_str(
+            &data,
+        )?))
     }
 }
 

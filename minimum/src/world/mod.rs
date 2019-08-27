@@ -2,8 +2,8 @@
 use crate::resource::{Resource, ResourceMap};
 
 use crate::component::{
-    Component, ComponentCreateQueueFlushListener, ComponentFreeHandler, ComponentPrototype, ComponentRegistry,
-    ComponentStorage,
+    Component, ComponentCreateQueueFlushListener, ComponentFreeHandler, ComponentPrototype,
+    ComponentRegistry, ComponentStorage,
 };
 
 use crate::entity::{EntityFactory, EntitySet, PendingDeleteComponent};

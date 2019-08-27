@@ -5,8 +5,8 @@ use super::ComponentStorage;
 use named_type::NamedType;
 use std::marker::PhantomData;
 
-use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
 use crate::component::component_factory::ComponentCreateQueueFlushListener;
+use crate::{EntityHandle, EntitySet, Resource, ResourceMap};
 
 /// Handler can be implemented to run custom logic just before entities are destroyed
 pub trait ComponentFreeHandler<T: Component>: Send + Sync {

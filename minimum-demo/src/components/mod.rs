@@ -19,8 +19,8 @@ pub use velocity::VelocityComponent;
 
 pub use physics_body::PhysicsBodyComponentDesc;
 pub use physics_body::PhysicsBodyComponentFactory;
-pub use physics_body::PhysicsBodyComponentPrototypeCustom;
 pub use physics_body::PhysicsBodyComponentPrototypeBox;
+pub use physics_body::PhysicsBodyComponentPrototypeCustom;
 
 mod editor;
 pub use editor::EditorSelectedComponent;

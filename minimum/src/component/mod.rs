@@ -48,9 +48,9 @@ use slab::RawSlabKey;
 use crate::entity;
 use entity::EntityHandle;
 
+pub use component_factory::ComponentCreateQueueFlushListener;
 pub use component_factory::ComponentCreator;
 pub use component_factory::ComponentFactory;
-pub use component_factory::ComponentCreateQueueFlushListener;
 pub use component_factory::ComponentPrototype;
 pub use registry::ComponentFreeHandler;
 pub use registry::ComponentRegistry;

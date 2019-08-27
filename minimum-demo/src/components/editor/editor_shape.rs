@@ -1,5 +1,5 @@
-use minimum::component::{ComponentStorage, ComponentCreateQueueFlushListener};
 use minimum::component::VecComponentStorage;
+use minimum::component::{ComponentCreateQueueFlushListener, ComponentStorage};
 use minimum::Component;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;

@@ -9,8 +9,8 @@ use crate::EntitySet;
 use crate::ResourceMap;
 use named_type::NamedType;
 
-use std::collections::VecDeque;
 use crate::component::component_factory::ComponentCreateQueueFlushListener;
+use std::collections::VecDeque;
 
 /// Basic component prototype that creates components by cloning `data`.
 ///
