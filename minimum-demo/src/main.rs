@@ -81,7 +81,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     let event_loop = winit::event_loop::EventLoop::<resources::WindowUserEvent>::new_user_event();
     let window = winit::window::WindowBuilder::new()
-        .with_title("Vore")
+        .with_title("Minimum Demo")
         .build(&event_loop)?;
 
     let mut resource_map = minimum::WorldBuilder::new()
@@ -94,6 +94,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
         .with_resource(resources::EditorCollisionWorld::new())
+        .with_resource(resources::EditorUiState::new())
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
@@ -270,7 +271,7 @@ fn dispatcher_thread(
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_resources(|resource_map| {
                 // Draw Inspector
-                if resource_map.fetch::<resources::TimeState>().play_mode == PlayMode::System {
+                {
                     let _scope_timer = minimum::util::ScopeTimer::new("inspect");
                     draw_inspector(&resource_map);
                 }
@@ -318,6 +319,13 @@ pub fn render(resource_map: &ResourceMap) {
 }
 
 fn draw_inspector(resource_map: &ResourceMap) {
+    let play_mode = resource_map.fetch::<resources::TimeState>().play_mode;
+    let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
+    let window_options = editor_ui_state.window_options(play_mode);
+    if !window_options.show_inspector {
+        return;
+    }
+
     let entity_set = resource_map.fetch::<minimum::EntitySet>();
     let selected_entity_handles = {
         let selected_components =
@@ -332,11 +340,35 @@ fn draw_inspector(resource_map: &ResourceMap) {
     let inspect_registry = resource_map.fetch::<framework::inspect::InspectRegistry>();
     let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
     imgui_manager.with_ui(|ui| {
+
+        use imgui::im_str;
+
+
         //ui.set
-        ui.window(imgui::im_str!("Inspector"))
+        ui.window(im_str!("Inspector"))
             .position([0.0, 250.0], imgui::Condition::Once)
             .size([200.0, 300.0], imgui::Condition::Once)
             .build(|| {
+
+                if ui.button(im_str!("\u{e8b1} Add"), [80.0, 0.0]) {
+                    ui.open_popup(im_str!("Add Component"));
+                }
+
+                ui.popup(im_str!("Add Component"), || {
+                    //ui.text("Content of my modal");
+
+                    ui.text("abc");
+                    ui.input_text(im_str!("Search"), &mut editor_ui_state.add_component_search_text)
+                        //.auto_select_all(true)
+                        //.resize_buffer(true)
+                        .build();
+                    ui.text("xyz");
+                    if ui.button(im_str!("OK"), [0.0, 0.0]) {
+                        ui.close_current_popup();
+                    }
+                });
+
+
                 inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui);
             })
     });

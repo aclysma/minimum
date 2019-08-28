@@ -2,7 +2,7 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ComponentStorage, EntitySet, Task, TaskContext, WriteComponent, EntityFactory, PendingDeleteComponent};
 
 use crate::resources::{
-    DebugOptions, ImguiManager, InputManager, TimeState,
+    EditorUiState, ImguiManager, InputManager, TimeState,
 };
 
 use crate::components::EditorSelectedComponent;
@@ -17,7 +17,7 @@ impl Task for RenderImguiEntityList {
     type RequiredResources = (
         Read<TimeState>,
         Write<ImguiManager>,
-        Write<DebugOptions>,
+        Write<EditorUiState>,
         Read<EntitySet>,
         Write<EntityFactory>,
         WriteComponent<EditorSelectedComponent>,
@@ -34,7 +34,7 @@ impl Task for RenderImguiEntityList {
         let (
             time_state,
             mut imgui_manager,
-            mut debug_options,
+            mut editor_ui_state,
             entity_set,
             mut entity_factory,
             mut editor_selected_components,
@@ -47,15 +47,17 @@ impl Task for RenderImguiEntityList {
 
             use imgui::ImGuiSelectableFlags;
 
-            if debug_options.show_entity_list {
+            let window_options = editor_ui_state.window_options(time_state.play_mode);
+
+            if window_options.show_entity_list {
                 ui.window(im_str!("Entity List"))
                     .position([0.0, 50.0], imgui::Condition::Once)
                     .size([200.0, 200.0], imgui::Condition::Once)
                     .build(|| {
 
-                        let add_entity = ui.button(im_str!("Add"), [50.0, 0.0]);
-                        ui.same_line_with_spacing(50.0, 10.0);
-                        let remove_entity = ui.button(im_str!("Delete"), [50.0, 0.0]);
+                        let add_entity = ui.button(im_str!("\u{e8b1} Add"), [80.0, 0.0]);
+                        ui.same_line_with_spacing(80.0, 10.0);
+                        let remove_entity = ui.button(im_str!("\u{e897} Delete"), [80.0, 0.0]);
 
                         if add_entity {
                             editor_selected_components.free_all();

@@ -8,6 +8,7 @@ mod physics_manager;
 mod render_state;
 mod time_state;
 mod window_interface;
+mod editor_ui_state;
 
 pub use debug_draw::DebugDraw;
 pub use debug_options::DebugOptions;
@@ -21,3 +22,4 @@ pub use render_state::RenderState;
 pub use time_state::TimeState;
 pub use window_interface::WindowInterface;
 pub use window_interface::WindowUserEvent;
+pub use editor_ui_state::EditorUiState;

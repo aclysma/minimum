@@ -444,6 +444,7 @@ where
                 //TODO: Verify the draw list index doesn't exceed the vbuf/ibuf list
                 let mut draw_list_index = 0;
                 for draw_list in draw_data.draw_lists() {
+
                     // If for some reason we didn't actually create the buffers, don't try to draw them
                     if draw_list_index >= draw_list_vbufs.len()
                         || draw_list_index >= draw_list_ibufs.len()
@@ -463,8 +464,25 @@ where
                     let mut element_begin_index: u32 = 0;
                     for cmd in draw_list.commands() {
                         match cmd {
-                            imgui::DrawCmd::Elements { count, .. } => {
+                            imgui::DrawCmd::Elements {
+                                count,
+                                cmd_params: imgui::DrawCmdParams {
+                                    clip_rect,
+                                    texture_id,
+                                    ..
+                                }
+                            } => {
                                 let element_end_index = element_begin_index + count as u32;
+
+                                encoder.set_scissors(0, &[
+                                    gfx_hal::pso::Rect {
+                                        x: ((clip_rect[0] - draw_data.display_pos[0]) * draw_data.framebuffer_scale[0]) as i16,
+                                        y: ((clip_rect[1] - draw_data.display_pos[1]) * draw_data.framebuffer_scale[1]) as i16,
+                                        w: ((clip_rect[2] - clip_rect[0] - draw_data.display_pos[0]) * draw_data.framebuffer_scale[0]) as i16,
+                                        h: ((clip_rect[3] - clip_rect[1] - draw_data.display_pos[1]) * draw_data.framebuffer_scale[1]) as i16,
+                                    }
+                                ]);
+
                                 encoder.draw_indexed(
                                     element_begin_index..element_end_index,
                                     0,

@@ -2,7 +2,7 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ComponentStorage, DispatchControl, EntitySet, ReadComponent, Task, TaskContext};
 
 use crate::resources::{
-    DebugOptions, GameControl, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
+    EditorUiState, GameControl, DebugOptions, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
 };
 
 use crate::components::{BulletComponent, PlayerComponent, PositionComponent};
@@ -15,6 +15,7 @@ impl Task for RenderImguiMainMenu {
         Read<TimeState>,
         Write<ImguiManager>,
         Write<GameControl>,
+        Write<EditorUiState>,
         Write<DebugOptions>,
         Read<PhysicsManager>,
         Read<EntitySet>,
@@ -36,6 +37,7 @@ impl Task for RenderImguiMainMenu {
             time_state,
             mut imgui_manager,
             mut game_control,
+            mut editor_ui_state,
             mut debug_options,
             physics_manager,
             entity_set,
@@ -47,14 +49,18 @@ impl Task for RenderImguiMainMenu {
             mut dispatch_control,
         ) = data;
 
+        let is_edit_mode = time_state.play_mode == crate::PlayMode::System;
+
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             use imgui::im_str;
 
-            if debug_options.show_imgui_metrics {
-                ui.show_metrics_window(&mut debug_options.show_imgui_metrics);
+            let window_settings = editor_ui_state.window_options_mut(time_state.play_mode);
+
+            if window_settings.show_imgui_metrics {
+                ui.show_metrics_window(&mut window_settings.show_imgui_metrics);
             }
 
-            if debug_options.show_imgui_style_editor {
+            if window_settings.show_imgui_style_editor {
                 ui.window(im_str!("Editor")).build(|| {
                     ui.show_default_style_editor();
                 });
@@ -82,25 +88,27 @@ impl Task for RenderImguiMainMenu {
                 });
 
                 ui.menu(im_str!("Windows")).build(|| {
-                    ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_window);
                     ui.checkbox(
                         im_str!("ImGui Metrics"),
-                        &mut debug_options.show_imgui_metrics,
+                        &mut window_settings.show_imgui_metrics,
                     );
                     ui.checkbox(
                         im_str!("ImGui Style Editor"),
-                        &mut debug_options.show_imgui_style_editor,
+                        &mut window_settings.show_imgui_style_editor,
                     );
                     ui.checkbox(
                         im_str!("Entity List"),
-                        &mut debug_options.show_entity_list,
+                        &mut window_settings.show_entity_list,
                     );
+                });
+                ui.separator();
+                ui.menu(im_str!("Debug Setings")).build(|| {
+                    ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_debug_info);
                 });
 
                 ui.separator();
 
-                let editing = time_state.play_mode == crate::PlayMode::System;
-                if editing {
+                if is_edit_mode {
                     if ui.menu_item(im_str!("\u{f40a} Play")).build() {
                         // Clear playmode flags
                         *dispatch_control.next_frame_context_flags_mut() &=
@@ -131,43 +139,6 @@ impl Task for RenderImguiMainMenu {
                 ui.separator();
                 ui.separator();
             });
-
-            if debug_options.show_window {
-                let bullet_count = bullet_components.count();
-                let mouse_position_ui_space = input_manager.mouse_position();
-                let mouse_position_world_space = render_state.ui_space_to_world_space(glm::vec2(
-                    mouse_position_ui_space.x as f32,
-                    mouse_position_ui_space.y as f32,
-                ));
-                let body_count = physics_manager.world().bodies().count();
-
-                let mut player_position = None;
-                for (entity_handle, _player) in player_components.iter(&entity_set) {
-                    if let Some(position) = position_components.get(&entity_handle) {
-                        player_position = Some(position.position());
-                    }
-                    break;
-                }
-
-                ui.window(im_str!("Debug Window")).build(|| {
-                    if let Some(p) = player_position {
-                        ui.text(format!("player world space: {:.1} {:.1}", p.x, p.y));
-                    }
-                    ui.text(format!(
-                        "mouse screen space: {:.1} {:.1}",
-                        mouse_position_ui_space.x, mouse_position_ui_space.y
-                    ));
-                    ui.text(format!(
-                        "mouse world space: {:.1} {:.1}",
-                        mouse_position_world_space.x, mouse_position_world_space.y
-                    ));
-                    ui.text(format!("bullet count: {}", bullet_count));
-                    ui.text(format!("body count: {}", body_count));
-                });
-
-                //TODO: Component count
-                //TODO: Frame time
-            }
         })
     }
 }
