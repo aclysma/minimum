@@ -4,7 +4,7 @@ use named_type::NamedType;
 use serde::{Deserialize, Serialize};
 
 // This component contains no data, however an empty component can still be useful to "tag" entities
-#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
+#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize, Default)]
 pub struct BulletComponent {}
 
 impl BulletComponent {

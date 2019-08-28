@@ -46,6 +46,15 @@ impl VelocityComponent {
     }
 }
 
+impl Default for VelocityComponent {
+    fn default() -> Self {
+        VelocityComponent {
+            velocity: glm::zero(),
+            requires_sync_to_physics: false
+        }
+    }
+}
+
 impl minimum::Component for VelocityComponent {
     type Storage = SlabComponentStorage<Self>;
 }

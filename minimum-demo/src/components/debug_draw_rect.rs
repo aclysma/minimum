@@ -13,6 +13,15 @@ pub struct DebugDrawRectComponent {
     color: glm::Vec4,
 }
 
+impl Default for DebugDrawRectComponent {
+    fn default() -> Self {
+        DebugDrawRectComponent {
+            size: glm::vec2(10.0, 10.0),
+            color: glm::vec4(1.0, 1.0, 1.0, 1.0)
+        }
+    }
+}
+
 impl DebugDrawRectComponent {
     pub fn new(size: glm::Vec2, color: glm::Vec4) -> Self {
         DebugDrawRectComponent { size, color }

@@ -146,12 +146,12 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut persist_registry = framework::persist::PersistRegistry::new();
 
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>();
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>();
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>();
-    persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>("Bullet");
+    persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
     //persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototype>();
     //persist_registry.register_component_prototype::<components::EditorShapeComponentPrototype>();
 
@@ -338,6 +338,7 @@ fn draw_inspector(resource_map: &ResourceMap) {
     };
 
     let inspect_registry = resource_map.fetch::<framework::inspect::InspectRegistry>();
+    let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
     let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
     imgui_manager.with_ui(|ui| {
         use imgui::im_str;
@@ -348,23 +349,55 @@ fn draw_inspector(resource_map: &ResourceMap) {
             .size([200.0, 300.0], imgui::Condition::Once)
             .build(|| {
                 if ui.button(im_str!("\u{e8b1} Add"), [80.0, 0.0]) {
+                    //ui.open_popup(im_str!("Add Component"));
                     ui.open_popup(im_str!("Add Component"));
                 }
 
                 ui.popup(im_str!("Add Component"), || {
-                    //ui.text("Content of my modal");
-
-                    ui.text("abc");
                     ui.input_text(
-                        im_str!("Search"),
+                        im_str!("Filter"),
                         &mut editor_ui_state.add_component_search_text,
                     )
-                    //.auto_select_all(true)
-                    //.resize_buffer(true)
+                    .resize_buffer(true)
                     .build();
-                    ui.text("xyz");
-                    if ui.button(im_str!("OK"), [0.0, 0.0]) {
-                        ui.close_current_popup();
+
+                    let mut component_names = vec![];
+                    for i in 0..50 {
+                        component_names.push(format!("ComponentName{}", i));
+                    }
+
+                    let mut selected_type_id = None;
+
+                    use imgui::ImGuiSelectableFlags;
+                    for (type_id, component_name) in persist_registry.iter_names() {
+
+                        if editor_ui_state.add_component_search_text.is_empty() ||
+                            component_name.contains(editor_ui_state.add_component_search_text.to_str())
+                        {
+                            if ui.selectable(&im_str!("{}", component_name), false, ImGuiSelectableFlags::empty(), [0.0, 0.0]) {
+                                selected_type_id = Some(type_id.clone());
+                            }
+                        }
+                    }
+
+                    if let Some(type_id) = selected_type_id {
+
+                        use components::PersistentEntityComponent;
+                        let mut prototype_components = resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
+                        for selected_entity_handle in &selected_entity_handles {
+
+
+                            use minimum::component::ComponentStorage;
+                            if let Some(pec) = prototype_components.get_mut(selected_entity_handle) {
+
+                                let default_component = persist_registry.create_default(&type_id);
+                                let prototype = pec.prototype_mut();
+                                let mut guard = prototype.get_mut();
+
+                                //TODO: Check that one doesn't exist already or switch to using hashmap
+                                guard.component_prototypes_mut().push(default_component);
+                            }
+                        }
                     }
                 });
 

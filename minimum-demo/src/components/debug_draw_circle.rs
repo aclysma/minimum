@@ -13,6 +13,15 @@ pub struct DebugDrawCircleComponent {
     color: glm::Vec4,
 }
 
+impl Default for DebugDrawCircleComponent {
+    fn default() -> Self {
+        DebugDrawCircleComponent {
+            radius: 10.0,
+            color: glm::vec4(1.0, 1.0, 1.0, 1.0)
+        }
+    }
+}
+
 impl DebugDrawCircleComponent {
     pub fn new(radius: f32, color: glm::Vec4) -> Self {
         DebugDrawCircleComponent { radius, color }

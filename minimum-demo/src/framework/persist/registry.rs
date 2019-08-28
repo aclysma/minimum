@@ -17,24 +17,29 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
         &self,
         data: &str,
     ) -> Result<Box<dyn FrameworkComponentPrototype>, failure::Error>;
+
+    fn default(&self) -> Box<dyn FrameworkComponentPrototype>;
+
+    fn name(&self) -> &'static str;
 }
 
 struct RegisteredComponentPrototype<T> {
     phantom_data: PhantomData<T>,
+    name: &'static str
 }
 
 impl<T> RegisteredComponentPrototype<T> {
-    fn new() -> Self {
+    fn new(name: &'static str) -> Self {
         RegisteredComponentPrototype {
             phantom_data: PhantomData,
+            name
         }
     }
 }
 
 impl<T> RegisteredComponentPrototypeTrait for RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype,
-    T: ComponentPrototypeSerializer<T>,
+    T: FrameworkComponentPrototype + Default + ComponentPrototypeSerializer<T>,
 {
     fn serialize(
         &self,
@@ -52,6 +57,14 @@ where
         Ok(Box::new(
             <T as ComponentPrototypeSerializer<T>>::deserialize(data)?,
         ))
+    }
+
+    fn default(&self) -> Box<dyn FrameworkComponentPrototype> {
+        Box::new(T::default())
+    }
+
+    fn name(&self) -> &'static str {
+        self.name
     }
 }
 
@@ -71,13 +84,14 @@ impl PersistRegistry {
     }
 
     pub fn register_component_prototype<
-        T: FrameworkComponentPrototype + ComponentPrototypeSerializer<T>,
+        T: FrameworkComponentPrototype + ComponentPrototypeSerializer<T> + Default,
     >(
         &mut self,
+        name: &'static str
     ) {
         self.registered_component_prototypes.insert(
             std::any::TypeId::of::<T>(),
-            Box::new(RegisteredComponentPrototype::<T>::new()),
+            Box::new(RegisteredComponentPrototype::<T>::new(name)),
         );
     }
 
@@ -114,5 +128,14 @@ impl PersistRegistry {
                 }
             }
         }
+    }
+
+    pub fn iter_names(&self) -> impl Iterator<Item=(&'_ std::any::TypeId, &'static str)> + '_ {
+        use std::iter::Iterator;
+        self.registered_component_prototypes.iter().map(|(t, x)| (t, x.name()))
+    }
+
+    pub fn create_default(&self, type_id: &std::any::TypeId) -> Box<dyn FrameworkComponentPrototype> {
+        self.registered_component_prototypes[type_id].default()
     }
 }

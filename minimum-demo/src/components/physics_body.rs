@@ -149,6 +149,15 @@ pub struct PhysicsBodyComponentPrototypeBox {
     collision_group_membership: usize,
 }
 
+impl Default for PhysicsBodyComponentPrototypeBox {
+    fn default() -> Self {
+        PhysicsBodyComponentPrototypeBox {
+            size: glm::vec2(10.0, 10.0),
+            collision_group_membership: 0
+        }
+    }
+}
+
 impl PhysicsBodyComponentPrototypeBox {
     pub fn new(size: glm::Vec2, collision_group_membership: usize) -> Self {
         PhysicsBodyComponentPrototypeBox {

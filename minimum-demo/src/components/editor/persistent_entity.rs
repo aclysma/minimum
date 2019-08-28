@@ -16,6 +16,10 @@ impl PersistentEntityComponent {
     pub fn prototype(&self) -> &FrameworkEntityPrototype {
         &self.prototype
     }
+
+    pub fn prototype_mut(&mut self) -> &FrameworkEntityPrototype {
+        &mut self.prototype
+    }
 }
 
 impl Component for PersistentEntityComponent {

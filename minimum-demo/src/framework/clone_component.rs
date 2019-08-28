@@ -7,6 +7,7 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 use named_type::NamedType;
+use minimum::BasicComponentPrototype;
 
 use imgui_inspect::InspectRenderDefault;
 
@@ -14,6 +15,7 @@ use imgui_inspect::InspectArgsDefault;
 use minimum::component::ComponentCreateQueueFlushListener;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
@@ -26,7 +28,7 @@ pub struct CloneComponentPrototype<T: Component + Clone> {
 impl<T: Component + Clone> CloneComponentPrototype<T> {
     pub fn new(clone: T) -> Self {
         CloneComponentPrototype::<T> {
-            inner: minimum::BasicComponentPrototype::new(clone),
+            inner: BasicComponentPrototype::new(clone),
         }
     }
 
@@ -44,6 +46,14 @@ impl<T: Component + Clone> ComponentPrototype for CloneComponentPrototype<T> {
 }
 
 impl<T: Component + Clone> FrameworkComponentPrototype for CloneComponentPrototype<T> {}
+
+impl<T: Component + Clone + Default> Default for CloneComponentPrototype<T> {
+    fn default() -> Self {
+        CloneComponentPrototype {
+            inner: BasicComponentPrototype::new(Default::default())
+        }
+    }
+}
 
 //
 // Implement inspect for clone components

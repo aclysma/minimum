@@ -14,6 +14,15 @@ pub struct PositionComponent {
     requires_sync_to_physics: bool,
 }
 
+impl Default for PositionComponent {
+    fn default() -> Self {
+        PositionComponent {
+            position: glm::zero(),
+            requires_sync_to_physics: false
+        }
+    }
+}
+
 impl PositionComponent {
     pub fn new(position: glm::Vec2) -> Self {
         PositionComponent {
