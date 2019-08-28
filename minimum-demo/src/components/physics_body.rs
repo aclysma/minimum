@@ -234,7 +234,6 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                     QueuedPhysicsBodyPrototypes::Box(data) => {
                         use ncollide2d::shape::{Cuboid, ShapeHandle};
                         use nphysics2d::material::{BasicMaterial, MaterialHandle};
-                        use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
                         let shape = ShapeHandle::new(Cuboid::new(data.size / 2.0));
 

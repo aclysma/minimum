@@ -26,8 +26,8 @@ pub use update_position_with_velocity::UpdatePositionWithVelocity;
 
 mod imgui;
 pub use self::imgui::ImguiBeginFrame;
-pub use self::imgui::RenderImguiMainMenu;
 pub use self::imgui::RenderImguiEntityList;
+pub use self::imgui::RenderImguiMainMenu;
 
 mod editor;
 pub use editor::EditorDrawShapes;

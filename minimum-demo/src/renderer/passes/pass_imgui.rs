@@ -468,7 +468,7 @@ where
                                 count,
                                 cmd_params: imgui::DrawCmdParams {
                                     clip_rect,
-                                    texture_id,
+                                    //texture_id,
                                     ..
                                 }
                             } => {

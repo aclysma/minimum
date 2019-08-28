@@ -1,11 +1,8 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ComponentStorage, DispatchControl, EntitySet, ReadComponent, Task, TaskContext};
+use minimum::{DispatchControl, Task, TaskContext};
 
-use crate::resources::{
-    EditorUiState, GameControl, DebugOptions, ImguiManager, InputManager, PhysicsManager, RenderState, TimeState,
-};
+use crate::resources::{DebugOptions, EditorUiState, GameControl, ImguiManager, TimeState};
 
-use crate::components::{BulletComponent, PlayerComponent, PositionComponent};
 use named_type::NamedType;
 
 #[derive(NamedType)]
@@ -17,13 +14,6 @@ impl Task for RenderImguiMainMenu {
         Write<GameControl>,
         Write<EditorUiState>,
         Write<DebugOptions>,
-        Read<PhysicsManager>,
-        Read<EntitySet>,
-        ReadComponent<BulletComponent>,
-        ReadComponent<PlayerComponent>,
-        ReadComponent<PositionComponent>,
-        Read<InputManager>,
-        Read<RenderState>,
         Write<DispatchControl>,
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
@@ -39,13 +29,6 @@ impl Task for RenderImguiMainMenu {
             mut game_control,
             mut editor_ui_state,
             mut debug_options,
-            physics_manager,
-            entity_set,
-            bullet_components,
-            player_components,
-            position_components,
-            input_manager,
-            render_state,
             mut dispatch_control,
         ) = data;
 
@@ -100,6 +83,7 @@ impl Task for RenderImguiMainMenu {
                         im_str!("Entity List"),
                         &mut window_settings.show_entity_list,
                     );
+                    ui.checkbox(im_str!("Inspector"), &mut window_settings.show_inspector);
                 });
                 ui.separator();
                 ui.menu(im_str!("Debug Setings")).build(|| {
