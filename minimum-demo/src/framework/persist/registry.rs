@@ -131,7 +131,6 @@ impl PersistRegistry {
     }
 
     pub fn iter_names(&self) -> impl Iterator<Item=(&'_ std::any::TypeId, &'static str)> + '_ {
-        use std::iter::Iterator;
         self.registered_component_prototypes.iter().map(|(t, x)| (t, x.name()))
     }
 

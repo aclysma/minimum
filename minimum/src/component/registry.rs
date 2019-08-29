@@ -1,6 +1,4 @@
 use super::Component;
-use super::ComponentFactory;
-use super::ComponentPrototype;
 use super::ComponentStorage;
 use named_type::NamedType;
 use std::marker::PhantomData;

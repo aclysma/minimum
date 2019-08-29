@@ -2,7 +2,7 @@
 use crate::resource::{Resource, ResourceMap};
 
 use crate::component::{
-    Component, ComponentCreateQueueFlushListener, ComponentFreeHandler, ComponentPrototype,
+    Component, ComponentCreateQueueFlushListener, ComponentFreeHandler,
     ComponentRegistry, ComponentStorage,
 };
 

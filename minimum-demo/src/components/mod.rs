@@ -25,6 +25,7 @@ pub use physics_body::PhysicsBodyComponentPrototypeCustom;
 
 mod editor;
 pub use editor::EditorSelectedComponent;
+pub use editor::EditorModifiedComponent;
 pub use editor::EditorShapeComponent;
 pub use editor::EditorShapeComponentFactory;
 pub use editor::EditorShapeComponentFreeHandler;

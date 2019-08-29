@@ -162,6 +162,17 @@ impl<T: Component> SlabComponentStorage<T> {
         self.slab.iter_mut().map(|(_key, value)| value)
     }
 
+    /// Removes all components of type T from all entities
+    pub fn free_all(&mut self) {
+        //TODO: This is not calling the free handler
+        for slab_key in &mut self.slab_keys {
+            if let Some(key) = &*slab_key {
+                self.slab.free(&key);
+            }
+            *slab_key = None;
+        }
+    }
+
     /// Returns count of allocated components
     pub fn count(&self) -> usize {
         self.slab.count()
@@ -186,6 +197,8 @@ impl<T: Component> ComponentStorage<T> for SlabComponentStorage<T> {
     }
 
     fn free(&mut self, entity: &EntityHandle) {
+        //TODO: This assumes the caller already ran the free handler, would like to rework this API
+        // since it's a bit dangerous
         assert!(self.slab_keys[entity.index() as usize].is_some());
         self.slab
             .free(self.slab_keys[entity.index() as usize].as_ref().unwrap());

@@ -1,4 +1,6 @@
 use crate::framework::FrameworkComponentPrototype;
+use crate::components::EditorModifiedComponent;
+use super::InspectorTab;
 use hashbrown::HashMap;
 use minimum::component::ComponentStorage;
 use minimum::Component;
@@ -58,7 +60,7 @@ where
         if data.len() > 0 {
             <T as imgui_inspect::InspectRenderDefault<T>>::render(
                 data.as_slice(),
-                "label",
+                core::any::type_name::<T>(),
                 ui,
                 &InspectArgsDefault::default(),
             );
@@ -91,7 +93,7 @@ where
         if data.len() > 0 {
             <T as imgui_inspect::InspectRenderDefault<T>>::render_mut(
                 data.as_mut_slice(),
-                "label",
+                core::any::type_name::<T>(),
                 ui,
                 &InspectArgsDefault::default(),
             );
@@ -109,7 +111,7 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
         &self,
         prototypes: &mut HashMap<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
-    );
+    ) -> bool;
 }
 
 pub struct RegisteredComponentPrototype<T>
@@ -148,7 +150,7 @@ where
 
             <T as imgui_inspect::InspectRenderDefault<T>>::render(
                 &cast_values,
-                T::type_name(),
+                core::any::type_name::<T>(),
                 ui,
                 &InspectArgsDefault::default(),
             );
@@ -159,7 +161,8 @@ where
         &self,
         prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
-    ) {
+    ) -> bool
+    {
         if let Some(values) = prototypes.get_mut(&std::any::TypeId::of::<T>()) {
             let mut cast_values: Vec<&mut T> = vec![];
 
@@ -169,10 +172,12 @@ where
 
             <T as imgui_inspect::InspectRenderDefault<T>>::render_mut(
                 &mut cast_values,
-                T::type_name(),
+                core::any::type_name::<T>(),
                 ui,
                 &InspectArgsDefault::default(),
-            );
+            )
+        } else {
+            false
         }
     }
 }
@@ -209,22 +214,12 @@ impl InspectRegistry {
             .push(Box::new(RegisteredComponentPrototype::<T>::new()));
     }
 
-    pub fn render(
-        &self,
-        resource_map: &ResourceMap,
-        entity_handles: &[EntityHandle],
-        ui: &imgui::Ui,
-    ) {
-        for rc in &self.registered_components {
-            rc.render(resource_map, entity_handles, ui);
-        }
-    }
-
     pub fn render_mut(
         &self,
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
+        set_inspector_tab: &mut Option<InspectorTab>
     ) {
         let tab_bar_str = imgui::im_str!("Inspector");
 
@@ -235,8 +230,9 @@ impl InspectRegistry {
             );
         }
 
-        self.render_persistent_tab(resource_map, entity_handles, ui);
-        self.render_runtime_tab(resource_map, entity_handles, ui);
+        self.render_persistent_tab(resource_map, entity_handles, ui, set_inspector_tab);
+        self.render_runtime_tab(resource_map, entity_handles, ui, set_inspector_tab);
+        *set_inspector_tab = None;
 
         unsafe {
             //imgui_sys::igEndTabItem();
@@ -249,15 +245,23 @@ impl InspectRegistry {
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
+        set_inspector_tab: &Option<InspectorTab>
     ) {
         let persistent_tab_str = imgui::im_str!("Persistent");
+
+        let mut tab_flags = imgui_sys::ImGuiTabItemFlags_None;
+        if let Some(new_tab) = set_inspector_tab {
+            if *new_tab == InspectorTab::Persistent {
+                tab_flags |= imgui_sys::ImGuiTabItemFlags_SetSelected;
+            }
+        }
 
         let tab_is_open;
         unsafe {
             tab_is_open = imgui_sys::igBeginTabItem(
                 persistent_tab_str.as_ptr(),
                 std::ptr::null_mut(),
-                imgui_sys::ImGuiTabItemFlags_None as i32,
+                tab_flags as i32,
             );
         }
 
@@ -306,7 +310,12 @@ impl InspectRegistry {
             }
 
             for rcp in &self.registered_component_prototypes {
-                rcp.render_mut(&mut prototypes, ui);
+                if rcp.render_mut(&mut prototypes, ui) {
+                    let mut editor_modified_components = resource_map.fetch_mut::<<EditorModifiedComponent as Component>::Storage>();
+                    for entity_handle in entity_handles {
+                        editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
+                    }
+                }
             }
 
             unsafe {
@@ -320,15 +329,23 @@ impl InspectRegistry {
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
+        set_inspector_tab: &Option<InspectorTab>
     ) {
         let runtime_tab_str = imgui::im_str!("Runtime");
+
+        let mut tab_flags = imgui_sys::ImGuiTabItemFlags_None;
+        if let Some(new_tab) = set_inspector_tab {
+            if *new_tab == InspectorTab::Runtime {
+                tab_flags |= imgui_sys::ImGuiTabItemFlags_SetSelected;
+            }
+        }
 
         let tab_is_open;
         unsafe {
             tab_is_open = imgui_sys::igBeginTabItem(
                 runtime_tab_str.as_ptr(),
                 std::ptr::null_mut(),
-                imgui_sys::ImGuiTabItemFlags_None as i32,
+                tab_flags as i32,
             );
         }
 

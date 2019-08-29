@@ -141,6 +141,7 @@ impl<T: Component> VecComponentStorage<T> {
 
     /// Removes all components of type T from all entities
     pub fn free_all(&mut self) {
+        //TODO: This is not calling the free handler
         for component in &mut self.components {
             *component = None;
         }
@@ -163,11 +164,13 @@ impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
             }
         }
 
-        assert!(self.components[entity.index() as usize].is_none()); // this is tripping, probably because i'm destroying/allocating the same entity in a single frame
+        assert!(self.components[entity.index() as usize].is_none());
         self.components[entity.index() as usize] = Some(data);
     }
 
     fn free(&mut self, entity: &EntityHandle) {
+        //TODO: This assumes the caller already ran the free handler, would like to rework this API
+        // since it's a bit dangerous
         assert!(self.components[entity.index() as usize].is_some());
         self.components[entity.index() as usize] = None;
     }

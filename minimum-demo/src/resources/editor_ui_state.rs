@@ -1,8 +1,10 @@
 use imgui::ImString;
+use crate::framework::inspect::InspectorTab;
 
 pub struct WindowOptions {
     pub show_imgui_metrics: bool,
     pub show_imgui_style_editor: bool,
+    pub show_imgui_demo: bool,
     pub show_entity_list: bool,
     pub show_inspector: bool,
 }
@@ -12,6 +14,7 @@ impl WindowOptions {
         WindowOptions {
             show_imgui_metrics: false,
             show_imgui_style_editor: false,
+            show_imgui_demo: false,
             show_entity_list: false,
             show_inspector: false,
         }
@@ -29,6 +32,7 @@ pub struct EditorUiState {
     pub add_component_search_text: ImString,
     pub window_options_running: WindowOptions,
     pub window_options_editing: WindowOptions,
+    pub set_inspector_tab: Option<InspectorTab>
 }
 
 impl EditorUiState {
@@ -37,6 +41,7 @@ impl EditorUiState {
             add_component_search_text: ImString::with_capacity(255),
             window_options_running: WindowOptions::new(),
             window_options_editing: WindowOptions::new_editing(),
+            set_inspector_tab: None
         }
     }
 

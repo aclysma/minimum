@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{DispatchControl, Task, TaskContext};
+use minimum::{Task, TaskContext};
 
 use crate::resources::{DebugOptions, EditorUiState, GameControl, ImguiManager, TimeState};
 
@@ -47,6 +47,10 @@ impl Task for RenderImguiMainMenu {
                 });
             }
 
+            if window_settings.show_imgui_demo {
+                ui.show_demo_window(&mut window_settings.show_imgui_demo);
+            }
+
             ui.main_menu_bar(|| {
                 ui.menu(im_str!("File")).build(|| {
                     ui.menu(im_str!("Load")).build(|| {
@@ -76,6 +80,10 @@ impl Task for RenderImguiMainMenu {
                     ui.checkbox(
                         im_str!("ImGui Style Editor"),
                         &mut window_settings.show_imgui_style_editor,
+                    );
+                    ui.checkbox(
+                        im_str!("ImGui Demo"),
+                        &mut window_settings.show_imgui_demo,
                     );
                     ui.checkbox(
                         im_str!("Entity List"),

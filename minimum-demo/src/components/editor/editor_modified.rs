@@ -3,14 +3,14 @@ use minimum::Component;
 use named_type::NamedType;
 
 #[derive(Clone, NamedType)]
-pub struct EditorSelectedComponent {}
+pub struct EditorModifiedComponent {}
 
-impl EditorSelectedComponent {
+impl EditorModifiedComponent {
     pub fn new() -> Self {
-        EditorSelectedComponent {}
+        EditorModifiedComponent {}
     }
 }
 
-impl Component for EditorSelectedComponent {
+impl Component for EditorModifiedComponent {
     type Storage = SlabComponentStorage<Self>;
 }

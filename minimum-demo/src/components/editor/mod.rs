@@ -7,5 +7,8 @@ pub use editor_shape::EditorShapeComponentPrototype;
 mod editor_selected;
 pub use editor_selected::EditorSelectedComponent;
 
+mod editor_modified;
+pub use editor_modified::EditorModifiedComponent;
+
 mod persistent_entity;
 pub use persistent_entity::PersistentEntityComponent;
