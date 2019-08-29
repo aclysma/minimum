@@ -1,16 +1,13 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{
-    ComponentStorage, EntityFactory, EntitySet, PendingDeleteComponent, Task, TaskContext,
+    ComponentStorage, EntitySet, Task, TaskContext,
     WriteComponent,
 };
 
-use crate::resources::{EditorUiState, ImguiManager, InputManager, TimeState};
+use crate::resources::{EditorUiState, ImguiManager, InputManager, TimeState, EditorActionQueue};
 
 use crate::components::EditorSelectedComponent;
 use named_type::NamedType;
-
-use crate::framework::CloneComponentPrototype;
-use crate::framework::FrameworkEntityPrototype;
 
 #[derive(NamedType)]
 pub struct RenderImguiEntityList;
@@ -20,10 +17,9 @@ impl Task for RenderImguiEntityList {
         Write<ImguiManager>,
         Read<EditorUiState>,
         Read<EntitySet>,
-        Write<EntityFactory>,
         WriteComponent<EditorSelectedComponent>,
         Read<InputManager>,
-        WriteComponent<PendingDeleteComponent>,
+        Write<EditorActionQueue>
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
@@ -37,10 +33,9 @@ impl Task for RenderImguiEntityList {
             mut imgui_manager,
             editor_ui_state,
             entity_set,
-            mut entity_factory,
             mut editor_selected_components,
             input_manager,
-            mut pending_delete_components,
+            mut editor_action_queue
         ) = data;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
@@ -60,22 +55,11 @@ impl Task for RenderImguiEntityList {
                         let remove_entity = ui.button(im_str!("\u{e897} Delete"), [80.0, 0.0]);
 
                         if add_entity {
-                            editor_selected_components.free_all();
-                            let pec = FrameworkEntityPrototype::new(
-                                std::path::PathBuf::from("testpath"),
-                                vec![Box::new(CloneComponentPrototype::new(
-                                    EditorSelectedComponent::new(),
-                                ))],
-                            );
-                            entity_factory.enqueue_create(Box::new(pec));
+                            editor_action_queue.enqueue_add_new_entity();
                         }
 
                         if remove_entity {
-                            for (entity_handle, _c) in editor_selected_components.iter(&entity_set)
-                            {
-                                entity_set
-                                    .enqueue_free(&entity_handle, &mut *pending_delete_components);
-                            }
+                            editor_action_queue.enqueue_delete_selected_entities();
                         }
 
                         let name = im_str!("");

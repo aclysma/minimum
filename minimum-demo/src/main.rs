@@ -33,6 +33,7 @@ use framework::CloneComponentFactory;
 use minimum::component::Component;
 use minimum::component::ComponentStorage;
 use minimum::resource::ResourceMap;
+use resources::EditorActionQueue;
 use crate::components::{PersistentEntityComponent, EditorSelectedComponent};
 
 #[derive(Copy, Clone, PartialEq, strum_macros::EnumCount)]
@@ -96,6 +97,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(resources::DebugOptions::new())
         .with_resource(resources::EditorCollisionWorld::new())
         .with_resource(resources::EditorUiState::new())
+        .with_resource(resources::EditorActionQueue::new())
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
@@ -295,8 +297,16 @@ fn dispatcher_thread(
             // This checks if we need to load a different level or kill the process
             dispatch_ctx.visit_resources_mut(move |resource_map| {
                 let _scope_timer = minimum::util::ScopeTimer::new("end frame");
+
+                {
+                    let mut editor_action_queue = resource_map.fetch_mut::<EditorActionQueue>();
+                    editor_action_queue.process_queue(resource_map);
+                }
+
                 end_frame(resource_map);
+
                 recreate_modified_entities(resource_map);
+
             }),
         ])
     });
@@ -416,6 +426,7 @@ fn recreate_modified_entities(resource_map: &mut ResourceMap) {
     let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
 
     // Find all the modified persistent entities. Return a tuple of (prototypes, is_selected), and mark them for deletion
+    // (the scoping here is intentional, we want to avoid having any active fetch when we call flush_free)
     let prototypes = {
         let persistent_entity_components = resource_map.fetch::<<components::PersistentEntityComponent as Component>::Storage>();
         let editor_modified_components = resource_map.fetch::<<components::EditorModifiedComponent as Component>::Storage>();
@@ -438,19 +449,25 @@ fn recreate_modified_entities(resource_map: &mut ResourceMap) {
         prototypes
     };
 
+    if prototypes.is_empty() {
+        return;
+    }
+
     // Delete marked entities
     entity_set.flush_free(resource_map);
 
-    // Recreate the entities
-    let mut editor_selected_components = resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
-    for (prototype, is_selected) in prototypes {
-        use minimum::EntityPrototype;
-        let entity = entity_set.allocate_get();
-        prototype.create(resource_map, &entity);
+    // Recreate the entities (the scoping here is intentional, we want to avoid having any active fetch when we call flush_creates)
+    {
+        let mut editor_selected_components = resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
+        for (prototype, is_selected) in prototypes {
+            use minimum::EntityPrototype;
+            let entity = entity_set.allocate_get();
+            prototype.create(resource_map, &entity);
 
-        // If the entity was selected before it was deleted, re-select it
-        if is_selected {
-            editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
+            // If the entity was selected before it was deleted, re-select it
+            if is_selected {
+                editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
+            }
         }
     }
 

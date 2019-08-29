@@ -1,5 +1,6 @@
 mod debug_draw;
 mod debug_options;
+mod editor_action_queue;
 mod editor_collision_world;
 mod editor_ui_state;
 mod game_control;
@@ -14,6 +15,7 @@ pub use debug_draw::DebugDraw;
 pub use debug_options::DebugOptions;
 pub use editor_collision_world::EditorCollisionWorld;
 pub use editor_ui_state::EditorUiState;
+pub use editor_action_queue::EditorActionQueue;
 pub use game_control::GameControl;
 pub use imgui_manager::ImguiManager;
 pub use input_manager::InputManager;
