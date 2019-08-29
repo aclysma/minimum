@@ -33,6 +33,8 @@ use framework::CloneComponentFactory;
 //use framework::CloneComponentPrototypeSerializer;
 use minimum::component::Component;
 use minimum::resource::ResourceMap;
+use crate::components::PersistentEntityComponent;
+use crate::resources::GameControl;
 
 #[derive(Copy, Clone, PartialEq, strum_macros::EnumCount)]
 pub enum PlayMode {
@@ -143,6 +145,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     inspect_registry
         .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
+    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
 
     let mut persist_registry = framework::persist::PersistRegistry::new();
 
@@ -152,6 +155,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>("Bullet");
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
+    persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
     //persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototype>();
     //persist_registry.register_component_prototype::<components::EditorShapeComponentPrototype>();
 
@@ -382,20 +386,17 @@ fn draw_inspector(resource_map: &ResourceMap) {
 
                     if let Some(type_id) = selected_type_id {
 
-                        use components::PersistentEntityComponent;
                         let mut prototype_components = resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
                         for selected_entity_handle in &selected_entity_handles {
-
-
                             use minimum::component::ComponentStorage;
                             if let Some(pec) = prototype_components.get_mut(selected_entity_handle) {
 
                                 let default_component = persist_registry.create_default(&type_id);
-                                let prototype = pec.prototype_mut();
-                                let mut guard = prototype.get_mut();
+                                let entity_prototype = pec.entity_prototype_mut();
+                                let mut entity_prototype_guard = entity_prototype.get_mut();
 
                                 //TODO: Check that one doesn't exist already or switch to using hashmap
-                                guard.component_prototypes_mut().push(default_component);
+                                entity_prototype_guard.component_prototypes_mut().push(default_component);
                             }
                         }
                     }
@@ -415,17 +416,11 @@ fn end_frame(resource_map: &mut ResourceMap) {
     let mut game_control = resource_map.fetch_mut::<resources::GameControl>();
     let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
 
-    if game_control.terminate_process() {
+    if game_control.take_terminate_process() {
         dispatch_control.end_game_loop();
-    } else if game_control.has_load_level() {
-        // Unload game state
-        let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
-        entity_set.clear(resource_map);
-        //resource_map.remove::<game::GameState>();
 
-        // Setup game state
-        let _level_to_load = game_control.take_load_level();
-        //resource_map.insert::<physics::Physics>();
+        // Don't bother checking any of the other flags
+        return;
     }
 
     if let Some(_save_path) = game_control.take_save_level() {
@@ -435,5 +430,67 @@ fn end_frame(resource_map: &mut ResourceMap) {
 
         let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
         persist_registry.save(resource_map);
+    }
+
+    if let Some(_load_path) = game_control.take_load_level() {
+        // Unload game state
+        //let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
+        //entity_set.clear(resource_map);
+
+        // Setup game state
+
+        // If a reset level flag is set, clear it. We are in a fresh state already and there's nothing to reset.
+        game_control.take_reset_level();
+    }
+
+    if game_control.take_reset_level() {
+
+        // Collect all the data needed to re-create the persistent entities
+        let prototypes = {
+            let mut prototypes = vec![];
+
+            // Every persistent entity will have a component with the components that created it
+            let persistent_entity_components = resource_map.fetch::<<components::PersistentEntityComponent as Component>::Storage>();
+            for persistent_entity_component in persistent_entity_components.iter_values() {
+                prototypes.push(persistent_entity_component.entity_prototype().clone());
+            }
+
+            prototypes
+        };
+
+        let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
+        entity_set.clear(resource_map);
+
+        let mut entity_factory = resource_map.fetch_mut::<minimum::EntityFactory>();
+        for prototype in prototypes {
+            entity_factory.enqueue_create(Box::new(prototype));
+        }
+    }
+
+    if let Some(new_play_mode) = game_control.take_change_play_mode() {
+        // Clear playmode flags
+        *dispatch_control.next_frame_context_flags_mut() &=
+            !(crate::context_flags::PLAYMODE_SYSTEM
+                | crate::context_flags::PLAYMODE_PAUSED
+                | crate::context_flags::PLAYMODE_PLAYING);
+
+        // Set the appropriate ones
+        match new_play_mode {
+            PlayMode::System => {
+                *dispatch_control.next_frame_context_flags_mut() |=
+                    crate::context_flags::PLAYMODE_SYSTEM
+            }
+            PlayMode::Paused => {
+                *dispatch_control.next_frame_context_flags_mut() |=
+                    crate::context_flags::PLAYMODE_SYSTEM
+                        | crate::context_flags::PLAYMODE_PAUSED
+            }
+            PlayMode::Playing => {
+                *dispatch_control.next_frame_context_flags_mut() |=
+                    crate::context_flags::PLAYMODE_SYSTEM
+                        | crate::context_flags::PLAYMODE_PAUSED
+                        | crate::context_flags::PLAYMODE_PLAYING
+            }
+        }
     }
 }

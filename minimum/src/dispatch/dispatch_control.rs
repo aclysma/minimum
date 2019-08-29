@@ -23,7 +23,7 @@ impl DispatchControl {
         self.should_terminate = true;
     }
 
-    pub fn should_terminate(&self) -> bool {
+    pub fn should_end_game_loop(&self) -> bool {
         self.should_terminate
     }
 }

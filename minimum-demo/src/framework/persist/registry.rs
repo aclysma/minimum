@@ -103,7 +103,7 @@ impl PersistRegistry {
         // Iterate entities and their entity prototypes
         for (entity_handle, component_prototype) in persistent_entity_components.iter(&*entity_set)
         {
-            let arc = component_prototype.prototype().inner().clone();
+            let arc = component_prototype.entity_prototype().inner().clone();
             let pep = arc.lock().unwrap();
 
             // Iterate their component prototypes

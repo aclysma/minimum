@@ -1,13 +1,13 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{DispatchControl, Task, TaskContext};
+use minimum::{Task, TaskContext};
 
-use crate::resources::{InputManager, TimeState};
+use crate::resources::{InputManager, TimeState, GameControl};
 use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct UpdateTimeState;
 impl Task for UpdateTimeState {
-    type RequiredResources = (Write<TimeState>, Read<InputManager>, Write<DispatchControl>);
+    type RequiredResources = (Write<TimeState>, Read<InputManager>, Write<GameControl>);
     const REQUIRED_FLAGS: usize = 0;
 
     fn run(
@@ -16,7 +16,7 @@ impl Task for UpdateTimeState {
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         use crate::PlayMode;
-        let (mut time_state, input_manager, mut dispatch_control) = data;
+        let (mut time_state, input_manager, mut game_control) = data;
 
         let play_mode =
             if task_context.context_flags() & crate::context_flags::PLAYMODE_PLAYING != 0 {
@@ -37,30 +37,7 @@ impl Task for UpdateTimeState {
                 PlayMode::Playing => PlayMode::System,
             };
 
-            // Clear playmode flags
-            *dispatch_control.next_frame_context_flags_mut() &=
-                !(crate::context_flags::PLAYMODE_SYSTEM
-                    | crate::context_flags::PLAYMODE_PAUSED
-                    | crate::context_flags::PLAYMODE_PLAYING);
-
-            // Set the appropriate ones
-            match new_play_mode {
-                PlayMode::System => {
-                    *dispatch_control.next_frame_context_flags_mut() |=
-                        crate::context_flags::PLAYMODE_SYSTEM
-                }
-                PlayMode::Paused => {
-                    *dispatch_control.next_frame_context_flags_mut() |=
-                        crate::context_flags::PLAYMODE_SYSTEM
-                            | crate::context_flags::PLAYMODE_PAUSED
-                }
-                PlayMode::Playing => {
-                    *dispatch_control.next_frame_context_flags_mut() |=
-                        crate::context_flags::PLAYMODE_SYSTEM
-                            | crate::context_flags::PLAYMODE_PAUSED
-                            | crate::context_flags::PLAYMODE_PLAYING
-                }
-            }
+            game_control.set_change_play_mode(new_play_mode);
         }
     }
 }

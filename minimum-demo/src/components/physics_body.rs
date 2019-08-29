@@ -115,7 +115,7 @@ impl PhysicsBodyComponentDesc {
 }
 
 //
-// Creates a component for an entity by copying it
+// Custom Prototype
 //
 #[derive(Clone, NamedType, Inspect)]
 pub struct PhysicsBodyComponentPrototypeCustom {
@@ -138,31 +138,39 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeCustom {
 impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCustom {}
 
 //
-// Creates a component for an entity by copying it
+// Box Prototype
 //
 #[derive(Clone, NamedType, Inspect, Serialize, Deserialize)]
 pub struct PhysicsBodyComponentPrototypeBox {
     #[inspect(proxy_type = "ImGlmVec2")]
     size: glm::Vec2,
+    mass: f32,
+    collision_group_membership: u32,
+    collision_group_whitelist: u32,
+    collision_group_blacklist: u32,
+}
 
-    //TODO: Support more than one!
-    collision_group_membership: usize,
+
+impl PhysicsBodyComponentPrototypeBox {
+    pub fn new(size: glm::Vec2, mass: f32, collision_group_membership: u32, collision_group_whitelist: u32, collision_group_blacklist: u32) -> Self {
+        PhysicsBodyComponentPrototypeBox {
+            size,
+            mass,
+            collision_group_membership,
+            collision_group_whitelist,
+            collision_group_blacklist
+        }
+    }
 }
 
 impl Default for PhysicsBodyComponentPrototypeBox {
     fn default() -> Self {
         PhysicsBodyComponentPrototypeBox {
             size: glm::vec2(10.0, 10.0),
-            collision_group_membership: 0
-        }
-    }
-}
-
-impl PhysicsBodyComponentPrototypeBox {
-    pub fn new(size: glm::Vec2, collision_group_membership: usize) -> Self {
-        PhysicsBodyComponentPrototypeBox {
-            size,
-            collision_group_membership,
+            mass: 0.0,
+            collision_group_membership: 0,
+            collision_group_whitelist: 0,
+            collision_group_blacklist: 0
         }
     }
 }
@@ -173,14 +181,58 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeBox {
 
 impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeBox {}
 
-enum QueuedPhysicsBodyPrototypes {
-    Box(PhysicsBodyComponentPrototypeBox),
-    Custom(PhysicsBodyComponentPrototypeCustom),
+//
+// Circle Prototype
+//
+#[derive(Clone, NamedType, Inspect, Serialize, Deserialize)]
+pub struct PhysicsBodyComponentPrototypeCircle {
+    radius: f32,
+    mass: f32,
+    collision_group_membership: u32,
+    collision_group_whitelist: u32,
+    collision_group_blacklist: u32,
 }
+
+
+impl PhysicsBodyComponentPrototypeCircle {
+    pub fn new(radius: f32, mass: f32, collision_group_membership: u32, collision_group_whitelist: u32, collision_group_blacklist: u32) -> Self {
+        PhysicsBodyComponentPrototypeCircle {
+            radius,
+            mass,
+            collision_group_membership,
+            collision_group_whitelist,
+            collision_group_blacklist
+        }
+    }
+}
+
+impl Default for PhysicsBodyComponentPrototypeCircle {
+    fn default() -> Self {
+        PhysicsBodyComponentPrototypeCircle {
+            radius: 10.0,
+            mass: 0.0,
+            collision_group_membership: 0,
+            collision_group_whitelist: 0,
+            collision_group_blacklist: 0
+        }
+    }
+}
+
+impl ComponentPrototype for PhysicsBodyComponentPrototypeCircle {
+    type Factory = PhysicsBodyComponentFactory;
+}
+
+impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCircle {}
 
 //
 // Factory for PhysicsBody components
 //
+enum QueuedPhysicsBodyPrototypes {
+    Custom(PhysicsBodyComponentPrototypeCustom),
+    Box(PhysicsBodyComponentPrototypeBox),
+    Circle(PhysicsBodyComponentPrototypeCircle),
+}
+
 pub struct PhysicsBodyComponentFactory {
     prototypes: VecDeque<(EntityHandle, QueuedPhysicsBodyPrototypes)>,
 }
@@ -219,6 +271,35 @@ impl ComponentFactory<PhysicsBodyComponentPrototypeBox> for PhysicsBodyComponent
     }
 }
 
+impl ComponentFactory<PhysicsBodyComponentPrototypeCircle> for PhysicsBodyComponentFactory {
+    fn enqueue_create(
+        &mut self,
+        entity_handle: &EntityHandle,
+        prototype: &PhysicsBodyComponentPrototypeCircle,
+    ) {
+        self.prototypes.push_back((
+            entity_handle.clone(),
+            QueuedPhysicsBodyPrototypes::Circle(prototype.clone()),
+        ));
+    }
+}
+
+fn create_collision_groups(membership: u32, whitelist: u32, blacklist: u32) -> ncollide2d::world::CollisionGroups {
+    // Start with an empty group. (If we don't specify membership, it will default to being in all groups)
+    let mut groups = ncollide2d::world::CollisionGroups::new()
+        .with_membership(&[])
+        .with_whitelist(&[])
+        .with_blacklist(&[]);
+
+    for i in 0..ncollide2d::world::CollisionGroups::max_group_id() as u32 {
+        groups.modify_membership(i as usize, membership & (1<<i) != 0);
+        groups.modify_whitelist(i as usize, whitelist & (1<<i) != 0);
+        groups.modify_blacklist(i as usize, blacklist & (1<<i) != 0);
+    }
+
+    groups
+}
+
 impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
     fn flush_creates(&mut self, resource_map: &ResourceMap, entity_set: &EntitySet) {
         if self.prototypes.is_empty() {
@@ -239,6 +320,7 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                         glm::zero()
                     };
 
+                //TODO: There is a silly amount of duplicated code in here
                 match data {
                     QueuedPhysicsBodyPrototypes::Box(data) => {
                         use ncollide2d::shape::{Cuboid, ShapeHandle};
@@ -249,12 +331,34 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                         let collider_desc = ColliderDesc::new(shape)
                             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
                             .collision_groups(
-                                ncollide2d::world::CollisionGroups::new()
-                                    .with_membership(&[data.collision_group_membership]),
+                                create_collision_groups(data.collision_group_membership, data.collision_group_whitelist, data.collision_group_blacklist)
                             );
 
                         let body_desc = RigidBodyDesc::new()
                             .translation(center)
+                            .kinematic_rotation(false)
+                            .collider(&collider_desc);
+
+                        let body = physics.world_mut().add_body(&body_desc);
+                        entity
+                            .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
+                    },
+
+                    QueuedPhysicsBodyPrototypes::Circle(data) => {
+                        use ncollide2d::shape::{Ball, ShapeHandle};
+                        use nphysics2d::material::{BasicMaterial, MaterialHandle};
+
+                        let shape = ShapeHandle::new(Ball::new(data.radius));
+
+                        let collider_desc = ColliderDesc::new(shape)
+                            .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
+                            .collision_groups(
+                                create_collision_groups(data.collision_group_membership, data.collision_group_whitelist, data.collision_group_blacklist)
+                            );
+
+                        let body_desc = RigidBodyDesc::new()
+                            .translation(center)
+                            .mass(data.mass)
                             .kinematic_rotation(false)
                             .collider(&collider_desc);
 

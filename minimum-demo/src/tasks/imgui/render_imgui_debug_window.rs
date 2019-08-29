@@ -24,7 +24,6 @@ impl Task for RenderImguiMainMenu {
         ReadComponent<PositionComponent>,
         Read<InputManager>,
         Read<RenderState>,
-        Write<DispatchControl>,
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
@@ -46,7 +45,6 @@ impl Task for RenderImguiMainMenu {
             position_components,
             input_manager,
             render_state,
-            mut dispatch_control,
         ) = data;
 
         let is_edit_mode = time_state.play_mode == crate::PlayMode::System;

@@ -194,7 +194,7 @@ impl MinimumDispatcher {
             if resource_map
                 .borrow()
                 .fetch::<DispatchControl>()
-                .should_terminate()
+                .should_end_game_loop()
             {
                 return None;
             }

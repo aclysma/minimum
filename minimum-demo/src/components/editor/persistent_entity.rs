@@ -13,11 +13,11 @@ impl PersistentEntityComponent {
         PersistentEntityComponent { prototype }
     }
 
-    pub fn prototype(&self) -> &FrameworkEntityPrototype {
+    pub fn entity_prototype(&self) -> &FrameworkEntityPrototype {
         &self.prototype
     }
 
-    pub fn prototype_mut(&mut self) -> &FrameworkEntityPrototype {
+    pub fn entity_prototype_mut(&mut self) -> &FrameworkEntityPrototype {
         &mut self.prototype
     }
 }

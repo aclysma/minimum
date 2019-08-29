@@ -276,7 +276,7 @@ impl InspectRegistry {
             for entity_handle in entity_handles {
                 let comp = storage.get_mut(&entity_handle);
                 if let Some(comp) = comp {
-                    let arc = comp.prototype().inner().clone();
+                    let arc = comp.entity_prototype().inner().clone();
                     arcs.push(arc);
                 }
             }

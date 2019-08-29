@@ -14,7 +14,6 @@ impl Task for RenderImguiMainMenu {
         Write<GameControl>,
         Write<EditorUiState>,
         Write<DebugOptions>,
-        Write<DispatchControl>,
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
 
@@ -29,7 +28,6 @@ impl Task for RenderImguiMainMenu {
             mut game_control,
             mut editor_ui_state,
             mut debug_options,
-            mut dispatch_control,
         ) = data;
 
         let is_edit_mode = time_state.play_mode == crate::PlayMode::System;
@@ -93,29 +91,22 @@ impl Task for RenderImguiMainMenu {
                 ui.separator();
 
                 if is_edit_mode {
-                    if ui.menu_item(im_str!("\u{f40a} Play")).build() {
-                        // Clear playmode flags
-                        *dispatch_control.next_frame_context_flags_mut() &=
-                            !(crate::context_flags::PLAYMODE_SYSTEM
-                                | crate::context_flags::PLAYMODE_PAUSED
-                                | crate::context_flags::PLAYMODE_PLAYING);
+                    if ui.menu_item(im_str!("\u{e8c4} Reset")).build() {
+                        game_control.set_reset_level();
+                        game_control.set_change_play_mode(crate::PlayMode::System);
+                    }
 
-                        // Set the appropriate ones
-                        *dispatch_control.next_frame_context_flags_mut() |=
-                            crate::context_flags::PLAYMODE_SYSTEM
-                                | crate::context_flags::PLAYMODE_PAUSED
-                                | crate::context_flags::PLAYMODE_PLAYING
+                    if ui.menu_item(im_str!("\u{f40a} Play")).build() {
+                        game_control.set_change_play_mode(crate::PlayMode::Playing);
                     }
                 } else {
-                    if ui.menu_item(im_str!("\u{f3e4} Pause")).build() {
-                        *dispatch_control.next_frame_context_flags_mut() &=
-                            !(crate::context_flags::PLAYMODE_SYSTEM
-                                | crate::context_flags::PLAYMODE_PAUSED
-                                | crate::context_flags::PLAYMODE_PLAYING);
+                    if ui.menu_item(im_str!("\u{e8c4} Reset")).build() {
+                        game_control.set_reset_level();
+                        game_control.set_change_play_mode(crate::PlayMode::System);
+                    }
 
-                        // Set the appropriate ones
-                        *dispatch_control.next_frame_context_flags_mut() |=
-                            crate::context_flags::PLAYMODE_SYSTEM
+                    if ui.menu_item(im_str!("\u{f3e4} Pause")).build() {
+                        game_control.set_change_play_mode(crate::PlayMode::System);
                     }
                 }
 
