@@ -26,17 +26,16 @@ mod init;
 mod renderer;
 mod resources;
 mod tasks;
+mod update;
 
 use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
 use framework::CloneComponentFactory;
 use minimum::component::Component;
-use minimum::component::ComponentStorage;
 use minimum::resource::ResourceMap;
 use resources::EditorActionQueue;
-use crate::components::{PersistentEntityComponent, EditorSelectedComponent};
 
-#[derive(Copy, Clone, PartialEq, strum_macros::EnumCount)]
+#[derive(Copy, Clone, PartialEq, strum_macros::EnumCount, Debug)]
 pub enum PlayMode {
     // Represents the game being frozen for debug purposes
     System,
@@ -84,10 +83,11 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     let event_loop = winit::event_loop::EventLoop::<resources::WindowUserEvent>::new_user_event();
     let window = winit::window::WindowBuilder::new()
         .with_title("Minimum Demo")
+        .with_inner_size(winit::dpi::LogicalSize::new(1300.0, 900.0))
         .build(&event_loop)?;
 
     let mut resource_map = minimum::WorldBuilder::new()
-        .with_resource(resources::GameControl::new())
+        .with_resource(resources::FrameworkActionQueue::new())
         .with_resource(resources::DebugDraw::new())
         .with_resource(resources::InputManager::new())
         .with_resource(resources::TimeState::new())
@@ -219,7 +219,6 @@ fn create_objects(resource_map: &ResourceMap) {
         glm::vec2(15.0, 40.0),
         &mut *entity_factory,
     );
-
     constructors::create_wall(
         glm::vec2(0.0, 280.0),
         glm::vec2(800.0, 10.0),
@@ -247,6 +246,7 @@ fn dispatcher_thread(
 ) -> minimum::resource::ResourceMap {
     info!("dispatch thread started");
 
+    // Start off in the editor state
     let context_flags = crate::context_flags::AUTHORITY_CLIENT
         | crate::context_flags::AUTHORITY_SERVER
         //| crate::context_flags::PLAYMODE_PLAYING
@@ -258,16 +258,27 @@ fn dispatcher_thread(
         //TODO: Explore non-intrusive method for defining task dependencies
         //TODO: Explore flags to turn steps on/off
         minimum::async_dispatch::ExecuteSequential::new(vec![
+            // Pre Input
             dispatch_ctx.run_task(tasks::ClearDebugDraw),
             dispatch_ctx.run_task(tasks::ImguiBeginFrame),
             dispatch_ctx.run_task(tasks::UpdateTimeState),
+
+            // Input
             dispatch_ctx.run_task(tasks::GatherInput),
+
+            // Pre Physics
             dispatch_ctx.run_task(tasks::ControlPlayerEntity),
-            dispatch_ctx.run_task(tasks::UpdatePositionWithVelocity),
             dispatch_ctx.run_task(tasks::HandleFreeAtTimeComponents),
+            dispatch_ctx.run_task(tasks::UpdatePositionWithVelocity),
+
+            // Physics
             dispatch_ctx.run_task(tasks::PhysicsSyncPre),
             dispatch_ctx.run_task(tasks::UpdatePhysics),
             dispatch_ctx.run_task(tasks::PhysicsSyncPost),
+
+            // Post Physics
+
+            // Pre Render
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::RenderImguiEntityList),
             dispatch_ctx.run_task(tasks::EditorUpdateShapesWithPosition),
@@ -278,35 +289,50 @@ fn dispatcher_thread(
             dispatch_ctx.visit_resources(|resource_map| {
                 // Draw Inspector
                 {
+                    // This requires global data access since we're going to draw/edit potentially any
+                    // component
                     let _scope_timer = minimum::util::ScopeTimer::new("inspect");
-                    draw_inspector(&resource_map);
+                    framework::inspect::draw_inspector(&resource_map);
                 }
 
                 // Render
                 {
+                    // This could potentially take a subset of the data, but it's more convenient
+                    // to pass everything
                     let _scope_timer = minimum::util::ScopeTimer::new("render");
-                    render(resource_map);
+                    update::render(resource_map);
                 }
 
                 // This must be called once per frame to create/destroy entities
                 {
+                    // Updating the entity set will process queued work like creating/deleting components
+                    // This could require access to any component type
                     let _scope_timer = minimum::util::ScopeTimer::new("entity update");
-                    update_entity_set(resource_map);
+                    update::update_entity_set(resource_map);
                 }
             }),
             // This checks if we need to load a different level or kill the process
             dispatch_ctx.visit_resources_mut(move |resource_map| {
-                let _scope_timer = minimum::util::ScopeTimer::new("end frame");
 
+                // Drain the editor action queue. This can potentially add/remove entities
                 {
+                    let _scope_timer = minimum::util::ScopeTimer::new("editor queue");
                     let mut editor_action_queue = resource_map.fetch_mut::<EditorActionQueue>();
                     editor_action_queue.process_queue(resource_map);
                 }
 
-                end_frame(resource_map);
+                // Drain the framework queue. This can potentiall load/save/reset the game state
+                {
+                    let _scope_timer = minimum::util::ScopeTimer::new("framework_action_queue");
+                    let mut framework_action_queue = resource_map.fetch_mut::<resources::FrameworkActionQueue>();
+                    framework_action_queue.process_queue(resource_map);
+                }
 
-                recreate_modified_entities(resource_map);
-
+                // Rebuild any entities that had their prototype changed
+                {
+                    let _scope_timer = minimum::util::ScopeTimer::new("recreate_modified_entities");
+                    update::recreate_editor_modified_entities(resource_map);
+                }
             }),
         ])
     });
@@ -327,237 +353,3 @@ fn dispatcher_thread(
     resource_map
 }
 
-pub fn render(resource_map: &ResourceMap) {
-    let window = resource_map.fetch::<winit::window::Window>();
-    let mut renderer = resource_map.fetch_mut::<crate::renderer::Renderer>();
-    renderer.render(&window, &resource_map);
-}
-
-fn draw_inspector(resource_map: &ResourceMap) {
-    let play_mode = resource_map.fetch::<resources::TimeState>().play_mode;
-    let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
-    let window_options = editor_ui_state.window_options(play_mode);
-    if !window_options.show_inspector {
-        return;
-    }
-
-    let entity_set = resource_map.fetch::<minimum::EntitySet>();
-    let selected_entity_handles = {
-        let selected_components =
-            resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
-        let mut selected = vec![];
-        for (entity_handle, _) in selected_components.iter(&entity_set) {
-            selected.push(entity_handle);
-        }
-        selected
-    };
-
-    let inspect_registry = resource_map.fetch::<framework::inspect::InspectRegistry>();
-    let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
-    let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
-    imgui_manager.with_ui(|ui| {
-        use imgui::im_str;
-
-        //ui.set
-        ui.window(im_str!("Inspector"))
-            .position([0.0, 250.0], imgui::Condition::Once)
-            .size([200.0, 300.0], imgui::Condition::Once)
-            .build(|| {
-                if ui.button(im_str!("\u{e8b1} Add"), [80.0, 0.0]) {
-                    //ui.open_popup(im_str!("Add Component"));
-                    ui.open_popup(im_str!("Add Component"));
-                }
-
-                ui.popup(im_str!("Add Component"), || {
-                    ui.input_text(
-                        im_str!("Filter"),
-                        &mut editor_ui_state.add_component_search_text,
-                    )
-                    .resize_buffer(true)
-                    .build();
-
-                    let mut component_names = vec![];
-                    for i in 0..50 {
-                        component_names.push(format!("ComponentName{}", i));
-                    }
-
-                    let mut selected_type_id = None;
-
-                    use imgui::ImGuiSelectableFlags;
-                    for (type_id, component_name) in persist_registry.iter_names() {
-
-                        if editor_ui_state.add_component_search_text.is_empty() ||
-                            component_name.contains(editor_ui_state.add_component_search_text.to_str())
-                        {
-                            if ui.selectable(&im_str!("{}", component_name), false, ImGuiSelectableFlags::empty(), [0.0, 0.0]) {
-                                selected_type_id = Some(type_id.clone());
-                            }
-                        }
-                    }
-
-                    if let Some(type_id) = selected_type_id {
-
-                        let mut prototype_components = resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
-                        for selected_entity_handle in &selected_entity_handles {
-                            if let Some(pec) = prototype_components.get_mut(selected_entity_handle) {
-
-                                let default_component = persist_registry.create_default(&type_id);
-                                let entity_prototype = pec.entity_prototype_mut();
-                                let mut entity_prototype_guard = entity_prototype.get_mut();
-
-                                //TODO: Check that one doesn't exist already or switch to using hashmap
-                                entity_prototype_guard.component_prototypes_mut().push(default_component);
-                            }
-                        }
-                    }
-                });
-
-                inspect_registry.render_mut(resource_map, selected_entity_handles.as_slice(), ui, &mut editor_ui_state.set_inspector_tab);
-            })
-    });
-}
-
-fn update_entity_set(resource_map: &ResourceMap) {
-    let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
-    entity_set.update(resource_map);
-}
-
-fn recreate_modified_entities(resource_map: &mut ResourceMap) {
-    let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
-
-    // Find all the modified persistent entities. Return a tuple of (prototypes, is_selected), and mark them for deletion
-    // (the scoping here is intentional, we want to avoid having any active fetch when we call flush_free)
-    let prototypes = {
-        let persistent_entity_components = resource_map.fetch::<<components::PersistentEntityComponent as Component>::Storage>();
-        let editor_modified_components = resource_map.fetch::<<components::EditorModifiedComponent as Component>::Storage>();
-        let editor_selected_components = resource_map.fetch::<<components::EditorSelectedComponent as Component>::Storage>();
-        let mut pending_delete_components = resource_map.fetch_mut::<<minimum::PendingDeleteComponent as Component>::Storage>();
-
-        let mut prototypes = vec![];
-
-        for (entity_handle, _editor_modified_component) in editor_modified_components.iter(&entity_set) {
-            if let Some(persistent_entity_component) = persistent_entity_components.get(&entity_handle) {
-
-                let prototype = persistent_entity_component.entity_prototype().clone();
-                let selected = editor_selected_components.exists(&entity_handle);
-
-                prototypes.push((prototype, selected));
-                entity_set.enqueue_free(&entity_handle, &mut *pending_delete_components);
-            }
-        }
-
-        prototypes
-    };
-
-    if prototypes.is_empty() {
-        return;
-    }
-
-    // Delete marked entities
-    entity_set.flush_free(resource_map);
-
-    // Recreate the entities (the scoping here is intentional, we want to avoid having any active fetch when we call flush_creates)
-    {
-        let mut editor_selected_components = resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
-        for (prototype, is_selected) in prototypes {
-            use minimum::EntityPrototype;
-            let entity = entity_set.allocate_get();
-            prototype.create(resource_map, &entity);
-
-            // If the entity was selected before it was deleted, re-select it
-            if is_selected {
-                editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
-            }
-        }
-    }
-
-    entity_set.flush_creates(resource_map);
-}
-
-fn end_frame(resource_map: &mut ResourceMap) {
-    let mut game_control = resource_map.fetch_mut::<resources::GameControl>();
-    let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
-
-    if game_control.take_terminate_process() {
-        dispatch_control.end_game_loop();
-
-        // Don't bother checking any of the other flags
-        return;
-    }
-
-    if let Some(_save_path) = game_control.take_save_level() {
-        println!("save");
-
-        //let entity_set = resource_map.fetch::<minimum::EntitySet>();
-
-        let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
-        persist_registry.save(resource_map);
-    }
-
-    if let Some(_load_path) = game_control.take_load_level() {
-        // Unload game state
-        //let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
-        //entity_set.clear(resource_map);
-
-        // Setup game state
-
-        // If a reset level flag is set, clear it. We are in a fresh state already and there's nothing to reset.
-        game_control.take_reset_level();
-    }
-
-    if game_control.take_reset_level() {
-        // Collect all the data needed to re-create the persistent entities
-        let prototypes = {
-            let mut prototypes = vec![];
-
-            // Every persistent entity will have a component with the components that created it
-            let persistent_entity_components = resource_map.fetch::<<components::PersistentEntityComponent as Component>::Storage>();
-            for persistent_entity_component in persistent_entity_components.iter_values() {
-                prototypes.push(persistent_entity_component.entity_prototype().clone());
-            }
-
-            prototypes
-        };
-
-        let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
-        entity_set.clear(resource_map);
-
-        let mut entity_factory = resource_map.fetch_mut::<minimum::EntityFactory>();
-        for prototype in prototypes {
-            entity_factory.enqueue_create(Box::new(prototype));
-        }
-
-        let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
-        editor_ui_state.set_inspector_tab = Some(framework::inspect::InspectorTab::Persistent);
-    }
-
-    if let Some(new_play_mode) = game_control.take_change_play_mode() {
-        // Clear playmode flags
-        *dispatch_control.next_frame_context_flags_mut() &=
-            !(crate::context_flags::PLAYMODE_SYSTEM
-                | crate::context_flags::PLAYMODE_PAUSED
-                | crate::context_flags::PLAYMODE_PLAYING);
-
-        // Set the appropriate ones
-        match new_play_mode {
-            PlayMode::System => {
-                *dispatch_control.next_frame_context_flags_mut() |=
-                    crate::context_flags::PLAYMODE_SYSTEM;
-            }
-            PlayMode::Paused => {
-                *dispatch_control.next_frame_context_flags_mut() |=
-                    crate::context_flags::PLAYMODE_SYSTEM
-                        | crate::context_flags::PLAYMODE_PAUSED;
-            }
-            PlayMode::Playing => {
-                *dispatch_control.next_frame_context_flags_mut() |=
-                    crate::context_flags::PLAYMODE_SYSTEM
-                        | crate::context_flags::PLAYMODE_PAUSED
-                        | crate::context_flags::PLAYMODE_PLAYING;
-
-                let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
-                editor_ui_state.set_inspector_tab = Some(framework::inspect::InspectorTab::Runtime);
-            }
-        }
-    }
-}

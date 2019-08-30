@@ -16,7 +16,7 @@ impl EditorActionQueue {
     }
 
     pub fn enqueue_add_new_entity(&mut self) {
-        self.queue.push_back(|resource_map| {
+        self.queue.push_back(move |resource_map| {
             let mut entity_set = resource_map.fetch_mut::<EntitySet>();
 
             // Create the entity and enqueue adding the components
@@ -39,7 +39,7 @@ impl EditorActionQueue {
     }
 
     pub fn enqueue_delete_selected_entities(&mut self) {
-        self.queue.push_back(|resource_map| {
+        self.queue.push_back(move |resource_map| {
             let mut entity_set = resource_map.fetch_mut::<EntitySet>();
 
             // Mark everything we wish to free

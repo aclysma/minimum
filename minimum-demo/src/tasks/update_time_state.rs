@@ -1,13 +1,13 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
-use crate::resources::{InputManager, TimeState, GameControl};
+use crate::resources::{InputManager, TimeState, FrameworkActionQueue};
 use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct UpdateTimeState;
 impl Task for UpdateTimeState {
-    type RequiredResources = (Write<TimeState>, Read<InputManager>, Write<GameControl>);
+    type RequiredResources = (Write<TimeState>, Read<InputManager>, Write<FrameworkActionQueue>);
     const REQUIRED_FLAGS: usize = 0;
 
     fn run(
@@ -37,7 +37,7 @@ impl Task for UpdateTimeState {
                 PlayMode::Playing => PlayMode::System,
             };
 
-            game_control.set_change_play_mode(new_play_mode);
+            game_control.enqueue_change_play_mode(new_play_mode);
         }
     }
 }

@@ -20,6 +20,13 @@ impl WindowOptions {
         }
     }
 
+    pub fn new_runtime() -> Self {
+        let mut options = Self::new();
+        options.show_entity_list = true;
+        options.show_inspector = true;
+        options
+    }
+
     pub fn new_editing() -> Self {
         let mut options = Self::new();
         options.show_entity_list = true;
@@ -39,7 +46,7 @@ impl EditorUiState {
     pub fn new() -> Self {
         EditorUiState {
             add_component_search_text: ImString::with_capacity(255),
-            window_options_running: WindowOptions::new(),
+            window_options_running: WindowOptions::new_runtime(),
             window_options_editing: WindowOptions::new_editing(),
             set_inspector_tab: None
         }

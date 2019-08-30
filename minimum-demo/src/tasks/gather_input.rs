@@ -1,7 +1,7 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
-use crate::resources::{GameControl, ImguiManager, InputManager, WindowInterface};
+use crate::resources::{FrameworkActionQueue, ImguiManager, InputManager, WindowInterface};
 use named_type::NamedType;
 
 #[derive(NamedType)]
@@ -12,7 +12,7 @@ impl Task for GatherInput {
         Read<WindowInterface>,
         Write<ImguiManager>,
         Write<InputManager>,
-        Write<GameControl>,
+        Write<FrameworkActionQueue>,
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize
         | crate::context_flags::PLAYMODE_SYSTEM as usize;
@@ -25,7 +25,7 @@ impl Task for GatherInput {
         use winit::event::Event;
         use winit::event::WindowEvent;
 
-        let (window, window_interface, mut imgui_manager, mut input_manager, mut game_control) =
+        let (window, window_interface, mut imgui_manager, mut input_manager, mut framework_action_queue) =
             data;
 
         input_manager.pre_handle_events();
@@ -117,7 +117,7 @@ impl Task for GatherInput {
         }
 
         if is_close_requested {
-            game_control.set_terminate_process();
+            framework_action_queue.enqueue_terminate_process();
         }
     }
 }
