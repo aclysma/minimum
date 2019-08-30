@@ -56,21 +56,17 @@ pub fn draw_inspector(resource_map: &ResourceMap) {
                 ui.popup(im_str!("Add Component"), || {
                     ui.input_text(
                         im_str!("Filter"),
-                        &mut editor_ui_state.add_component_search_text,
-                    )
+                        &mut editor_ui_state.add_component_search_text)
                         .resize_buffer(true)
                         .build();
-
-                    let mut component_names = vec![];
-                    for i in 0..50 {
-                        component_names.push(format!("ComponentName{}", i));
-                    }
 
                     let mut selected_type_id = None;
 
                     use imgui::ImGuiSelectableFlags;
-                    for (type_id, component_name) in persist_registry.iter_names() {
+                    let mut component_types : Vec<_> = persist_registry.iter_names().collect();
+                    component_types.sort_by(|(_, str1), (_, str2)| str1.cmp(str2));
 
+                    for (type_id, component_name) in component_types {
                         if editor_ui_state.add_component_search_text.is_empty() ||
                             component_name.contains(editor_ui_state.add_component_search_text.to_str())
                         {

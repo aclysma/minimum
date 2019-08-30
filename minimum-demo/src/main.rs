@@ -138,33 +138,34 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     inspect_registry.register_component::<components::DebugDrawCircleComponent>();
     inspect_registry.register_component::<components::DebugDrawRectComponent>();
     inspect_registry.register_component::<components::BulletComponent>();
+    inspect_registry.register_component::<components::PhysicsBodyComponent>();
 
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>();
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>();
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>();
     inspect_registry
         .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
 
     let mut persist_registry = framework::persist::PersistRegistry::new();
-
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::BulletComponent>>("Bullet");
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
-    //persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototype>();
-    //persist_registry.register_component_prototype::<components::EditorShapeComponentPrototype>();
 
-    // Assets you want to always have available could be loaded here
+    let mut select_registry = framework::select::SelectRegistry::new();
+    select_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
+    select_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
+    select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
+    select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
 
     resource_map.insert(inspect_registry);
     resource_map.insert(persist_registry);
+    resource_map.insert(select_registry);
     resource_map.insert(init::init_imgui_manager(&resource_map));
     resource_map.insert(init::create_renderer(&resource_map));
 
@@ -281,10 +282,10 @@ fn dispatcher_thread(
             // Pre Render
             dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
             dispatch_ctx.run_task(tasks::RenderImguiEntityList),
-            dispatch_ctx.run_task(tasks::EditorUpdateShapesWithPosition),
-            dispatch_ctx.run_task(tasks::EditorUpdateCollisionWorld),
+            dispatch_ctx.run_task(tasks::EditorUpdateSelectionShapesWithPosition),
+            dispatch_ctx.run_task(tasks::EditorUpdateSelectionWorld),
             dispatch_ctx.run_task(tasks::EditorHandleInput),
-            dispatch_ctx.run_task(tasks::EditorDrawShapes),
+            dispatch_ctx.run_task(tasks::EditorDrawSelectionShapes),
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_resources(|resource_map| {
                 // Draw Inspector

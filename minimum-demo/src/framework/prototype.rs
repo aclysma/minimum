@@ -1,5 +1,5 @@
 use minimum::entity::EntityPrototype;
-use minimum::Component;
+use minimum::{Component, ComponentPrototype};
 
 use minimum::EntityRef;
 use minimum::ResourceMap;
@@ -7,7 +7,8 @@ use minimum::ResourceMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::components::PersistentEntityComponent;
+use crate::components::{PersistentEntityComponent, EditorShapeComponentPrototype};
+use crate::framework::select::SelectRegistry;
 
 // impl ComponentPrototype for FrameworkComponentPrototype?
 pub trait FrameworkComponentPrototype:
@@ -57,13 +58,24 @@ impl FrameworkEntityPrototypeInner {
 }
 
 #[derive(Clone)]
+pub enum FrameworkEntityPersistencePolicy {
+    // Saved to disk and is recreated on level reset
+    Persistent,
+
+    // Is destroyed on level reset (i.e. spawned at runtime)
+    Transient
+}
+
+#[derive(Clone)]
 pub struct FrameworkEntityPrototype {
     inner: Arc<Mutex<FrameworkEntityPrototypeInner>>,
+    persistence_policy: FrameworkEntityPersistencePolicy
 }
 
 impl FrameworkEntityPrototype {
     pub fn new(
         path: std::path::PathBuf,
+        persistence_policy: FrameworkEntityPersistencePolicy,
         component_prototypes: Vec<Box<dyn FrameworkComponentPrototype>>,
     ) -> Self {
         FrameworkEntityPrototype {
@@ -71,6 +83,7 @@ impl FrameworkEntityPrototype {
                 path,
                 component_prototypes,
             })),
+            persistence_policy
         }
     }
 
@@ -85,13 +98,36 @@ impl FrameworkEntityPrototype {
 
 impl EntityPrototype for FrameworkEntityPrototype {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
-        let p = self.get_mut();
-        for c in p.component_prototypes() {
+        let entity_prototype_guard = self.get_mut();
+        let mut selection_shapes = vec![];
+
+        for c in entity_prototype_guard.component_prototypes() {
             c.enqueue_create(resource_map, &entity.handle());
+
+            let select_registry = resource_map.fetch::<SelectRegistry>();
+            if let Some(shape) = select_registry.create_selection_shape(&**c) {
+                selection_shapes.push(shape);
+            }
         }
 
-        let mut storage =
-            resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
-        entity.add_component(&mut *storage, PersistentEntityComponent::new(self.clone()));
+        // If we detect any components that want to be selectable, attach an EditorShapeComponentPrototype
+        // to the entity with those shapes
+        if !selection_shapes.is_empty() {
+            let compound_shape = ncollide2d::shape::Compound::new(selection_shapes);
+            let compound_shape_handle = ncollide2d::shape::ShapeHandle::new(compound_shape);
+            let editor_shape_component_prototype = EditorShapeComponentPrototype::new(compound_shape_handle);
+            editor_shape_component_prototype.enqueue_create(resource_map, &entity.handle());
+        }
+
+        // if the entity is persistent, attach a PersistentEntityComponent to it
+        match self.persistence_policy {
+            FrameworkEntityPersistencePolicy::Persistent => {
+                // Add PersistentEntityComponent to any component that is persistent
+                let mut storage =
+                    resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
+                entity.add_component(&mut *storage, PersistentEntityComponent::new(self.clone()));
+            },
+            _ => {}
+        }
     }
 }

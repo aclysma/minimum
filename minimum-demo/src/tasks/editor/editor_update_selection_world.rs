@@ -6,8 +6,8 @@ use minimum::{Task, TaskContext};
 use named_type::NamedType;
 
 #[derive(NamedType)]
-pub struct EditorUpdateCollisionWorld;
-impl Task for EditorUpdateCollisionWorld {
+pub struct EditorUpdateSelectionWorld;
+impl Task for EditorUpdateSelectionWorld {
     type RequiredResources = (Write<EditorCollisionWorld>);
     const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_SYSTEM as usize;
 

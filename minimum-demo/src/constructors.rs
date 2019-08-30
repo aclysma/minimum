@@ -1,11 +1,9 @@
 use crate::components;
-use crate::framework::CloneComponentPrototype;
+use crate::framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
 use crate::resources;
 
 use crate::framework::FrameworkEntityPrototype;
-use minimum::BasicEntityPrototype;
 
-use components::EditorShapeComponentPrototype;
 use components::PhysicsBodyComponentPrototypeBox;
 use components::PhysicsBodyComponentPrototypeCircle;
 use components::PhysicsBodyComponentPrototypeCustom;
@@ -29,11 +27,9 @@ pub fn create_wall(
     let color = glm::Vec4::new(0.0, 1.0, 1.0, 1.0);
     let mass = 0.0;
 
-    use ncollide2d::shape::{Cuboid, ShapeHandle};
-    let shape = ShapeHandle::new(Cuboid::new(size / 2.0));
-
     let pec = FrameworkEntityPrototype::new(
         std::path::PathBuf::from("testpath"),
+        FrameworkEntityPersistencePolicy::Persistent,
         vec![
             Box::new(CloneComponentPrototype::new(
                 components::PositionComponent::new(center),
@@ -48,7 +44,6 @@ pub fn create_wall(
                 COLLISION_GROUP_ALL_MASK,
                 0
             )),
-            Box::new(EditorShapeComponentPrototype::new(shape)),
         ],
     );
 
@@ -61,11 +56,9 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
     let color = glm::Vec4::new(0.0, 1.0, 0.0, 1.0);
     let mass = 1000.0;
 
-    use ncollide2d::shape::{Ball, ShapeHandle};
-    let shape = ShapeHandle::new(Ball::new(radius));
-
     let entity_prototype = FrameworkEntityPrototype::new(
         std::path::PathBuf::from("player"),
+        FrameworkEntityPersistencePolicy::Persistent,
         vec![
             Box::new(CloneComponentPrototype::new(
                 components::PlayerComponent::new(),
@@ -83,7 +76,6 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
                 COLLISION_GROUP_WALL_MASK,
                 0
             )),
-            Box::new(EditorShapeComponentPrototype::new(shape)),
         ]
     );
     entity_factory.enqueue_create(Box::new(entity_prototype));
@@ -131,28 +123,31 @@ pub fn create_bullet(
         body_component_desc
     };
 
-    let entity_prototype = BasicEntityPrototype::new(vec![
-        Box::new(CloneComponentPrototype::new(
-            components::PositionComponent::new(position),
-        )),
-        Box::new(CloneComponentPrototype::new(
-            components::VelocityComponent::new(velocity),
-        )),
-        Box::new(PhysicsBodyComponentPrototypeCustom::new(
-            body_component_desc,
-        )),
-        Box::new(EditorShapeComponentPrototype::new(shape)),
-        Box::new(CloneComponentPrototype::new(
-            components::DebugDrawCircleComponent::new(radius, color),
-        )),
-        Box::new(CloneComponentPrototype::new(
-            components::BulletComponent::new(),
-        )),
-        Box::new(CloneComponentPrototype::new(
-            components::FreeAtTimeComponent::new(
-                time_state.playing().frame_start_instant + lifetime,
-            ),
-        )),
-    ]);
+    let entity_prototype = FrameworkEntityPrototype::new(
+        std::path::PathBuf::from("bullet"),
+        FrameworkEntityPersistencePolicy::Transient,
+        vec![
+            Box::new(CloneComponentPrototype::new(
+                components::PositionComponent::new(position),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::VelocityComponent::new(velocity),
+            )),
+            Box::new(PhysicsBodyComponentPrototypeCustom::new(
+                body_component_desc,
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::DebugDrawCircleComponent::new(radius, color),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::BulletComponent::new(),
+            )),
+            Box::new(CloneComponentPrototype::new(
+                components::FreeAtTimeComponent::new(
+                    time_state.playing().frame_start_instant + lifetime,
+                ),
+            )),
+        ]
+    );
     entity_factory.enqueue_create(Box::new(entity_prototype));
 }

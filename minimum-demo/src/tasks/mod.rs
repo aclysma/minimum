@@ -30,7 +30,7 @@ pub use self::imgui::RenderImguiEntityList;
 pub use self::imgui::RenderImguiMainMenu;
 
 mod editor;
-pub use editor::EditorDrawShapes;
+pub use editor::EditorDrawSelectionShapes;
 pub use editor::EditorHandleInput;
-pub use editor::EditorUpdateCollisionWorld;
-pub use editor::EditorUpdateShapesWithPosition;
+pub use editor::EditorUpdateSelectionWorld;
+pub use editor::EditorUpdateSelectionShapesWithPosition;

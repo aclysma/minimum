@@ -1,5 +1,6 @@
 use crate::framework::persist::ComponentPrototypeSerializer;
 use crate::framework::FrameworkComponentPrototype;
+use crate::framework::select::SelectableComponentPrototype;
 use minimum::Component;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
@@ -105,6 +106,12 @@ impl<T: Component + Clone + Serialize + DeserializeOwned>
         Ok(CloneComponentPrototype::<T>::new(serde_json::from_str(
             &data,
         )?))
+    }
+}
+
+impl<T: Component + Clone + SelectableComponentPrototype<T>> SelectableComponentPrototype<CloneComponentPrototype<T>> for CloneComponentPrototype<T> {
+    fn create_selection_shape(data: &CloneComponentPrototype<T>) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+        T::create_selection_shape(&data.inner.data())
     }
 }
 

@@ -8,8 +8,8 @@ use minimum::{ComponentStorage, EntitySet, Task, TaskContext};
 use named_type::NamedType;
 
 #[derive(NamedType)]
-pub struct EditorUpdateShapesWithPosition;
-impl Task for EditorUpdateShapesWithPosition {
+pub struct EditorUpdateSelectionShapesWithPosition;
+impl Task for EditorUpdateSelectionShapesWithPosition {
     type RequiredResources = (
         Read<EntitySet>,
         Write<EditorCollisionWorld>,

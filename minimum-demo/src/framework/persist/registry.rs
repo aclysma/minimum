@@ -108,8 +108,7 @@ impl PersistRegistry {
 
             // Iterate their component prototypes
             for component_prototype in pep.component_prototypes() {
-                let component_prototype_type =
-                    FrameworkComponentPrototype::type_id(&**component_prototype);
+                let component_prototype_type = FrameworkComponentPrototype::type_id(&**component_prototype);
 
                 // Try to save each component prototype
                 println!("{:?} {:?}", entity_handle, component_prototype_type);

@@ -3,10 +3,11 @@ use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 use serde::{Deserialize, Serialize};
+use crate::framework::select::SelectableComponentPrototype;
 
 #[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
 pub struct DebugDrawCircleComponent {
-    #[inspect_slider(min_value = 0.0, max_value = 100.0)]
+    #[inspect_slider(min_value = 0.1, max_value = 100.0)]
     radius: f32,
 
     #[inspect(proxy_type = "ImGlmColor4")]
@@ -33,6 +34,13 @@ impl DebugDrawCircleComponent {
 
     pub fn color(&self) -> glm::Vec4 {
         self.color
+    }
+}
+
+impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
+    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+        use ncollide2d::shape::{Ball, ShapeHandle};
+        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE))))
     }
 }
 

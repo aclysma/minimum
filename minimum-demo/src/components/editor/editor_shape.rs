@@ -73,11 +73,11 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
 //
 #[derive(Clone, NamedType)]
 pub struct EditorShapeComponentPrototype {
-    shape_handle: ShapeHandle<f32>,
+    shape_handle: ncollide2d::shape::ShapeHandle<f32>,
 }
 
 impl EditorShapeComponentPrototype {
-    pub fn new(shape_handle: ShapeHandle<f32>) -> Self {
+    pub fn new(shape_handle: ncollide2d::shape::ShapeHandle<f32>) -> Self {
         EditorShapeComponentPrototype { shape_handle }
     }
 }
@@ -125,6 +125,7 @@ impl ComponentCreateQueueFlushListener for EditorShapeComponentFactory {
         let mut storage = resource_map.fetch_mut::<<EditorShapeComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
+
                 let collider = collision_world.world_mut().add(
                     nalgebra::Isometry2::new(glm::vec2(0.0, 0.0), 0.0),
                     data.shape_handle.clone(),

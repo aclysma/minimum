@@ -10,8 +10,8 @@ use ncollide2d::shape::ShapeHandle;
 use nphysics2d::object::ColliderHandle;
 
 #[derive(NamedType)]
-pub struct EditorDrawShapes;
-impl Task for EditorDrawShapes {
+pub struct EditorDrawSelectionShapes;
+impl Task for EditorDrawSelectionShapes {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<EditorCollisionWorld>,
@@ -40,23 +40,27 @@ impl Task for EditorDrawShapes {
             let co: &ncollide2d::world::CollisionObject<f32, EntityHandle> = collision_object;
             //println!("found a co {:?}", co.position());
 
-            let mut color = glm::vec4(1.0, 0.0, 0.0, 1.0);
+            //let mut color = glm::vec4(1.0, 0.0, 0.0, 0.0);a
             if selected_components.exists(co.data()) {
-                color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+                let color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+                let aabb = co.shape().aabb(co.position());
+
+                let expand = glm::vec2(2.0, 2.0);
+
+                debug_draw.add_rect(
+                    glm::vec2(aabb.mins().x, aabb.mins().y) - expand,
+                    glm::vec2(aabb.maxs().x, aabb.maxs().y) + expand,
+                    color,
+                );
+
+                debug_draw.add_circle(
+                    glm::vec2(co.position().translation.x, co.position().translation.y),
+                    5.0,
+                    color,
+                );
             }
 
-            let aabb = co.shape().aabb(co.position());
-            debug_draw.add_rect(
-                glm::vec2(aabb.mins().x, aabb.mins().y),
-                glm::vec2(aabb.maxs().x, aabb.maxs().y),
-                color,
-            );
 
-            debug_draw.add_circle(
-                glm::vec2(co.position().translation.x, co.position().translation.y),
-                5.0,
-                color,
-            );
         }
     }
 }

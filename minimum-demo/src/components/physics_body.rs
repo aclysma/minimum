@@ -16,9 +16,11 @@ use crate::framework::inspect::common_types::*;
 use crate::framework::FrameworkComponentPrototype;
 use named_type::NamedType;
 use std::collections::VecDeque;
+use crate::framework::select::SelectableComponentPrototype;
 
-#[derive(Debug, NamedType)]
+#[derive(Debug, NamedType, Inspect)]
 pub struct PhysicsBodyComponent {
+    #[inspect(skip)]
     body_handle: BodyHandle,
 }
 
@@ -181,6 +183,13 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeBox {
 
 impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeBox {}
 
+impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeBox {
+    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+        use ncollide2d::shape::{Cuboid, ShapeHandle};
+        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Cuboid::new(data.size / 2.0)))
+    }
+}
+
 //
 // Circle Prototype
 //
@@ -223,6 +232,13 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeCircle {
 }
 
 impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCircle {}
+
+impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeCircle {
+    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+        use ncollide2d::shape::{Ball, ShapeHandle};
+        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE))))
+    }
+}
 
 //
 // Factory for PhysicsBody components
@@ -348,7 +364,7 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                         use ncollide2d::shape::{Ball, ShapeHandle};
                         use nphysics2d::material::{BasicMaterial, MaterialHandle};
 
-                        let shape = ShapeHandle::new(Ball::new(data.radius));
+                        let shape = ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE)));
 
                         let collider_desc = ColliderDesc::new(shape)
                             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))

@@ -3,6 +3,7 @@ use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 use serde::{Deserialize, Serialize};
+use crate::framework::select::SelectableComponentPrototype;
 
 #[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
 pub struct DebugDrawRectComponent {
@@ -33,6 +34,13 @@ impl DebugDrawRectComponent {
 
     pub fn color(&self) -> glm::Vec4 {
         self.color
+    }
+}
+
+impl SelectableComponentPrototype<Self> for DebugDrawRectComponent {
+    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+        use ncollide2d::shape::{Cuboid, ShapeHandle};
+        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Cuboid::new(data.size / 2.0)))
     }
 }
 
