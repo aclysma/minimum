@@ -5,6 +5,7 @@ use crate::PlayMode;
 use crate::framework;
 use crate::resources;
 use minimum::Component;
+use minimum::EntitySet;
 use crate::components;
 
 pub struct FrameworkActionQueue {
@@ -18,12 +19,32 @@ impl FrameworkActionQueue {
         }
     }
 
+    fn new_level(resource_map: &ResourceMap) {
+        let mut entity_set = resource_map.fetch_mut::<EntitySet>();
+        entity_set.clear(resource_map);
+    }
+
+    pub fn enqueue_new_level(&mut self) {
+        self.queue.push_back(Box::new(move |resource_map| {
+            info!("new level");
+            Self::new_level(resource_map);
+        }));
+    }
+
     //
     // Load level from file
     //
     pub fn enqueue_load_level(&mut self, path: PathBuf) {
-        self.queue.push_back(Box::new(move |_resource_map| {
-            println!("load level {:?}", path);
+        self.queue.push_back(Box::new(move |resource_map| {
+            info!("load level {:?}", path);
+            let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
+            Self::new_level(resource_map);
+            match persist_registry.load(resource_map, std::path::PathBuf::from("test_level_file.txt")) {
+                Ok(_) => { },
+                Err(e) => {
+                    warn!("deserialization error {:?}", e);
+                }
+            }
         }));
     }
 
@@ -32,9 +53,14 @@ impl FrameworkActionQueue {
     //
     pub fn enqueue_save_level(&mut self, path: PathBuf) {
         self.queue.push_back(Box::new(move |resource_map| {
-            println!("save level {:?}", path);
+            info!("save level {:?}", path);
             let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
-            persist_registry.save(resource_map);
+            match persist_registry.save(resource_map, std::path::PathBuf::from("test_level_file.txt")) {
+                Ok(_) => { },
+                Err(e) => {
+                    warn!("serialization error {:?}", e);
+                }
+            }
         }));
     }
 
@@ -43,7 +69,7 @@ impl FrameworkActionQueue {
     //
     pub fn enqueue_change_play_mode(&mut self, new_play_mode: PlayMode) {
         self.queue.push_back(Box::new(move |resource_map| {
-            println!("change_play_mode {:?}", new_play_mode);
+            info!("change_play_mode {:?}", new_play_mode);
             // Clear playmode flags
             let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
             *dispatch_control.next_frame_context_flags_mut() &=
@@ -80,7 +106,7 @@ impl FrameworkActionQueue {
     //
     pub fn enqueue_reset_level(&mut self) {
         self.queue.push_back(Box::new(move |resource_map| {
-            println!("enqueue_reset_level");
+            info!("enqueue_reset_level");
             // Collect all the data needed to re-create the persistent entities
             let prototypes = {
                 let mut prototypes = vec![];
@@ -112,7 +138,7 @@ impl FrameworkActionQueue {
     //
     pub fn enqueue_terminate_process(&mut self) {
         self.queue.push_back(Box::new(move |resource_map| {
-            println!("enqueue_terminate_process");
+            info!("enqueue_terminate_process");
             let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
             dispatch_control.end_game_loop();
         }));

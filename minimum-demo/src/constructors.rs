@@ -19,6 +19,7 @@ const COLLISION_GROUP_WALL_MASK: u32 = 1<<COLLISION_GROUP_WALL_INDEX;
 
 const COLLISION_GROUP_ALL_MASK: u32 = COLLISION_GROUP_PLAYER_MASK | COLLISION_GROUP_BULLETS_MASK | COLLISION_GROUP_WALL_MASK;
 
+// Left as an example, but this is being loaded from file
 pub fn create_wall(
     center: glm::Vec2,
     size: glm::Vec2,
@@ -50,6 +51,7 @@ pub fn create_wall(
     entity_factory.enqueue_create(Box::new(pec));
 }
 
+// Left as an example, but this is being loaded from file
 pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
     let position = glm::zero();
     let radius = 15.0;

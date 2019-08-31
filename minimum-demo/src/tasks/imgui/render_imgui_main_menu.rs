@@ -53,7 +53,7 @@ impl Task for RenderImguiMainMenu {
 
             ui.main_menu_bar(|| {
                 ui.menu(im_str!("File")).build(|| {
-                    ui.menu(im_str!("Load")).build(|| {
+                    ui.menu(im_str!("Sub Menu")).build(|| {
                         for pack in &["placeholder1", "placeholder2", "placeholder3"] {
                             ui.menu(&im_str!("{}", pack)).build(|| {
                                 for level in &["level1", "level2", "level3"] {
@@ -66,6 +66,14 @@ impl Task for RenderImguiMainMenu {
                             });
                         }
                     });
+
+                    if ui.menu_item(im_str!("New")).build() {
+                        game_control.enqueue_new_level();
+                    }
+
+                    if ui.menu_item(im_str!("Load")).build() {
+                        game_control.enqueue_load_level(std::path::PathBuf::from("test_save"));
+                    }
 
                     if ui.menu_item(im_str!("Save")).build() {
                         game_control.enqueue_save_level(std::path::PathBuf::from("test_save"));

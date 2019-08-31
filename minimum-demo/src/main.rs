@@ -32,7 +32,6 @@ use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
 use framework::CloneComponentFactory;
 use minimum::component::Component;
-use minimum::resource::ResourceMap;
 use resources::EditorActionQueue;
 
 #[derive(Copy, Clone, PartialEq, strum_macros::EnumCount, Debug)]
@@ -139,6 +138,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     inspect_registry.register_component::<components::DebugDrawRectComponent>();
     inspect_registry.register_component::<components::BulletComponent>();
     inspect_registry.register_component::<components::PhysicsBodyComponent>();
+    inspect_registry.register_component::<components::PlayerComponent>();
 
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>();
     inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>();
@@ -148,6 +148,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
     inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>();
 
     let mut persist_registry = framework::persist::PersistRegistry::new();
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
@@ -156,6 +157,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>("Player");
 
     let mut select_registry = framework::select::SelectRegistry::new();
     select_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
@@ -169,7 +171,7 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     resource_map.insert(init::init_imgui_manager(&resource_map));
     resource_map.insert(init::create_renderer(&resource_map));
 
-    create_objects(&resource_map);
+    //create_objects(&resource_map);
 
     // Wrap the threadsafe interface to the window in WindowInterface and add it to the resource map
     // Return the event_tx which needs to be given to the event loop
@@ -189,57 +191,6 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     //NOTE: The game terminates when the event_loop halts, so any code here onwards won't execute
-}
-
-fn create_objects(resource_map: &ResourceMap) {
-    let mut entity_factory = resource_map.fetch_mut::<minimum::EntityFactory>();
-    constructors::create_player(&mut *entity_factory);
-
-    constructors::create_wall(
-        glm::vec2(250.0, -125.0),
-        glm::vec2(20.0, 100.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(200.0, 250.0),
-        glm::vec2(30.0, 50.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(-170.0, 40.0),
-        glm::vec2(50.0, 100.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(-120.0, -100.0),
-        glm::vec2(100.0, 10.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(10.0, -200.0),
-        glm::vec2(15.0, 40.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(0.0, 280.0),
-        glm::vec2(800.0, 10.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(0.0, -280.0),
-        glm::vec2(800.0, 10.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(380.0, 0.0),
-        glm::vec2(10.0, 600.0),
-        &mut *entity_factory,
-    );
-    constructors::create_wall(
-        glm::vec2(-380.0, 0.0),
-        glm::vec2(10.0, 600.0),
-        &mut *entity_factory,
-    );
 }
 
 fn dispatcher_thread(

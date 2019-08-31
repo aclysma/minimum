@@ -98,13 +98,13 @@ where
 impl<T: Component + Clone + Serialize + DeserializeOwned>
     ComponentPrototypeSerializer<CloneComponentPrototype<T>> for CloneComponentPrototype<T>
 {
-    fn serialize(prototype: &CloneComponentPrototype<T>) -> Result<String, failure::Error> {
-        Ok(serde_json::to_string(prototype.inner.data())?)
+    fn serialize(prototype: &CloneComponentPrototype<T>) -> Result<serde_json::Value, failure::Error> {
+        Ok(serde_json::to_value(prototype.inner.data())?)
     }
 
-    fn deserialize(data: &str) -> Result<CloneComponentPrototype<T>, failure::Error> {
-        Ok(CloneComponentPrototype::<T>::new(serde_json::from_str(
-            &data,
+    fn deserialize(data: serde_json::Value) -> Result<CloneComponentPrototype<T>, failure::Error> {
+        Ok(CloneComponentPrototype::<T>::new(serde_json::from_value(
+            data,
         )?))
     }
 }
