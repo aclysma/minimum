@@ -105,7 +105,13 @@ impl<T> GenSlab<T> {
     pub fn allocate(&mut self, value: T) -> GenSlabKey<T> {
         let index = self.free_list.pop();
 
-        if index.is_none() {
+        if let Some(index) = index {
+            // Reuse a free slot
+            //println!("reuse slab index {}", index);
+            assert!(self.storage[index as usize].is_none());
+            let generation_index = self.storage[index as usize].allocate(value);
+            return GenSlabKey::new(index, generation_index);
+        } else {
             // Insert a new value
             let mut generation = Generation::new();
             let generation_index = generation.allocate(value);
@@ -114,13 +120,6 @@ impl<T> GenSlab<T> {
             self.storage.push(generation);
 
             //println!("new slab index {}", index);
-            return GenSlabKey::new(index, generation_index);
-        } else {
-            // Reuse a free slot
-            let index = index.unwrap();
-            //println!("reuse slab index {}", index);
-            assert!(self.storage[index as usize].is_none());
-            let generation_index = self.storage[index as usize].allocate(value);
             return GenSlabKey::new(index, generation_index);
         }
     }

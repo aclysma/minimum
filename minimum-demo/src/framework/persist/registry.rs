@@ -287,7 +287,7 @@ impl PersistRegistry {
         self.registered_component_prototypes_by_type_id.iter().map(|(t, x)| (t, x.name()))
     }
 
-    pub fn create_default(&self, type_id: &std::any::TypeId) -> Box<dyn FrameworkComponentPrototype> {
-        self.registered_component_prototypes_by_type_id[type_id].default()
+    pub fn create_default(&self, type_id: std::any::TypeId) -> Box<dyn FrameworkComponentPrototype> {
+        self.registered_component_prototypes_by_type_id[&type_id].default()
     }
 }

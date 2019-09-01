@@ -59,16 +59,15 @@ impl<T> RawSlab<T> {
     pub fn allocate(&mut self, value: T) -> RawSlabKey<T> {
         let index = self.free_list.pop();
 
-        if index.is_none() {
+        if let Some(index) = index {
+            // Reuse a free slot
+            assert!(self.storage[index as usize].is_none());
+            self.storage[index as usize] = Some(value);
+            return RawSlabKey::new(index);
+        } else {
             let index = self.storage.len() as SlabIndexT;
             self.storage.push(Some(value));
 
-            return RawSlabKey::new(index);
-        } else {
-            // Reuse a free slot
-            let index = index.unwrap();
-            assert!(self.storage[index as usize].is_none());
-            self.storage[index as usize] = Some(value);
             return RawSlabKey::new(index);
         }
     }

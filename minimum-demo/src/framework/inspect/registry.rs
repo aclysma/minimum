@@ -9,7 +9,6 @@ use minimum::ResourceMap;
 use std::marker::PhantomData;
 
 use imgui_inspect::InspectArgsStruct;
-use mopa::Any;
 
 enum InspectResult {
     Unchanged,
@@ -148,7 +147,11 @@ where
                     ui.unindent();
 
                     // This component is expanded, return if any fields were changed
-                    InspectResult::Edited
+                    if changed {
+                        InspectResult::Edited
+                    } else {
+                        InspectResult::Unchanged
+                    }
                 }
             } else {
                 // This component is collapsed, it cannot be edited
@@ -443,7 +446,7 @@ impl InspectRegistry {
                 if component_types_to_delete.len() > 0 {
                     for mut entity_prototype in locks {
                         // For each component prototype
-                        let mut component_prototypes = entity_prototype.component_prototypes_mut();
+                        let component_prototypes = entity_prototype.component_prototypes_mut();
 
                         // Iterate through the prototypes backwards so we can swap_remove them
                         for i in (0..component_prototypes.len()).rev() {

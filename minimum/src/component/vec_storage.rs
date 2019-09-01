@@ -126,14 +126,14 @@ impl<T: Component> VecComponentStorage<T> {
     }
 
     /// Iterate just the components
-    pub fn iter_values<'a>(&'a self) -> impl Iterator<Item = &'a T> {
+    pub fn iter_values(&self) -> impl Iterator<Item=&T> {
         self.components
             .iter()
             .filter_map(|component_key| component_key.as_ref())
     }
 
     /// Iterate just the components mutably
-    pub fn iter_values_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut T> {
+    pub fn iter_values_mut(&mut self) -> impl Iterator<Item=&mut T> {
         self.components
             .iter_mut()
             .filter_map(|component_key| component_key.as_mut())
@@ -158,8 +158,9 @@ impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
         // If the slab keys vec isn't long enough, expand it
         if self.components.len() <= entity.index() as usize {
             // Can't use resize() because T is not guaranteed to be cloneable
+            // + 1 here because we need to expand up to and including the given entity index
             self.components.reserve(entity.index() as usize + 1);
-            for _index in self.components.len()..(entity.index() as usize + 1) {
+            for _index in self.components.len()..=(entity.index() as usize) {
                 self.components.push(None);
             }
         }

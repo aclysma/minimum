@@ -82,6 +82,9 @@ impl minimum::component::ComponentFreeHandler<PhysicsBodyComponent>
 // structures. This has the added advantage that these objects could be expressed in data files.
 //
 pub struct PhysicsBodyComponentDesc {
+    // Some unsafe code in here assumes ColliderDesc is pinned.
+    //TODO: Can we actually use Pin?
+    #[allow(clippy::box_vec)]
     collider_desc: Vec<Box<ColliderDesc<f32>>>,
     rigid_body_desc: RigidBodyDesc<'static, f32>,
 }

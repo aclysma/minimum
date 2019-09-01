@@ -89,7 +89,7 @@ pub fn draw_inspector(resource_map: &ResourceMap) {
                             if let Some(pec) = prototype_components.get_mut(selected_entity_handle) {
 
                                 // Create a new instance of the component
-                                let default_component = persist_registry.create_default(&type_id);
+                                let default_component = persist_registry.create_default(type_id);
 
                                 // Get the entity prototype for the component so that we can modify it
                                 let entity_prototype = pec.entity_prototype_mut();
