@@ -10,9 +10,10 @@ use minimum::ResourceMap;
 use named_type::NamedType;
 use minimum::BasicComponentPrototype;
 
-use imgui_inspect::InspectRenderDefault;
+use imgui_inspect::InspectRenderStruct;
 
 use imgui_inspect::InspectArgsDefault;
+use imgui_inspect::InspectArgsStruct;
 use minimum::component::ComponentCreateQueueFlushListener;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -59,10 +60,11 @@ impl<T: Component + Clone + Default> Default for CloneComponentPrototype<T> {
 //
 // Implement inspect for clone components
 //
+
 impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>>
-    for CloneComponentPrototype<T>
-where
-    T: Component + Clone + InspectRenderDefault<T> + named_type::NamedType,
+for CloneComponentPrototype<T>
+    where
+        T: Component + Clone + InspectRenderStruct<T> + named_type::NamedType,
 {
     fn render(
         data: &[&CloneComponentPrototype<T>],
@@ -70,13 +72,7 @@ where
         ui: &imgui::Ui,
         args: &imgui_inspect::InspectArgsDefault,
     ) {
-        let mut r = vec![];
-        for d in data {
-            let v = d.data();
-            r.push(v);
-        }
-
-        <T as imgui_inspect::InspectRenderDefault<T>>::render(r.as_slice(), label, ui, args)
+        <Self as imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>>::render(data, label, ui, &InspectArgsStruct::from((*args).clone()))
     }
 
     fn render_mut(
@@ -85,13 +81,43 @@ where
         ui: &imgui::Ui,
         args: &InspectArgsDefault,
     ) -> bool {
+        <Self as imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>>::render_mut(data, label, ui, &InspectArgsStruct::from((*args).clone()))
+    }
+}
+
+impl<T> imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>
+    for CloneComponentPrototype<T>
+where
+    T: Component + Clone + InspectRenderStruct<T> + named_type::NamedType,
+{
+    fn render(
+        data: &[&CloneComponentPrototype<T>],
+        label: &'static str,
+        ui: &imgui::Ui,
+        args: &imgui_inspect::InspectArgsStruct,
+    ) {
+        let mut r = vec![];
+        for d in data {
+            let v = d.data();
+            r.push(v);
+        }
+
+        <T as imgui_inspect::InspectRenderStruct<T>>::render(r.as_slice(), label, ui, args)
+    }
+
+    fn render_mut(
+        data: &mut [&mut CloneComponentPrototype<T>],
+        label: &'static str,
+        ui: &imgui::Ui,
+        args: &InspectArgsStruct,
+    ) -> bool {
         let mut r = vec![];
         for d in data {
             let v = d.data_mut();
             r.push(v);
         }
 
-        <T as imgui_inspect::InspectRenderDefault<T>>::render_mut(r.as_mut_slice(), label, ui, args)
+        <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(r.as_mut_slice(), label, ui, args)
     }
 }
 

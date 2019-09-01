@@ -132,23 +132,23 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .build();
 
     let mut inspect_registry = framework::inspect::InspectRegistry::new();
-    inspect_registry.register_component::<components::PositionComponent>();
-    inspect_registry.register_component::<components::VelocityComponent>();
-    inspect_registry.register_component::<components::DebugDrawCircleComponent>();
-    inspect_registry.register_component::<components::DebugDrawRectComponent>();
-    inspect_registry.register_component::<components::BulletComponent>();
-    inspect_registry.register_component::<components::PhysicsBodyComponent>();
-    inspect_registry.register_component::<components::PlayerComponent>();
+    inspect_registry.register_component::<components::PositionComponent>("Position");
+    inspect_registry.register_component::<components::VelocityComponent>("Velocity");
+    inspect_registry.register_component::<components::DebugDrawCircleComponent>("Debug Draw Circle");
+    inspect_registry.register_component::<components::DebugDrawRectComponent>("Debug Draw Rectangle");
+    inspect_registry.register_component::<components::BulletComponent>("Physics Body Box");
+    inspect_registry.register_component::<components::PhysicsBodyComponent>("Physics Body Circle");
+    inspect_registry.register_component::<components::PlayerComponent>("Player");
 
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>();
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>();
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
     inspect_registry
-        .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>();
-    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
-    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>();
+        .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>("Physics Body Custom");
+    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
+    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
+    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>("Player");
 
     let mut persist_registry = framework::persist::PersistRegistry::new();
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");

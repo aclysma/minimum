@@ -8,7 +8,7 @@ use minimum::EntityHandle;
 use minimum::ResourceMap;
 use std::marker::PhantomData;
 
-use imgui_inspect::InspectArgsDefault;
+use imgui_inspect::InspectArgsStruct;
 
 //
 // Interface for a registered component type
@@ -20,13 +20,16 @@ trait RegisteredComponentTrait: Send + Sync {
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
-    );
+    ) -> bool;
+
+    fn header_text(&self) -> &'static str;
 }
 
 pub struct RegisteredComponent<T>
 where
     T: Component,
 {
+    header_text: &'static str,
     phantom_data: PhantomData<T>,
 }
 
@@ -34,8 +37,9 @@ impl<T> RegisteredComponent<T>
 where
     T: Component,
 {
-    fn new() -> Self {
+    fn new(header_text: &'static str) -> Self {
         RegisteredComponent {
+            header_text,
             phantom_data: PhantomData,
         }
     }
@@ -43,8 +47,12 @@ where
 
 impl<T> RegisteredComponentTrait for RegisteredComponent<T>
 where
-    T: Component + imgui_inspect::InspectRenderDefault<T>,
+    T: Component + imgui_inspect::InspectRenderStruct<T>,
 {
+    fn header_text(&self) -> &'static str {
+        self.header_text
+    }
+
     fn render(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle], ui: &imgui::Ui) {
         let storage = resource_map.fetch::<<T as Component>::Storage>();
 
@@ -58,11 +66,11 @@ where
         }
 
         if data.len() > 0 {
-            <T as imgui_inspect::InspectRenderDefault<T>>::render(
+            <T as imgui_inspect::InspectRenderStruct<T>>::render(
                 data.as_slice(),
                 core::any::type_name::<T>(),
                 ui,
-                &InspectArgsDefault::default(),
+                &InspectArgsStruct::default(),
             );
         }
     }
@@ -72,7 +80,7 @@ where
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
-    ) {
+    ) -> bool {
         let mut storage = resource_map.fetch_mut::<<T as Component>::Storage>();
 
         let mut data: Vec<&mut T> = vec![];
@@ -90,13 +98,32 @@ where
             }
         }
 
+        let mut args = InspectArgsStruct::default();
+        args.header = Some(false);
+        args.indent_children = Some(false);
+
         if data.len() > 0 {
-            <T as imgui_inspect::InspectRenderDefault<T>>::render_mut(
-                data.as_mut_slice(),
-                core::any::type_name::<T>(),
-                ui,
-                &InspectArgsDefault::default(),
-            );
+            if ui.collapsing_header(&imgui::im_str!("{}", self.header_text)).default_open(true).build() {
+                ui.indent();
+
+                let changed = <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(
+                    data.as_mut_slice(),
+                    core::any::type_name::<T>(),
+                    ui,
+                    &args,
+                );
+
+                ui.unindent();
+
+                // This component is expanded, return if any fields were changed
+                changed
+            } else {
+                // This component is collapsed, it cannot be edited
+                false
+            }
+        } else {
+            // This component type is not on the entity
+            false
         }
     }
 }
@@ -112,21 +139,25 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
         prototypes: &mut HashMap<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
     ) -> bool;
+
+    fn header_text(&self) -> &'static str;
 }
 
 pub struct RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderDefault<T>,
+    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T>,
 {
+    header_text: &'static str,
     phantom_data: PhantomData<T>,
 }
 
 impl<T> RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderDefault<T>,
+    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T>,
 {
-    fn new() -> Self {
+    fn new(header_text: &'static str) -> Self {
         RegisteredComponentPrototype {
+            header_text,
             phantom_data: PhantomData,
         }
     }
@@ -134,8 +165,12 @@ where
 
 impl<T> RegisteredComponentPrototypeTrait for RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderDefault<T> + named_type::NamedType,
+    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T> + named_type::NamedType,
 {
+    fn header_text(&self) -> &'static str {
+        self.header_text
+    }
+
     fn render(
         &self,
         prototypes: &HashMap<std::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototype>>>,
@@ -148,11 +183,11 @@ where
                 cast_values.push(v.downcast_ref::<T>().unwrap());
             }
 
-            <T as imgui_inspect::InspectRenderDefault<T>>::render(
+            <T as imgui_inspect::InspectRenderStruct<T>>::render(
                 &cast_values,
                 core::any::type_name::<T>(),
                 ui,
-                &InspectArgsDefault::default(),
+                &InspectArgsStruct::default(),
             );
         }
     }
@@ -170,13 +205,30 @@ where
                 cast_values.push(v.downcast_mut::<T>().unwrap());
             }
 
-            <T as imgui_inspect::InspectRenderDefault<T>>::render_mut(
-                &mut cast_values,
-                core::any::type_name::<T>(),
-                ui,
-                &InspectArgsDefault::default(),
-            )
+            if ui.collapsing_header(&imgui::im_str!("{}", self.header_text)).default_open(true).build() {
+                ui.indent();
+
+                let mut args = InspectArgsStruct::default();
+                args.header = Some(false);
+                args.indent_children = Some(false);
+
+                let changed = <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(
+                    &mut cast_values,
+                    core::any::type_name::<T>(),
+                    ui,
+                    &args,
+                );
+
+                ui.unindent();
+
+                // This component is expanded, return if any fields were changed
+                changed
+            } else {
+                // This component is collapsed, it cannot be edited
+                false
+            }
         } else {
+            // This component type is not on the prototype
             false
         }
     }
@@ -198,20 +250,22 @@ impl InspectRegistry {
         }
     }
 
-    pub fn register_component<T: Component + 'static + imgui_inspect::InspectRenderDefault<T>>(
+    pub fn register_component<T: Component + 'static + imgui_inspect::InspectRenderStruct<T>>(
         &mut self,
+        header_text: &'static str
     ) {
         self.registered_components
-            .push(Box::new(RegisteredComponent::<T>::new()));
+            .push(Box::new(RegisteredComponent::<T>::new(header_text)));
     }
 
     pub fn register_component_prototype<
-        T: FrameworkComponentPrototype + 'static + imgui_inspect::InspectRenderDefault<T>,
+        T: FrameworkComponentPrototype + 'static + imgui_inspect::InspectRenderStruct<T>,
     >(
         &mut self,
+        header_text: &'static str
     ) {
         self.registered_component_prototypes
-            .push(Box::new(RegisteredComponentPrototype::<T>::new()));
+            .push(Box::new(RegisteredComponentPrototype::<T>::new(header_text)));
     }
 
     pub fn render_mut(
