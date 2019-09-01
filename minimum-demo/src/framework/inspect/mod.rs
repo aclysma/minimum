@@ -17,6 +17,7 @@ use crate::resources;
 use crate::components;
 
 use components::PersistentEntityComponent;
+use crate::components::EditorModifiedComponent;
 
 pub fn draw_inspector(resource_map: &ResourceMap) {
     let play_mode = resource_map.fetch::<resources::TimeState>().play_mode;
@@ -36,6 +37,8 @@ pub fn draw_inspector(resource_map: &ResourceMap) {
         }
         selected
     };
+
+    //TODO: Need a way to delete components
 
     let inspect_registry = resource_map.fetch::<framework::inspect::InspectRegistry>();
     let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
@@ -77,17 +80,26 @@ pub fn draw_inspector(resource_map: &ResourceMap) {
                     }
 
                     if let Some(type_id) = selected_type_id {
-
+                        // Get storages for the components we will modify
                         let mut prototype_components = resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
+                        let mut modified_components = resource_map.fetch_mut::<<components::EditorModifiedComponent as Component>::Storage>();
+
                         for selected_entity_handle in &selected_entity_handles {
+                            //TODO: Check that one doesn't exist already or switch to using hashmap
                             if let Some(pec) = prototype_components.get_mut(selected_entity_handle) {
 
+                                // Create a new instance of the component
                                 let default_component = persist_registry.create_default(&type_id);
+
+                                // Get the entity prototype for the component so that we can modify it
                                 let entity_prototype = pec.entity_prototype_mut();
                                 let mut entity_prototype_guard = entity_prototype.get_mut();
 
-                                //TODO: Check that one doesn't exist already or switch to using hashmap
+                                // Add the component to the entity prototype
                                 entity_prototype_guard.component_prototypes_mut().push(default_component);
+
+                                // Mark the entity as needed to be regenerated
+                                entity_set.get_entity_ref(selected_entity_handle).unwrap().add_component(&mut *modified_components, EditorModifiedComponent::new());
                             }
                         }
                     }

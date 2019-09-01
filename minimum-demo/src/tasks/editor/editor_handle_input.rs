@@ -2,7 +2,7 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
 use minimum::{Task, TaskContext, WriteComponent};
 
-use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, MouseButtons, RenderState};
+use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, MouseButtons, RenderState, EditorTool, EditorUiState};
 
 use crate::components::EditorSelectedComponent;
 use ncollide2d::world::CollisionGroups;
@@ -20,6 +20,7 @@ impl Task for EditorHandleInput {
         Read<EditorCollisionWorld>,
         WriteComponent<EditorSelectedComponent>,
         Write<DebugDraw>,
+        Write<EditorUiState>
     );
     const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_SYSTEM;
 
@@ -35,7 +36,24 @@ impl Task for EditorHandleInput {
             editor_collision_world,
             mut editor_selected_components,
             mut debug_draw,
+            mut editor_ui_state
         ) = data;
+
+        if input_manager.is_key_just_down(VirtualKeyCode::Key1) {
+            editor_ui_state.active_editor_tool = EditorTool::Select;
+        }
+
+        if input_manager.is_key_just_down(VirtualKeyCode::Key2) {
+            editor_ui_state.active_editor_tool = EditorTool::Translate;
+        }
+
+        if input_manager.is_key_just_down(VirtualKeyCode::Key3) {
+            editor_ui_state.active_editor_tool = EditorTool::Rotate;
+        }
+
+        if input_manager.is_key_just_down(VirtualKeyCode::Key4) {
+            editor_ui_state.active_editor_tool = EditorTool::Scale;
+        }
 
         if task_context.context_flags()
             & (crate::context_flags::PLAYMODE_PAUSED | crate::context_flags::PLAYMODE_PLAYING)

@@ -1,12 +1,28 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
-use crate::resources::{DebugOptions, EditorUiState, FrameworkActionQueue, ImguiManager, TimeState};
+use crate::resources::{DebugOptions, EditorUiState, EditorTool, FrameworkActionQueue, ImguiManager, TimeState};
 
 use named_type::NamedType;
+use imgui::im_str;
 
 #[derive(NamedType)]
 pub struct RenderImguiMainMenu;
+
+impl RenderImguiMainMenu {
+    fn tool_button(ui: &imgui::Ui, editor_ui_state: &mut EditorUiState, editor_tool: EditorTool, string: &'static str) {
+        let _token = if editor_ui_state.active_editor_tool == editor_tool {
+            Some(ui.push_style_color(imgui::StyleColor::Text, [0.8, 0.0, 0.0, 1.0]))
+        } else {
+            None
+        };
+
+        if ui.menu_item(&im_str!("{}", string)).build() {
+            editor_ui_state.active_editor_tool = editor_tool;
+        }
+    }
+}
+
 impl Task for RenderImguiMainMenu {
     type RequiredResources = (
         Read<TimeState>,
@@ -33,25 +49,34 @@ impl Task for RenderImguiMainMenu {
         let is_edit_mode = time_state.play_mode == crate::PlayMode::System;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
-            use imgui::im_str;
+            {
+                let window_settings = editor_ui_state.window_options_mut(time_state.play_mode);
+                if window_settings.show_imgui_metrics {
+                    ui.show_metrics_window(&mut window_settings.show_imgui_metrics);
+                }
 
-            let window_settings = editor_ui_state.window_options_mut(time_state.play_mode);
+                if window_settings.show_imgui_style_editor {
+                    ui.window(im_str!("Editor")).build(|| {
+                        ui.show_default_style_editor();
+                    });
+                }
 
-            if window_settings.show_imgui_metrics {
-                ui.show_metrics_window(&mut window_settings.show_imgui_metrics);
-            }
-
-            if window_settings.show_imgui_style_editor {
-                ui.window(im_str!("Editor")).build(|| {
-                    ui.show_default_style_editor();
-                });
-            }
-
-            if window_settings.show_imgui_demo {
-                ui.show_demo_window(&mut window_settings.show_imgui_demo);
+                if window_settings.show_imgui_demo {
+                    ui.show_demo_window(&mut window_settings.show_imgui_demo);
+                }
             }
 
             ui.main_menu_bar(|| {
+
+                //cursor-default-outline
+                Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Select, "\u{f1b5}");
+                //axis-arrow
+                Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Translate, "\u{fd25}");
+                //rotate-orbit
+                Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Rotate, "\u{fd74}");
+                //resize
+                Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Scale, "\u{fa67}");
+
                 ui.menu(im_str!("File")).build(|| {
                     ui.menu(im_str!("Sub Menu")).build(|| {
                         for pack in &["placeholder1", "placeholder2", "placeholder3"] {
@@ -80,6 +105,7 @@ impl Task for RenderImguiMainMenu {
                     }
                 });
 
+                let window_settings = editor_ui_state.window_options_mut(time_state.play_mode);
                 ui.menu(im_str!("Windows")).build(|| {
                     ui.checkbox(
                         im_str!("ImGui Metrics"),
@@ -99,7 +125,9 @@ impl Task for RenderImguiMainMenu {
                     );
                     ui.checkbox(im_str!("Inspector"), &mut window_settings.show_inspector);
                 });
+
                 ui.separator();
+
                 ui.menu(im_str!("Debug Setings")).build(|| {
                     ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_debug_info);
                 });

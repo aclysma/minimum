@@ -128,6 +128,7 @@ impl FrameworkActionQueue {
                 entity_factory.enqueue_create(Box::new(prototype));
             }
 
+            //TODO: Retain selection
             let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
             editor_ui_state.set_inspector_tab = Some(framework::inspect::InspectorTab::Persistent);
         }));

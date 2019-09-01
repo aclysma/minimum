@@ -235,7 +235,6 @@ impl InspectRegistry {
         *set_inspector_tab = None;
 
         unsafe {
-            //imgui_sys::igEndTabItem();
             imgui_sys::igEndTabBar();
         }
     }

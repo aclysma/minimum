@@ -35,11 +35,21 @@ impl WindowOptions {
     }
 }
 
+// If adding to this, don't forget to hook up keyboard shortcuts and buttons
+#[derive(PartialEq)]
+pub enum EditorTool {
+    Select,
+    Translate,
+    Rotate,
+    Scale,
+}
+
 pub struct EditorUiState {
     pub add_component_search_text: ImString,
     pub window_options_running: WindowOptions,
     pub window_options_editing: WindowOptions,
-    pub set_inspector_tab: Option<InspectorTab>
+    pub set_inspector_tab: Option<InspectorTab>,
+    pub active_editor_tool: EditorTool
 }
 
 impl EditorUiState {
@@ -48,7 +58,8 @@ impl EditorUiState {
             add_component_search_text: ImString::with_capacity(255),
             window_options_running: WindowOptions::new_runtime(),
             window_options_editing: WindowOptions::new_editing(),
-            set_inspector_tab: None
+            set_inspector_tab: None,
+            active_editor_tool: EditorTool::Select
         }
     }
 

@@ -55,10 +55,14 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
 
     let font_material = {
         // Material icons
-        const ICON_GLYPH_RANGE_MATERIAL: [u16; 7] = [
-            0xfd24, 0xfd34, // transform/rotate icons
+        const ICON_GLYPH_RANGE_MATERIAL: [u16; 13] = [
+            //0xfd24, 0xfd34, // transform/rotate icons
             0xf3e4, 0xf3e4, // pause
             0xf40a, 0xf40a, // play
+            0xf1b5, 0xf1b5, // select
+            0xfd25, 0xfd25, // translate
+            0xfd74, 0xfd74, // rotate
+            0xfa67, 0xfa67, // scale
             0,
         ];
         let mut font_config = imgui::FontConfig::default();
