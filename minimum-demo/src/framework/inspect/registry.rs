@@ -9,20 +9,28 @@ use minimum::ResourceMap;
 use std::marker::PhantomData;
 
 use imgui_inspect::InspectArgsStruct;
+use mopa::Any;
+
+enum InspectResult {
+    Unchanged,
+    Edited,
+    Deleted
+}
 
 //
 // Interface for a registered component type
 //
 trait RegisteredComponentTrait: Send + Sync {
+    fn header_text(&self) -> &'static str;
+    fn handled_type(&self) -> core::any::TypeId;
+
     fn render(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle], ui: &imgui::Ui);
     fn render_mut(
         &self,
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
-    ) -> bool;
-
-    fn header_text(&self) -> &'static str;
+    ) -> InspectResult;
 }
 
 pub struct RegisteredComponent<T>
@@ -53,6 +61,10 @@ where
         self.header_text
     }
 
+    fn handled_type(&self) -> core::any::TypeId {
+        core::any::TypeId::of::<T>()
+    }
+
     fn render(&self, resource_map: &ResourceMap, entity_handles: &[EntityHandle], ui: &imgui::Ui) {
         let storage = resource_map.fetch::<<T as Component>::Storage>();
 
@@ -80,7 +92,7 @@ where
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
-    ) -> bool {
+    ) -> InspectResult {
         let mut storage = resource_map.fetch_mut::<<T as Component>::Storage>();
 
         let mut data: Vec<&mut T> = vec![];
@@ -103,32 +115,56 @@ where
         args.indent_children = Some(false);
 
         if data.len() > 0 {
-            if ui.collapsing_header(&imgui::im_str!("{}", self.header_text)).default_open(true).build() {
-                ui.indent();
+            let header_text = &imgui::im_str!("{}", self.header_text);
+            let _content_region = ui.get_window_content_region_max();
+            let draw_children = unsafe { imgui_sys::igCollapsingHeader(header_text.as_ptr(), imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32 | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32) };
+            if draw_children {
 
-                let changed = <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(
-                    data.as_mut_slice(),
-                    core::any::type_name::<T>(),
-                    ui,
-                    &args,
-                );
+                //TODO: This is not woring well enough to be worth exposing
+                /*
+                ui.same_line(content_region[0] - 50.0);
+                if ui.small_button(imgui::im_str!("Delete")) {
+                    for e in entity_handles {
+                        //TODO: This seems like it's drawing undefined values when something gets deleted...
+                        //TODO: Deleting components isn't properly calling free handlers
+                        storage.free(e);
+                    }
 
-                ui.unindent();
+                    // This component type was deleted on this frame
+                    true
+                } else
+                */
+                {
 
-                // This component is expanded, return if any fields were changed
-                changed
+                    ui.indent();
+
+                    let changed = <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(
+                        data.as_mut_slice(),
+                        core::any::type_name::<T>(),
+                        ui,
+                        &args,
+                    );
+
+                    ui.unindent();
+
+                    // This component is expanded, return if any fields were changed
+                    InspectResult::Edited
+                }
             } else {
                 // This component is collapsed, it cannot be edited
-                false
+                InspectResult::Unchanged
             }
         } else {
             // This component type is not on the entity
-            false
+            InspectResult::Unchanged
         }
     }
 }
 
 trait RegisteredComponentPrototypeTrait: Send + Sync {
+    fn header_text(&self) -> &'static str;
+    fn handled_type(&self) -> core::any::TypeId;
+
     fn render(
         &self,
         prototypes: &HashMap<core::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototype>>>,
@@ -138,9 +174,7 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
         &self,
         prototypes: &mut HashMap<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
-    ) -> bool;
-
-    fn header_text(&self) -> &'static str;
+    ) -> InspectResult;
 }
 
 pub struct RegisteredComponentPrototype<T>
@@ -171,6 +205,10 @@ where
         self.header_text
     }
 
+    fn handled_type(&self) -> core::any::TypeId {
+        core::any::TypeId::of::<T>()
+    }
+
     fn render(
         &self,
         prototypes: &HashMap<std::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototype>>>,
@@ -196,7 +234,7 @@ where
         &self,
         prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
-    ) -> bool
+    ) -> InspectResult
     {
         if let Some(values) = prototypes.get_mut(&std::any::TypeId::of::<T>()) {
             let mut cast_values: Vec<&mut T> = vec![];
@@ -205,7 +243,17 @@ where
                 cast_values.push(v.downcast_mut::<T>().unwrap());
             }
 
-            if ui.collapsing_header(&imgui::im_str!("{}", self.header_text)).default_open(true).build() {
+            let header_text = &imgui::im_str!("{}", self.header_text);
+            let content_region = ui.get_window_content_region_max();
+            ui.push_id(core::any::type_name::<T>());
+            let draw_children = unsafe { imgui_sys::igCollapsingHeader(header_text.as_ptr(), imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32 | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32) };
+            ui.same_line(content_region[0] - 50.0);
+            let result = if ui.small_button(imgui::im_str!("Delete")) {
+
+                // The component was deleted
+                InspectResult::Deleted
+
+            } else if draw_children {
                 ui.indent();
 
                 let mut args = InspectArgsStruct::default();
@@ -222,14 +270,22 @@ where
                 ui.unindent();
 
                 // This component is expanded, return if any fields were changed
-                changed
+                if changed {
+                    InspectResult::Edited
+                } else {
+                    InspectResult::Unchanged
+                }
+
             } else {
                 // This component is collapsed, it cannot be edited
-                false
-            }
+                InspectResult::Unchanged
+            };
+
+            ui.pop_id();
+            result
         } else {
             // This component type is not on the prototype
-            false
+            InspectResult::Unchanged
         }
     }
 }
@@ -300,81 +356,121 @@ impl InspectRegistry {
         ui: &imgui::Ui,
         set_inspector_tab: &Option<InspectorTab>
     ) {
-        let persistent_tab_str = imgui::im_str!("Persistent");
 
-        let mut tab_flags = imgui_sys::ImGuiTabItemFlags_None;
-        if let Some(new_tab) = set_inspector_tab {
-            if *new_tab == InspectorTab::Persistent {
-                tab_flags |= imgui_sys::ImGuiTabItemFlags_SetSelected;
-            }
-        }
+        // Gather all the prototype arcs we will be editing
+        let mut storage = resource_map
+            .fetch_mut::<<crate::components::PersistentEntityComponent as Component>::Storage>();
 
-        let tab_is_open;
-        unsafe {
-            tab_is_open = imgui_sys::igBeginTabItem(
-                persistent_tab_str.as_ptr(),
-                std::ptr::null_mut(),
-                tab_flags as i32,
-            );
-        }
+        {
 
-        if tab_is_open {
-            // Prototypes is going to hold mut refs to values within the arcs/locks, so be careful with lifetimes here. (See unsafe block below)
-            let mut arcs = vec![];
-            let mut locks = vec![];
+            let persistent_tab_str = imgui::im_str!("Persistent");
 
-            let mut prototypes =
-                HashMap::<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>::new();
-
-            // Gather all the prototype arcs we will be editing
-            let mut storage = resource_map
-                .fetch_mut::<<crate::components::PersistentEntityComponent as Component>::Storage>(
-            );
-            for entity_handle in entity_handles {
-                let comp = storage.get_mut(&entity_handle);
-                if let Some(comp) = comp {
-                    let arc = comp.entity_prototype().inner().clone();
-                    arcs.push(arc);
+            let mut tab_flags = imgui_sys::ImGuiTabItemFlags_None;
+            if let Some(new_tab) = set_inspector_tab {
+                if *new_tab == InspectorTab::Persistent {
+                    tab_flags |= imgui_sys::ImGuiTabItemFlags_SetSelected;
                 }
             }
 
-            // Lock them all and put mut refs in the map
-            for arc in &arcs {
-                let mut guard = arc.lock().unwrap();
-                let pep = &mut *guard;
-                for component_prototype in pep.component_prototypes_mut() {
-                    let component_prototype_type =
-                        FrameworkComponentPrototype::type_id(&**component_prototype);
-                    let prototypes_entry =
-                        prototypes.entry(component_prototype_type).or_insert(vec![]);
+            let tab_is_open;
+            unsafe {
+                tab_is_open = imgui_sys::igBeginTabItem(
+                    persistent_tab_str.as_ptr(),
+                    std::ptr::null_mut(),
+                    tab_flags as i32,
+                );
+            }
 
-                    // This unsafe block allows us to grab multiple mutible refs from the storage. It is
-                    // only safe if the storage does not change.
-                    // As long as we're holding the WriteBorrow on PersistentEntityComponent storage
-                    //prototypes_entry.push(&mut *component_prototype);
-                    unsafe {
-                        let component_prototype_ptr: *mut Box<dyn FrameworkComponentPrototype> =
-                            component_prototype;
-                        prototypes_entry.push(&mut *component_prototype_ptr);
+
+            if tab_is_open {
+                // Prototypes is going to hold mut refs to values within the arcs/locks, so be careful with lifetimes here. (See unsafe block below)
+                let mut arcs = vec![];
+                let mut locks = vec![];
+
+                let mut prototypes =
+                    HashMap::<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>::new();
+
+                for entity_handle in entity_handles {
+                    let comp = storage.get_mut(&entity_handle);
+                    if let Some(comp) = comp {
+                        let arc = comp.entity_prototype().inner().clone();
+                        arcs.push(arc);
                     }
                 }
 
-                locks.push(guard);
-            }
+                // Lock them all and put mut refs in the map
+                for arc in &arcs {
+                    let mut guard = arc.lock().unwrap();
+                    let pep = &mut *guard;
+                    for component_prototype in pep.component_prototypes_mut() {
+                        let component_prototype_type =
+                            FrameworkComponentPrototype::type_id(&**component_prototype);
+                        let prototypes_entry =
+                            prototypes.entry(component_prototype_type).or_insert(vec![]);
 
-            for rcp in &self.registered_component_prototypes {
-                if rcp.render_mut(&mut prototypes, ui) {
+                        // This unsafe block allows us to grab multiple mutible refs from the storage. It is
+                        // only safe if the storage does not change.
+                        // As long as we're holding the WriteBorrow on PersistentEntityComponent storage
+                        //prototypes_entry.push(&mut *component_prototype);
+                        unsafe {
+                            let component_prototype_ptr: *mut Box<dyn FrameworkComponentPrototype> =
+                                component_prototype;
+                            prototypes_entry.push(&mut *component_prototype_ptr);
+                        }
+                    }
+
+                    locks.push(guard);
+                }
+
+                let mut component_types_to_delete = vec![];
+                let mut mark_entity_modified = false;
+                for rcp in &self.registered_component_prototypes {
+                    match rcp.render_mut(&mut prototypes, ui) {
+                        InspectResult::Edited => {
+                            mark_entity_modified = true;
+                        },
+                        InspectResult::Deleted => {
+                            component_types_to_delete.push(rcp.handled_type());
+                        },
+                        InspectResult::Unchanged => {}
+                    }
+                }
+
+                unsafe {
+                    imgui_sys::igEndTabItem();
+                }
+
+                if component_types_to_delete.len() > 0 {
+                    for mut entity_prototype in locks {
+                        // For each component prototype
+                        let mut component_prototypes = entity_prototype.component_prototypes_mut();
+
+                        // Iterate through the prototypes backwards so we can swap_remove them
+                        for i in (0..component_prototypes.len()).rev() {
+                            let component_prototype = &component_prototypes[i];
+                            let type_id = FrameworkComponentPrototype::type_id(&**component_prototype);
+
+                            for component_type_to_delete in &component_types_to_delete {
+                                if type_id == *component_type_to_delete {
+                                    component_prototypes.swap_remove(i);
+                                    mark_entity_modified = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Put a EditorModifiedComponent component on all the given entities
+                if mark_entity_modified {
                     let mut editor_modified_components = resource_map.fetch_mut::<<EditorModifiedComponent as Component>::Storage>();
                     for entity_handle in entity_handles {
-                        editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
+                        if !editor_modified_components.exists(&entity_handle) {
+                            editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
+                        }
                     }
                 }
             }
-
-            unsafe {
-                imgui_sys::igEndTabItem();
-            }
-        }
+        };
     }
 
     fn render_runtime_tab(
@@ -404,7 +500,13 @@ impl InspectRegistry {
 
         if tab_is_open {
             for rc in &self.registered_components {
-                rc.render_mut(resource_map, entity_handles, ui);
+                match rc.render_mut(resource_map, entity_handles, ui) {
+                    InspectResult::Edited => {},
+                    InspectResult::Deleted => {
+                        //TODO: Implement
+                    },
+                    InspectResult::Unchanged => {},
+                }
             }
 
             unsafe {
