@@ -17,7 +17,7 @@ impl Task for PhysicsSyncPost {
         WriteComponent<components::PositionComponent>,
         WriteComponent<components::VelocityComponent>,
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_PLAYING as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
 
     fn run(
         &mut self,

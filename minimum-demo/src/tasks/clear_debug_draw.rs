@@ -8,7 +8,7 @@ use crate::resources::DebugDraw;
 pub struct ClearDebugDraw;
 impl Task for ClearDebugDraw {
     type RequiredResources = (Write<DebugDraw>);
-    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
 
     fn run(
         &mut self,

@@ -12,11 +12,11 @@ use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
 use crate::components::PositionComponent;
-use crate::framework::inspect::common_types::*;
-use crate::framework::FrameworkComponentPrototype;
+use framework::inspect::common_types::*;
+use framework::FrameworkComponentPrototype;
 use named_type::NamedType;
 use std::collections::VecDeque;
-use crate::framework::select::SelectableComponentPrototype;
+use framework::select::SelectableComponentPrototype;
 
 #[derive(Debug, NamedType, Inspect)]
 pub struct PhysicsBodyComponent {

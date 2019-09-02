@@ -9,7 +9,7 @@ use minimum::ResourceMap;
 
 use nphysics2d::object::ColliderHandle;
 
-use crate::framework::FrameworkComponentPrototype;
+use crate::FrameworkComponentPrototype;
 use named_type::NamedType;
 use ncollide2d::shape::ShapeHandle;
 use ncollide2d::world::{CollisionGroups, GeometricQueryType};

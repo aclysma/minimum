@@ -1,6 +1,6 @@
 use crate::components::PersistentEntityComponent;
-use crate::framework::persist::ComponentPrototypeSerializer;
-use crate::framework::{FrameworkComponentPrototype, FrameworkEntityPrototype, FrameworkEntityPersistencePolicy};
+use crate::persist::ComponentPrototypeSerializer;
+use crate::{FrameworkComponentPrototype, FrameworkEntityPrototype, FrameworkEntityPersistencePolicy};
 use hashbrown::HashMap;
 use minimum::{Component, EntityPrototype};
 use minimum::EntitySet;

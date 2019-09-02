@@ -1,5 +1,5 @@
 
-use crate::framework::FrameworkComponentPrototype;
+use crate::FrameworkComponentPrototype;
 use hashbrown::HashMap;
 use std::marker::PhantomData;
 use super::SelectableComponentPrototype;

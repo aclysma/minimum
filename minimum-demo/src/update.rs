@@ -4,7 +4,7 @@ use minimum::component::ComponentStorage;
 use minimum::resource::ResourceMap;
 
 use crate::components;
-use crate::components::{EditorSelectedComponent};
+use framework::components::{EditorSelectedComponent};
 
 pub fn render(resource_map: &ResourceMap) {
     let window = resource_map.fetch::<winit::window::Window>();
@@ -23,9 +23,9 @@ pub fn recreate_editor_modified_entities(resource_map: &mut ResourceMap) {
     // Find all the modified persistent entities. Return a tuple of (prototypes, is_selected), and mark them for deletion
     // (the scoping here is intentional, we want to avoid having any active fetch when we call flush_free)
     let prototypes = {
-        let persistent_entity_components = resource_map.fetch::<<components::PersistentEntityComponent as Component>::Storage>();
-        let editor_modified_components = resource_map.fetch::<<components::EditorModifiedComponent as Component>::Storage>();
-        let editor_selected_components = resource_map.fetch::<<components::EditorSelectedComponent as Component>::Storage>();
+        let persistent_entity_components = resource_map.fetch::<<framework::components::PersistentEntityComponent as Component>::Storage>();
+        let editor_modified_components = resource_map.fetch::<<framework::components::EditorModifiedComponent as Component>::Storage>();
+        let editor_selected_components = resource_map.fetch::<<framework::components::EditorSelectedComponent as Component>::Storage>();
         let mut pending_delete_components = resource_map.fetch_mut::<<minimum::PendingDeleteComponent as Component>::Storage>();
 
         let mut prototypes = vec![];
@@ -53,7 +53,7 @@ pub fn recreate_editor_modified_entities(resource_map: &mut ResourceMap) {
 
     // Recreate the entities (the scoping here is intentional, we want to avoid having any active fetch when we call flush_creates)
     {
-        let mut editor_selected_components = resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
+        let mut editor_selected_components = resource_map.fetch_mut::<<framework::components::EditorSelectedComponent as Component>::Storage>();
         for (prototype, is_selected) in prototypes {
             use minimum::EntityPrototype;
             let entity = entity_set.allocate_get();

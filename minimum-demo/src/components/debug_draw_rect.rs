@@ -1,9 +1,9 @@
-use crate::framework::inspect::common_types::*;
+use framework::inspect::common_types::*;
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 use serde::{Deserialize, Serialize};
-use crate::framework::select::SelectableComponentPrototype;
+use framework::select::SelectableComponentPrototype;
 
 #[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
 pub struct DebugDrawRectComponent {

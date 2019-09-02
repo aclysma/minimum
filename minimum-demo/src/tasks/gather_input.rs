@@ -1,7 +1,8 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
-use crate::resources::{FrameworkActionQueue, ImguiManager, InputManager, WindowInterface};
+use framework::resources::FrameworkActionQueue;
+use crate::resources::{ImguiManager, InputManager, WindowInterface};
 use named_type::NamedType;
 
 #[derive(NamedType)]
@@ -14,8 +15,8 @@ impl Task for GatherInput {
         Write<InputManager>,
         Write<FrameworkActionQueue>,
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize
-        | crate::context_flags::PLAYMODE_SYSTEM as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize
+        | framework::context_flags::PLAYMODE_SYSTEM as usize;
 
     fn run(
         &mut self,

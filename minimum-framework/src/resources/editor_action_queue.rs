@@ -2,7 +2,7 @@
 use std::collections::VecDeque;
 use minimum::{ResourceMap, EntitySet, Component, PendingDeleteComponent, EntityPrototype};
 use crate::components::EditorSelectedComponent;
-use crate::framework::{FrameworkEntityPrototype, FrameworkEntityPersistencePolicy};
+use crate::{FrameworkEntityPrototype, FrameworkEntityPersistencePolicy};
 
 pub struct EditorActionQueue {
     queue: VecDeque<fn(&ResourceMap)>

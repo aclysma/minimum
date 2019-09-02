@@ -1,4 +1,4 @@
-use crate::framework::inspect::common_types::*;
+use framework::inspect::common_types::*;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 

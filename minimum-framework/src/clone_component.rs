@@ -1,6 +1,6 @@
-use crate::framework::persist::ComponentPrototypeSerializer;
-use crate::framework::FrameworkComponentPrototype;
-use crate::framework::select::SelectableComponentPrototype;
+use crate::persist::ComponentPrototypeSerializer;
+use crate::FrameworkComponentPrototype;
+use crate::select::SelectableComponentPrototype;
 use minimum::Component;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
@@ -11,7 +11,6 @@ use named_type::NamedType;
 use minimum::BasicComponentPrototype;
 
 use imgui_inspect::InspectRenderStruct;
-
 use imgui_inspect::InspectArgsDefault;
 use imgui_inspect::InspectArgsStruct;
 use minimum::component::ComponentCreateQueueFlushListener;

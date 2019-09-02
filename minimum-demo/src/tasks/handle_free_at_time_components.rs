@@ -1,7 +1,7 @@
 use minimum::resource::{DataRequirement, Read};
 use minimum::{Task, TaskContext};
 
-use crate::resources::TimeState;
+use framework::resources::TimeState;
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
@@ -16,7 +16,7 @@ impl Task for HandleFreeAtTimeComponents {
         Read<TimeState>,
         ReadComponent<components::FreeAtTimeComponent>,
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_PLAYING as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
 
     fn run(
         &mut self,

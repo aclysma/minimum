@@ -2,7 +2,6 @@ use std::path::PathBuf;
 use std::collections::VecDeque;
 use minimum::ResourceMap;
 use crate::PlayMode;
-use crate::framework;
 use crate::resources;
 use minimum::Component;
 use minimum::EntitySet;
@@ -37,7 +36,7 @@ impl FrameworkActionQueue {
     pub fn enqueue_load_level(&mut self, path: PathBuf) {
         self.queue.push_back(Box::new(move |resource_map| {
             info!("load level {:?}", path);
-            let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
+            let persist_registry = resource_map.fetch::<crate::persist::PersistRegistry>();
             Self::new_level(resource_map);
             match persist_registry.load(resource_map, std::path::PathBuf::from("test_level_file.txt")) {
                 Ok(_) => { },
@@ -54,7 +53,7 @@ impl FrameworkActionQueue {
     pub fn enqueue_save_level(&mut self, path: PathBuf) {
         self.queue.push_back(Box::new(move |resource_map| {
             info!("save level {:?}", path);
-            let persist_registry = resource_map.fetch::<framework::persist::PersistRegistry>();
+            let persist_registry = resource_map.fetch::<crate::persist::PersistRegistry>();
             match persist_registry.save(resource_map, std::path::PathBuf::from("test_level_file.txt")) {
                 Ok(_) => { },
                 Err(e) => {
@@ -95,7 +94,7 @@ impl FrameworkActionQueue {
                             | crate::context_flags::PLAYMODE_PLAYING;
 
                     let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
-                    editor_ui_state.set_inspector_tab = Some(framework::inspect::InspectorTab::Runtime);
+                    editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Runtime);
                 }
             }
         }));
@@ -130,7 +129,7 @@ impl FrameworkActionQueue {
 
             //TODO: Retain selection
             let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
-            editor_ui_state.set_inspector_tab = Some(framework::inspect::InspectorTab::Persistent);
+            editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Persistent);
         }));
     }
 

@@ -6,6 +6,7 @@
 members = [
     "minimum",
     "minimum-derive",
+    "minimum-framework",
     "minimum-examples",
     "minimum-demo"
 ]

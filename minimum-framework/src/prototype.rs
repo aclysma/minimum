@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 use crate::components::{PersistentEntityComponent, EditorShapeComponentPrototype};
-use crate::framework::select::SelectRegistry;
+use crate::select::SelectRegistry;
 
 // impl ComponentPrototype for FrameworkComponentPrototype?
 pub trait FrameworkComponentPrototype:

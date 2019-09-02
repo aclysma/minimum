@@ -1,7 +1,8 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
-use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState, TimeState};
+use framework::resources::TimeState;
+use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState};
 
 use crate::components;
 use minimum::component::ReadComponent;
@@ -23,7 +24,7 @@ impl Task for ControlPlayerEntity {
         ReadComponent<components::PhysicsBodyComponent>,
         Write<PhysicsManager>,
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_PLAYING;
+    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING;
 
     fn run(
         &mut self,

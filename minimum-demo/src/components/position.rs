@@ -1,4 +1,4 @@
-use crate::framework::inspect::common_types::*;
+use framework::inspect::common_types::*;
 use imgui_inspect_derive::Inspect;
 use minimum::component::VecComponentStorage;
 use named_type::NamedType;

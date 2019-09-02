@@ -52,6 +52,7 @@ imgui-winit-support = { version = "0.1.0-pre", default-features = false, feature
 
 # minimum
 minimum = { path = "../minimum", features = ["async_support", "nightly"] }
+minimum-framework = { path = "../minimum-framework" }
 #minimum-derive = { path = "../minimum-derive" }
 
 imgui-inspect = { path = "../../imgui-inspect/imgui-inspect" }

@@ -1,6 +1,7 @@
 use minimum::resource::{DataRequirement, Read, Write};
 
-use crate::resources::{PhysicsManager, TimeState};
+use framework::resources::TimeState;
+use crate::resources::PhysicsManager;
 
 use minimum::{Task, TaskContext};
 use named_type::NamedType;
@@ -9,7 +10,7 @@ use named_type::NamedType;
 pub struct UpdatePhysics;
 impl Task for UpdatePhysics {
     type RequiredResources = (Read<TimeState>, Write<PhysicsManager>);
-    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_PLAYING as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
 
     fn run(
         &mut self,

@@ -1,6 +1,6 @@
 use minimum::component::SlabComponentStorage;
 
-use crate::resources::TimeState;
+use framework::resources::TimeState;
 use named_type::NamedType;
 
 #[derive(Debug, Clone, NamedType)]

@@ -1,6 +1,6 @@
 use minimum::resource::{DataRequirement, Read, Write};
 
-use crate::resources::EditorCollisionWorld;
+use framework::resources::EditorCollisionWorld;
 
 use crate::components;
 use minimum::component::ReadComponent;
@@ -13,11 +13,11 @@ impl Task for EditorUpdateSelectionShapesWithPosition {
     type RequiredResources = (
         Read<EntitySet>,
         Write<EditorCollisionWorld>,
-        ReadComponent<components::EditorShapeComponent>,
+        ReadComponent<framework::components::EditorShapeComponent>,
         ReadComponent<components::PositionComponent>,
     );
 
-    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_SYSTEM as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM as usize;
 
     fn run(
         &mut self,

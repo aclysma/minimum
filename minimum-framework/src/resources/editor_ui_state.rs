@@ -1,5 +1,5 @@
 use imgui::ImString;
-use crate::framework::inspect::InspectorTab;
+use crate::inspect::InspectorTab;
 
 pub struct WindowOptions {
     pub show_imgui_metrics: bool,

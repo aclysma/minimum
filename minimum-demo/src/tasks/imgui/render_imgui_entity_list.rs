@@ -4,9 +4,10 @@ use minimum::{
     WriteComponent,
 };
 
-use crate::resources::{EditorUiState, ImguiManager, InputManager, TimeState, EditorActionQueue};
+use framework::resources::{EditorUiState, TimeState, EditorActionQueue};
+use crate::resources::{ImguiManager, InputManager};
 
-use crate::components::EditorSelectedComponent;
+use framework::components::EditorSelectedComponent;
 use named_type::NamedType;
 
 #[derive(NamedType)]
@@ -21,7 +22,7 @@ impl Task for RenderImguiEntityList {
         Read<InputManager>,
         Write<EditorActionQueue>
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
 
     fn run(
         &mut self,

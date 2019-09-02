@@ -1,8 +1,8 @@
 use crate::components;
-use crate::framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
+use framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
 use crate::resources;
 
-use crate::framework::FrameworkEntityPrototype;
+use framework::FrameworkEntityPrototype;
 
 use components::PhysicsBodyComponentPrototypeBox;
 use components::PhysicsBodyComponentPrototypeCircle;
@@ -86,7 +86,7 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
 pub fn create_bullet(
     position: glm::Vec2,
     velocity: glm::Vec2,
-    time_state: &resources::TimeState,
+    time_state: &framework::resources::TimeState,
     entity_factory: &mut minimum::EntityFactory,
 ) {
     let radius = 5.0;

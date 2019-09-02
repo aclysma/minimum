@@ -1,6 +1,6 @@
 use minimum::resource::{DataRequirement, Write};
 
-use crate::resources::EditorCollisionWorld;
+use framework::resources::EditorCollisionWorld;
 
 use minimum::{Task, TaskContext};
 use named_type::NamedType;
@@ -9,7 +9,7 @@ use named_type::NamedType;
 pub struct EditorUpdateSelectionWorld;
 impl Task for EditorUpdateSelectionWorld {
     type RequiredResources = (Write<EditorCollisionWorld>);
-    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_SYSTEM as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM as usize;
 
     fn run(
         &mut self,

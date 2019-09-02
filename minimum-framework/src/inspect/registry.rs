@@ -1,4 +1,4 @@
-use crate::framework::FrameworkComponentPrototype;
+use crate::FrameworkComponentPrototype;
 use crate::components::EditorModifiedComponent;
 use super::InspectorTab;
 use hashbrown::HashMap;

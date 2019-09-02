@@ -15,12 +15,13 @@ extern crate imgui_inspect_derive;
 #[macro_use]
 extern crate mopa;
 
+extern crate minimum_framework as framework;
+
 //#[macro_use]
 //extern crate minimum_derive;
 
 mod components;
 mod constructors;
-mod framework;
 mod imgui_themes;
 mod init;
 mod renderer;
@@ -32,37 +33,9 @@ use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
 use framework::CloneComponentFactory;
 use minimum::component::Component;
-use resources::EditorActionQueue;
+use framework::resources::EditorActionQueue;
 
-#[derive(Copy, Clone, PartialEq, strum_macros::EnumCount, Debug)]
-pub enum PlayMode {
-    // Represents the game being frozen for debug purposes
-    System,
 
-    // Represents the game being puased by the user (actual meaning of this is game-specific)
-    Paused,
-
-    // Normal simulation is running
-    Playing,
-}
-
-//PLAYMODE_COUNT exists due to strum_macros::EnumCount
-const PLAY_MODE_COUNT: usize = PLAYMODE_COUNT;
-
-pub mod context_flags {
-    // For pause status. Flags will be set based on if the game is in a certain playmode
-    pub const PLAYMODE_SYSTEM: usize = 1;
-    pub const PLAYMODE_PAUSED: usize = 2;
-    pub const PLAYMODE_PLAYING: usize = 4;
-
-    // For multiplayer games:
-    // - Dedicated Server will only run Net_Server
-    // - Pure client will only have Net_Client
-    // - "Listen" client will have both
-    // - Singleplayer will have both
-    pub const AUTHORITY_SERVER: usize = 8;
-    pub const AUTHORITY_CLIENT: usize = 16;
-}
 
 fn main() {
     run_the_game().unwrap();
@@ -86,17 +59,17 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .build(&event_loop)?;
 
     let mut resource_map = minimum::WorldBuilder::new()
-        .with_resource(resources::FrameworkActionQueue::new())
+        .with_resource(framework::resources::FrameworkActionQueue::new())
         .with_resource(resources::DebugDraw::new())
         .with_resource(resources::InputManager::new())
-        .with_resource(resources::TimeState::new())
+        .with_resource(framework::resources::TimeState::new())
         .with_resource(resources::PhysicsManager::new())
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
-        .with_resource(resources::EditorCollisionWorld::new())
-        .with_resource(resources::EditorUiState::new())
-        .with_resource(resources::EditorActionQueue::new())
+        .with_resource(framework::resources::EditorCollisionWorld::new())
+        .with_resource(framework::resources::EditorUiState::new())
+        .with_resource(framework::resources::EditorActionQueue::new())
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
@@ -104,14 +77,14 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component(<components::PlayerComponent as Component>::Storage::new())
         .with_component(<components::BulletComponent as Component>::Storage::new())
         .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
-        .with_component(<components::EditorSelectedComponent as Component>::Storage::new())
-        .with_component(<components::EditorModifiedComponent as Component>::Storage::new())
-        .with_component(<components::PersistentEntityComponent as Component>::Storage::new())
+        .with_component(<framework::components::EditorSelectedComponent as Component>::Storage::new())
+        .with_component(<framework::components::EditorModifiedComponent as Component>::Storage::new())
+        .with_component(<framework::components::PersistentEntityComponent as Component>::Storage::new())
         .with_component_and_free_handler::<_, _, components::PhysicsBodyComponentFreeHandler>(
             <components::PhysicsBodyComponent as Component>::Storage::new(),
         )
-        .with_component_and_free_handler::<_, _, components::EditorShapeComponentFreeHandler>(
-            <components::EditorShapeComponent as Component>::Storage::new(),
+        .with_component_and_free_handler::<_, _, framework::components::EditorShapeComponentFreeHandler>(
+            <framework::components::EditorShapeComponent as Component>::Storage::new(),
         )
         //TODO: Ideally we don't need to register the factory in addition to the component itself
         .with_component_factory(CloneComponentFactory::<components::PositionComponent>::new())
@@ -123,11 +96,11 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(CloneComponentFactory::<components::PlayerComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::BulletComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
-        .with_component_factory(CloneComponentFactory::<components::EditorSelectedComponent>::new())
+        .with_component_factory(CloneComponentFactory::<framework::components::EditorSelectedComponent>::new())
         .with_component_factory(components::PhysicsBodyComponentFactory::new())
-        .with_component_factory(components::EditorShapeComponentFactory::new())
+        .with_component_factory(framework::components::EditorShapeComponentFactory::new())
         .with_component_factory(
-            CloneComponentFactory::<components::PersistentEntityComponent>::new(),
+            CloneComponentFactory::<framework::components::PersistentEntityComponent>::new(),
         )
         .build();
 
@@ -199,11 +172,11 @@ fn dispatcher_thread(
     info!("dispatch thread started");
 
     // Start off in the editor state
-    let context_flags = crate::context_flags::AUTHORITY_CLIENT
-        | crate::context_flags::AUTHORITY_SERVER
-        //| crate::context_flags::PLAYMODE_PLAYING
-        //| crate::context_flags::PLAYMODE_PAUSED
-        | crate::context_flags::PLAYMODE_SYSTEM;
+    let context_flags = framework::context_flags::AUTHORITY_CLIENT
+        | framework::context_flags::AUTHORITY_SERVER
+        //| framework::context_flags::PLAYMODE_PLAYING
+        //| framework::context_flags::PLAYMODE_PAUSED
+        | framework::context_flags::PLAYMODE_SYSTEM;
 
     let dispatcher = MinimumDispatcher::new(resource_map, context_flags);
     let mut resource_map = dispatcher.enter_game_loop(move |dispatch_ctx| {
@@ -244,7 +217,12 @@ fn dispatcher_thread(
                     // This requires global data access since we're going to draw/edit potentially any
                     // component
                     let _scope_timer = minimum::util::ScopeTimer::new("inspect");
-                    framework::inspect::draw_inspector(&resource_map);
+                    let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
+
+                    //TODO: draw_inspector could potentially take a <T: ImguiManager> param
+                    let ui = imgui_manager.with_ui(|ui| {
+                        framework::inspect::draw_inspector(&resource_map, ui);
+                    });
                 }
 
                 // Render
@@ -276,7 +254,7 @@ fn dispatcher_thread(
                 // Drain the framework queue. This can potentiall load/save/reset the game state
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("framework_action_queue");
-                    let mut framework_action_queue = resource_map.fetch_mut::<resources::FrameworkActionQueue>();
+                    let mut framework_action_queue = resource_map.fetch_mut::<framework::resources::FrameworkActionQueue>();
                     framework_action_queue.process_queue(resource_map);
                 }
 

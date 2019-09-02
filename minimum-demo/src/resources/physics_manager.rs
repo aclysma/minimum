@@ -24,7 +24,7 @@ impl PhysicsManager {
         }
     }
 
-    pub fn update(&mut self, time_state: &resources::TimeState) {
+    pub fn update(&mut self, time_state: &framework::resources::TimeState) {
         let dt = time_state.playing().previous_frame_dt;
         self.time_accumulator += dt;
 

@@ -2,9 +2,10 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
 use minimum::{Task, TaskContext, WriteComponent};
 
-use crate::resources::{DebugDraw, EditorCollisionWorld, InputManager, MouseButtons, RenderState, EditorTool, EditorUiState};
+use framework::resources::{EditorCollisionWorld, EditorTool, EditorUiState};
+use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState};
 
-use crate::components::EditorSelectedComponent;
+use framework::components::EditorSelectedComponent;
 use ncollide2d::world::CollisionGroups;
 
 use named_type::NamedType;
@@ -22,7 +23,7 @@ impl Task for EditorHandleInput {
         Write<DebugDraw>,
         Write<EditorUiState>
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::PLAYMODE_SYSTEM;
+    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM;
 
     fn run(
         &mut self,
@@ -56,7 +57,7 @@ impl Task for EditorHandleInput {
         }
 
         if task_context.context_flags()
-            & (crate::context_flags::PLAYMODE_PAUSED | crate::context_flags::PLAYMODE_PLAYING)
+            & (framework::context_flags::PLAYMODE_PAUSED | framework::context_flags::PLAYMODE_PLAYING)
             != 0
         {
             return;

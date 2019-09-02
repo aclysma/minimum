@@ -8,7 +8,7 @@ use named_type::NamedType;
 pub struct ImguiBeginFrame;
 impl Task for ImguiBeginFrame {
     type RequiredResources = (Read<winit::window::Window>, Write<ImguiManager>);
-    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
 
     fn run(
         &mut self,

@@ -15,7 +15,7 @@ impl Task for DebugDrawComponents {
         ReadComponent<components::DebugDrawRectComponent>,
         ReadComponent<components::PositionComponent>,
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
 
     fn run(
         &mut self,

@@ -1,7 +1,8 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
-use crate::resources::{DebugOptions, EditorUiState, EditorTool, FrameworkActionQueue, ImguiManager, TimeState};
+use framework::resources::{EditorUiState, EditorTool, FrameworkActionQueue, TimeState};
+use crate::resources::{DebugOptions, ImguiManager};
 
 use named_type::NamedType;
 use imgui::im_str;
@@ -31,7 +32,7 @@ impl Task for RenderImguiMainMenu {
         Write<EditorUiState>,
         Write<DebugOptions>,
     );
-    const REQUIRED_FLAGS: usize = crate::context_flags::AUTHORITY_CLIENT as usize;
+    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
 
     fn run(
         &mut self,
@@ -46,7 +47,7 @@ impl Task for RenderImguiMainMenu {
             mut debug_options,
         ) = data;
 
-        let is_edit_mode = time_state.play_mode == crate::PlayMode::System;
+        let is_edit_mode = time_state.play_mode == framework::PlayMode::System;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             {
@@ -137,20 +138,20 @@ impl Task for RenderImguiMainMenu {
                 if is_edit_mode {
                     if ui.menu_item(im_str!("\u{e8c4} Reset")).build() {
                         game_control.enqueue_reset_level();
-                        game_control.enqueue_change_play_mode(crate::PlayMode::System);
+                        game_control.enqueue_change_play_mode(framework::PlayMode::System);
                     }
 
                     if ui.menu_item(im_str!("\u{f40a} Play")).build() {
-                        game_control.enqueue_change_play_mode(crate::PlayMode::Playing);
+                        game_control.enqueue_change_play_mode(framework::PlayMode::Playing);
                     }
                 } else {
                     if ui.menu_item(im_str!("\u{e8c4} Reset")).build() {
                         game_control.enqueue_reset_level();
-                        game_control.enqueue_change_play_mode(crate::PlayMode::System);
+                        game_control.enqueue_change_play_mode(framework::PlayMode::System);
                     }
 
                     if ui.menu_item(im_str!("\u{f3e4} Pause")).build() {
-                        game_control.enqueue_change_play_mode(crate::PlayMode::System);
+                        game_control.enqueue_change_play_mode(framework::PlayMode::System);
                     }
                 }
 
