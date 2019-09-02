@@ -56,7 +56,7 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
         storage: &mut <EditorShapeComponent as Component>::Storage,
     ) {
         let mut editor_collision_world =
-            resource_map.fetch_mut::<crate::resources::EditorCollisionWorld>();
+            resource_map.fetch_mut::<crate::resources::editor::EditorCollisionWorld>();
         let physics_world: &mut ncollide2d::world::CollisionWorld<f32, EntityHandle> =
             editor_collision_world.world_mut();
 
@@ -121,7 +121,7 @@ impl ComponentCreateQueueFlushListener for EditorShapeComponentFactory {
         }
 
         let mut collision_world =
-            resource_map.fetch_mut::<crate::resources::EditorCollisionWorld>();
+            resource_map.fetch_mut::<crate::resources::editor::EditorCollisionWorld>();
         let mut storage = resource_map.fetch_mut::<<EditorShapeComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {

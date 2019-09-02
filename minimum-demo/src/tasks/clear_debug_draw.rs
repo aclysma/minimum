@@ -20,3 +20,20 @@ impl Task for ClearDebugDraw {
         debug_draw.clear();
     }
 }
+
+
+#[derive(NamedType)]
+pub struct NullTask;
+
+impl Task for NullTask {
+    type RequiredResources = ();
+    const REQUIRED_FLAGS: usize = 0;
+
+    fn run(
+        &mut self,
+        task_context: &TaskContext,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
+
+    }
+}

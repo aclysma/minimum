@@ -1,6 +1,5 @@
 use crate::components;
 use framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
-use crate::resources;
 
 use framework::FrameworkEntityPrototype;
 

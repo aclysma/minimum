@@ -1,4 +1,7 @@
+
+#[cfg(feature = "editor")]
 use crate::components::PersistentEntityComponent;
+
 use crate::persist::ComponentPrototypeSerializer;
 use crate::{FrameworkComponentPrototype, FrameworkEntityPrototype, FrameworkEntityPersistencePolicy};
 use hashbrown::HashMap;
@@ -236,6 +239,7 @@ impl PersistRegistry {
         Ok(())
     }
 
+    #[cfg(feature = "editor")]
     pub fn save<P: AsRef<std::path::Path>>(&self, resource_map: &ResourceMap, path: P) -> Result<(), SerializeError> {
         // Get the entities and all persistent entity components. This represents all the data we need to save
         let entity_set = resource_map.fetch::<EntitySet>();

@@ -1,6 +1,7 @@
 use minimum::resource::{DataRequirement, Write};
 
-use framework::resources::EditorCollisionWorld;
+#[cfg(feature = "editor")]
+use framework::resources::editor::EditorCollisionWorld;
 
 use minimum::{Task, TaskContext};
 use named_type::NamedType;

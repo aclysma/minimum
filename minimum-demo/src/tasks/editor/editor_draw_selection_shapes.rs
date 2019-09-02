@@ -4,7 +4,8 @@ use minimum::{EntityHandle, ReadComponent, Task, TaskContext};
 
 use crate::components;
 use crate::resources::DebugDraw;
-use framework::resources::EditorCollisionWorld;
+#[cfg(feature = "editor")]
+use framework::resources::editor::EditorCollisionWorld;
 use named_type::NamedType;
 use ncollide2d::shape::ShapeHandle;
 use nphysics2d::object::ColliderHandle;
@@ -15,8 +16,8 @@ impl Task for EditorDrawSelectionShapes {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<EditorCollisionWorld>,
-        ReadComponent<framework::components::EditorShapeComponent>,
-        ReadComponent<framework::components::EditorSelectedComponent>,
+        ReadComponent<framework::components::editor::EditorShapeComponent>,
+        ReadComponent<framework::components::editor::EditorSelectedComponent>,
     );
     const REQUIRED_FLAGS: usize =
         framework::context_flags::AUTHORITY_CLIENT as usize | framework::context_flags::PLAYMODE_SYSTEM;

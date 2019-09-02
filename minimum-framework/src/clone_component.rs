@@ -1,5 +1,6 @@
 use crate::persist::ComponentPrototypeSerializer;
 use crate::FrameworkComponentPrototype;
+#[cfg(feature = "editor")]
 use crate::select::SelectableComponentPrototype;
 use minimum::Component;
 use minimum::ComponentFactory;
@@ -10,13 +11,12 @@ use minimum::ResourceMap;
 use named_type::NamedType;
 use minimum::BasicComponentPrototype;
 
-use imgui_inspect::InspectRenderStruct;
-use imgui_inspect::InspectArgsDefault;
-use imgui_inspect::InspectArgsStruct;
 use minimum::component::ComponentCreateQueueFlushListener;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
+#[cfg(feature = "editor")]
+use imgui_inspect::{InspectRenderStruct, InspectArgsDefault, InspectArgsStruct};
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
@@ -59,7 +59,7 @@ impl<T: Component + Clone + Default> Default for CloneComponentPrototype<T> {
 //
 // Implement inspect for clone components
 //
-
+#[cfg(feature = "editor")]
 impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>>
 for CloneComponentPrototype<T>
     where
@@ -83,7 +83,7 @@ for CloneComponentPrototype<T>
         <Self as imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>>::render_mut(data, label, ui, &InspectArgsStruct::from((*args).clone()))
     }
 }
-
+#[cfg(feature = "editor")]
 impl<T> imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>
     for CloneComponentPrototype<T>
 where
@@ -134,6 +134,7 @@ impl<T: Component + Clone + Serialize + DeserializeOwned>
     }
 }
 
+#[cfg(feature = "editor")]
 impl<T: Component + Clone + SelectableComponentPrototype<T>> SelectableComponentPrototype<CloneComponentPrototype<T>> for CloneComponentPrototype<T> {
     fn create_selection_shape(data: &CloneComponentPrototype<T>) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
         T::create_selection_shape(&data.inner.data())

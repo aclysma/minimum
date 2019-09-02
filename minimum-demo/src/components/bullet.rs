@@ -1,10 +1,12 @@
+
+#[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 use serde::{Deserialize, Serialize};
 
 // This component contains no data, however an empty component can still be useful to "tag" entities
-#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Default, Inspect)]
 pub struct BulletComponent {}
 
 impl BulletComponent {

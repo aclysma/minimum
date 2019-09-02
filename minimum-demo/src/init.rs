@@ -1,7 +1,15 @@
+
+#[cfg(feature = "editor")]
 use crate::imgui_themes;
-use crate::resources::{ImguiManager, WindowUserEvent};
+#[cfg(feature = "editor")]
+use crate::resources::ImguiManager;
+#[cfg(feature = "editor")]
 use imgui;
 
+
+use crate::resources::WindowUserEvent;
+
+#[cfg(feature = "editor")]
 fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     use imgui::Context;
 
@@ -87,6 +95,7 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     return imgui;
 }
 
+#[cfg(feature = "editor")]
 pub fn init_imgui_manager(resource_map: &minimum::resource::ResourceMap) -> ImguiManager {
     let window = resource_map.fetch::<winit::window::Window>();
     let mut imgui_context = init_imgui(&window);

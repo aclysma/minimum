@@ -1,7 +1,9 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
-use framework::resources::{EditorUiState, EditorTool, FrameworkActionQueue, TimeState};
+#[cfg(feature = "editor")]
+use framework::resources::editor::{EditorUiState, EditorTool};
+use framework::resources::{FrameworkActionQueue, TimeState};
 use crate::resources::{DebugOptions, ImguiManager};
 
 use named_type::NamedType;

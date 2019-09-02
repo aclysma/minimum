@@ -1,10 +1,14 @@
+
+#[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
+
+#[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
+#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Inspect)]
 pub struct VelocityComponent {
     #[inspect(proxy_type = "ImGlmVec2")]
     velocity: glm::Vec2,

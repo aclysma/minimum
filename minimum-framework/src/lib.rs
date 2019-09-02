@@ -20,10 +20,12 @@ pub use clone_component::CloneComponentPrototype;
 pub mod components;
 pub mod resources;
 
+#[cfg(feature = "editor")]
 pub mod inspect;
 
 pub mod persist;
 
+#[cfg(feature = "editor")]
 pub mod select;
 
 mod prototype;

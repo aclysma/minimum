@@ -1,11 +1,17 @@
+
+#[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
+
+#[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
+
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 
-#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
+#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawRectComponent {
     #[inspect(proxy_type = "ImGlmVec2")]
     size: glm::Vec2,
@@ -25,7 +31,10 @@ impl Default for DebugDrawRectComponent {
 
 impl DebugDrawRectComponent {
     pub fn new(size: glm::Vec2, color: glm::Vec4) -> Self {
-        DebugDrawRectComponent { size, color }
+        DebugDrawRectComponent {
+            size,
+            color
+        }
     }
 
     pub fn size(&self) -> glm::Vec2 {
@@ -37,6 +46,7 @@ impl DebugDrawRectComponent {
     }
 }
 
+#[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for DebugDrawRectComponent {
     fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
         use ncollide2d::shape::{Cuboid, ShapeHandle};

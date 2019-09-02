@@ -1,6 +1,8 @@
+
+#![feature(custom_attribute)]
+
 //There is a decent amount of dead code in this demo that is left as an example
 #![allow(dead_code)]
-
 extern crate nalgebra_glm as glm;
 
 #[macro_use]
@@ -12,16 +14,11 @@ extern crate named_type_derive;
 #[macro_use]
 extern crate imgui_inspect_derive;
 
-#[macro_use]
-extern crate mopa;
-
 extern crate minimum_framework as framework;
-
-//#[macro_use]
-//extern crate minimum_derive;
 
 mod components;
 mod constructors;
+#[cfg(feature = "editor")]
 mod imgui_themes;
 mod init;
 mod renderer;
@@ -33,8 +30,9 @@ use minimum::dispatch::async_dispatch::MinimumDispatcher;
 
 use framework::CloneComponentFactory;
 use minimum::component::Component;
-use framework::resources::EditorActionQueue;
-
+#[cfg(feature = "editor")]
+use framework::resources::editor::EditorActionQueue;
+use framework::resources::FrameworkActionQueue;
 
 
 fn main() {
@@ -67,9 +65,6 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
-        .with_resource(framework::resources::EditorCollisionWorld::new())
-        .with_resource(framework::resources::EditorUiState::new())
-        .with_resource(framework::resources::EditorActionQueue::new())
         .with_component(<components::PositionComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
@@ -77,14 +72,9 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component(<components::PlayerComponent as Component>::Storage::new())
         .with_component(<components::BulletComponent as Component>::Storage::new())
         .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
-        .with_component(<framework::components::EditorSelectedComponent as Component>::Storage::new())
-        .with_component(<framework::components::EditorModifiedComponent as Component>::Storage::new())
         .with_component(<framework::components::PersistentEntityComponent as Component>::Storage::new())
         .with_component_and_free_handler::<_, _, components::PhysicsBodyComponentFreeHandler>(
             <components::PhysicsBodyComponent as Component>::Storage::new(),
-        )
-        .with_component_and_free_handler::<_, _, framework::components::EditorShapeComponentFreeHandler>(
-            <framework::components::EditorShapeComponent as Component>::Storage::new(),
         )
         //TODO: Ideally we don't need to register the factory in addition to the component itself
         .with_component_factory(CloneComponentFactory::<components::PositionComponent>::new())
@@ -96,32 +86,59 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_component_factory(CloneComponentFactory::<components::PlayerComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::BulletComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
-        .with_component_factory(CloneComponentFactory::<framework::components::EditorSelectedComponent>::new())
         .with_component_factory(components::PhysicsBodyComponentFactory::new())
-        .with_component_factory(framework::components::EditorShapeComponentFactory::new())
         .with_component_factory(
             CloneComponentFactory::<framework::components::PersistentEntityComponent>::new(),
-        )
-        .build();
+        );
 
-    let mut inspect_registry = framework::inspect::InspectRegistry::new();
-    inspect_registry.register_component::<components::PositionComponent>("Position");
-    inspect_registry.register_component::<components::VelocityComponent>("Velocity");
-    inspect_registry.register_component::<components::DebugDrawCircleComponent>("Debug Draw Circle");
-    inspect_registry.register_component::<components::DebugDrawRectComponent>("Debug Draw Rectangle");
-    inspect_registry.register_component::<components::BulletComponent>("Physics Body Box");
-    inspect_registry.register_component::<components::PhysicsBodyComponent>("Physics Body Circle");
-    inspect_registry.register_component::<components::PlayerComponent>("Player");
+    #[cfg(feature = "editor")]
+    {
+        resource_map = resource_map
+            .with_component(<framework::components::editor::EditorModifiedComponent as Component>::Storage::new())
+            .with_component(<framework::components::editor::EditorSelectedComponent as Component>::Storage::new())
+            .with_resource(framework::resources::editor::EditorCollisionWorld::new())
+            .with_resource(framework::resources::editor::EditorUiState::new())
+            .with_resource(framework::resources::editor::EditorActionQueue::new())
+            .with_component_and_free_handler::<_, _, framework::components::editor::EditorShapeComponentFreeHandler>(
+                <framework::components::editor::EditorShapeComponent as Component>::Storage::new(),
+            )
+            .with_component_factory(CloneComponentFactory::<framework::components::editor::EditorSelectedComponent>::new())
+            .with_component_factory(framework::components::editor::EditorShapeComponentFactory::new());
+    }
 
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
-    inspect_registry
-        .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>("Physics Body Custom");
-    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
-    inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
-    inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>("Player");
+    let mut resource_map = resource_map.build();
+
+    #[cfg(feature = "editor")]
+    {
+        let mut select_registry = framework::select::SelectRegistry::new();
+        select_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
+        select_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
+        select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
+        select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
+
+        resource_map.insert(select_registry);
+
+        let mut inspect_registry = framework::inspect::InspectRegistry::new();
+        inspect_registry.register_component::<components::PositionComponent>("Position");
+        inspect_registry.register_component::<components::VelocityComponent>("Velocity");
+        inspect_registry.register_component::<components::DebugDrawCircleComponent>("Debug Draw Circle");
+        inspect_registry.register_component::<components::DebugDrawRectComponent>("Debug Draw Rectangle");
+        inspect_registry.register_component::<components::BulletComponent>("Physics Body Box");
+        inspect_registry.register_component::<components::PhysicsBodyComponent>("Physics Body Circle");
+        inspect_registry.register_component::<components::PlayerComponent>("Player");
+
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
+        inspect_registry
+            .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>("Physics Body Custom");
+        inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
+        inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>("Player");
+
+        resource_map.insert(inspect_registry);
+    }
 
     let mut persist_registry = framework::persist::PersistRegistry::new();
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
@@ -132,16 +149,18 @@ fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>("Player");
 
-    let mut select_registry = framework::select::SelectRegistry::new();
-    select_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
-    select_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
-    select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
-    select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
-
-    resource_map.insert(inspect_registry);
     resource_map.insert(persist_registry);
-    resource_map.insert(select_registry);
-    resource_map.insert(init::init_imgui_manager(&resource_map));
+
+    #[cfg(feature = "editor")]
+    {
+        resource_map.insert(init::init_imgui_manager(&resource_map));
+    }
+
+    #[cfg(not(feature = "editor"))]
+    {
+        resource_map.insert(resources::ImguiManager {});
+    }
+
     resource_map.insert(init::create_renderer(&resource_map));
 
     //create_objects(&resource_map);
@@ -171,12 +190,35 @@ fn dispatcher_thread(
 ) -> minimum::resource::ResourceMap {
     info!("dispatch thread started");
 
-    // Start off in the editor state
+    // If editing, start paused
+    #[cfg(feature = "editor")]
     let context_flags = framework::context_flags::AUTHORITY_CLIENT
         | framework::context_flags::AUTHORITY_SERVER
-        //| framework::context_flags::PLAYMODE_PLAYING
-        //| framework::context_flags::PLAYMODE_PAUSED
         | framework::context_flags::PLAYMODE_SYSTEM;
+
+    // If not editing, start in playing mode
+    #[cfg(not(feature = "editor"))]
+    let context_flags = framework::context_flags::AUTHORITY_CLIENT
+        | framework::context_flags::AUTHORITY_SERVER
+        | framework::context_flags::PLAYMODE_PLAYING
+        | framework::context_flags::PLAYMODE_PAUSED
+        | framework::context_flags::PLAYMODE_SYSTEM;
+
+    resource_map.fetch_mut::<FrameworkActionQueue>().enqueue_load_level(std::path::PathBuf::from("test_save"));
+
+    #[cfg(feature = "editor")]
+    macro_rules! editor_only_task {
+        ($t: path) => {
+            $t
+        };
+    }
+
+    #[cfg(not(feature = "editor"))]
+    macro_rules! editor_only_task {
+        ($t: path) => {
+            tasks::NullTask
+        };
+    }
 
     let dispatcher = MinimumDispatcher::new(resource_map, context_flags);
     let mut resource_map = dispatcher.enter_game_loop(move |dispatch_ctx| {
@@ -185,7 +227,11 @@ fn dispatcher_thread(
         minimum::async_dispatch::ExecuteSequential::new(vec![
             // Pre Input
             dispatch_ctx.run_task(tasks::ClearDebugDraw),
-            dispatch_ctx.run_task(tasks::ImguiBeginFrame),
+
+            //TODO: Conditional compile this out
+            dispatch_ctx.run_task(editor_only_task!(tasks::imgui::ImguiBeginFrame)),
+
+
             dispatch_ctx.run_task(tasks::UpdateTimeState),
 
             // Input
@@ -204,15 +250,20 @@ fn dispatcher_thread(
             // Post Physics
 
             // Pre Render
-            dispatch_ctx.run_task(tasks::RenderImguiMainMenu),
-            dispatch_ctx.run_task(tasks::RenderImguiEntityList),
-            dispatch_ctx.run_task(tasks::EditorUpdateSelectionShapesWithPosition),
-            dispatch_ctx.run_task(tasks::EditorUpdateSelectionWorld),
-            dispatch_ctx.run_task(tasks::EditorHandleInput),
-            dispatch_ctx.run_task(tasks::EditorDrawSelectionShapes),
+
+            //TODO: Conditional compile these out
+            dispatch_ctx.run_task(editor_only_task!(tasks::imgui::RenderImguiMainMenu)),
+            dispatch_ctx.run_task(editor_only_task!(tasks::imgui::RenderImguiEntityList)),
+            dispatch_ctx.run_task(editor_only_task!(tasks::editor::EditorUpdateSelectionShapesWithPosition)),
+            dispatch_ctx.run_task(editor_only_task!(tasks::editor::EditorUpdateSelectionWorld)),
+            dispatch_ctx.run_task(editor_only_task!(tasks::editor::EditorHandleInput)),
+            dispatch_ctx.run_task(editor_only_task!(tasks::editor::EditorDrawSelectionShapes)),
+
+
             dispatch_ctx.run_task(tasks::DebugDrawComponents),
             dispatch_ctx.visit_resources(|resource_map| {
                 // Draw Inspector
+                #[cfg(feature = "editor")]
                 {
                     // This requires global data access since we're going to draw/edit potentially any
                     // component
@@ -245,13 +296,14 @@ fn dispatcher_thread(
             dispatch_ctx.visit_resources_mut(move |resource_map| {
 
                 // Drain the editor action queue. This can potentially add/remove entities
+                #[cfg(feature = "editor")]
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("editor queue");
                     let mut editor_action_queue = resource_map.fetch_mut::<EditorActionQueue>();
                     editor_action_queue.process_queue(resource_map);
                 }
 
-                // Drain the framework queue. This can potentiall load/save/reset the game state
+                // Drain the framework queue. This can potentially load/save/reset the game state
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("framework_action_queue");
                     let mut framework_action_queue = resource_map.fetch_mut::<framework::resources::FrameworkActionQueue>();
@@ -259,6 +311,7 @@ fn dispatcher_thread(
                 }
 
                 // Rebuild any entities that had their prototype changed
+                #[cfg(feature = "editor")]
                 {
                     let _scope_timer = minimum::util::ScopeTimer::new("recreate_modified_entities");
                     update::recreate_editor_modified_entities(resource_map);

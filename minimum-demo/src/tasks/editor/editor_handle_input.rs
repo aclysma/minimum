@@ -2,10 +2,12 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
 use minimum::{Task, TaskContext, WriteComponent};
 
-use framework::resources::{EditorCollisionWorld, EditorTool, EditorUiState};
+#[cfg(feature = "editor")]
+use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
 use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState};
 
-use framework::components::EditorSelectedComponent;
+#[cfg(feature = "editor")]
+use framework::components::editor::EditorSelectedComponent;
 use ncollide2d::world::CollisionGroups;
 
 use named_type::NamedType;

@@ -12,10 +12,13 @@ use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
 use crate::components::PositionComponent;
+#[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
 use framework::FrameworkComponentPrototype;
 use named_type::NamedType;
 use std::collections::VecDeque;
+
+#[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 
 #[derive(Debug, NamedType, Inspect)]
@@ -145,7 +148,7 @@ impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCustom {}
 //
 // Box Prototype
 //
-#[derive(Clone, NamedType, Inspect, Serialize, Deserialize)]
+#[derive(Clone, NamedType, Serialize, Deserialize, Inspect)]
 pub struct PhysicsBodyComponentPrototypeBox {
     #[inspect(proxy_type = "ImGlmVec2")]
     size: glm::Vec2,
@@ -186,6 +189,7 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeBox {
 
 impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeBox {}
 
+#[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeBox {
     fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
         use ncollide2d::shape::{Cuboid, ShapeHandle};
@@ -196,7 +200,7 @@ impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeBox {
 //
 // Circle Prototype
 //
-#[derive(Clone, NamedType, Inspect, Serialize, Deserialize)]
+#[derive(Clone, NamedType, Serialize, Deserialize, Inspect)]
 pub struct PhysicsBodyComponentPrototypeCircle {
     radius: f32,
     mass: f32,
@@ -236,6 +240,7 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeCircle {
 
 impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCircle {}
 
+#[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeCircle {
     fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
         use ncollide2d::shape::{Ball, ShapeHandle};

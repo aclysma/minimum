@@ -1,4 +1,3 @@
-use crate::resources;
 
 const GRAVITY: f32 = 0.0;
 

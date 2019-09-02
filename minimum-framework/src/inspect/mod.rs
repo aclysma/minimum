@@ -16,11 +16,11 @@ use crate::resources;
 use crate::components;
 
 use components::PersistentEntityComponent;
-use crate::components::EditorModifiedComponent;
+use crate::components::editor::EditorModifiedComponent;
 
 pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
     let play_mode = resource_map.fetch::<resources::TimeState>().play_mode;
-    let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
+    let mut editor_ui_state = resource_map.fetch_mut::<resources::editor::EditorUiState>();
     let window_options = editor_ui_state.window_options(play_mode);
     if !window_options.show_inspector {
         return;
@@ -29,7 +29,7 @@ pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
     let entity_set = resource_map.fetch::<minimum::EntitySet>();
     let selected_entity_handles = {
         let selected_components =
-            resource_map.fetch_mut::<<components::EditorSelectedComponent as Component>::Storage>();
+            resource_map.fetch_mut::<<components::editor::EditorSelectedComponent as Component>::Storage>();
         let mut selected = vec![];
         for (entity_handle, _) in selected_components.iter(&entity_set) {
             selected.push(entity_handle);
@@ -81,7 +81,7 @@ pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
                 if let Some(type_id) = selected_type_id {
                     // Get storages for the components we will modify
                     let mut prototype_components = resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
-                    let mut modified_components = resource_map.fetch_mut::<<components::EditorModifiedComponent as Component>::Storage>();
+                    let mut modified_components = resource_map.fetch_mut::<<components::editor::EditorModifiedComponent as Component>::Storage>();
 
                     for selected_entity_handle in &selected_entity_handles {
                         //TODO: Check that one doesn't exist already or switch to using hashmap

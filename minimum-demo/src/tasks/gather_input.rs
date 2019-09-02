@@ -2,7 +2,9 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{Task, TaskContext};
 
 use framework::resources::FrameworkActionQueue;
-use crate::resources::{ImguiManager, InputManager, WindowInterface};
+
+use crate::resources::ImguiManager;
+use crate::resources::{InputManager, WindowInterface};
 use named_type::NamedType;
 
 #[derive(NamedType)]
@@ -32,13 +34,25 @@ impl Task for GatherInput {
         input_manager.pre_handle_events();
         let mut is_close_requested = false;
 
+        #[cfg(feature = "editor")]
         let imgui_want_capture_keyboard = imgui_manager.want_capture_keyboard();
+        #[cfg(feature = "editor")]
         let imgui_want_capture_mouse = imgui_manager.want_capture_mouse();
+
+        #[cfg(not(feature = "editor"))]
+        let imgui_want_capture_keyboard = false;
+        #[cfg(not(feature = "editor"))]
+        let imgui_want_capture_mouse = false;
+
 
         loop {
             match window_interface.event_rx.lock().unwrap().try_recv() {
                 Ok(event) => {
-                    imgui_manager.handle_event(&window, &event);
+
+                    #[cfg(feature = "editor")]
+                    {
+                        imgui_manager.handle_event(&window, &event);
+                    }
 
                     match event {
                         // Close if the window is killed
@@ -90,6 +104,7 @@ impl Task for GatherInput {
                                 button,
                                 modifiers
                             );
+
                             if !imgui_want_capture_mouse {
                                 input_manager.handle_mouse_button_event(state, button, modifiers);
                             }

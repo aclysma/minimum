@@ -1,6 +1,7 @@
 use minimum::resource::{DataRequirement, Read, Write};
 
-use framework::resources::EditorCollisionWorld;
+#[cfg(feature = "editor")]
+use framework::resources::editor::EditorCollisionWorld;
 
 use crate::components;
 use minimum::component::ReadComponent;
@@ -13,7 +14,7 @@ impl Task for EditorUpdateSelectionShapesWithPosition {
     type RequiredResources = (
         Read<EntitySet>,
         Write<EditorCollisionWorld>,
-        ReadComponent<framework::components::EditorShapeComponent>,
+        ReadComponent<framework::components::editor::EditorShapeComponent>,
         ReadComponent<components::PositionComponent>,
     );
 

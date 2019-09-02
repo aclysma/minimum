@@ -5,6 +5,8 @@ authors = ["Philip Degarmo <aclysma@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+editor = ["imgui", "imgui-sys", "imgui-inspect", "imgui-inspect-derive/generate_code"]
 
 [dependencies]
 log="0.4"
@@ -32,8 +34,8 @@ hashbrown = "0.5"
 
 #hoping imgui support can be removed by breaking "framework" into an "editor" crate
 
-imgui-inspect = { path = "../../imgui-inspect/imgui-inspect" }
-imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive" }
+imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
+imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }
 
-imgui = "0.1.0-pre"
-imgui-sys = "0.1.0-pre"
+imgui = { version = "0.1.0-pre", optional = true }
+imgui-sys = { version = "0.1.0-pre", optional = true }

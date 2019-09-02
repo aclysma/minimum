@@ -24,13 +24,10 @@ pub use handle_free_at_time_components::HandleFreeAtTimeComponents;
 mod update_position_with_velocity;
 pub use update_position_with_velocity::UpdatePositionWithVelocity;
 
-mod imgui;
-pub use self::imgui::ImguiBeginFrame;
-pub use self::imgui::RenderImguiEntityList;
-pub use self::imgui::RenderImguiMainMenu;
+#[cfg(feature = "editor")]
+pub mod imgui;
 
-mod editor;
-pub use editor::EditorDrawSelectionShapes;
-pub use editor::EditorHandleInput;
-pub use editor::EditorUpdateSelectionWorld;
-pub use editor::EditorUpdateSelectionShapesWithPosition;
+#[cfg(feature = "editor")]
+pub mod editor;
+
+pub use clear_debug_draw::NullTask;

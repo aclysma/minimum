@@ -50,6 +50,7 @@ impl FrameworkActionQueue {
     //
     // Save level to file
     //
+    #[cfg(feature = "editor")]
     pub fn enqueue_save_level(&mut self, path: PathBuf) {
         self.queue.push_back(Box::new(move |resource_map| {
             info!("save level {:?}", path);
@@ -93,8 +94,11 @@ impl FrameworkActionQueue {
                             | crate::context_flags::PLAYMODE_PAUSED
                             | crate::context_flags::PLAYMODE_PLAYING;
 
-                    let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
-                    editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Runtime);
+                    #[cfg(feature = "editor")]
+                    {
+                        let mut editor_ui_state = resource_map.fetch_mut::<resources::editor::EditorUiState>();
+                        editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Runtime);
+                    }
                 }
             }
         }));
@@ -128,8 +132,11 @@ impl FrameworkActionQueue {
             }
 
             //TODO: Retain selection
-            let mut editor_ui_state = resource_map.fetch_mut::<resources::EditorUiState>();
-            editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Persistent);
+            #[cfg(feature = "editor")]
+            {
+                let mut editor_ui_state = resource_map.fetch_mut::<resources::editor::EditorUiState>();
+                editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Persistent);
+            }
         }));
     }
 

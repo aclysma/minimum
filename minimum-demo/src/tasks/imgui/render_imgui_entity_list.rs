@@ -4,10 +4,13 @@ use minimum::{
     WriteComponent,
 };
 
-use framework::resources::{EditorUiState, TimeState, EditorActionQueue};
+#[cfg(feature = "editor")]
+use framework::resources::editor::{EditorUiState, EditorActionQueue};
+use framework::resources::TimeState;
 use crate::resources::{ImguiManager, InputManager};
 
-use framework::components::EditorSelectedComponent;
+#[cfg(feature = "editor")]
+use framework::components::editor::EditorSelectedComponent;
 use named_type::NamedType;
 
 #[derive(NamedType)]

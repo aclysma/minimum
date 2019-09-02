@@ -19,7 +19,10 @@ use rendy::{
 
 use minimum::resource::ResourceMap;
 
-use crate::renderer::passes::{DebugDrawRenderPipeline, ImguiRenderPipeline};
+use passes::DebugDrawRenderPipeline;
+
+#[cfg(feature = "editor")]
+use passes::pass_imgui::ImguiRenderPipeline;
 
 use crate::resources;
 
@@ -98,6 +101,9 @@ impl Renderer {
                 .into_pass(),
         );
 
+        //let mut last_pass = None;
+
+        #[cfg(feature = "editor")]
         let pass1 = graph_builder.add_node(
             ImguiRenderPipeline::builder()
                 .with_dependency(pass0)
@@ -106,8 +112,11 @@ impl Renderer {
                 .into_pass(),
         );
 
+        #[cfg(not(feature = "editor"))]
+        let pass1 = pass0;
+
         let present_builder =
-            PresentNode::builder(&self.factory, surface, color).with_dependency(pass1);
+        PresentNode::builder(&self.factory, surface, color).with_dependency(pass1);
 
         let swapchain_backbuffer_count = present_builder.image_count();
         resource_map.fetch_mut::<resources::RenderState>().init(

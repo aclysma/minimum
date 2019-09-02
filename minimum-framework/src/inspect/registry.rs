@@ -1,5 +1,5 @@
 use crate::FrameworkComponentPrototype;
-use crate::components::EditorModifiedComponent;
+use crate::components::editor::EditorModifiedComponent;
 use super::InspectorTab;
 use hashbrown::HashMap;
 use minimum::component::ComponentStorage;

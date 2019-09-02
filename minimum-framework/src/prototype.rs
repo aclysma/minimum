@@ -7,7 +7,11 @@ use minimum::ResourceMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::components::{PersistentEntityComponent, EditorShapeComponentPrototype};
+use crate::components::PersistentEntityComponent;
+
+#[cfg(feature = "editor")]
+use crate::components::editor::EditorShapeComponentPrototype;
+#[cfg(feature = "editor")]
 use crate::select::SelectRegistry;
 
 // impl ComponentPrototype for FrameworkComponentPrototype?
@@ -98,25 +102,31 @@ impl FrameworkEntityPrototype {
 
 impl EntityPrototype for FrameworkEntityPrototype {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
-        let entity_prototype_guard = self.get_mut();
-        let mut selection_shapes = vec![];
 
+        let entity_prototype_guard = self.get_mut();
         for c in entity_prototype_guard.component_prototypes() {
             c.enqueue_create(resource_map, &entity.handle());
-
-            let select_registry = resource_map.fetch::<SelectRegistry>();
-            if let Some(shape) = select_registry.create_selection_shape(&**c) {
-                selection_shapes.push(shape);
-            }
         }
 
-        // If we detect any components that want to be selectable, attach an EditorShapeComponentPrototype
-        // to the entity with those shapes
-        if !selection_shapes.is_empty() {
-            let compound_shape = ncollide2d::shape::Compound::new(selection_shapes);
-            let compound_shape_handle = ncollide2d::shape::ShapeHandle::new(compound_shape);
-            let editor_shape_component_prototype = EditorShapeComponentPrototype::new(compound_shape_handle);
-            editor_shape_component_prototype.enqueue_create(resource_map, &entity.handle());
+        #[cfg(feature = "editor")]
+        {
+            let mut selection_shapes = vec![];
+
+            for c in entity_prototype_guard.component_prototypes() {
+                let select_registry = resource_map.fetch::<SelectRegistry>();
+                if let Some(shape) = select_registry.create_selection_shape(&**c) {
+                    selection_shapes.push(shape);
+                }
+            }
+
+            // If we detect any components that want to be selectable, attach an EditorShapeComponentPrototype
+            // to the entity with those shapes
+            if !selection_shapes.is_empty() {
+                let compound_shape = ncollide2d::shape::Compound::new(selection_shapes);
+                let compound_shape_handle = ncollide2d::shape::ShapeHandle::new(compound_shape);
+                let editor_shape_component_prototype = EditorShapeComponentPrototype::new(compound_shape_handle);
+                editor_shape_component_prototype.enqueue_create(resource_map, &entity.handle());
+            }
         }
 
         // if the entity is persistent, attach a PersistentEntityComponent to it

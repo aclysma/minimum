@@ -1,11 +1,16 @@
+
+#[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
+
+#[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
 use named_type::NamedType;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 
-#[derive(Debug, Clone, NamedType, Inspect, Serialize, Deserialize)]
+#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawCircleComponent {
     #[inspect_slider(min_value = 0.1, max_value = 100.0)]
     radius: f32,
@@ -25,7 +30,11 @@ impl Default for DebugDrawCircleComponent {
 
 impl DebugDrawCircleComponent {
     pub fn new(radius: f32, color: glm::Vec4) -> Self {
-        DebugDrawCircleComponent { radius, color }
+        DebugDrawCircleComponent {
+            radius,
+            color
+        }
+
     }
 
     pub fn radius(&self) -> f32 {
@@ -37,6 +46,7 @@ impl DebugDrawCircleComponent {
     }
 }
 
+#[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
     fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
         use ncollide2d::shape::{Ball, ShapeHandle};

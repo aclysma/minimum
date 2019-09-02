@@ -53,7 +53,6 @@ where
     type Pipeline = ImguiRenderPipeline<B>;
 
     fn depth_stencil(&self) -> Option<gfx_hal::pso::DepthStencilDesc> {
-        //TODO: imgui should be stenciled
         None
     }
 
