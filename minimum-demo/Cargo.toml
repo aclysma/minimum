@@ -56,8 +56,11 @@ minimum = { path = "../minimum", features = ["async_support", "nightly"] }
 minimum-framework = { path = "../minimum-framework" }
 #minimum-derive = { path = "../minimum-derive" }
 
-imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
-imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }
+#imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
+#imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }
+
+imgui-inspect = { git = "https://github.com/aclysma/imgui-inspect.git", optional = true }
+imgui-inspect-derive = { git = "https://github.com/aclysma/imgui-inspect.git", default-features = false }
 
 serde = "1.0"
 serde_json = "1.0"

@@ -34,8 +34,11 @@ hashbrown = "0.5"
 
 #hoping imgui support can be removed by breaking "framework" into an "editor" crate
 
-imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
-imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }
+#imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
+#imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }
+
+imgui-inspect = { git = "https://github.com/aclysma/imgui-inspect.git", optional = true }
+imgui-inspect-derive = { git = "https://github.com/aclysma/imgui-inspect.git", default-features = false }
 
 imgui = { version = "0.1.0-pre", optional = true }
 imgui-sys = { version = "0.1.0-pre", optional = true }
