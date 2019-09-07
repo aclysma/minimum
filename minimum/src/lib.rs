@@ -6,6 +6,9 @@
 extern crate log;
 
 #[macro_use]
+extern crate derivative;
+
+#[macro_use]
 extern crate named_type_derive;
 
 //#[macro_use]
@@ -18,6 +21,7 @@ pub mod resource;
 pub mod slab;
 pub mod util;
 pub mod world;
+pub mod task;
 
 pub use dispatch::DispatchControl;
 
@@ -49,6 +53,9 @@ pub use resource::Write;
 pub use resource::WriteOption;
 
 pub use world::WorldBuilder;
+
+
+
 
 #[cfg(feature = "async_support")]
 pub use dispatch::async_dispatch;
