@@ -1,9 +1,23 @@
 language: rust
-rust:
-  - nightly
-before_cache:
-  - rm -rf "$TRAVIS_HOME/.cargo/registry/src"
+before_cache: rm -rf "$TRAVIS_HOME/.cargo/registry/src"
 cache: cargo
-script:
-  - cargo build --verbose --all
-os: osx
+script: cargo build --verbose --package minimum-demo --no-default-features --features="$FEATURES"
+matrix:
+  include:
+    - name: "OSX Game Only"
+      rust: nightly
+      os: osx
+      env: FEATURES="metal rendy/full"
+    - name: "OSX Editor"
+      rust: nightly
+      os: osx
+      env: FEATURES="metal rendy/full editor"
+    - name: "Linux Editor"
+      rust: nightly
+      os: linux
+      env: FEATURES="vulkan rendy/full editor"
+    - name: "Windows Editor"
+      rust: nightly
+      os: windows
+      env: FEATURES="dx12 rendy/full editor"
+  fast_finish: true
