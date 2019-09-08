@@ -56,10 +56,10 @@ impl ResourceTaskImpl for RenderImguiEntityList {
             let window_options = editor_ui_state.window_options(time_state.play_mode);
 
             if window_options.show_entity_list {
-                ui.window(im_str!("Entity List"))
+                imgui::Window::new(im_str!("Entity List"))
                     .position([0.0, 50.0], imgui::Condition::Once)
                     .size([350.0, 300.0], imgui::Condition::Once)
-                    .build(|| {
+                    .build(ui, || {
                         let add_entity = ui.button(im_str!("\u{e8b1} Add"), [80.0, 0.0]);
                         ui.same_line_with_spacing(80.0, 10.0);
                         let remove_entity = ui.button(im_str!("\u{e897} Delete"), [80.0, 0.0]);

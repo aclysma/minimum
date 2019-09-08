@@ -15,14 +15,18 @@ pub type RenderImguiMainMenuTask = minimum::ResourceTask<RenderImguiMainMenu>;
 
 impl RenderImguiMainMenu {
     fn tool_button(ui: &imgui::Ui, editor_ui_state: &mut EditorUiState, editor_tool: EditorTool, string: &'static str) {
-        let _token = if editor_ui_state.active_editor_tool == editor_tool {
+        let color_stack_token = if editor_ui_state.active_editor_tool == editor_tool {
             Some(ui.push_style_color(imgui::StyleColor::Text, [0.8, 0.0, 0.0, 1.0]))
         } else {
             None
         };
 
-        if ui.menu_item(&im_str!("{}", string)).build() {
+        if imgui::MenuItem::new(&im_str!("{}", string)).build(ui) {
             editor_ui_state.active_editor_tool = editor_tool;
+        }
+
+        if let Some(color_stack_token) = color_stack_token {
+            color_stack_token.pop(ui);
         }
     }
 }
@@ -64,7 +68,7 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
                 }
 
                 if window_settings.show_imgui_style_editor {
-                    ui.window(im_str!("Editor")).build(|| {
+                    imgui::Window::new(im_str!("Editor")).build(ui,|| {
                         ui.show_default_style_editor();
                     });
                 }
@@ -85,12 +89,12 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
                 //resize
                 Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Scale, "\u{fa67}");
 
-                ui.menu(im_str!("File")).build(|| {
-                    ui.menu(im_str!("Sub Menu")).build(|| {
+                ui.menu(im_str!("File"), true, || {
+                    ui.menu(im_str!("Sub Menu"), true, || {
                         for pack in &["placeholder1", "placeholder2", "placeholder3"] {
-                            ui.menu(&im_str!("{}", pack)).build(|| {
+                            ui.menu(&im_str!("{}", pack), true, || {
                                 for level in &["level1", "level2", "level3"] {
-                                    let selected = ui.menu_item(&im_str!("{}", level)).build();
+                                    let selected = imgui::MenuItem::new(&im_str!("{}", level)).build(ui);
                                     if selected {
                                         info!("Loading {} {}", pack, level);
                                         //game_control.set_load_level(level.path.clone());
@@ -100,21 +104,21 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
                         }
                     });
 
-                    if ui.menu_item(im_str!("New")).build() {
+                    if imgui::MenuItem::new(im_str!("New")).build(ui) {
                         game_control.enqueue_new_level();
                     }
 
-                    if ui.menu_item(im_str!("Load")).build() {
+                    if imgui::MenuItem::new(im_str!("Load")).build(ui) {
                         game_control.enqueue_load_level(std::path::PathBuf::from("test_save"));
                     }
 
-                    if ui.menu_item(im_str!("Save")).build() {
+                    if imgui::MenuItem::new(im_str!("Save")).build(ui) {
                         game_control.enqueue_save_level(std::path::PathBuf::from("test_save"));
                     }
                 });
 
                 let window_settings = editor_ui_state.window_options_mut(time_state.play_mode);
-                ui.menu(im_str!("Windows")).build(|| {
+                ui.menu(im_str!("Windows"), true, || {
                     ui.checkbox(
                         im_str!("ImGui Metrics"),
                         &mut window_settings.show_imgui_metrics,
@@ -136,28 +140,28 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
 
                 ui.separator();
 
-                ui.menu(im_str!("Debug Setings")).build(|| {
+                ui.menu(im_str!("Debug Setings"), true, || {
                     ui.checkbox(im_str!("Debug Window"), &mut debug_options.show_debug_info);
                 });
 
                 ui.separator();
 
                 if is_edit_mode {
-                    if ui.menu_item(im_str!("\u{e8c4} Reset")).build() {
+                    if imgui::MenuItem::new(im_str!("\u{e8c4} Reset")).build(ui) {
                         game_control.enqueue_reset_level();
                         game_control.enqueue_change_play_mode(framework::PlayMode::System);
                     }
 
-                    if ui.menu_item(im_str!("\u{f40a} Play")).build() {
+                    if imgui::MenuItem::new(im_str!("\u{f40a} Play")).build(ui) {
                         game_control.enqueue_change_play_mode(framework::PlayMode::Playing);
                     }
                 } else {
-                    if ui.menu_item(im_str!("\u{e8c4} Reset")).build() {
+                    if imgui::MenuItem::new(im_str!("\u{e8c4} Reset")).build(ui) {
                         game_control.enqueue_reset_level();
                         game_control.enqueue_change_play_mode(framework::PlayMode::System);
                     }
 
-                    if ui.menu_item(im_str!("\u{f3e4} Pause")).build() {
+                    if imgui::MenuItem::new(im_str!("\u{f3e4} Pause")).build(ui) {
                         game_control.enqueue_change_play_mode(framework::PlayMode::System);
                     }
                 }

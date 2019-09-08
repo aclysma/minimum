@@ -46,10 +46,10 @@ pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
     use imgui::im_str;
 
     //ui.set
-    ui.window(im_str!("Inspector"))
+    imgui::Window::new(im_str!("Inspector"))
         .position([0.0, 350.0], imgui::Condition::Once)
         .size([350.0, 500.0], imgui::Condition::Once)
-        .build(|| {
+        .build(ui, || {
             if ui.button(im_str!("\u{e8b1} Add"), [80.0, 0.0]) {
                 //ui.open_popup(im_str!("Add Component"));
                 ui.open_popup(im_str!("Add Component"));

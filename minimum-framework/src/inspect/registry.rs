@@ -248,44 +248,46 @@ where
 
             let header_text = &imgui::im_str!("{}", self.header_text);
             let content_region = ui.get_window_content_region_max();
-            ui.push_id(core::any::type_name::<T>());
-            let draw_children = unsafe { imgui_sys::igCollapsingHeader(header_text.as_ptr(), imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32 | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32) };
-            ui.same_line(content_region[0] - 50.0);
-            let result = if ui.small_button(imgui::im_str!("Delete")) {
 
-                // The component was deleted
-                InspectResult::Deleted
+            {
+                let id_token = ui.push_id(core::any::type_name::<T>());
+                let draw_children = unsafe { imgui_sys::igCollapsingHeader(header_text.as_ptr(), imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32 | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32) };
+                ui.same_line(content_region[0] - 50.0);
+                let result = if ui.small_button(imgui::im_str!("Delete")) {
 
-            } else if draw_children {
-                ui.indent();
+                    // The component was deleted
+                    InspectResult::Deleted
 
-                let mut args = InspectArgsStruct::default();
-                args.header = Some(false);
-                args.indent_children = Some(false);
+                } else if draw_children {
+                    ui.indent();
 
-                let changed = <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(
-                    &mut cast_values,
-                    core::any::type_name::<T>(),
-                    ui,
-                    &args,
-                );
+                    let mut args = InspectArgsStruct::default();
+                    args.header = Some(false);
+                    args.indent_children = Some(false);
 
-                ui.unindent();
+                    let changed = <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(
+                        &mut cast_values,
+                        core::any::type_name::<T>(),
+                        ui,
+                        &args,
+                    );
 
-                // This component is expanded, return if any fields were changed
-                if changed {
-                    InspectResult::Edited
+                    ui.unindent();
+
+                    // This component is expanded, return if any fields were changed
+                    if changed {
+                        InspectResult::Edited
+                    } else {
+                        InspectResult::Unchanged
+                    }
+
                 } else {
+                    // This component is collapsed, it cannot be edited
                     InspectResult::Unchanged
-                }
-
-            } else {
-                // This component is collapsed, it cannot be edited
-                InspectResult::Unchanged
-            };
-
-            ui.pop_id();
-            result
+                };
+                id_token.pop(ui);
+                result
+            }
         } else {
             // This component type is not on the prototype
             InspectResult::Unchanged

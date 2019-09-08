@@ -38,8 +38,11 @@ hashbrown = "0.5"
 #imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
 #imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }
 
-imgui-inspect = { git = "https://github.com/aclysma/imgui-inspect.git", optional = true }
-imgui-inspect-derive = { git = "https://github.com/aclysma/imgui-inspect.git", default-features = false }
+#imgui-inspect = { git = "https://github.com/aclysma/imgui-inspect.git", optional = true }
+#imgui-inspect-derive = { git = "https://github.com/aclysma/imgui-inspect.git", default-features = false }
 
-imgui = { version = "0.1.0-pre", optional = true }
-imgui-sys = { version = "0.1.0-pre", optional = true }
+imgui-inspect = { version = "0.3", optional = true }
+imgui-inspect-derive = { version = "0.3", default-features = false }
+
+imgui = { version = "0.2.0", optional = true }
+imgui-sys = { version = "0.2.0", optional = true }

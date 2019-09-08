@@ -48,9 +48,9 @@ image="0.22"
 rendy = { git = "https://github.com/amethyst/rendy.git", rev = "a8ac0de977a28d09592d615f8857461622833443" }
 
 # imgui
-imgui = { version = "0.1.0-pre", optional = true }
-imgui-sys = { version = "0.1.0-pre", optional = true }
-imgui-winit-support = { version = "0.1.0-pre", default-features = false, features = ["winit-20"], optional = true }
+imgui = { version = "0.2.0", optional = true }
+imgui-sys = { version = "0.2.0", optional = true }
+imgui-winit-support = { version = "0.2.0", default-features = false, features = ["winit-20"], optional = true }
 
 # minimum
 minimum = { path = "../minimum", features = ["async_support", "nightly"] }
@@ -60,8 +60,11 @@ minimum-framework = { path = "../minimum-framework" }
 #imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
 #imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }
 
-imgui-inspect = { git = "https://github.com/aclysma/imgui-inspect.git", optional = true }
-imgui-inspect-derive = { git = "https://github.com/aclysma/imgui-inspect.git", default-features = false }
+#imgui-inspect = { git = "https://github.com/aclysma/imgui-inspect.git", optional = true }
+#imgui-inspect-derive = { git = "https://github.com/aclysma/imgui-inspect.git", default-features = false }
+
+imgui-inspect = { version = "0.3", optional = true }
+imgui-inspect-derive = { version = "0.3", default-features = false }
 
 serde = "1.0"
 serde_derive = "1.0"

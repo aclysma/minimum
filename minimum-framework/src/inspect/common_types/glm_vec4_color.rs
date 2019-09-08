@@ -14,11 +14,11 @@ impl InspectRenderDefault<glm::Vec4> for ImGlmColor4 {
             return;
         }
 
-        ui.color_button(
+        imgui::ColorButton::new(
             &imgui::im_str!("{}", label),
             [data[0].x, data[0].y, data[0].z, data[0].w],
         )
-            .build();
+            .build(ui);
     }
 
     fn render_mut(
@@ -33,12 +33,11 @@ impl InspectRenderDefault<glm::Vec4> for ImGlmColor4 {
 
         let mut changed = false;
         let mut val = [data[0].x, data[0].y, data[0].z, data[0].w];
-        if ui
-            .color_edit(
+        if imgui::ColorEdit::new(
                 &imgui::im_str!("{}", label),
                 imgui::EditableColor::from(&mut val),
             )
-            .build()
+            .build(ui)
         {
             changed = true;
             for d in data {
