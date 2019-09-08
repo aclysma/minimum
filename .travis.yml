@@ -1,6 +1,4 @@
 language: rust
-before_cache: rm -rf "$TRAVIS_HOME/.cargo/registry/src"
-cache: cargo
 script: cargo build --verbose --package minimum-demo --no-default-features --features="$FEATURES"
 matrix:
   include:
