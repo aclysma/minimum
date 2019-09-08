@@ -5,7 +5,7 @@ authors = ["Philip Degarmo <aclysma@gmail.com>"]
 edition = "2018"
 
 [features]
-default = ["metal", "rendy/full", "editor"]
+default = ["metal", "editor"]
 dx12 = ["rendy/dx12"]
 metal = ["rendy/metal"]
 vulkan = ["rendy/vulkan"]
