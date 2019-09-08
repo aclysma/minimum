@@ -11,6 +11,7 @@ use framework::components::editor::EditorSelectedComponent;
 use ncollide2d::world::CollisionGroups;
 
 use named_type::NamedType;
+use rendy::wsi::winit;
 use winit::event::VirtualKeyCode;
 
 #[derive(NamedType)]

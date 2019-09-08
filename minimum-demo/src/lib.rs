@@ -1,6 +1,4 @@
 
-#![feature(custom_attribute)]
-
 //There is a decent amount of dead code in this demo that is left as an example
 #![allow(dead_code)]
 extern crate nalgebra_glm as glm;
@@ -13,6 +11,9 @@ extern crate named_type_derive;
 
 #[macro_use]
 extern crate imgui_inspect_derive;
+
+#[macro_use]
+extern crate serde_derive;
 
 extern crate minimum_framework as framework;
 
@@ -32,6 +33,7 @@ use minimum::component::Component;
 #[cfg(feature = "editor")]
 use framework::resources::editor::EditorActionQueue;
 use framework::resources::FrameworkActionQueue;
+use rendy::wsi::winit;
 
 pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     // Setup logging
@@ -44,7 +46,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     // Any config/data you want to load before opening a window should go here
 
-    let event_loop = winit::event_loop::EventLoop::<resources::WindowUserEvent>::new_user_event();
+    let event_loop = winit::event_loop::EventLoop::<resources::WindowUserEvent>::with_user_event();
     let window = winit::window::WindowBuilder::new()
         .with_title("Minimum Demo")
         .with_inner_size(winit::dpi::LogicalSize::new(1300.0, 900.0))
@@ -296,6 +298,8 @@ fn dispatcher_thread(
     resource_map
         .fetch_mut::<resources::WindowInterface>()
         .event_loop_proxy
+        .lock()
+        .unwrap()
         .send_event(resources::WindowUserEvent::Terminate)
         .unwrap();
 

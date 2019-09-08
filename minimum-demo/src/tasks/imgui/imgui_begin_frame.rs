@@ -1,5 +1,6 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ResourceTaskImpl, TaskConfig};
+use rendy::wsi::winit;
 
 use crate::resources::ImguiManager;
 use named_type::NamedType;

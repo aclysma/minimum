@@ -11,6 +11,7 @@ use rendy::{
     resource::{Buffer, BufferInfo, DescriptorSet, DescriptorSetLayout, Escape, Handle},
     texture::Texture,
     util::types::vertex,
+    wsi::winit
 };
 
 use minimum::resource::ResourceMap;
@@ -127,7 +128,7 @@ where
         buffers: Vec<NodeBuffer>,
         images: Vec<NodeImage>,
         set_layouts: &[Handle<DescriptorSetLayout<B>>],
-    ) -> Result<ImguiRenderPipeline<B>, failure::Error> {
+    ) -> Result<ImguiRenderPipeline<B>, gfx_hal::pso::CreationError> {
         assert!(buffers.is_empty());
         assert!(images.is_empty());
         assert_eq!(set_layouts.len(), 1);

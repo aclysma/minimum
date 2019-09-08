@@ -1,4 +1,5 @@
 use imgui::sys as imgui_sys;
+use rendy::wsi::winit;
 
 // Inner state for ImguiManager, which will be protected by a Mutex. Mutex protection required since
 // this object is Send but not Sync

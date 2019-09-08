@@ -1,3 +1,5 @@
+use rendy::wsi::winit;
+
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ResourceTaskImpl, TaskConfig};
 

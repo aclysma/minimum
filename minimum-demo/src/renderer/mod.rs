@@ -7,6 +7,8 @@ type Backend = rendy::metal::Backend;
 #[cfg(feature = "vulkan")]
 type Backend = rendy::vulkan::Backend;
 
+use rendy::wsi::winit;
+
 mod passes;
 mod shaders;
 mod vertex_types;
@@ -74,14 +76,21 @@ impl Renderer {
         // handling and recovery (such as the device being lost) are automatically handled
         let mut graph_builder = GraphBuilder::<Backend, ResourceMap>::new();
 
+        let size = window
+            .inner_size()
+            .to_physical(window.hidpi_factor());
+        let window_kind = gfx_hal::image::Kind::D2(size.width as u32, size.height as u32, 1, 1);
+
         // The frame starts with a cleared color buffer
         let color = graph_builder.create_image(
-            gfx_hal::Surface::kind(surface.raw()),
+            window_kind,
             1,
             self.factory.get_surface_format(&surface),
-            Some(gfx_hal::command::ClearValue::Color(
-                [0.1, 0.1, 0.1, 1.0].into(),
-            )),
+            Some(gfx_hal::command::ClearValue {
+                color: gfx_hal::command::ClearColor {
+                    float32: [0.1, 0.1, 0.1, 1.0].into()
+                },
+            }),
         );
 
         //        let depth = graph_builder.create_image(

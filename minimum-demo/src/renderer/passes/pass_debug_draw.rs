@@ -119,7 +119,7 @@ where
         buffers: Vec<NodeBuffer>,
         images: Vec<NodeImage>,
         set_layouts: &[Handle<DescriptorSetLayout<B>>],
-    ) -> Result<DebugDrawRenderPipeline<B>, failure::Error> {
+    ) -> Result<DebugDrawRenderPipeline<B>, gfx_hal::pso::CreationError> {
         assert!(buffers.is_empty());
         assert!(images.is_empty());
         assert_eq!(set_layouts.len(), 1);

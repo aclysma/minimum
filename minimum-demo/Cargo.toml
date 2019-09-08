@@ -37,14 +37,15 @@ hashbrown = "0.5"
 futures = "0.1"
 
 # window management
-winit = { version = "0.20.0-alpha2", features = ["serde"] }
+#winit = { version = "0.20.0-alpha3", features = ["serde"] }
 
 # rendering
-gfx-backend-metal="0.2"
-gfx-hal = "0.2"
-shaderc = "0.5"
-image="0.21"
-rendy = { version="0.3", features = ["winit-20"]}
+#gfx-hal = "0.2"
+gfx-hal = { git = "https://github.com/gfx-rs/gfx", rev = "a084a1f2fec6c9ed928c53e2dc8c1761782b9019" }
+shaderc = "0.6"
+image="0.22"
+#rendy = "0.3"
+rendy = { git = "https://github.com/amethyst/rendy.git", rev = "a8ac0de977a28d09592d615f8857461622833443" }
 
 # imgui
 imgui = { version = "0.1.0-pre", optional = true }
@@ -63,6 +64,7 @@ imgui-inspect = { git = "https://github.com/aclysma/imgui-inspect.git", optional
 imgui-inspect-derive = { git = "https://github.com/aclysma/imgui-inspect.git", default-features = false }
 
 serde = "1.0"
+serde_derive = "1.0"
 serde_json = "1.0"
 
 [dependencies.gfx-backend-vulkan]

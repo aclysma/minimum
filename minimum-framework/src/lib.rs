@@ -13,6 +13,9 @@ extern crate imgui_inspect_derive;
 #[macro_use]
 extern crate mopa;
 
+#[macro_use]
+extern crate serde_derive;
+
 mod clone_component;
 pub use clone_component::CloneComponentFactory;
 pub use clone_component::CloneComponentPrototype;

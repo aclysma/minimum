@@ -3,6 +3,7 @@ use minimum::{
     ComponentStorage, EntitySet, ResourceTaskImpl,
     WriteComponent, TaskConfig
 };
+use rendy::wsi::winit;
 
 #[cfg(feature = "editor")]
 use framework::resources::editor::{EditorUiState, EditorActionQueue};

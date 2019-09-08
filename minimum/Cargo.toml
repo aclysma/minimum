@@ -26,7 +26,7 @@ log = "0.4"
 named_type = "0.2"
 named_type_derive = "0.2"
 derivative = "1.0"
-minimum-derive = { path = "../minimum-derive" }
+#minimum-derive = { path = "../minimum-derive" }
 
 # Used for non-async MT task dispatching
 #rayon = "1.2"
