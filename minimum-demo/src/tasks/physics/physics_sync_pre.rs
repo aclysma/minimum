@@ -4,12 +4,13 @@ use crate::resources::PhysicsManager;
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
-use minimum::{ComponentStorage, EntitySet, Task, TaskContext};
+use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, ResourceTask};
 use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct PhysicsSyncPre;
-impl Task for PhysicsSyncPre {
+pub type PhysicsSyncPreTask = ResourceTask<PhysicsSyncPre>;
+impl ResourceTaskImpl for PhysicsSyncPre {
     type RequiredResources = (
         Read<EntitySet>,
         Write<PhysicsManager>,
@@ -17,11 +18,16 @@ impl Task for PhysicsSyncPre {
         WriteComponent<components::PositionComponent>,
         WriteComponent<components::VelocityComponent>,
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePhysics>();
+        config.this_provides_data_to::<crate::tasks::UpdatePhysicsTask>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (

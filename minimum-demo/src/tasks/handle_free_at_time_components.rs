@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read};
-use minimum::{Task, TaskContext};
+use minimum::{ResourceTaskImpl, TaskConfig};
 
 use framework::resources::TimeState;
 
@@ -9,18 +9,23 @@ use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct HandleFreeAtTimeComponents;
-impl Task for HandleFreeAtTimeComponents {
+pub type HandleFreeAtTimeComponentsTask = minimum::ResourceTask<HandleFreeAtTimeComponents>;
+impl ResourceTaskImpl for HandleFreeAtTimeComponents {
     type RequiredResources = (
         Read<minimum::EntitySet>,
         WriteComponent<minimum::PendingDeleteComponent>,
         Read<TimeState>,
         ReadComponent<components::FreeAtTimeComponent>,
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (entity_set, mut write_components, time_state, free_at_time_components) = data;

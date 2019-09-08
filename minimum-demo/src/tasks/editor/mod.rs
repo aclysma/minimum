@@ -1,11 +1,17 @@
 mod editor_draw_selection_shapes;
-pub use editor_draw_selection_shapes::EditorDrawSelectionShapes;
+pub use editor_draw_selection_shapes::EditorDrawSelectionShapesTask;
 
 mod editor_handle_input;
-pub use editor_handle_input::EditorHandleInput;
+pub use editor_handle_input::EditorHandleInputTask;
 
 mod editor_update_selection_shapes_with_position;
-pub use editor_update_selection_shapes_with_position::EditorUpdateSelectionShapesWithPosition;
+pub use editor_update_selection_shapes_with_position::EditorUpdateSelectionShapesWithPositionTask;
 
 mod editor_update_selection_world;
-pub use editor_update_selection_world::EditorUpdateSelectionWorld;
+pub use editor_update_selection_world::EditorUpdateSelectionWorldTask;
+
+mod editor_update_action_queue;
+pub use editor_update_action_queue::EditorUpdateActionQueueTask;
+
+mod editor_recreate_modified_entities;
+pub use editor_recreate_modified_entities::EditorRecreateModifiedEntitiesTask;

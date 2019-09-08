@@ -136,12 +136,12 @@ impl WriteAllTaskImpl for WriteAllTaskImpl2 {
 pub fn test() {
     // All the things we want to run in a frame
     let mut builder = TaskDependencyListBuilder::new();
-    builder.add_task_factory::<DoSomething1Task>();
-    builder.add_task_factory::<DoSomething2Task>();
-    builder.add_task_factory::<ReadAllTask1>();
-    builder.add_task_factory::<ReadAllTask2>();
-    builder.add_task_factory::<WriteAllTask1>();
-    builder.add_task_factory::<WriteAllTask2>();
+    builder.add_task::<DoSomething1Task>();
+    builder.add_task::<DoSomething2Task>();
+    builder.add_task::<ReadAllTask1>();
+    builder.add_task::<ReadAllTask2>();
+    builder.add_task::<WriteAllTask1>();
+    builder.add_task::<WriteAllTask2>();
     builder.add_phase::<PhaseA>();
     builder.add_phase::<PhaseB>();
     builder.add_phase::<PhaseC>();

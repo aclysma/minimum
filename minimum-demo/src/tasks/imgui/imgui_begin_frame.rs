@@ -1,18 +1,23 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{Task, TaskContext};
+use minimum::{ResourceTaskImpl, TaskConfig};
 
 use crate::resources::ImguiManager;
 use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct ImguiBeginFrame;
-impl Task for ImguiBeginFrame {
+pub type ImguiBeginFrameTask = minimum::ResourceTask<ImguiBeginFrame>;
+impl ResourceTaskImpl for ImguiBeginFrame {
     type RequiredResources = (Read<winit::window::Window>, Write<ImguiManager>);
-    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (window, mut imgui_manager) = data;

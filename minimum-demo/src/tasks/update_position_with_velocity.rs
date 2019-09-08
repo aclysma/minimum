@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read};
-use minimum::{Task, TaskContext};
+use minimum::{ResourceTaskImpl, TaskConfig};
 
 use framework::resources::TimeState;
 
@@ -10,7 +10,8 @@ use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct UpdatePositionWithVelocity;
-impl Task for UpdatePositionWithVelocity {
+pub type UpdatePositionWithVelocityTask = minimum::ResourceTask<UpdatePositionWithVelocity>;
+impl ResourceTaskImpl for UpdatePositionWithVelocity {
     type RequiredResources = (
         Read<minimum::EntitySet>,
         Read<TimeState>,
@@ -18,11 +19,16 @@ impl Task for UpdatePositionWithVelocity {
         ReadComponent<components::VelocityComponent>,
         ReadComponent<components::PhysicsBodyComponent>,
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePrePhysicsGameplay>();
+        config.this_provides_data_to::<crate::tasks::PhysicsSyncPreTask>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (

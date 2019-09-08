@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ComponentStorage, ReadComponent, Task, TaskContext};
+use minimum::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig};
 
 use crate::components;
 use crate::resources::DebugDraw;
@@ -7,7 +7,8 @@ use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct DebugDrawComponents;
-impl Task for DebugDrawComponents {
+pub type DebugDrawComponentsTask = minimum::ResourceTask<DebugDrawComponents>;
+impl ResourceTaskImpl for DebugDrawComponents {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<minimum::EntitySet>,
@@ -15,11 +16,15 @@ impl Task for DebugDrawComponents {
         ReadComponent<components::DebugDrawRectComponent>,
         ReadComponent<components::PositionComponent>,
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (mut debug_draw, entity_set, circle_components, rect_components, position_components) =

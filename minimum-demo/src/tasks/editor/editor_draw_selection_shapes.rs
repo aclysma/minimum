@@ -1,6 +1,6 @@
 use minimum::component::ComponentStorage;
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{EntityHandle, ReadComponent, Task, TaskContext};
+use minimum::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig};
 
 use crate::components;
 use crate::resources::DebugDraw;
@@ -12,19 +12,25 @@ use nphysics2d::object::ColliderHandle;
 
 #[derive(NamedType)]
 pub struct EditorDrawSelectionShapes;
-impl Task for EditorDrawSelectionShapes {
+pub type EditorDrawSelectionShapesTask = minimum::ResourceTask<EditorDrawSelectionShapes>;
+impl ResourceTaskImpl for EditorDrawSelectionShapes {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<EditorCollisionWorld>,
         ReadComponent<framework::components::editor::EditorShapeComponent>,
         ReadComponent<framework::components::editor::EditorSelectedComponent>,
     );
-    const REQUIRED_FLAGS: usize =
-        framework::context_flags::AUTHORITY_CLIENT as usize | framework::context_flags::PLAYMODE_SYSTEM;
+    //const REQUIRED_FLAGS: usize =
+    //    framework::context_flags::AUTHORITY_CLIENT as usize | framework::context_flags::PLAYMODE_SYSTEM;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_uses_data_from::<crate::tasks::editor::EditorHandleInputTask>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (mut debug_draw, editor_collision_world, editor_shape_components, selected_components) =

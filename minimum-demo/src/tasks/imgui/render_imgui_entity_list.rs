@@ -1,7 +1,7 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{
-    ComponentStorage, EntitySet, Task, TaskContext,
-    WriteComponent,
+    ComponentStorage, EntitySet, ResourceTaskImpl,
+    WriteComponent, TaskConfig
 };
 
 #[cfg(feature = "editor")]
@@ -15,7 +15,8 @@ use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct RenderImguiEntityList;
-impl Task for RenderImguiEntityList {
+pub type RenderImguiEntityListTask = minimum::ResourceTask<RenderImguiEntityList>;
+impl ResourceTaskImpl for RenderImguiEntityList {
     type RequiredResources = (
         Read<TimeState>,
         Write<ImguiManager>,
@@ -25,11 +26,15 @@ impl Task for RenderImguiEntityList {
         Read<InputManager>,
         Write<EditorActionQueue>
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (

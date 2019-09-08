@@ -25,7 +25,7 @@ impl TaskDependencyListBuilder {
     }
 
     /// Add a task to be scheduled when `build()` is called
-    pub fn add_task_factory<T : TaskFactory>(&mut self) {
+    pub fn add_task<T : TaskFactory>(&mut self) {
         let mut task_config = TaskConfig::new(Some(T::create()));
         let registered_type = RegisteredType::of::<T>();
         T::configure(&mut task_config);

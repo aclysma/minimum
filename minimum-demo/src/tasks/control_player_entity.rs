@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{Task, TaskContext};
+use minimum::{ResourceTaskImpl, TaskConfig};
 
 use framework::resources::TimeState;
 use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState};
@@ -12,7 +12,8 @@ use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct ControlPlayerEntity;
-impl Task for ControlPlayerEntity {
+pub type ControlPlayerEntityTask = minimum::ResourceTask<ControlPlayerEntity>;
+impl ResourceTaskImpl for ControlPlayerEntity {
     type RequiredResources = (
         Read<minimum::EntitySet>,
         Read<InputManager>,
@@ -24,11 +25,15 @@ impl Task for ControlPlayerEntity {
         ReadComponent<components::PhysicsBodyComponent>,
         Write<PhysicsManager>,
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePrePhysicsGameplay>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (

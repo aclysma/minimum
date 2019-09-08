@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{Task, TaskContext};
+use minimum::{ResourceTaskImpl, TaskConfig};
 
 use framework::resources::FrameworkActionQueue;
 
@@ -9,7 +9,8 @@ use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct GatherInput;
-impl Task for GatherInput {
+pub type GatherInputTask = minimum::ResourceTask<GatherInput>;
+impl ResourceTaskImpl for GatherInput {
     type RequiredResources = (
         Read<winit::window::Window>,
         Read<WindowInterface>,
@@ -17,12 +18,16 @@ impl Task for GatherInput {
         Write<InputManager>,
         Write<FrameworkActionQueue>,
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize
-        | framework::context_flags::PLAYMODE_SYSTEM as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize
+    //    | framework::context_flags::PLAYMODE_SYSTEM as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhaseGatherInput>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         use winit::event::Event;

@@ -1,6 +1,6 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
-use minimum::{Task, TaskContext, WriteComponent};
+use minimum::{ResourceTaskImpl, WriteComponent, TaskConfig};
 
 #[cfg(feature = "editor")]
 use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
@@ -15,7 +15,8 @@ use winit::event::VirtualKeyCode;
 
 #[derive(NamedType)]
 pub struct EditorHandleInput;
-impl Task for EditorHandleInput {
+pub type EditorHandleInputTask = minimum::ResourceTask<EditorHandleInput>;
+impl ResourceTaskImpl for EditorHandleInput {
     type RequiredResources = (
         Read<minimum::EntitySet>,
         Read<InputManager>,
@@ -25,11 +26,16 @@ impl Task for EditorHandleInput {
         Write<DebugDraw>,
         Write<EditorUiState>
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_uses_data_from::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
+    }
 
     fn run(
-        &mut self,
-        task_context: &TaskContext,
+        //&mut self,
+        //task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (
@@ -58,12 +64,13 @@ impl Task for EditorHandleInput {
             editor_ui_state.active_editor_tool = EditorTool::Scale;
         }
 
-        if task_context.context_flags()
-            & (framework::context_flags::PLAYMODE_PAUSED | framework::context_flags::PLAYMODE_PLAYING)
-            != 0
-        {
-            return;
-        }
+        //TODO: Replace this code
+//        if task_context.context_flags()
+//            & (framework::context_flags::PLAYMODE_PAUSED | framework::context_flags::PLAYMODE_PLAYING)
+//            != 0
+//        {
+//            return;
+//        }
 
         // Escape cancels the selection
         if input_manager.is_key_just_down(VirtualKeyCode::Escape) {

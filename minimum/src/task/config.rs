@@ -17,6 +17,7 @@ pub struct TaskConfig {
     pub(super) require_run_before: Vec<RegisteredType>,
     pub(super) require_run_after: Vec<RegisteredType>,
     pub(super) require_run_during: Vec<RegisteredType>,
+    pub(super) required_flags_to_run: usize,
     #[derivative(Debug="ignore")]
     pub(super) task: Option<Box<dyn Task>>
 }
@@ -31,6 +32,7 @@ impl TaskConfig {
             require_run_before: vec![],
             require_run_after: vec![],
             require_run_during: vec![],
+            required_flags_to_run: 0,
             task
         }
     }
@@ -83,5 +85,9 @@ impl TaskConfig {
     /// direct dependencies
     pub fn this_runs_during_phase<T: Phase>(&mut self) {
         self.require_run_during.push(RegisteredType::of::<T>());
+    }
+
+    pub fn add_required_flag(&mut self, required_flags: usize) {
+        self.required_flags_to_run |= required_flags
     }
 }

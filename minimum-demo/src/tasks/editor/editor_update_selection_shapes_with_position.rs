@@ -5,12 +5,13 @@ use framework::resources::editor::EditorCollisionWorld;
 
 use crate::components;
 use minimum::component::ReadComponent;
-use minimum::{ComponentStorage, EntitySet, Task, TaskContext};
+use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig};
 use named_type::NamedType;
 
 #[derive(NamedType)]
 pub struct EditorUpdateSelectionShapesWithPosition;
-impl Task for EditorUpdateSelectionShapesWithPosition {
+pub type EditorUpdateSelectionShapesWithPositionTask = minimum::ResourceTask<EditorUpdateSelectionShapesWithPosition>;
+impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
     type RequiredResources = (
         Read<EntitySet>,
         Write<EditorCollisionWorld>,
@@ -18,11 +19,16 @@ impl Task for EditorUpdateSelectionShapesWithPosition {
         ReadComponent<components::PositionComponent>,
     );
 
-    const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM as usize;
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_provides_data_to::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
+    }
+
+    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM as usize;
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (entity_set, mut collision_world, editor_shape_components, position_components) = data;

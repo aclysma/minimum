@@ -33,6 +33,9 @@ pub use prototype::FrameworkComponentPrototype;
 pub use prototype::FrameworkEntityPrototype;
 pub use prototype::FrameworkEntityPersistencePolicy;
 
+pub mod tasks;
+
+
 #[derive(Copy, Clone, PartialEq, strum_macros::EnumCount, Debug)]
 pub enum PlayMode {
     // Represents the game being frozen for debug purposes

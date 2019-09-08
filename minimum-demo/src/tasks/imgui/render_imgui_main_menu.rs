@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{Task, TaskContext};
+use minimum::{ResourceTaskImpl, TaskConfig};
 
 #[cfg(feature = "editor")]
 use framework::resources::editor::{EditorUiState, EditorTool};
@@ -11,6 +11,7 @@ use imgui::im_str;
 
 #[derive(NamedType)]
 pub struct RenderImguiMainMenu;
+pub type RenderImguiMainMenuTask = minimum::ResourceTask<RenderImguiMainMenu>;
 
 impl RenderImguiMainMenu {
     fn tool_button(ui: &imgui::Ui, editor_ui_state: &mut EditorUiState, editor_tool: EditorTool, string: &'static str) {
@@ -26,7 +27,7 @@ impl RenderImguiMainMenu {
     }
 }
 
-impl Task for RenderImguiMainMenu {
+impl ResourceTaskImpl for RenderImguiMainMenu {
     type RequiredResources = (
         Read<TimeState>,
         Write<ImguiManager>,
@@ -34,11 +35,15 @@ impl Task for RenderImguiMainMenu {
         Write<EditorUiState>,
         Write<DebugOptions>,
     );
-    const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
+
+    fn configure(config: &mut TaskConfig) {
+        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+    }
 
     fn run(
-        &mut self,
-        _task_context: &TaskContext,
+        //&mut self,
+        //_task_context: &TaskContext,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (
