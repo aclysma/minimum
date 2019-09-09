@@ -38,7 +38,7 @@ impl TaskScheduleSingleThread {
         }
     }
 
-    pub fn run(&self, resource_map: &TrustCell<ResourceMap>) {
+    pub fn step(&self, resource_map: &TrustCell<ResourceMap>) {
         for task in &self.tasks {
             task.run(resource_map);
         }

@@ -25,7 +25,7 @@ pub trait Phase : 'static {
 }
 
 /// Minimum interface required to call functions on a task
-pub trait Task {
+pub trait Task : 'static + Send {
     /// Called when the task should be run
     fn run(&self, resource_map: &TrustCell<ResourceMap>);
 }

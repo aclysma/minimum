@@ -15,7 +15,7 @@ use std::marker::PhantomData;
 
 /// A trait that can be implemented and wrapped inside a ResourceTask<T> for typical tasks that fetch
 /// a few resources
-pub trait ResourceTaskImpl: NamedType + 'static {
+pub trait ResourceTaskImpl: NamedType + 'static + Send {
     type RequiredResources : for<'a> DataRequirement<'a>
     + RequiresResources<ResourceId>
     + Send
@@ -61,7 +61,7 @@ impl<T : ResourceTaskImpl> TaskFactory for ResourceTask<T> {
     }
 }
 
-impl<T : ResourceTaskImpl> Task for ResourceTask<T> {
+impl<T : ResourceTaskImpl + Send> Task for ResourceTask<T> {
     fn run(&self, resource_map: &TrustCell<ResourceMap>) {
         let resource_map_borrowed = resource_map.borrow();
         let fetched = T::RequiredResources::fetch(&*resource_map_borrowed);

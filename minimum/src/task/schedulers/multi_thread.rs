@@ -52,7 +52,7 @@ impl TaskScheduleMultiThread {
         }
     }
 
-    pub fn run(&self, resource_map: &TrustCell<ResourceMap>) {
+    pub fn step(&self, resource_map: &TrustCell<ResourceMap>) {
         for stage in &self.stages {
             println!("----------------------");
             //TODO: Use rayon or something to make this actually MT

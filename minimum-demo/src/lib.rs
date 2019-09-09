@@ -26,10 +26,9 @@ mod renderer;
 mod resources;
 mod tasks;
 
-use minimum::dispatch::async_dispatch::MinimumDispatcher;
-
 use framework::CloneComponentFactory;
 use minimum::component::Component;
+use minimum::{World, UpdateLoopSingleThreaded, WorldBuilder};
 #[cfg(feature = "editor")]
 use framework::resources::editor::EditorActionQueue;
 use framework::resources::FrameworkActionQueue;
@@ -113,7 +112,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
             select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
             select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
 
-            world_builder.insert_resource(select_registry);
+            world_builder.add_resource(select_registry);
         }
 
     // Register inspectable types
@@ -138,7 +137,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
             inspect_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
             inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>("Player");
 
-            world_builder.insert_resource(inspect_registry);
+            world_builder.add_resource(inspect_registry);
         }
 
     // Register loadable/savable types
@@ -150,30 +149,32 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>("Physics Body Box");
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>("Physics Body Circle");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PlayerComponent>>("Player");
-    world_builder.insert_resource(persist_registry);
+    world_builder.add_resource(persist_registry);
 
-    let mut resource_map = world_builder.build();
+    register_tasks(&mut world_builder);
+
+    let mut world = world_builder.build();
 
     #[cfg(feature = "editor")]
         {
-            resource_map.insert(init::init_imgui_manager(&resource_map));
+            world.resource_map.insert(init::init_imgui_manager(&world.resource_map));
         }
 
     #[cfg(not(feature = "editor"))]
         {
-            resource_map.insert(resources::ImguiManager {});
+            world.resource_map.insert(resources::ImguiManager {});
         }
 
-    resource_map.insert(init::create_renderer(&resource_map));
+    world.resource_map.insert(init::create_renderer(&world.resource_map));
 
     //create_objects(&resource_map);
 
     // Wrap the threadsafe interface to the window in WindowInterface and add it to the resource map
     // Return the event_tx which needs to be given to the event loop
-    let winit_event_tx = init::create_window_interface(&mut resource_map, &event_loop);
+    let winit_event_tx = init::create_window_interface(&mut world.resource_map, &event_loop);
 
     // Start the game loop thread
-    let _join_handle = std::thread::spawn(|| dispatcher_thread(resource_map));
+    let _join_handle = std::thread::spawn(|| dispatcher_thread(world));
 
     // Hand control of the main thread to winit
     event_loop.run(move |event, _, control_flow| match event {
@@ -188,76 +189,70 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     //NOTE: The game terminates when the event_loop halts, so any code here onwards won't execute
 }
 
-fn dispatcher_thread(
-    mut resource_map: minimum::resource::ResourceMap,
-) -> minimum::resource::ResourceMap {
-
-    let mut dependency_list_builder = minimum::task::TaskDependencyListBuilder::new();
-
+fn register_tasks(world_builder: &mut WorldBuilder) {
     // Add the default phases
-    dependency_list_builder.add_phase::<minimum::task::PhaseFrameBegin>();
-    dependency_list_builder.add_phase::<minimum::task::PhaseGatherInput>();
-    dependency_list_builder.add_phase::<minimum::task::PhasePrePhysicsGameplay>();
-    dependency_list_builder.add_phase::<minimum::task::PhasePhysics>();
-    dependency_list_builder.add_phase::<minimum::task::PhasePostPhysicsGameplay>();
-    dependency_list_builder.add_phase::<minimum::task::PhasePreRender>();
-    dependency_list_builder.add_phase::<minimum::task::PhaseRender>();
-    dependency_list_builder.add_phase::<minimum::task::PhasePostRender>();
-    dependency_list_builder.add_phase::<minimum::task::PhaseEndFrame>();
+    world_builder.add_phase::<minimum::task::PhaseFrameBegin>();
+    world_builder.add_phase::<minimum::task::PhaseGatherInput>();
+    world_builder.add_phase::<minimum::task::PhasePrePhysicsGameplay>();
+    world_builder.add_phase::<minimum::task::PhasePhysics>();
+    world_builder.add_phase::<minimum::task::PhasePostPhysicsGameplay>();
+    world_builder.add_phase::<minimum::task::PhasePreRender>();
+    world_builder.add_phase::<minimum::task::PhaseRender>();
+    world_builder.add_phase::<minimum::task::PhasePostRender>();
+    world_builder.add_phase::<minimum::task::PhaseEndFrame>();
 
     // Add editor-only tasks
     #[cfg(feature = "editor")]
         {
             //This gets run at frame begin
-            dependency_list_builder.add_task::<tasks::imgui::ImguiBeginFrameTask>();
+            world_builder.add_task::<tasks::imgui::ImguiBeginFrameTask>();
 
             // This get run during pre-render
-            dependency_list_builder.add_task::<tasks::imgui::RenderImguiMainMenuTask>();
-            dependency_list_builder.add_task::<tasks::imgui::RenderImguiEntityListTask>();
-            dependency_list_builder.add_task::<tasks::editor::EditorUpdateSelectionShapesWithPositionTask>();
-            dependency_list_builder.add_task::<tasks::editor::EditorUpdateSelectionWorldTask>();
-            dependency_list_builder.add_task::<tasks::editor::EditorHandleInputTask>();
-            dependency_list_builder.add_task::<tasks::editor::EditorDrawSelectionShapesTask>();
-            dependency_list_builder.add_task::<tasks::imgui::RenderImguiInspectorTask>();
+            world_builder.add_task::<tasks::imgui::RenderImguiMainMenuTask>();
+            world_builder.add_task::<tasks::imgui::RenderImguiEntityListTask>();
+            world_builder.add_task::<tasks::editor::EditorUpdateSelectionShapesWithPositionTask>();
+            world_builder.add_task::<tasks::editor::EditorUpdateSelectionWorldTask>();
+            world_builder.add_task::<tasks::editor::EditorHandleInputTask>();
+            world_builder.add_task::<tasks::editor::EditorDrawSelectionShapesTask>();
+            world_builder.add_task::<tasks::imgui::RenderImguiInspectorTask>();
 
             // This get run at end of frame
-            dependency_list_builder.add_task::<tasks::editor::EditorUpdateActionQueueTask>();
-            dependency_list_builder.add_task::<tasks::editor::EditorRecreateModifiedEntitiesTask>();
+            world_builder.add_task::<tasks::editor::EditorUpdateActionQueueTask>();
+            world_builder.add_task::<tasks::editor::EditorRecreateModifiedEntitiesTask>();
         }
 
     // Frame Begin
-    dependency_list_builder.add_task::<tasks::ClearDebugDrawTask>();
-    dependency_list_builder.add_task::<tasks::UpdateTimeStateTask>();
+    world_builder.add_task::<tasks::ClearDebugDrawTask>();
+    world_builder.add_task::<tasks::UpdateTimeStateTask>();
 
     // Gather Input
-    dependency_list_builder.add_task::<tasks::GatherInputTask>();
+    world_builder.add_task::<tasks::GatherInputTask>();
 
     // Pre Physics Gameplay
-    dependency_list_builder.add_task::<tasks::ControlPlayerEntityTask>();
-    dependency_list_builder.add_task::<tasks::HandleFreeAtTimeComponentsTask>();
-    dependency_list_builder.add_task::<tasks::UpdatePositionWithVelocityTask>();
+    world_builder.add_task::<tasks::ControlPlayerEntityTask>();
+    world_builder.add_task::<tasks::HandleFreeAtTimeComponentsTask>();
+    world_builder.add_task::<tasks::UpdatePositionWithVelocityTask>();
 
     // Physics
-    dependency_list_builder.add_task::<tasks::PhysicsSyncPreTask>();
-    dependency_list_builder.add_task::<tasks::UpdatePhysicsTask>();
-    dependency_list_builder.add_task::<tasks::PhysicsSyncPostTask>();
+    world_builder.add_task::<tasks::PhysicsSyncPreTask>();
+    world_builder.add_task::<tasks::UpdatePhysicsTask>();
+    world_builder.add_task::<tasks::PhysicsSyncPostTask>();
 
     // Pre-Render
-    dependency_list_builder.add_task::<tasks::DebugDrawComponentsTask>();
+    world_builder.add_task::<tasks::DebugDrawComponentsTask>();
 
     // Render
-    dependency_list_builder.add_task::<tasks::UpdateRendererTask>();
+    world_builder.add_task::<tasks::UpdateRendererTask>();
 
     // Frame End
     // This must be called once per frame to create/destroy entities
-    dependency_list_builder.add_task::<tasks::UpdateEntitySetTask>();
-    dependency_list_builder.add_task::<framework::tasks::FrameworkUpdateActionQueueTask>();
+    world_builder.add_task::<tasks::UpdateEntitySetTask>();
+    world_builder.add_task::<framework::tasks::FrameworkUpdateActionQueueTask>();
+}
 
-
-    let dependency_list = dependency_list_builder.build();
-    let schedule_builder = minimum::task::TaskScheduleBuilderSingleThread::new(dependency_list);
-    let schedule = schedule_builder.build();
-
+fn dispatcher_thread(
+    mut world: minimum::World,
+) -> minimum::resource::ResourceMap {
     info!("dispatch thread started");
 
     // If editing, start paused
@@ -274,20 +269,12 @@ fn dispatcher_thread(
         | framework::context_flags::PLAYMODE_PAUSED
         | framework::context_flags::PLAYMODE_SYSTEM;
 
-    resource_map.fetch_mut::<FrameworkActionQueue>().enqueue_load_level(std::path::PathBuf::from("test_save"));
+    world.resource_map.fetch_mut::<FrameworkActionQueue>().enqueue_load_level(std::path::PathBuf::from("test_save"));
 
-    resource_map.insert(minimum::DispatchControl::new(context_flags));
-    let resource_map = minimum::util::TrustCell::new(resource_map);
+    let update_loop = UpdateLoopSingleThreaded::new(world);
+    update_loop.run();
 
-    loop {
-        schedule.run(&resource_map);
-
-        if resource_map.borrow().fetch::<minimum::DispatchControl>().should_end_game_loop() {
-            break;
-        }
-    }
-
-    let mut resource_map = resource_map.into_inner();
+    let mut resource_map = update_loop.into_resource_map();
 
     // This would be a good spot to flush anything out like saved progress
 

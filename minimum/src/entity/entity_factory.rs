@@ -97,13 +97,15 @@ mod tests {
 
     #[test]
     fn test_entity_prototype() {
-        let resource_map = crate::WorldBuilder::new()
+        let world = crate::WorldBuilder::new()
             .with_component(<TestComponent1 as Component>::Storage::new())
             .with_component(<TestComponent2 as Component>::Storage::new())
             .with_component_factory(BasicComponentFactory::<TestComponent1>::new())
             .with_component_factory(BasicComponentFactory::<TestComponent2>::new())
             .with_resource(EntityFactory::new())
             .build();
+
+        let resource_map = world.resource_map;
 
         {
             let c1_prototype = BasicComponentPrototype::new(TestComponent1);

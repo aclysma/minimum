@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 
 /// Simple trait that can be wrapped in a ReadResourceMapTask to get immutable access on the resource
 /// map.
-pub trait ReadAllTaskImpl : 'static {
+pub trait ReadAllTaskImpl : 'static + Send {
     fn configure(config: &mut TaskConfig);
     fn run(resource_map: &ResourceMap);
 }
@@ -45,7 +45,7 @@ impl<T : ReadAllTaskImpl> TaskFactory for ReadAllTask<T> {
     }
 }
 
-impl<T : ReadAllTaskImpl> Task for ReadAllTask<T> {
+impl<T : ReadAllTaskImpl + Send> Task for ReadAllTask<T> {
     fn run(&self, resource_map: &TrustCell<ResourceMap>) {
         let resource_map_borrowed = resource_map.borrow();
         T::run(&*resource_map_borrowed);

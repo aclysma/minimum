@@ -5,7 +5,6 @@ use named_type::NamedType;
 use crate::resource::DataRequirement;
 use crate::resource::ResourceId;
 use crate::ResourceMap;
-use crate::dispatch::async_dispatcher::{RequiresResources, RequiredResources};
 use crate::util::TrustCell;
 
 //
@@ -16,6 +15,10 @@ pub use config::TaskConfig;
 
 mod registered_type;
 pub use registered_type::RegisteredType;
+
+mod require_resources;
+pub use require_resources::RequiresResources;
+pub use require_resources::RequiredResources;
 
 mod traits;
 pub use traits::Task;
@@ -42,6 +45,11 @@ pub use schedulers::TaskScheduleBuilderSingleThread;
 pub use schedulers::TaskScheduleSingleThread;
 pub use schedulers::TaskScheduleBuilderMultiThread;
 pub use schedulers::TaskScheduleMultiThread;
+
+mod dispatch_control;
+pub use dispatch_control::DispatchControl;
+
+//TODO: Move default phases to framework
 
 pub struct PhaseFrameBegin;
 impl Phase for PhaseFrameBegin {
@@ -111,8 +119,3 @@ impl Phase for PhaseEndFrame {
 
     }
 }
-
-
-
-//TEMPORARY
-pub mod proof_of_concept;

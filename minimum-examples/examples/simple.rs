@@ -1,10 +1,18 @@
-use minimum::resource::{DataRequirement, Read, ResourceMap, Write};
-
-use minimum::dispatch::simple_dispatch::Task;
-
 use minimum::component::{Component, ComponentStorage};
-use minimum::EntitySet;
+use minimum::{EntitySet, WriteAllTask, WriteAllTaskImpl, DispatchControl, TaskScheduleBuilderSingleThread};
 use minimum::WorldBuilder;
+use minimum::Read;
+use minimum::Write;
+use minimum::ResourceTask;
+use minimum::ResourceTaskImpl;
+use minimum::DataRequirement;
+use minimum::TaskConfig;
+use minimum::ResourceMap;
+
+use named_type::NamedType;
+
+#[macro_use]
+extern crate named_type_derive;
 
 mod shared;
 
@@ -13,9 +21,13 @@ use shared::components::{PositionComponent, SpeedMultiplierComponent, VelocityCo
 use shared::resources::{TimeState, UpdateCount};
 
 use shared::Vec2;
+use std::ptr::drop_in_place;
+use minimum::world::UpdateLoopSingleThreaded;
 
+#[derive(NamedType)]
 struct UpdatePositions;
-impl Task for UpdatePositions {
+pub type UpdatePositionsTask = ResourceTask<UpdatePositions>;
+impl ResourceTaskImpl for UpdatePositions {
     type RequiredResources = (
         Read<TimeState>,
         Read<EntitySet>,
@@ -24,7 +36,11 @@ impl Task for UpdatePositions {
         Read<<SpeedMultiplierComponent as Component>::Storage>,
     );
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn configure(task_config: &mut TaskConfig) {
+
+    }
+
+    fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {
         let (
             time_state,
             game_entities,
@@ -74,6 +90,45 @@ impl Task for UpdatePositions {
     }
 }
 
+#[derive(NamedType)]
+struct UpdateEntitySet;
+pub type UpdateEntitySetTask = WriteAllTask<UpdateEntitySet>;
+impl WriteAllTaskImpl for UpdateEntitySet {
+    fn configure(config: &mut TaskConfig) {
+
+    }
+
+    fn run(resource_map: &mut ResourceMap) {
+        let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
+        entity_set.flush_free(&resource_map);
+    }
+}
+
+#[derive(NamedType)]
+struct IncrementUpdateCount;
+pub type IncrementUpdateCountTask = ResourceTask<IncrementUpdateCount>;
+impl ResourceTaskImpl for IncrementUpdateCount {
+    type RequiredResources = (
+        Write<UpdateCount>,
+        Write<DispatchControl>
+    );
+
+    fn configure(config: &mut TaskConfig) {
+
+    }
+
+    fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {
+        let (mut update_count, mut dispatch_control) = data;
+
+        println!("update {}", update_count.count);
+        update_count.count += 1;
+        if update_count.count > 10 {
+            dispatch_control.end_game_loop();
+        }
+    }
+}
+
+
 //TODO: Rewrite to use an entity prototype
 fn create_objects(resource_map: &ResourceMap) {
     let mut game_entities = resource_map.fetch_mut::<minimum::EntitySet>();
@@ -111,38 +166,20 @@ fn create_objects(resource_map: &ResourceMap) {
 
 fn main() {
     // Register global systems
-    let resource_map = WorldBuilder::new()
+    let world = WorldBuilder::new()
         .with_resource(UpdateCount::new())
         .with_resource(TimeState::new())
         .with_component(<PositionComponent as Component>::Storage::new())
         .with_component(<VelocityComponent as Component>::Storage::new())
         .with_component(<SpeedMultiplierComponent as Component>::Storage::new())
+        .with_task::<UpdatePositionsTask>()
+        .with_task::<UpdateEntitySetTask>()
+        .with_task::<IncrementUpdateCountTask>()
         .build();
 
     // Create a bunch of objects
-    create_objects(&resource_map);
+    create_objects(&world.resource_map);
 
-    use minimum::dispatch::simple_dispatch::MinimumDispatcher;
-    let dispatcher = MinimumDispatcher::new(resource_map);
-
-    // Run
-    dispatcher.enter_game_loop(|ctx| {
-        ctx.run_task(UpdatePositions);
-
-        {
-            let resource_map = ctx.resource_map();
-            let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
-            entity_set.flush_free(&resource_map);
-        }
-
-        {
-            let resource_map = ctx.resource_map();
-            let mut update_count = resource_map.fetch_mut::<UpdateCount>();
-            println!("update {}", update_count.count);
-            update_count.count += 1;
-            if update_count.count > 10 {
-                ctx.end_game_loop();
-            }
-        }
-    });
+    let update_loop = UpdateLoopSingleThreaded::new(world);
+    update_loop.run();
 }

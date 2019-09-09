@@ -15,15 +15,13 @@ extern crate named_type_derive;
 //extern crate minimum_derive;
 
 pub mod component;
-pub mod dispatch;
+//pub mod dispatch;
 pub mod entity;
 pub mod resource;
 pub mod slab;
 pub mod util;
 pub mod world;
 pub mod task;
-
-pub use dispatch::DispatchControl;
 
 pub use entity::BasicEntityPrototype;
 pub use entity::Entity;
@@ -51,8 +49,11 @@ pub use resource::ResourceMap;
 pub use resource::ResourceMapBuilder;
 pub use resource::Write;
 pub use resource::WriteOption;
+pub use resource::DataRequirement;
 
 pub use world::WorldBuilder;
+pub use world::World;
+pub use world::UpdateLoopSingleThreaded;
 
 pub use task::ResourceTask;
 pub use task::ResourceTaskImpl;
@@ -61,6 +62,17 @@ pub use task::ReadAllTaskImpl;
 pub use task::WriteAllTask;
 pub use task::WriteAllTaskImpl;
 pub use task::TaskConfig;
+pub use task::DispatchControl;
+pub use task::TaskDependencyListBuilder;
+pub use task::TaskDependencyList;
+pub use task::TaskScheduleBuilderSingleThread;
+pub use task::TaskScheduleSingleThread;
+pub use task::TaskScheduleBuilderMultiThread;
+pub use task::TaskScheduleMultiThread;
+pub use task::TaskFactory;
+pub use task::Phase;
+
+pub use util::TrustCell;
 
 
 //#[cfg(feature = "async_support")]

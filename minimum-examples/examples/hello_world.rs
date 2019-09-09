@@ -1,6 +1,8 @@
-use minimum::resource::{DataRequirement, ResourceMapBuilder, Write};
+use minimum::{TaskDependencyListBuilder, ResourceTask, ResourceTaskImpl, DataRequirement, Write, TaskConfig, ResourceMapBuilder, TaskScheduleBuilderSingleThread, WorldBuilder};
+use named_type::NamedType;
 
-use minimum::dispatch::simple_dispatch::{MinimumDispatcher, Task};
+#[macro_use]
+extern crate named_type_derive;
 
 //
 // This is an example resource. Resources contain data that tasks can operate on.
@@ -19,11 +21,17 @@ impl ExampleResource {
 //
 // This is an example task. The dispatcher will run it, passing the resources it requires.
 //
-pub struct ExampleTask;
-impl Task for ExampleTask {
+#[derive(NamedType)]
+pub struct Example;
+pub type ExampleTask = ResourceTask<Example>;
+impl ResourceTaskImpl for Example {
     type RequiredResources = (Write<ExampleResource>);
 
-    fn run(&mut self, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn configure(task_config: &mut TaskConfig) {
+
+    }
+
+    fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {
         let mut example_resource = data;
         example_resource.update();
     }
@@ -41,18 +49,10 @@ impl Task for ExampleTask {
 //
 fn main() {
     // Set up a dispatcher with the example resource in it
-    let resource_map_builder = ResourceMapBuilder::new()
+    let world = WorldBuilder::new()
         .with_resource(ExampleResource::new())
-        .build();
+        .with_task::<ExampleTask>()
+        .build_update_loop_single_threaded();
 
-    let dispatcher = MinimumDispatcher::new(resource_map_builder);
-
-    // Start the game loop
-    dispatcher.enter_game_loop(|ctx| {
-        // Run a task, this will call update on the given resource
-        ctx.run_task(ExampleTask);
-
-        // Stop the loop
-        ctx.end_game_loop();
-    });
+    world.step();
 }
