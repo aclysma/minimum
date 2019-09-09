@@ -3,6 +3,7 @@ script: cargo build --verbose --package $PACKAGE --no-default-features --feature
 install:
   - if [ $TRAVIS_OS_NAME = windows ]; then choco install ninja; fi
   - if [ $TRAVIS_OS_NAME = windows ]; then choco install python; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then export PATH="C:\Python37:$PATH"; fi
 before_script: cd minimum-demo
 matrix:
   include:

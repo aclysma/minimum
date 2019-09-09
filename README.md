@@ -6,6 +6,8 @@ extension points for integrating custom and 3rd-party libraries with your game l
 This library is best suited for use by those who want to start with something thin and bring their own tech to put on
 top of it. It's your very own build-a-game-engine toolkit.
 
+[![Build Status](https://travis-ci.org/aclysma/imgui-minimum.svg?branch=master)](https://travis-ci.org/aclysma/minimum)
+
 ## Platform Support
  * The base/ECS is very portable. It's pure rust and has few upstream dependencies.
  * The demo builds for Windows/MacOS/Linux.
