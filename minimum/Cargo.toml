@@ -16,20 +16,9 @@ include = [
 ]
 
 [features]
-async_support = ["futures", "tokio", "futures-locks"]
-nightly = []
 
 [dependencies]
 hashbrown = "0.5"
 mopa = "0.2"
 log = "0.4"
 derivative = "1.0"
-#minimum-derive = { path = "../minimum-derive" }
-
-# Used for non-async MT task dispatching
-#rayon = "1.2"
-
-# These are optional, used with async_support
-futures = { version = "0.1", optional = true }
-tokio = { version = "0.1", optional = true }
-futures-locks = { version = "0.3", optional = true }

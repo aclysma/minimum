@@ -90,7 +90,7 @@ impl TaskDependencyListBuilder {
 
         // Make sure every task is in the hashmap, even if it has no dependencies
         let mut combined_dependencies = before_after_dependencies;
-        for (task, config) in &self.tasks {
+        for (task, _config) in &self.tasks {
             combined_dependencies.entry(task.clone()).or_insert(vec![]);
         }
 
@@ -119,7 +119,7 @@ impl TaskDependencyListBuilder {
                 // Cycle detected
 
                 let first_key;
-                for (key, value) in &combined_dependencies {
+                for (key, _value) in &combined_dependencies {
                     first_key = key;
 
                     let mut key = first_key;
@@ -146,7 +146,7 @@ impl TaskDependencyListBuilder {
                 combined_dependencies.remove(&ready_task);
 
                 // Remove the task from all other tasks's values, wherever it exists
-                for (task, mut dependencies) in combined_dependencies.iter_mut() {
+                for (_task, dependencies) in combined_dependencies.iter_mut() {
                     dependencies.iter().position(|x| *x == *ready_task).map(|i| dependencies.swap_remove(i));
                 }
             }

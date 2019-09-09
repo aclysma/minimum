@@ -140,7 +140,7 @@ impl ResourceMap {
     #[cfg(feature = "nightly")]
     fn unwrap_resource<R>(resource: Option<R>) -> R {
         if resource.is_none() {
-            let name = std::intrinsics::type_name::<R>();
+            let name = core::any::type_name::<R>();
             // Tried to fetch or fetch_mut on a resource that is not registered.
             panic!("Resource not found: {}", name);
         }

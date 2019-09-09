@@ -25,9 +25,7 @@ mod tasks;
 
 use framework::CloneComponentFactory;
 use minimum::component::Component;
-use minimum::{World, UpdateLoopSingleThreaded, WorldBuilder};
-#[cfg(feature = "editor")]
-use framework::resources::editor::EditorActionQueue;
+use minimum::{UpdateLoopSingleThreaded, WorldBuilder, DispatchControl};
 use framework::resources::FrameworkActionQueue;
 use rendy::wsi::winit;
 
@@ -248,7 +246,7 @@ fn register_tasks(world_builder: &mut WorldBuilder) {
 }
 
 fn dispatcher_thread(
-    mut world: minimum::World,
+    world: minimum::World,
 ) -> minimum::resource::ResourceMap {
     info!("dispatch thread started");
 
@@ -265,6 +263,8 @@ fn dispatcher_thread(
         | framework::context_flags::PLAYMODE_PLAYING
         | framework::context_flags::PLAYMODE_PAUSED
         | framework::context_flags::PLAYMODE_SYSTEM;
+
+    *world.resource_map.fetch_mut::<DispatchControl>().next_frame_context_flags_mut() = context_flags;
 
     world.resource_map.fetch_mut::<FrameworkActionQueue>().enqueue_load_level(std::path::PathBuf::from("test_save"));
 

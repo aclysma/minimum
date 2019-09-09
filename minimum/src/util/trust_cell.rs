@@ -24,7 +24,7 @@ macro_rules! borrow_panic {
     ($s:expr) => {{
         panic!(
             "Tried to fetch data of type {:?}, but it was already borrowed{}.",
-            ::std::intrinsics::type_name::<T>(),
+            core::any::type_name::<T>(),
             $s,
         )
     }};

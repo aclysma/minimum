@@ -1,4 +1,4 @@
-use minimum::{TaskDependencyListBuilder, ResourceTask, ResourceTaskImpl, DataRequirement, Write, TaskConfig, ResourceMapBuilder, TaskScheduleBuilderSingleThread, WorldBuilder};
+use minimum::{ResourceTask, ResourceTaskImpl, DataRequirement, Write, TaskConfig, WorldBuilder};
 
 //
 // This is an example resource. Resources contain data that tasks can operate on.
@@ -22,8 +22,8 @@ pub type ExampleTask = ResourceTask<Example>;
 impl ResourceTaskImpl for Example {
     type RequiredResources = (Write<ExampleResource>);
 
-    fn configure(task_config: &mut TaskConfig) {
-
+    fn configure(_task_config: &mut TaskConfig) {
+        // task_config can be used to set up contraints on when this task can run
     }
 
     fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {

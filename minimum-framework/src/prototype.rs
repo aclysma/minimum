@@ -1,5 +1,5 @@
 use minimum::entity::EntityPrototype;
-use minimum::{Component, ComponentPrototype};
+use minimum::Component;
 
 use minimum::EntityRef;
 use minimum::ResourceMap;
@@ -107,6 +107,8 @@ impl EntityPrototype for FrameworkEntityPrototype {
                 let compound_shape = ncollide2d::shape::Compound::new(selection_shapes);
                 let compound_shape_handle = ncollide2d::shape::ShapeHandle::new(compound_shape);
                 let editor_shape_component_prototype = EditorShapeComponentPrototype::new(compound_shape_handle);
+
+                use minimum::ComponentPrototype;
                 editor_shape_component_prototype.enqueue_create(resource_map, &entity.handle());
             }
         }

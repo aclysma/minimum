@@ -18,7 +18,7 @@ nphysics2d      = "0.11"
 ncollide2d      = "0.19"
 rand            = "0.7.0"
 
-minimum = { path = "../minimum", features = ["async_support", "nightly"] }
+minimum = { path = "../minimum" }
 
 serde = "1.0"
 serde_derive = "1.0"
@@ -30,8 +30,6 @@ strum = "0.15"
 strum_macros = "0.15"
 mopa = "0.2"
 hashbrown = "0.5"
-
-#hoping imgui support can be removed by breaking "framework" into an "editor" crate
 
 #imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
 #imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }

@@ -115,7 +115,7 @@ where
 
         if data.len() > 0 {
             let header_text = &imgui::im_str!("{}", self.header_text);
-            let _content_region = ui.get_window_content_region_max();
+            let _content_region = ui.window_content_region_max();
             let draw_children = unsafe { imgui_sys::igCollapsingHeader(header_text.as_ptr(), imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32 | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32) };
             if draw_children {
 
@@ -247,7 +247,7 @@ where
             }
 
             let header_text = &imgui::im_str!("{}", self.header_text);
-            let content_region = ui.get_window_content_region_max();
+            let content_region = ui.window_content_region_max();
 
             {
                 let id_token = ui.push_id(core::any::type_name::<T>());

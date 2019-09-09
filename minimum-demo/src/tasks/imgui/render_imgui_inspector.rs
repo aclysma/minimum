@@ -15,7 +15,7 @@ impl WriteAllTaskImpl for RenderImguiInspector {
         let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
 
         //TODO: draw_inspector could potentially take a <T: ImguiManager> param
-        let ui = imgui_manager.with_ui(|ui| {
+        imgui_manager.with_ui(|ui| {
             framework::inspect::draw_inspector(&resource_map, ui);
         });
     }

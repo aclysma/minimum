@@ -5,11 +5,9 @@ use crate::components::PersistentEntityComponent;
 use crate::persist::ComponentPrototypeSerializer;
 use crate::{FrameworkComponentPrototype, FrameworkEntityPrototype, FrameworkEntityPersistencePolicy};
 use hashbrown::HashMap;
-use minimum::{Component, EntityPrototype};
-use minimum::EntitySet;
+use minimum::EntityPrototype;
 use minimum::ResourceMap;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize};
 use std::sync::Arc;
 
 #[derive(Serialize, Deserialize)]
@@ -19,6 +17,7 @@ struct SavedComponent {
 }
 
 impl SavedComponent {
+    #[cfg(feature = "editor")]
     pub fn new(type_name: String, data: serde_json::Value) -> Self {
         SavedComponent {
             type_name,
@@ -33,6 +32,7 @@ struct SavedObject {
 }
 
 impl SavedObject {
+    #[cfg(feature = "editor")]
     pub fn new(saved_components: Vec<SavedComponent>) -> Self {
         SavedObject {
             saved_components
@@ -46,6 +46,7 @@ struct LevelFile {
 }
 
 impl LevelFile {
+    #[cfg(feature = "editor")]
     pub fn new(saved_objects: Vec<SavedObject>) -> Self {
         LevelFile {
             saved_objects
@@ -241,6 +242,9 @@ impl PersistRegistry {
 
     #[cfg(feature = "editor")]
     pub fn save<P: AsRef<std::path::Path>>(&self, resource_map: &ResourceMap, path: P) -> Result<(), SerializeError> {
+        use minimum::EntitySet;
+        use minimum::Component;
+
         // Get the entities and all persistent entity components. This represents all the data we need to save
         let entity_set = resource_map.fetch::<EntitySet>();
         let persistent_entity_components =

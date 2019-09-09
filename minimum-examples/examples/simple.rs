@@ -1,5 +1,5 @@
 use minimum::component::{Component, ComponentStorage};
-use minimum::{EntitySet, WriteAllTask, WriteAllTaskImpl, DispatchControl, TaskScheduleBuilderSingleThread};
+use minimum::{EntitySet, WriteAllTask, WriteAllTaskImpl, DispatchControl};
 use minimum::WorldBuilder;
 use minimum::Read;
 use minimum::Write;
@@ -16,10 +16,9 @@ use shared::components::{PositionComponent, SpeedMultiplierComponent, VelocityCo
 use shared::resources::{TimeState, UpdateCount};
 
 use shared::Vec2;
-use std::ptr::drop_in_place;
 use minimum::world::UpdateLoopSingleThreaded;
 
-struct UpdatePositions;
+pub struct UpdatePositions;
 pub type UpdatePositionsTask = ResourceTask<UpdatePositions>;
 impl ResourceTaskImpl for UpdatePositions {
     type RequiredResources = (
@@ -31,7 +30,7 @@ impl ResourceTaskImpl for UpdatePositions {
     );
 
     fn configure(task_config: &mut TaskConfig) {
-
+        task_config.this_runs_during_phase::<minimum::task::PhasePhysics>();
     }
 
     fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {
@@ -84,11 +83,11 @@ impl ResourceTaskImpl for UpdatePositions {
     }
 }
 
-struct UpdateEntitySet;
+pub struct UpdateEntitySet;
 pub type UpdateEntitySetTask = WriteAllTask<UpdateEntitySet>;
 impl WriteAllTaskImpl for UpdateEntitySet {
-    fn configure(config: &mut TaskConfig) {
-
+    fn configure(task_config: &mut TaskConfig) {
+        task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
     }
 
     fn run(resource_map: &mut ResourceMap) {
@@ -97,7 +96,7 @@ impl WriteAllTaskImpl for UpdateEntitySet {
     }
 }
 
-struct IncrementUpdateCount;
+pub struct IncrementUpdateCount;
 pub type IncrementUpdateCountTask = ResourceTask<IncrementUpdateCount>;
 impl ResourceTaskImpl for IncrementUpdateCount {
     type RequiredResources = (
@@ -105,8 +104,8 @@ impl ResourceTaskImpl for IncrementUpdateCount {
         Write<DispatchControl>
     );
 
-    fn configure(config: &mut TaskConfig) {
-
+    fn configure(task_config: &mut TaskConfig) {
+        task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
     }
 
     fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {

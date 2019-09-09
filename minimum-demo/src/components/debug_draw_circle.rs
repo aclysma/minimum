@@ -5,7 +5,6 @@ use framework::inspect::common_types::*;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
-use serde::{Deserialize, Serialize};
 #[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 

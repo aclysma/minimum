@@ -5,7 +5,6 @@ use framework::inspect::common_types::*;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::VecComponentStorage;
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct PositionComponent {

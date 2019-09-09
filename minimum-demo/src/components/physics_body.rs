@@ -5,7 +5,6 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 use minimum::{Component, ComponentStorage};
-use serde::{Deserialize, Serialize};
 
 use nphysics2d::object::BodyHandle;
 use nphysics2d::object::ColliderDesc;

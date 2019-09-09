@@ -11,4 +11,3 @@ use super::Task;
 use super::TrustCell;
 use super::ResourceId;
 use super::DataRequirement;
-use super::RequiredResources;

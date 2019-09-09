@@ -5,7 +5,6 @@ use super::Task;
 use super::TrustCell;
 use super::ResourceId;
 use super::DataRequirement;
-use super::RequiredResources;
 use super::RequiresResources;
 
 use std::marker::PhantomData;

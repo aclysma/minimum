@@ -5,12 +5,15 @@ use minimum::{ResourceTaskImpl, TaskConfig};
 
 use framework::resources::FrameworkActionQueue;
 
+#[cfg(feature = "editor")]
 use crate::resources::ImguiManager;
 use crate::resources::{InputManager, WindowInterface};
 
 pub struct GatherInput;
 pub type GatherInputTask = minimum::ResourceTask<GatherInput>;
 impl ResourceTaskImpl for GatherInput {
+
+    #[cfg(feature = "editor")]
     type RequiredResources = (
         Read<winit::window::Window>,
         Read<WindowInterface>,
@@ -18,6 +21,14 @@ impl ResourceTaskImpl for GatherInput {
         Write<InputManager>,
         Write<FrameworkActionQueue>,
     );
+
+    #[cfg(not(feature = "editor"))]
+    type RequiredResources = (
+        Read<WindowInterface>,
+        Write<InputManager>,
+        Write<FrameworkActionQueue>,
+    );
+
     //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize
     //    | framework::context_flags::PLAYMODE_SYSTEM as usize;
 
@@ -33,7 +44,12 @@ impl ResourceTaskImpl for GatherInput {
         use winit::event::Event;
         use winit::event::WindowEvent;
 
+        #[cfg(feature = "editor")]
         let (window, window_interface, mut imgui_manager, mut input_manager, mut framework_action_queue) =
+            data;
+
+        #[cfg(not(feature = "editor"))]
+        let (window_interface, mut input_manager, mut framework_action_queue) =
             data;
 
         input_manager.pre_handle_events();

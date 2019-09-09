@@ -2,7 +2,6 @@ use std::path::PathBuf;
 use std::collections::VecDeque;
 use minimum::ResourceMap;
 use crate::PlayMode;
-use crate::resources;
 use minimum::Component;
 use minimum::EntitySet;
 use crate::components;
@@ -96,7 +95,8 @@ impl FrameworkActionQueue {
 
                     #[cfg(feature = "editor")]
                     {
-                        let mut editor_ui_state = resource_map.fetch_mut::<resources::editor::EditorUiState>();
+                        use crate::resources::editor::EditorUiState;
+                        let mut editor_ui_state = resource_map.fetch_mut::<EditorUiState>();
                         editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Runtime);
                     }
                 }
@@ -134,7 +134,8 @@ impl FrameworkActionQueue {
             //TODO: Retain selection
             #[cfg(feature = "editor")]
             {
-                let mut editor_ui_state = resource_map.fetch_mut::<resources::editor::EditorUiState>();
+                use crate::resources::editor::EditorUiState;
+                let mut editor_ui_state = resource_map.fetch_mut::<EditorUiState>();
                 editor_ui_state.set_inspector_tab = Some(crate::inspect::InspectorTab::Persistent);
             }
         }));

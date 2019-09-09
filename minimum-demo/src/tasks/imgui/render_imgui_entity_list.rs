@@ -49,8 +49,6 @@ impl ResourceTaskImpl for RenderImguiEntityList {
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             use imgui::im_str;
 
-            use imgui::ImGuiSelectableFlags;
-
             let window_options = editor_ui_state.window_options(time_state.play_mode);
 
             if window_options.show_entity_list {
@@ -87,12 +85,9 @@ impl ResourceTaskImpl for RenderImguiEntityList {
                                 };
 
                                 let s = im_str!("{:?}", entity.handle());
-                                let clicked = ui.selectable(
-                                    &s,
-                                    is_selected,
-                                    ImGuiSelectableFlags::empty(),
-                                    [0.0, 0.0],
-                                );
+                                let clicked = imgui::Selectable::new(&s)
+                                    .selected(is_selected)
+                                    .build(ui);
 
                                 if clicked {
                                     let is_control_held = input_manager

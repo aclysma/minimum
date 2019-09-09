@@ -2,7 +2,6 @@ use minimum::component::ComponentStorage;
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig};
 
-use crate::components;
 use crate::resources::DebugDraw;
 #[cfg(feature = "editor")]
 use framework::resources::editor::EditorCollisionWorld;

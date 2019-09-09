@@ -22,24 +22,12 @@ matrix:
       rust: nightly
       os: osx
       env: PACKAGE="minimum" FEATURES=""
-    - name: "OSX Base Async"
-      rust: nightly
-      os: osx
-      env: PACKAGE="minimum" FEATURES="async_support"
     - name: "Linux Base"
       rust: nightly
       os: linux
       env: PACKAGE="minimum" FEATURES=""
-    - name: "Linux Base Async"
-      rust: nightly
-      os: linux
-      env: PACKAGE="minimum" FEATURES="async_support"
     - name: "Windows Base"
       rust: nightly
       os: window
       env: PACKAGE="minimum" FEATURES=""
-    - name: "Windows Base Async"
-      rust: nightly
-      os: window
-      env: PACKAGE="minimum" FEATURES="async_support"
   fast_finish: true

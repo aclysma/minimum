@@ -52,7 +52,7 @@ pub use dispatch_control::DispatchControl;
 
 pub struct PhaseFrameBegin;
 impl Phase for PhaseFrameBegin {
-    fn configure(config: &mut TaskConfig) {
+    fn configure(_config: &mut TaskConfig) {
 
     }
 }

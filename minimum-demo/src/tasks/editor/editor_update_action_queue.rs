@@ -2,7 +2,6 @@
 use minimum::task::WriteAllTaskImpl;
 use minimum::TaskConfig;
 use minimum::ResourceMap;
-use crate::resources;
 
 use framework::resources::editor::EditorActionQueue;
 

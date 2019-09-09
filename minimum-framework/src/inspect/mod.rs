@@ -64,7 +64,6 @@ pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
 
                 let mut selected_type_id = None;
 
-                use imgui::ImGuiSelectableFlags;
                 let mut component_types : Vec<_> = persist_registry.iter_names().collect();
                 component_types.sort_by(|(_, str1), (_, str2)| str1.cmp(str2));
 
@@ -72,7 +71,7 @@ pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
                     if editor_ui_state.add_component_search_text.is_empty() ||
                         component_name.contains(editor_ui_state.add_component_search_text.to_str())
                     {
-                        if ui.selectable(&im_str!("{}", component_name), false, ImGuiSelectableFlags::empty(), [0.0, 0.0]) {
+                        if imgui::Selectable::new(&im_str!("{}", component_name)).build(ui) {
                             selected_type_id = Some(type_id.clone());
                         }
                     }

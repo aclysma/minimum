@@ -2,7 +2,7 @@
 use minimum::task::ReadAllTaskImpl;
 use minimum::TaskConfig;
 use minimum::ResourceMap;
-use crate::resources;
+use minimum::EntitySet;
 
 
 pub struct UpdateEntitySet;
@@ -13,7 +13,7 @@ impl ReadAllTaskImpl for UpdateEntitySet {
     }
 
     fn run(resource_map: &ResourceMap) {
-        let mut entity_set = resource_map.fetch_mut::<minimum::entity::EntitySet>();
+        let mut entity_set = resource_map.fetch_mut::<EntitySet>();
         entity_set.update(resource_map);
     }
 }

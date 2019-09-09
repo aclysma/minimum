@@ -5,9 +5,6 @@ extern crate nalgebra_glm as glm;
 extern crate log;
 
 #[macro_use]
-extern crate imgui_inspect_derive;
-
-#[macro_use]
 extern crate mopa;
 
 #[macro_use]
