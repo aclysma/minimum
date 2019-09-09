@@ -5,7 +5,6 @@
 
 members = [
     "minimum",
-    "minimum-derive",
     "minimum-framework",
     "minimum-examples",
     "minimum-demo"
@@ -17,12 +16,6 @@ exclude = [
 ]
 
 [patch.crates-io]
-#imgui-inspect = { path = '../../imgui-inspect/imgui-inspect', optional = true }
-#imgui-inspect-derive = { path = '../../imgui-inspect/imgui-inspect-derive', default-features = false }
-#imgui = { git = 'https://github.com/aclysma/imgui-rs.git' }
-#imgui-sys = { git = 'https://github.com/aclysma/imgui-rs.git' }
-#imgui-winit-support = { git = 'https://github.com/aclysma/imgui-rs.git' }
-
 
 #[profile.dev]
 #opt-level = 0

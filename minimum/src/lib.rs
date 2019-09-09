@@ -11,11 +11,7 @@ extern crate derivative;
 #[macro_use]
 extern crate named_type_derive;
 
-//#[macro_use]
-//extern crate minimum_derive;
-
 pub mod component;
-//pub mod dispatch;
 pub mod entity;
 pub mod resource;
 pub mod slab;
@@ -73,44 +69,3 @@ pub use task::TaskFactory;
 pub use task::Phase;
 
 pub use util::TrustCell;
-
-
-//#[cfg(feature = "async_support")]
-//pub use dispatch::async_dispatch;
-//
-//pub use dispatch::simple_dispatch;
-//
-//#[cfg(feature = "async_support")]
-//pub use dispatch::async_dispatch::MinimumDispatcher;
-//#[cfg(feature = "async_support")]
-//pub use dispatch::async_dispatch::Task;
-//#[cfg(feature = "async_support")]
-//pub use dispatch::async_dispatch::TaskContext;
-//
-//#[cfg(not(feature = "async_support"))]
-//pub use dispatch::simple_dispatch::MinimumDispatcher;
-//#[cfg(not(feature = "async_support"))]
-//pub use dispatch::simple_dispatch::Task;
-
-//pub use world::World;
-
-/*
-pub trait TypeNameMacro {
-    fn type_name() -> &'static str;
-}
-
-#[derive(TypeName)]
-struct MyStruct {
-
-}
-*/
-/*
-trait ReflectMacro {
-
-}
-
-#[derive(Reflect)]
-struct MyStruct {
-
-}
-*/
