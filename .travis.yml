@@ -1,8 +1,8 @@
 language: rust
 script: cargo build --verbose --package $PACKAGE --no-default-features --features="$FEATURES"
 install:
-  - if [ $TRAVIS_OS_NAME = windows ]; choco install ninja; fi
-  - if [ $TRAVIS_OS_NAME = windows ]; choco install python; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then choco install ninja; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then choco install python; fi
 before_script: cd minimum-demo
 matrix:
   include:
