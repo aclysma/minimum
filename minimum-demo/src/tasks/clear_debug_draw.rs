@@ -1,10 +1,8 @@
 use minimum::resource::{DataRequirement, Write};
 use minimum::{ResourceTask, ResourceTaskImpl, TaskConfig};
-use named_type::NamedType;
 
 use crate::resources::DebugDraw;
 
-#[derive(NamedType)]
 pub struct ClearDebugDraw;
 pub type ClearDebugDrawTask = ResourceTask<ClearDebugDraw>;
 impl ResourceTaskImpl for ClearDebugDraw {

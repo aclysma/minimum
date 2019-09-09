@@ -11,13 +11,3 @@ async_support = ["minimum/async_support"]
 [dev-dependencies]
 minimum = { path = "../minimum" }
 futures = "0.1"
-named_type = "0.2"
-named_type_derive = "0.2"
-
-[[example]]
-name = "hello_world_async"
-required-features = ["async_support"]
-
-[[example]]
-name = "simple_async"
-required-features = ["async_support"]

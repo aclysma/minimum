@@ -2,10 +2,9 @@
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
-use named_type::NamedType;
 use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Default, Inspect)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, Inspect)]
 pub struct PlayerComponent {}
 
 impl PlayerComponent {

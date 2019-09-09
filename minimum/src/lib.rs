@@ -8,9 +8,6 @@ extern crate log;
 #[macro_use]
 extern crate derivative;
 
-#[macro_use]
-extern crate named_type_derive;
-
 pub mod component;
 pub mod entity;
 pub mod resource;

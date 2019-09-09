@@ -1,8 +1,7 @@
 use framework::inspect::common_types::*;
 use minimum::component::SlabComponentStorage;
-use named_type::NamedType;
 
-#[derive(Debug, Clone, NamedType)]
+#[derive(Debug, Clone)]
 pub struct PositionChangedComponent {
     position: glm::Vec2,
 }

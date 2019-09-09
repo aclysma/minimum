@@ -6,12 +6,11 @@ use framework::inspect::common_types::*;
 use imgui_inspect_derive::Inspect;
 
 use minimum::component::SlabComponentStorage;
-use named_type::NamedType;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 
-#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Inspect)]
+#[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawRectComponent {
     #[inspect(proxy_type = "ImGlmVec2")]
     size: glm::Vec2,

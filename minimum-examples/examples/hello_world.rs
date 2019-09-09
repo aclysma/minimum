@@ -1,8 +1,4 @@
 use minimum::{TaskDependencyListBuilder, ResourceTask, ResourceTaskImpl, DataRequirement, Write, TaskConfig, ResourceMapBuilder, TaskScheduleBuilderSingleThread, WorldBuilder};
-use named_type::NamedType;
-
-#[macro_use]
-extern crate named_type_derive;
 
 //
 // This is an example resource. Resources contain data that tasks can operate on.
@@ -21,7 +17,6 @@ impl ExampleResource {
 //
 // This is an example task. The dispatcher will run it, passing the resources it requires.
 //
-#[derive(NamedType)]
 pub struct Example;
 pub type ExampleTask = ResourceTask<Example>;
 impl ResourceTaskImpl for Example {

@@ -4,10 +4,7 @@ use minimum::TaskConfig;
 use minimum::ResourceMap;
 use crate::resources;
 
-use named_type::NamedType;
 
-
-#[derive(NamedType)]
 pub struct UpdateEntitySet;
 pub type UpdateEntitySetTask = minimum::ReadAllTask<UpdateEntitySet>;
 impl ReadAllTaskImpl for UpdateEntitySet {

@@ -28,8 +28,6 @@ lazy_static = "1.0"
 failure = "0.1"
 strum = "0.15"
 strum_macros = "0.15"
-named_type = "0.2"
-named_type_derive = "0.2"
 mopa = "0.2"
 hashbrown = "0.5"
 

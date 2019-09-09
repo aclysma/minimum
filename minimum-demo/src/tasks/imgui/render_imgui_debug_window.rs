@@ -8,9 +8,8 @@ use crate::resources::{
 };
 
 use crate::components::{BulletComponent, PlayerComponent, PositionComponent};
-use named_type::NamedType;
 
-#[derive(NamedType)]
+
 pub struct RenderImguiMainMenu;
 impl Task for RenderImguiMainMenu {
     type RequiredResources = (

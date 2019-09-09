@@ -2,14 +2,12 @@
 
 use minimum::task::WriteAllTaskImpl;
 use crate::resources;
-use named_type::NamedType;
 
 use minimum::task::TaskConfig;
 use minimum::ResourceMap;
 
 use framework::components::editor::EditorSelectedComponent;
 
-#[derive(NamedType)]
 pub struct EditorRecreateModifiedEntities;
 pub type EditorRecreateModifiedEntitiesTask = minimum::WriteAllTask<EditorRecreateModifiedEntities>;
 impl WriteAllTaskImpl for EditorRecreateModifiedEntities {

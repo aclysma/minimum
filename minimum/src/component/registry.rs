@@ -1,6 +1,5 @@
 use super::Component;
 use super::ComponentStorage;
-use named_type::NamedType;
 use std::marker::PhantomData;
 
 use crate::component::component_factory::ComponentCreateQueueFlushListener;
@@ -99,7 +98,6 @@ trait RegisteredComponentFactoryTrait: Resource {
 
 /// Represents a registered component factory, used to allow iterating all registered factories and
 /// calling `flush_creates` on them
-#[derive(NamedType)]
 pub struct RegisteredComponentFactory<F>
 where
     F: ComponentCreateQueueFlushListener,

@@ -15,13 +15,12 @@ use crate::components::PositionComponent;
 #[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
 use framework::FrameworkComponentPrototype;
-use named_type::NamedType;
 use std::collections::VecDeque;
 
 #[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 
-#[derive(Debug, NamedType, Inspect)]
+#[derive(Debug, Inspect)]
 pub struct PhysicsBodyComponent {
     #[inspect(skip)]
     body_handle: BodyHandle,
@@ -125,7 +124,7 @@ impl PhysicsBodyComponentDesc {
 //
 // Custom Prototype
 //
-#[derive(Clone, NamedType, Inspect)]
+#[derive(Clone, Inspect)]
 pub struct PhysicsBodyComponentPrototypeCustom {
     #[inspect(skip)]
     desc: std::sync::Arc<PhysicsBodyComponentDesc>,
@@ -148,7 +147,7 @@ impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCustom {}
 //
 // Box Prototype
 //
-#[derive(Clone, NamedType, Serialize, Deserialize, Inspect)]
+#[derive(Clone, Serialize, Deserialize, Inspect)]
 pub struct PhysicsBodyComponentPrototypeBox {
     #[inspect(proxy_type = "ImGlmVec2")]
     size: glm::Vec2,
@@ -200,7 +199,7 @@ impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeBox {
 //
 // Circle Prototype
 //
-#[derive(Clone, NamedType, Serialize, Deserialize, Inspect)]
+#[derive(Clone, Serialize, Deserialize, Inspect)]
 pub struct PhysicsBodyComponentPrototypeCircle {
     radius: f32,
     mass: f32,

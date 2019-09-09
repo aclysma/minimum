@@ -81,15 +81,14 @@ mod tests {
     use crate::component::ComponentStorage;
     use crate::component::SlabComponentStorage;
     use crate::Component;
-    use named_type::NamedType;
 
-    #[derive(Clone, NamedType)]
+    #[derive(Clone)]
     struct TestComponent1;
     impl Component for TestComponent1 {
         type Storage = SlabComponentStorage<Self>;
     }
 
-    #[derive(Clone, NamedType)]
+    #[derive(Clone)]
     struct TestComponent2;
     impl Component for TestComponent2 {
         type Storage = SlabComponentStorage<Self>;

@@ -6,11 +6,9 @@ use crate::components;
 use crate::resources::DebugDraw;
 #[cfg(feature = "editor")]
 use framework::resources::editor::EditorCollisionWorld;
-use named_type::NamedType;
 use ncollide2d::shape::ShapeHandle;
 use nphysics2d::object::ColliderHandle;
 
-#[derive(NamedType)]
 pub struct EditorDrawSelectionShapes;
 pub type EditorDrawSelectionShapesTask = minimum::ResourceTask<EditorDrawSelectionShapes>;
 impl ResourceTaskImpl for EditorDrawSelectionShapes {

@@ -202,7 +202,7 @@ where
 
 impl<T> RegisteredComponentPrototypeTrait for RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T> + named_type::NamedType,
+    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T>,
 {
     fn header_text(&self) -> &'static str {
         self.header_text

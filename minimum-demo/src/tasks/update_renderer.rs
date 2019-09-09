@@ -5,9 +5,6 @@ use minimum::TaskConfig;
 use minimum::ResourceMap;
 use crate::resources;
 
-use named_type::NamedType;
-
-#[derive(NamedType)]
 pub struct UpdateRenderer;
 pub type UpdateRendererTask = minimum::ReadAllTask<UpdateRenderer>;
 impl ReadAllTaskImpl for UpdateRenderer {

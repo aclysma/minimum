@@ -6,9 +6,7 @@ use framework::resources::TimeState;
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
 use minimum::ComponentStorage;
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct UpdatePositionWithVelocity;
 pub type UpdatePositionWithVelocityTask = minimum::ResourceTask<UpdatePositionWithVelocity>;
 impl ResourceTaskImpl for UpdatePositionWithVelocity {

@@ -6,10 +6,8 @@ use framework::resources::editor::{EditorUiState, EditorTool};
 use framework::resources::{FrameworkActionQueue, TimeState};
 use crate::resources::{DebugOptions, ImguiManager};
 
-use named_type::NamedType;
 use imgui::im_str;
 
-#[derive(NamedType)]
 pub struct RenderImguiMainMenu;
 pub type RenderImguiMainMenuTask = minimum::ResourceTask<RenderImguiMainMenu>;
 

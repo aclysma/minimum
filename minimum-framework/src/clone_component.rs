@@ -8,7 +8,6 @@ use minimum::ComponentPrototype;
 use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
-use named_type::NamedType;
 use minimum::BasicComponentPrototype;
 
 use minimum::component::ComponentCreateQueueFlushListener;
@@ -21,7 +20,7 @@ use imgui_inspect::{InspectRenderStruct, InspectArgsDefault, InspectArgsStruct};
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
 
-#[derive(Clone, NamedType)]
+#[derive(Clone)]
 pub struct CloneComponentPrototype<T: Component + Clone> {
     inner: minimum::BasicComponentPrototype<T>,
 }
@@ -63,7 +62,7 @@ impl<T: Component + Clone + Default> Default for CloneComponentPrototype<T> {
 impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>>
 for CloneComponentPrototype<T>
     where
-        T: Component + Clone + InspectRenderStruct<T> + named_type::NamedType,
+        T: Component + Clone + InspectRenderStruct<T>,
 {
     fn render(
         data: &[&CloneComponentPrototype<T>],
@@ -87,7 +86,7 @@ for CloneComponentPrototype<T>
 impl<T> imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>
     for CloneComponentPrototype<T>
 where
-    T: Component + Clone + InspectRenderStruct<T> + named_type::NamedType,
+    T: Component + Clone + InspectRenderStruct<T>,
 {
     fn render(
         data: &[&CloneComponentPrototype<T>],

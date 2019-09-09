@@ -2,12 +2,10 @@
 
 use minimum::task::WriteAllTaskImpl;
 use crate::resources;
-use named_type::NamedType;
 
 use minimum::task::TaskConfig;
 use minimum::ResourceMap;
 
-#[derive(NamedType)]
 pub struct FrameworkUpdateActionQueue;
 pub type FrameworkUpdateActionQueueTask = minimum::WriteAllTask<FrameworkUpdateActionQueue>;
 impl WriteAllTaskImpl for FrameworkUpdateActionQueue {

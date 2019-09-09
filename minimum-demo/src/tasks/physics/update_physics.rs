@@ -4,9 +4,7 @@ use framework::resources::TimeState;
 use crate::resources::PhysicsManager;
 
 use minimum::{ResourceTaskImpl, TaskConfig, ResourceTask};
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct UpdatePhysics;
 pub type UpdatePhysicsTask = ResourceTask<UpdatePhysics>;
 impl ResourceTaskImpl for UpdatePhysics {

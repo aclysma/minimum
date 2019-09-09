@@ -5,9 +5,7 @@ use crate::resources::PhysicsManager;
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
 use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, ResourceTask};
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct PhysicsSyncPre;
 pub type PhysicsSyncPreTask = ResourceTask<PhysicsSyncPre>;
 impl ResourceTaskImpl for PhysicsSyncPre {

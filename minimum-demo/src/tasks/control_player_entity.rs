@@ -10,9 +10,7 @@ use crate::components;
 use minimum::component::ReadComponent;
 use minimum::ComponentStorage;
 use minimum::EntityFactory;
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct ControlPlayerEntity;
 pub type ControlPlayerEntityTask = minimum::ResourceTask<ControlPlayerEntity>;
 impl ResourceTaskImpl for ControlPlayerEntity {

@@ -5,9 +5,8 @@ use minimum::{ResourceTaskImpl, TaskConfig};
 
 use framework::resources::{TimeState, FrameworkActionQueue};
 use crate::resources::{InputManager};
-use named_type::NamedType;
 
-#[derive(NamedType)]
+
 pub struct UpdateTimeState;
 pub type UpdateTimeStateTask = minimum::ResourceTask<UpdateTimeState>;
 impl ResourceTaskImpl for UpdateTimeState {

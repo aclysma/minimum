@@ -3,9 +3,7 @@ use minimum::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig};
 
 use crate::components;
 use crate::resources::DebugDraw;
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct DebugDrawComponents;
 pub type DebugDrawComponentsTask = minimum::ResourceTask<DebugDrawComponents>;
 impl ResourceTaskImpl for DebugDrawComponents {

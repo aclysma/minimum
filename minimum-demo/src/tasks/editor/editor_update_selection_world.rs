@@ -4,9 +4,7 @@ use minimum::resource::{DataRequirement, Write};
 use framework::resources::editor::EditorCollisionWorld;
 
 use minimum::{ResourceTaskImpl, TaskConfig};
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct EditorUpdateSelectionWorld;
 pub type EditorUpdateSelectionWorldTask = minimum::ResourceTask<EditorUpdateSelectionWorld>;
 impl ResourceTaskImpl for EditorUpdateSelectionWorld {

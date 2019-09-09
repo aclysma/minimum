@@ -1,8 +1,7 @@
 use minimum::component::SlabComponentStorage;
 use minimum::Component;
-use named_type::NamedType;
 
-#[derive(Clone, NamedType)]
+#[derive(Clone)]
 pub struct EditorSelectedComponent {}
 
 impl EditorSelectedComponent {

@@ -16,27 +16,9 @@ use crate::select::SelectRegistry;
 
 // impl ComponentPrototype for FrameworkComponentPrototype?
 pub trait FrameworkComponentPrototype:
-    minimum::component::ComponentCreator + named_type::NamedType + mopa::Any
+    minimum::component::ComponentCreator + mopa::Any
 {
 }
-
-//TODO: Get rid of NamedType
-/*
-/// A trait for getting the name of a type
-pub trait NamedType {
-    /// Returns the canonical name with the fully qualified module name for the
-    /// given type
-    fn type_name() -> &'static str
-        where
-            Self: Sized;
-}
-
-impl<T : FrameworkComponentPrototype> named_type::NamedType for T {
-    fn type_name() -> &'static str {
-        core::any::type_name::<T>()
-    }
-}
-*/
 
 mopafy!(FrameworkComponentPrototype);
 

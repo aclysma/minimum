@@ -4,9 +4,7 @@ use minimum::component::Component;
 use minimum::component::SlabComponentStorage;
 use minimum::component::VecComponentStorage;
 
-use named_type::NamedType;
-
-#[derive(Debug, named_type_derive::NamedType)]
+#[derive(Debug)]
 pub struct PositionComponent {
     pub position: Vec2,
 }
@@ -21,7 +19,7 @@ impl Component for PositionComponent {
     type Storage = VecComponentStorage<Self>;
 }
 
-#[derive(Debug, named_type_derive::NamedType)]
+#[derive(Debug)]
 pub struct VelocityComponent {
     pub velocity: Vec2,
 }
@@ -36,7 +34,7 @@ impl Component for VelocityComponent {
     type Storage = SlabComponentStorage<VelocityComponent>;
 }
 
-#[derive(Debug, named_type_derive::NamedType)]
+#[derive(Debug)]
 pub struct SpeedMultiplierComponent {
     pub multiplier: f32,
 }

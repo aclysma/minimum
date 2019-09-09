@@ -1,9 +1,8 @@
 use crate::FrameworkEntityPrototype;
 use minimum::component::SlabComponentStorage;
 use minimum::Component;
-use named_type::NamedType;
 
-#[derive(NamedType, Clone)]
+#[derive(Clone)]
 pub struct PersistentEntityComponent {
     prototype: FrameworkEntityPrototype,
 }

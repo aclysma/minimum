@@ -4,10 +4,8 @@ use minimum::TaskConfig;
 use minimum::ResourceMap;
 use crate::resources;
 
-use named_type::NamedType;
 use framework::resources::editor::EditorActionQueue;
 
-#[derive(NamedType)]
 pub struct EditorUpdateActionQueue;
 pub type EditorUpdateActionQueueTask = minimum::WriteAllTask<EditorUpdateActionQueue>;
 impl WriteAllTaskImpl for EditorUpdateActionQueue {

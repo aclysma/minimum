@@ -5,9 +5,8 @@ use framework::resources::TimeState;
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
-use named_type::NamedType;
 
-#[derive(NamedType)]
+
 pub struct HandleFreeAtTimeComponents;
 pub type HandleFreeAtTimeComponentsTask = minimum::ResourceTask<HandleFreeAtTimeComponents>;
 impl ResourceTaskImpl for HandleFreeAtTimeComponents {

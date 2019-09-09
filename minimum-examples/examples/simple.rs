@@ -9,11 +9,6 @@ use minimum::DataRequirement;
 use minimum::TaskConfig;
 use minimum::ResourceMap;
 
-use named_type::NamedType;
-
-#[macro_use]
-extern crate named_type_derive;
-
 mod shared;
 
 use shared::components::{PositionComponent, SpeedMultiplierComponent, VelocityComponent};
@@ -24,7 +19,6 @@ use shared::Vec2;
 use std::ptr::drop_in_place;
 use minimum::world::UpdateLoopSingleThreaded;
 
-#[derive(NamedType)]
 struct UpdatePositions;
 pub type UpdatePositionsTask = ResourceTask<UpdatePositions>;
 impl ResourceTaskImpl for UpdatePositions {
@@ -90,7 +84,6 @@ impl ResourceTaskImpl for UpdatePositions {
     }
 }
 
-#[derive(NamedType)]
 struct UpdateEntitySet;
 pub type UpdateEntitySetTask = WriteAllTask<UpdateEntitySet>;
 impl WriteAllTaskImpl for UpdateEntitySet {
@@ -104,7 +97,6 @@ impl WriteAllTaskImpl for UpdateEntitySet {
     }
 }
 
-#[derive(NamedType)]
 struct IncrementUpdateCount;
 pub type IncrementUpdateCountTask = ResourceTask<IncrementUpdateCount>;
 impl ResourceTaskImpl for IncrementUpdateCount {

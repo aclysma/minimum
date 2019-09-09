@@ -3,9 +3,7 @@ use minimum::{ResourceTaskImpl, TaskConfig};
 use rendy::wsi::winit;
 
 use crate::resources::ImguiManager;
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct ImguiBeginFrame;
 pub type ImguiBeginFrameTask = minimum::ResourceTask<ImguiBeginFrame>;
 impl ResourceTaskImpl for ImguiBeginFrame {

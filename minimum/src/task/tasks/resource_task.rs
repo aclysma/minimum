@@ -1,6 +1,3 @@
-
-use named_type::NamedType;
-
 use super::TaskConfig;
 use super::ResourceMap;
 use super::TaskFactory;
@@ -15,7 +12,7 @@ use std::marker::PhantomData;
 
 /// A trait that can be implemented and wrapped inside a ResourceTask<T> for typical tasks that fetch
 /// a few resources
-pub trait ResourceTaskImpl: NamedType + 'static + Send {
+pub trait ResourceTaskImpl: 'static + Send {
     type RequiredResources : for<'a> DataRequirement<'a>
     + RequiresResources<ResourceId>
     + Send

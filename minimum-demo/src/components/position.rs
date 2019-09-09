@@ -5,10 +5,9 @@ use framework::inspect::common_types::*;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::VecComponentStorage;
-use named_type::NamedType;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Inspect)]
+#[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct PositionComponent {
     #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_position_updated")]
     position: glm::Vec2,

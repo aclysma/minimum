@@ -29,9 +29,7 @@ mod tests {
     use component::Component;
     use component::ComponentStorage;
     use component::VecComponentStorage;
-    use named_type::NamedType;
 
-    #[derive(NamedType)]
     struct TestComponent {
         _value: i32,
     }

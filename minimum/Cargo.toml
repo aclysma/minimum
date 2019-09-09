@@ -23,8 +23,6 @@ nightly = []
 hashbrown = "0.5"
 mopa = "0.2"
 log = "0.4"
-named_type = "0.2"
-named_type_derive = "0.2"
 derivative = "1.0"
 #minimum-derive = { path = "../minimum-derive" }
 

@@ -12,9 +12,7 @@ use crate::resources::{ImguiManager, InputManager};
 
 #[cfg(feature = "editor")]
 use framework::components::editor::EditorSelectedComponent;
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct RenderImguiEntityList;
 pub type RenderImguiEntityListTask = minimum::ResourceTask<RenderImguiEntityList>;
 impl ResourceTaskImpl for RenderImguiEntityList {

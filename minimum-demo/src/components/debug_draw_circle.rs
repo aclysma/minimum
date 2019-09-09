@@ -5,12 +5,11 @@ use framework::inspect::common_types::*;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
-use named_type::NamedType;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 
-#[derive(Debug, Clone, NamedType, Serialize, Deserialize, Inspect)]
+#[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawCircleComponent {
     #[inspect_slider(min_value = 0.1, max_value = 100.0)]
     radius: f32,

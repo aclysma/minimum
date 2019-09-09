@@ -10,12 +10,11 @@ use minimum::ResourceMap;
 use nphysics2d::object::ColliderHandle;
 
 use crate::FrameworkComponentPrototype;
-use named_type::NamedType;
 use ncollide2d::shape::ShapeHandle;
 use ncollide2d::world::{CollisionGroups, GeometricQueryType};
 use std::collections::VecDeque;
 
-#[derive(Clone, NamedType)]
+#[derive(Clone)]
 pub struct EditorShapeComponent {
     shape_handle: ShapeHandle<f32>,
     collider_handle: ColliderHandle,
@@ -71,7 +70,7 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
 //
 // Creates a component
 //
-#[derive(Clone, NamedType)]
+#[derive(Clone)]
 pub struct EditorShapeComponentPrototype {
     shape_handle: ncollide2d::shape::ShapeHandle<f32>,
 }

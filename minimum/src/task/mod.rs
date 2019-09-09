@@ -1,7 +1,6 @@
 //
 // External Requirements
 //
-use named_type::NamedType;
 use crate::resource::DataRequirement;
 use crate::resource::ResourceId;
 use crate::ResourceMap;

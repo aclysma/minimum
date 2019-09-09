@@ -10,11 +10,9 @@ use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState};
 use framework::components::editor::EditorSelectedComponent;
 use ncollide2d::world::CollisionGroups;
 
-use named_type::NamedType;
 use rendy::wsi::winit;
 use winit::event::VirtualKeyCode;
 
-#[derive(NamedType)]
 pub struct EditorHandleInput;
 pub type EditorHandleInputTask = minimum::ResourceTask<EditorHandleInput>;
 impl ResourceTaskImpl for EditorHandleInput {

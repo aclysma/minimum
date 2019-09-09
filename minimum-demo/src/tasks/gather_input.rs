@@ -7,9 +7,7 @@ use framework::resources::FrameworkActionQueue;
 
 use crate::resources::ImguiManager;
 use crate::resources::{InputManager, WindowInterface};
-use named_type::NamedType;
 
-#[derive(NamedType)]
 pub struct GatherInput;
 pub type GatherInputTask = minimum::ResourceTask<GatherInput>;
 impl ResourceTaskImpl for GatherInput {

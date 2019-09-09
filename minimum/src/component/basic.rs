@@ -7,7 +7,6 @@ use crate::ComponentPrototype;
 use crate::EntityHandle;
 use crate::EntitySet;
 use crate::ResourceMap;
-use named_type::NamedType;
 
 use crate::component::component_factory::ComponentCreateQueueFlushListener;
 use std::collections::VecDeque;
@@ -17,7 +16,7 @@ use std::collections::VecDeque;
 /// This is a basic implementation that may be used, but downstream code would likely want to
 /// duplicate or wrap this so that other cross-cutting functionality (i.e. serialization, editing)
 /// can be implemented
-#[derive(Clone, NamedType)]
+#[derive(Clone)]
 pub struct BasicComponentPrototype<T: Component + Clone> {
     /// This data will be cloned and placed on the entity
     data: T,

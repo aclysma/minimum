@@ -4,9 +4,6 @@ use minimum::TaskConfig;
 use minimum::ResourceMap;
 use crate::resources;
 
-use named_type::NamedType;
-
-#[derive(NamedType)]
 pub struct RenderImguiInspector;
 pub type RenderImguiInspectorTask = minimum::WriteAllTask<RenderImguiInspector>;
 impl WriteAllTaskImpl for RenderImguiInspector {
