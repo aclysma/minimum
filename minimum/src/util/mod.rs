@@ -8,4 +8,3 @@ pub use trust_cell::Ref as TrustCellRef;
 pub use trust_cell::RefMut as TrustCellRefMut;
 pub use trust_cell::TrustCell;
 
-pub mod inspect;

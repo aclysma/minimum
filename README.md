@@ -1,37 +1,63 @@
 # minimum
 
-A collection of utilites for games - a relatively thin framework that helps knit 3rd party libraries with your game logic.
+A game development framework that provides basic tooling and a content authoring workflow. Minimum has easy-to-use 
+extension points for integrating custom and 3rd-party libraries with your game logic.
 
-This library is aimed at people who want to start with something thin and bring their own tech to put on top of it.
+This library is best suited for use by those who want to start with something thin and bring their own tech to put on
+top of it. It's your very own build-a-game-engine toolkit.
 
+### Features
+
+Editing functionality is currently limited, but the core loop is implemented:
+ * Entities with components can be loaded from file and saved to file
+ * Entities can be selected and their components can be edited (at design-time and run-time)
+ * Entities and components can be added or removed
+ * Can start/stop/reset the simulation
+
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/lCB2XpXdlFw/0.jpg)](http://www.youtube.com/watch?v=lCB2XpXdlFw "Video of Editor in Use")
+
+### Alternatives
  * For a mature ecs, I suggest looking at `shred` or `specs`. (In fact some of this library is quite similar to shred!)
- * For a more complete, turnkey solution in rust, I would look at `amethyst`, `coffee`, or `ggez`.
+ * For more batteries-included solutions in rust, I would look at `amethyst`, `coffee`, or `ggez`.
+     * I expect a typical usecase would be to combine this framework with another "engine" that is focused more on
+       functionality that tooling/workflow.
 
-## Examples
+### Directory map
 
-A collection of small samples is located in [/minimum-examples](minimum-examples).
+ * [/minimum](minimum) - A lightweight ECS and update loop system
+ * [/minimum-framework](minimum-framework) - More opinionated framework built on top of the ECS to provide a good
+   tooling and workflow baseline
+ * [/minimum-demo](minimum-demo) - An example project that demonstrates integrating minimum with several popular
+   libraries from within the rust ecosystem  
+ * [/minimum-examples](minimum-examples) - A small collection of sample code to demonstrate usage
 
-## Demo
+### Running the Demo
 
-Additionally, [/minimum-demo](minimum-demo) shows a more realistic integration of these utilities with other popular 
+[/minimum-demo](minimum-demo) shows a more realistic integration of these utilities with other popular 
 libraries like `winit`, `gfx-hal`, `rendy`, `nphysics`, and `imgui`. It would be a reasonable template for something
 small, and it shows how the pieces provided could be fit together for something bigger.
 
-**NOTE: Demo is currently using winit 0.20, so some patches are required to build it.**
+Over time, the functionality that isn't coupled to these libraries will move to [/minimum-framework](minimum-framework)
 
-```
-rendy = { git = 'https://github.com/aclysma/rendy.git', branch="winit-0.20.0" }
-gfx-hal = { git = 'https://github.com/aclysma/gfx.git', branch="winit-0.20.0" }
-gfx-backend-metal = { git = 'https://github.com/aclysma/gfx.git', branch="winit-0.20.0" }
-imgui = { git = 'https://github.com/aclysma/imgui-rs.git' }
-imgui-winit-support = { git = 'https://github.com/aclysma/imgui-rs.git' }
-```
+To run the demo:
+ * Working directory must be `/minimum-demo`
+ * The `editor` feature (will likely rename to tools later...) enables an editor. It is ON by default since this is a demo!
+ * Use `metal`, `dx12`, or `vulkan` feature when using cargo commands
+     * Example: `cargo run --features="metal editor"`
 
-## Contribution
+### Roadmap
+
+In no particular order:
+ * Core editing functionality: moving, scaling, rotating, copy/paste, undo/redo, parenting, etc.
+ * Extract editing functionality out of the demo to a new sub-crate
+ * Better portability, and ensure that anything optional is fully compiled out for non-tools builds
+ * Continue building the demo to do more interesting physics, rendering, and gameplay logic
+
+### Contribution
 
 All contributions are assumed to be dual-licensed under MIT/Apache-2.
 
-## License
+### License
 
 Distributed under the terms of both the MIT license and the Apache License (Version 2.0).
 
