@@ -1,3 +1,5 @@
+use std::prelude::v1::*;
+
 use super::Generation;
 use super::GenerationIndex;
 use super::SlabIndexT;

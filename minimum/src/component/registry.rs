@@ -1,3 +1,5 @@
+use std::prelude::v1::*;
+
 use super::Component;
 use super::ComponentStorage;
 use std::marker::PhantomData;

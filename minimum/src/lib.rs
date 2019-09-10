@@ -1,5 +1,10 @@
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
 // Used for getting name of type, but only available in nightly
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
+
+extern crate no_std_compat as std;
 
 #[allow(unused_imports)]
 #[macro_use]
@@ -66,3 +71,4 @@ pub use task::TaskFactory;
 pub use task::Phase;
 
 pub use util::TrustCell;
+

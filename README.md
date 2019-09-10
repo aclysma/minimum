@@ -6,14 +6,16 @@ extension points for integrating custom and 3rd-party libraries with your game l
 This library is best suited for use by those who want to start with something thin and bring their own tech to put on
 top of it. It's your very own build-a-game-engine toolkit.
 
-[![Build Status](https://travis-ci.org/aclysma/imgui-minimum.svg?branch=master)](https://travis-ci.org/aclysma/minimum)
+[![Build Status](https://travis-ci.org/aclysma/minimum.svg?branch=master)](https://travis-ci.org/aclysma/minimum)
 
 ## Platform Support
- * The base/ECS is very portable. It's pure rust and has few upstream dependencies.
+ * The base/ECS is very portable. It's pure rust and has few upstream dependencies. `no_std` (for this 
+   portion of the library only) builds but is not yet tested. To use `no_std`, disable default features and 
+   don't use feature `std` 
  * The demo builds for Windows/MacOS/Linux.
 
 The no-editor build of this library could realistically support embedded (`no_std`), mobile, PC, and web platforms 
-because this avoids coupling to a renderer/windowing system. For the time being, the focus is on PC.  
+because this avoids coupling to a renderer/windowing system. For the time being, the focus is on PC.
 
 ## Features
 

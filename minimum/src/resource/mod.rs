@@ -7,6 +7,8 @@
 //! Lots of inspiration taken from `shred` for how to create a type system
 //! to express read/write dependencies
 
+use std::prelude::v1::*;
+
 use hashbrown::HashMap;
 use mopa::Any;
 

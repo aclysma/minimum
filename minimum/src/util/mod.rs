@@ -1,6 +1,8 @@
 //! A collection of utilities used within minimum
 
+#[cfg(feature = "std")]
 mod scope_timer;
+#[cfg(feature = "std")]
 pub use scope_timer::ScopeTimer;
 
 mod trust_cell;

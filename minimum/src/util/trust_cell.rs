@@ -10,9 +10,13 @@
 
 //! Helper module for some internals, most users don't need to interact with it.
 
+use std::prelude::v1::*;
+
+#[cfg(feature = "std")]
+use std::error::Error;
+
 use std::{
     cell::UnsafeCell,
-    error::Error,
     fmt::{Display, Error as FormatError, Formatter},
     ops::{Deref, DerefMut},
     sync::atomic::{AtomicUsize, Ordering},
@@ -52,6 +56,7 @@ impl Display for InvalidBorrow {
     }
 }
 
+#[cfg(feature = "std")]
 impl Error for InvalidBorrow {
     fn description(&self) -> &str {
         "This error is returned when you try to borrow immutably when it's already \

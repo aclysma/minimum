@@ -26,12 +26,24 @@ matrix:
     - name: "OSX Base"
       rust: nightly
       os: osx
-      env: PACKAGE="minimum" FEATURES=""
+      env: PACKAGE="minimum" FEATURES="std"
     - name: "Linux Base"
       rust: nightly
       os: linux
-      env: PACKAGE="minimum" FEATURES=""
+      env: PACKAGE="minimum" FEATURES="std"
     - name: "Windows Base"
+      rust: nightly
+      os: window
+      env: PACKAGE="minimum" FEATURES="std"
+    - name: "OSX Base no_std"
+      rust: nightly
+      os: osx
+      env: PACKAGE="minimum" FEATURES=""
+    - name: "Linux Base no_std"
+      rust: nightly
+      os: linux
+      env: PACKAGE="minimum" FEATURES=""
+    - name: "Windows Base no_std"
       rust: nightly
       os: window
       env: PACKAGE="minimum" FEATURES=""

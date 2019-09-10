@@ -1,3 +1,5 @@
+use std::prelude::v1::*;
+
 use super::GenSlab;
 use super::GenSlabKey;
 use super::SlabIndexT;

@@ -3,6 +3,8 @@
 //! For the time being, minimum will only be aware of `EntityFactory.` You can write your own factories
 //! but minimum would not be aware of them, so you'd need to be responsible for triggering the creation
 //! logic yourself.
+use std::prelude::v1::*;
+
 use crate::ComponentCreator;
 use crate::EntityRef;
 use crate::EntitySet;

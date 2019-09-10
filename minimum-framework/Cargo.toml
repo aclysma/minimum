@@ -18,7 +18,7 @@ nphysics2d      = "0.11"
 ncollide2d      = "0.19"
 rand            = "0.7.0"
 
-minimum = { path = "../minimum" }
+minimum = { path = "../minimum", features = ["std"] }
 
 serde = "1.0"
 serde_derive = "1.0"

@@ -1,3 +1,5 @@
+use std::prelude::v1::*;
+
 //use super::ResourceId;
 //use super::ResourceIdTrait;
 use std::marker::PhantomData;

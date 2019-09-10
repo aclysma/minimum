@@ -16,9 +16,12 @@ include = [
 ]
 
 [features]
+default = ["std"]
+std = ["no-std-compat/std"]
 
 [dependencies]
 hashbrown = "0.5"
 mopa = "0.2"
 log = "0.4"
 derivative = "1.0"
+no-std-compat = { version = "0.2", features = [ "alloc", "compat_macros" ] }
