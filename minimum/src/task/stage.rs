@@ -3,13 +3,14 @@ use std::prelude::v1::*;
 use super::ResourceId;
 use super::Task;
 use super::TaskConfig;
+use super::TaskWithFilter;
 
 pub struct TaskStage {
     combined_reads: Vec<ResourceId>, //TODO: Consider changing to a set
     combined_writes: Vec<ResourceId>, //TODO: Consider changing to a set
     any_reads_all: bool,
     any_writes_all: bool,
-    tasks: Vec<Box<dyn Task>>
+    tasks: Vec<TaskWithFilter>
 }
 
 impl TaskStage {
@@ -87,14 +88,16 @@ impl TaskStage {
             }
         }
 
-        self.tasks.push(new_task.task.unwrap());
+        let task_with_filter = TaskWithFilter::new(new_task);
+
+        self.tasks.push(task_with_filter);
     }
 
     pub fn is_empty(&self) -> bool {
         self.tasks.is_empty()
     }
 
-    pub fn tasks(&self) -> &Vec<Box<dyn Task>> {
+    pub fn tasks(&self) -> &Vec<TaskWithFilter> {
         &self.tasks
     }
 }

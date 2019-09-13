@@ -5,6 +5,7 @@ use super::Task;
 use super::RegisteredType;
 use super::TaskFactory;
 use super::Phase;
+use super::TaskContextFlagsFilter;
 
 /// Used internally to list all of a task's requirements
 /// Passed into a task's "configure" function to accumulate their settings
@@ -18,7 +19,7 @@ pub struct TaskConfig {
     pub(super) require_run_before: Vec<RegisteredType>,
     pub(super) require_run_after: Vec<RegisteredType>,
     pub(super) require_run_during: Vec<RegisteredType>,
-    pub(super) required_flags_to_run: usize,
+    pub(super) context_flags_filter: TaskContextFlagsFilter,
     #[derivative(Debug="ignore")]
     pub(super) task: Option<Box<dyn Task>>
 }
@@ -33,7 +34,7 @@ impl TaskConfig {
             require_run_before: vec![],
             require_run_after: vec![],
             require_run_during: vec![],
-            required_flags_to_run: 0,
+            context_flags_filter: TaskContextFlagsFilter::default(),
             task
         }
     }
@@ -88,7 +89,11 @@ impl TaskConfig {
         self.require_run_during.push(RegisteredType::of::<T>());
     }
 
-    pub fn add_required_flag(&mut self, required_flags: usize) {
-        self.required_flags_to_run |= required_flags
+    pub fn run_only_if(&mut self, required_flags: usize) {
+        self.context_flags_filter.run_only_if(required_flags);
+    }
+
+    pub fn skip_if(&mut self, required_flags: usize) {
+        self.context_flags_filter.skip_if(required_flags);
     }
 }

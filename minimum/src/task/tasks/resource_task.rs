@@ -8,6 +8,7 @@ use super::TrustCell;
 use super::ResourceId;
 use super::DataRequirement;
 use super::RequiresResources;
+use super::TaskContextFlags;
 
 use std::marker::PhantomData;
 
@@ -22,7 +23,7 @@ pub trait ResourceTaskImpl: 'static + Send {
     fn configure(config: &mut TaskConfig);
 
     fn run(
-        //_task_context: &TaskContext,
+        context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     );
 }
@@ -60,9 +61,9 @@ impl<T : ResourceTaskImpl> TaskFactory for ResourceTask<T> {
 }
 
 impl<T : ResourceTaskImpl + Send> Task for ResourceTask<T> {
-    fn run(&self, resource_map: &TrustCell<ResourceMap>) {
+    fn run(&self, context_flags: &TaskContextFlags, resource_map: &TrustCell<ResourceMap>) {
         let resource_map_borrowed = resource_map.borrow();
         let fetched = T::RequiredResources::fetch(&*resource_map_borrowed);
-        T::run(fetched);
+        T::run(context_flags, fetched);
     }
 }

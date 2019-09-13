@@ -5,7 +5,7 @@ use framework::resources::editor::EditorCollisionWorld;
 
 use crate::components;
 use minimum::component::ReadComponent;
-use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig};
+use minimum::{TaskContextFlags, ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig};
 
 pub struct EditorUpdateSelectionShapesWithPosition;
 pub type EditorUpdateSelectionShapesWithPositionTask = minimum::ResourceTask<EditorUpdateSelectionShapesWithPosition>;
@@ -20,13 +20,11 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhasePreRender>();
         config.this_provides_data_to::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
+        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
     }
 
-    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM as usize;
-
     fn run(
-        //&mut self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (entity_set, mut collision_world, editor_shape_components, position_components) = data;

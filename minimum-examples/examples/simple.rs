@@ -8,6 +8,7 @@ use minimum::ResourceTaskImpl;
 use minimum::DataRequirement;
 use minimum::TaskConfig;
 use minimum::ResourceMap;
+use minimum::TaskContextFlags;
 
 mod shared;
 
@@ -33,7 +34,10 @@ impl ResourceTaskImpl for UpdatePositions {
         task_config.this_runs_during_phase::<minimum::task::PhasePhysics>();
     }
 
-    fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        context_flags: &TaskContextFlags,
+        data: <Self::RequiredResources as DataRequirement>::Borrow
+    ) {
         let (
             time_state,
             game_entities,
@@ -90,7 +94,7 @@ impl WriteAllTaskImpl for UpdateEntitySet {
         task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
     }
 
-    fn run(resource_map: &mut ResourceMap) {
+    fn run(context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
         let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
         entity_set.flush_free(&resource_map);
     }
@@ -108,7 +112,7 @@ impl ResourceTaskImpl for IncrementUpdateCount {
         task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
     }
 
-    fn run(data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(context_flags: &TaskContextFlags, data: <Self::RequiredResources as DataRequirement>::Borrow) {
         let (mut update_count, mut dispatch_control) = data;
 
         println!("update {}", update_count.count);
@@ -171,6 +175,6 @@ fn main() {
     // Create a bunch of objects
     create_objects(&world.resource_map);
 
-    let update_loop = UpdateLoopSingleThreaded::new(world);
+    let update_loop = UpdateLoopSingleThreaded::new(world, 0);
     update_loop.run();
 }

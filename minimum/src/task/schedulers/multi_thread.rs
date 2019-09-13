@@ -5,6 +5,7 @@ use super::TaskDependencyList;
 use super::TaskStage;
 use super::TrustCell;
 use super::ResourceMap;
+use super::TaskContextFlags;
 
 pub struct TaskScheduleBuilderMultiThread {
     execution_order: Vec<TaskConfig>
@@ -53,12 +54,12 @@ impl TaskScheduleMultiThread {
         }
     }
 
-    pub fn step(&self, resource_map: &TrustCell<ResourceMap>) {
+    pub fn step(&self, context_flags: &TaskContextFlags, resource_map: &TrustCell<ResourceMap>) {
         for stage in &self.stages {
             println!("----------------------");
             //TODO: Use rayon or something to make this actually MT
             for task in stage.tasks() {
-                task.run(resource_map);
+                task.run_if_filter_passes(context_flags, resource_map);
             }
         }
     }

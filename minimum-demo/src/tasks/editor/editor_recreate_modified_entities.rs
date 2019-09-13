@@ -4,6 +4,7 @@ use minimum::task::WriteAllTaskImpl;
 
 use minimum::task::TaskConfig;
 use minimum::ResourceMap;
+use minimum::TaskContextFlags;
 
 use framework::components::editor::EditorSelectedComponent;
 
@@ -15,7 +16,7 @@ impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
         config.this_uses_data_from::<framework::tasks::FrameworkUpdateActionQueueTask>();
     }
 
-    fn run(resource_map: &mut ResourceMap) {
+    fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
         use minimum::component::Component;
         use minimum::component::ComponentStorage;
 

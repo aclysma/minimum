@@ -39,6 +39,11 @@ pub use tasks::write_all_task::WriteAllTaskImpl;
 pub use tasks::resource_task::ResourceTask;
 pub use tasks::resource_task::ResourceTaskImpl;
 
+mod context_flags;
+pub use context_flags::TaskContextFlags;
+pub use context_flags::TaskContextFlagsFilter;
+pub use context_flags::TaskWithFilter;
+
 mod schedulers;
 pub use schedulers::TaskScheduleBuilderSingleThread;
 pub use schedulers::TaskScheduleSingleThread;

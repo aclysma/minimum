@@ -268,7 +268,7 @@ fn dispatcher_thread(
 
     world.resource_map.fetch_mut::<FrameworkActionQueue>().enqueue_load_level(std::path::PathBuf::from("test_save"));
 
-    let update_loop = UpdateLoopSingleThreaded::new(world);
+    let update_loop = UpdateLoopSingleThreaded::new(world, context_flags);
     update_loop.run();
 
     let mut resource_map = update_loop.into_resource_map();

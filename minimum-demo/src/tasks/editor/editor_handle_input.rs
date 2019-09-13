@@ -1,6 +1,6 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
-use minimum::{ResourceTaskImpl, WriteComponent, TaskConfig};
+use minimum::{ResourceTaskImpl, WriteComponent, TaskConfig, TaskContextFlags};
 
 #[cfg(feature = "editor")]
 use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
@@ -25,16 +25,15 @@ impl ResourceTaskImpl for EditorHandleInput {
         Write<DebugDraw>,
         Write<EditorUiState>
     );
-    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_SYSTEM;
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhasePreRender>();
         config.this_uses_data_from::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
+        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(
-        //&mut self,
-        //task_context: &TaskContext,
+        context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (
@@ -63,13 +62,12 @@ impl ResourceTaskImpl for EditorHandleInput {
             editor_ui_state.active_editor_tool = EditorTool::Scale;
         }
 
-        //TODO: Replace this code
-//        if task_context.context_flags()
-//            & (framework::context_flags::PLAYMODE_PAUSED | framework::context_flags::PLAYMODE_PLAYING)
-//            != 0
-//        {
-//            return;
-//        }
+        if context_flags.flags()
+            & (framework::context_flags::PLAYMODE_PAUSED | framework::context_flags::PLAYMODE_PLAYING)
+            != 0
+        {
+            return;
+        }
 
         // Escape cancels the selection
         if input_manager.is_key_just_down(VirtualKeyCode::Escape) {

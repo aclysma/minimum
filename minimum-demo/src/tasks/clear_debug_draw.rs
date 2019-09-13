@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Write};
-use minimum::{ResourceTask, ResourceTaskImpl, TaskConfig};
+use minimum::{ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::DebugDraw;
 
@@ -10,12 +10,11 @@ impl ResourceTaskImpl for ClearDebugDraw {
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
+        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
     }
-    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
 
     fn run(
-        //&self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let mut debug_draw = data;

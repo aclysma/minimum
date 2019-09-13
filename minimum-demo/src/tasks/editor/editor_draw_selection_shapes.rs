@@ -1,6 +1,6 @@
 use minimum::component::ComponentStorage;
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig};
+use minimum::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::DebugDraw;
 #[cfg(feature = "editor")]
@@ -17,17 +17,16 @@ impl ResourceTaskImpl for EditorDrawSelectionShapes {
         ReadComponent<framework::components::editor::EditorShapeComponent>,
         ReadComponent<framework::components::editor::EditorSelectedComponent>,
     );
-    //const REQUIRED_FLAGS: usize =
-    //    framework::context_flags::AUTHORITY_CLIENT as usize | framework::context_flags::PLAYMODE_SYSTEM;
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhasePreRender>();
         config.this_uses_data_from::<crate::tasks::editor::EditorHandleInputTask>();
+        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
+        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(
-        //&mut self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (mut debug_draw, editor_collision_world, editor_shape_components, selected_components) =

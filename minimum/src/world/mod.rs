@@ -8,7 +8,7 @@ use crate::component::{
 
 use crate::entity::{EntityFactory, EntitySet, PendingDeleteComponent};
 use crate::{TaskDependencyListBuilder, TaskDependencyList, TrustCell, TaskScheduleSingleThread, TaskScheduleBuilderSingleThread, DispatchControl};
-use crate::task::TaskFactory;
+use crate::task::{TaskFactory, TaskContextFlags};
 use crate::task::Phase;
 
 /// A builder for setting up a `World`
@@ -163,9 +163,9 @@ impl WorldBuilder {
         }
     }
 
-    pub fn build_update_loop_single_threaded(self) -> UpdateLoopSingleThreaded {
+    pub fn build_update_loop_single_threaded(self, initial_context_flags: usize) -> UpdateLoopSingleThreaded {
         let world = self.build();
-        UpdateLoopSingleThreaded::new(world)
+        UpdateLoopSingleThreaded::new(world, initial_context_flags)
     }
 }
 
@@ -182,7 +182,9 @@ pub struct UpdateLoopSingleThreaded {
 }
 
 impl UpdateLoopSingleThreaded {
-    pub fn new(world: World) -> Self {
+    pub fn new(world: World, initial_context_flags: usize) -> Self {
+        *world.resource_map.fetch_mut::<DispatchControl>().next_frame_context_flags_mut() = initial_context_flags;
+
         UpdateLoopSingleThreaded {
             resource_map: TrustCell::new(world.resource_map),
             schedule: TaskScheduleBuilderSingleThread::new(world.task_list).build()
@@ -190,12 +192,14 @@ impl UpdateLoopSingleThreaded {
     }
 
     pub fn step(&self) {
-        self.schedule.step(&self.resource_map);
+        let context_flags = self.resource_map.borrow().fetch::<DispatchControl>().next_frame_context_flags();
+        let context = TaskContextFlags::new(context_flags);
+        self.schedule.step(&context, &self.resource_map);
     }
 
     pub fn run(&self) {
         loop {
-            self.schedule.step(&self.resource_map);
+            self.step();
 
             if self.resource_map.borrow().fetch::<DispatchControl>().should_end_game_loop() {
                 break;

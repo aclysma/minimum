@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig};
+use minimum::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::components;
 use crate::resources::DebugDraw;
@@ -14,15 +14,14 @@ impl ResourceTaskImpl for DebugDrawComponents {
         ReadComponent<components::DebugDrawRectComponent>,
         ReadComponent<components::PositionComponent>,
     );
-    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize;
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
     }
 
     fn run(
-        //&mut self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (mut debug_draw, entity_set, circle_components, rect_components, position_components) =

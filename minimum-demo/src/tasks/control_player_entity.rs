@@ -1,7 +1,7 @@
 use rendy::wsi::winit;
 
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ResourceTaskImpl, TaskConfig};
+use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use framework::resources::TimeState;
 use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState};
@@ -25,15 +25,15 @@ impl ResourceTaskImpl for ControlPlayerEntity {
         ReadComponent<components::PhysicsBodyComponent>,
         Write<PhysicsManager>,
     );
-    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING;
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhasePrePhysicsGameplay>();
+        config.run_only_if(framework::context_flags::PLAYMODE_PLAYING);
     }
 
     fn run(
         //&mut self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (

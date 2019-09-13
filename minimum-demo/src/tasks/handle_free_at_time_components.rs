@@ -1,5 +1,5 @@
 use minimum::resource::{DataRequirement, Read};
-use minimum::{ResourceTaskImpl, TaskConfig};
+use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use framework::resources::TimeState;
 
@@ -16,15 +16,14 @@ impl ResourceTaskImpl for HandleFreeAtTimeComponents {
         Read<TimeState>,
         ReadComponent<components::FreeAtTimeComponent>,
     );
-    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
+        config.run_only_if(framework::context_flags::PLAYMODE_PLAYING);
     }
 
     fn run(
-        //&mut self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (entity_set, mut write_components, time_state, free_at_time_components) = data;

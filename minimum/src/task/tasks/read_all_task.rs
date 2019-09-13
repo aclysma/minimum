@@ -5,6 +5,7 @@ use super::ResourceMap;
 use super::TaskFactory;
 use super::Task;
 use super::TrustCell;
+use super::TaskContextFlags;
 
 use std::marker::PhantomData;
 
@@ -17,7 +18,7 @@ use std::marker::PhantomData;
 /// map.
 pub trait ReadAllTaskImpl : 'static + Send {
     fn configure(config: &mut TaskConfig);
-    fn run(resource_map: &ResourceMap);
+    fn run(context_flags: &TaskContextFlags, resource_map: &ResourceMap);
 }
 
 /// Helper struct that configures to read the whole resource map
@@ -47,9 +48,9 @@ impl<T : ReadAllTaskImpl> TaskFactory for ReadAllTask<T> {
 }
 
 impl<T : ReadAllTaskImpl + Send> Task for ReadAllTask<T> {
-    fn run(&self, resource_map: &TrustCell<ResourceMap>) {
+    fn run(&self, context_flags: &TaskContextFlags, resource_map: &TrustCell<ResourceMap>) {
         let resource_map_borrowed = resource_map.borrow();
-        T::run(&*resource_map_borrowed);
+        T::run(context_flags, &*resource_map_borrowed);
     }
 }
 

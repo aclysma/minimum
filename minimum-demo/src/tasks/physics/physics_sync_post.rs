@@ -4,7 +4,7 @@ use crate::resources::PhysicsManager;
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
-use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, ResourceTask};
+use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, ResourceTask, TaskContextFlags};
 
 pub struct PhysicsSyncPost;
 pub type PhysicsSyncPostTask = ResourceTask<PhysicsSyncPost>;
@@ -16,16 +16,15 @@ impl ResourceTaskImpl for PhysicsSyncPost {
         WriteComponent<components::PositionComponent>,
         WriteComponent<components::VelocityComponent>,
     );
-    //const REQUIRED_FLAGS: usize = framework::context_flags::PLAYMODE_PLAYING as usize;
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhasePhysics>();
         config.this_uses_data_from::<crate::tasks::UpdatePhysicsTask>();
+        config.run_only_if(framework::context_flags::PLAYMODE_PLAYING);
     }
 
     fn run(
-        //&mut self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (

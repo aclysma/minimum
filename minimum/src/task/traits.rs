@@ -3,7 +3,7 @@ use std::prelude::v1::*;
 use super::TaskConfig;
 use super::TrustCell;
 use super::ResourceMap;
-
+use super::TaskContextFlags;
 
 //
 // Top-level traits
@@ -28,6 +28,6 @@ pub trait Phase : 'static {
 /// Minimum interface required to call functions on a task
 pub trait Task : 'static + Send {
     /// Called when the task should be run
-    fn run(&self, resource_map: &TrustCell<ResourceMap>);
+    fn run(&self, context_flags: &TaskContextFlags, resource_map: &TrustCell<ResourceMap>);
 }
 

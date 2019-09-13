@@ -1,7 +1,7 @@
 use rendy::wsi::winit;
 
 use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ResourceTaskImpl, TaskConfig};
+use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use framework::resources::FrameworkActionQueue;
 
@@ -29,16 +29,14 @@ impl ResourceTaskImpl for GatherInput {
         Write<FrameworkActionQueue>,
     );
 
-    //const REQUIRED_FLAGS: usize = framework::context_flags::AUTHORITY_CLIENT as usize
-    //    | framework::context_flags::PLAYMODE_SYSTEM as usize;
-
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhaseGatherInput>();
+        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
+        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(
-        //&mut self,
-        //_task_context: &TaskContext,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         use winit::event::Event;

@@ -2,6 +2,7 @@
 use minimum::task::WriteAllTaskImpl;
 use minimum::TaskConfig;
 use minimum::ResourceMap;
+use minimum::TaskContextFlags;
 use crate::resources;
 
 pub struct RenderImguiInspector;
@@ -11,7 +12,7 @@ impl WriteAllTaskImpl for RenderImguiInspector {
         config.this_runs_during_phase::<minimum::task::PhasePreRender>();
     }
 
-    fn run(resource_map: &mut ResourceMap) {
+    fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
         let mut imgui_manager = resource_map.fetch_mut::<resources::ImguiManager>();
 
         //TODO: draw_inspector could potentially take a <T: ImguiManager> param

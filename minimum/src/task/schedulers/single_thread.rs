@@ -2,9 +2,10 @@ use std::prelude::v1::*;
 
 use super::TaskConfig;
 use super::TaskDependencyList;
-use super::Task;
 use super::TrustCell;
 use super::ResourceMap;
+use super::TaskContextFlags;
+use super::TaskWithFilter;
 
 pub struct TaskScheduleBuilderSingleThread {
     execution_order: Vec<TaskConfig>
@@ -20,7 +21,7 @@ impl TaskScheduleBuilderSingleThread {
     pub fn build(self) -> TaskScheduleSingleThread {
         let mut tasks = vec![];
         for task_config in self.execution_order {
-            tasks.push(task_config.task.unwrap());
+            tasks.push(TaskWithFilter::new(task_config));
         }
 
         TaskScheduleSingleThread::new(tasks)
@@ -28,19 +29,19 @@ impl TaskScheduleBuilderSingleThread {
 }
 
 pub struct TaskScheduleSingleThread {
-    tasks: Vec<Box<dyn Task>>
+    tasks: Vec<TaskWithFilter>
 }
 
 impl TaskScheduleSingleThread {
-    pub fn new(tasks: Vec<Box<dyn Task>>) -> Self {
+    pub fn new(tasks: Vec<TaskWithFilter>) -> Self {
         TaskScheduleSingleThread {
             tasks
         }
     }
 
-    pub fn step(&self, resource_map: &TrustCell<ResourceMap>) {
+    pub fn step(&self, context_flags: &TaskContextFlags, resource_map: &TrustCell<ResourceMap>) {
         for task in &self.tasks {
-            task.run(resource_map);
+            task.run_if_filter_passes(context_flags, resource_map);
         }
     }
 }

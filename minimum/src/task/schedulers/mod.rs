@@ -15,3 +15,6 @@ use super::TaskStage;
 use super::TrustCell;
 use super::ResourceMap;
 use super::Task;
+use super::TaskContextFlags;
+use super::TaskContextFlagsFilter;
+use super::TaskWithFilter;

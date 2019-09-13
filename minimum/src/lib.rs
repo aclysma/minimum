@@ -68,6 +68,7 @@ pub use task::TaskScheduleSingleThread;
 pub use task::TaskScheduleBuilderMultiThread;
 pub use task::TaskScheduleMultiThread;
 pub use task::TaskFactory;
+pub use task::TaskContextFlags;
 pub use task::Phase;
 
 pub use util::TrustCell;
