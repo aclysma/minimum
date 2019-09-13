@@ -1,3 +1,5 @@
+use std::prelude::v1::*;
+
 use super::TaskConfig;
 use super::Task;
 use super::TrustCell;

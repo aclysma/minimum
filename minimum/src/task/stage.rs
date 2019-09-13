@@ -1,7 +1,6 @@
 use std::prelude::v1::*;
 
 use super::ResourceId;
-use super::Task;
 use super::TaskConfig;
 use super::TaskWithFilter;
 

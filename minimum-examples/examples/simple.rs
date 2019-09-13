@@ -35,7 +35,7 @@ impl ResourceTaskImpl for UpdatePositions {
     }
 
     fn run(
-        context_flags: &TaskContextFlags,
+        _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow
     ) {
         let (
@@ -94,7 +94,7 @@ impl WriteAllTaskImpl for UpdateEntitySet {
         task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
     }
 
-    fn run(context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
+    fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
         let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
         entity_set.flush_free(&resource_map);
     }
@@ -112,7 +112,7 @@ impl ResourceTaskImpl for IncrementUpdateCount {
         task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
     }
 
-    fn run(context_flags: &TaskContextFlags, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(_context_flags: &TaskContextFlags, data: <Self::RequiredResources as DataRequirement>::Borrow) {
         let (mut update_count, mut dispatch_control) = data;
 
         println!("update {}", update_count.count);
