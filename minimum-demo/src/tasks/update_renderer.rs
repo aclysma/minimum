@@ -1,10 +1,9 @@
-
-use rendy::wsi::winit;
-use minimum::task::ReadAllTaskImpl;
-use minimum::TaskConfig;
-use minimum::ResourceMap;
-use minimum::TaskContextFlags;
 use crate::renderer::Renderer;
+use minimum::task::ReadAllTaskImpl;
+use minimum::ResourceMap;
+use minimum::TaskConfig;
+use minimum::TaskContextFlags;
+use rendy::wsi::winit;
 
 pub struct UpdateRenderer;
 pub type UpdateRendererTask = minimum::ReadAllTask<UpdateRenderer>;

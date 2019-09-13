@@ -3,8 +3,8 @@ use rendy::wsi::winit;
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use framework::resources::TimeState;
 use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState};
+use framework::resources::TimeState;
 
 use crate::components;
 use minimum::component::ReadComponent;

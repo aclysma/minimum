@@ -5,11 +5,11 @@ use super::TaskConfig;
 use super::TaskWithFilter;
 
 pub struct TaskStage {
-    combined_reads: Vec<ResourceId>, //TODO: Consider changing to a set
+    combined_reads: Vec<ResourceId>,  //TODO: Consider changing to a set
     combined_writes: Vec<ResourceId>, //TODO: Consider changing to a set
     any_reads_all: bool,
     any_writes_all: bool,
-    tasks: Vec<TaskWithFilter>
+    tasks: Vec<TaskWithFilter>,
 }
 
 impl TaskStage {
@@ -19,37 +19,37 @@ impl TaskStage {
             combined_writes: vec![],
             any_reads_all: false,
             any_writes_all: false,
-            tasks: vec![]
+            tasks: vec![],
         }
     }
 
     pub fn can_add_task(&self, new_task: &TaskConfig) -> bool {
         // the new task writes all => we can only accept if there are no existing reads/writes
         if new_task.write_all {
-            return self.combined_reads.is_empty() &&
-                self.combined_writes.is_empty() &&
-                !self.any_reads_all &&
-                !self.any_writes_all;
+            return self.combined_reads.is_empty()
+                && self.combined_writes.is_empty()
+                && !self.any_reads_all
+                && !self.any_writes_all;
         }
 
         // existing task writes all => we can only accept if the new task has no writes/reads
         if self.any_writes_all {
-            return new_task.reads.is_empty() &&
-                new_task.writes.is_empty() &&
-                !new_task.read_all &&
-                !new_task.write_all;
+            return new_task.reads.is_empty()
+                && new_task.writes.is_empty()
+                && !new_task.read_all
+                && !new_task.write_all;
         }
 
         // new task reads all => we're find as long as we aren't writing anything
         if new_task.read_all {
             debug_assert!(!self.any_writes_all);
-            return self.combined_writes.is_empty()
+            return self.combined_writes.is_empty();
         }
 
         // any existing task reads all => we can't accept anything that writes
         if self.any_reads_all {
             debug_assert!(!new_task.write_all);
-            return new_task.writes.is_empty()
+            return new_task.writes.is_empty();
         }
 
         // Verify the new task isn't writing anything that is being read/write
@@ -100,4 +100,3 @@ impl TaskStage {
         &self.tasks
     }
 }
-

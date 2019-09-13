@@ -1,15 +1,13 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{
-    TaskContextFlags,
-    ComponentStorage, EntitySet, ResourceTaskImpl,
-    WriteComponent, TaskConfig
+    ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent,
 };
 use rendy::wsi::winit;
 
-#[cfg(feature = "editor")]
-use framework::resources::editor::{EditorUiState, EditorActionQueue};
-use framework::resources::TimeState;
 use crate::resources::{ImguiManager, InputManager};
+#[cfg(feature = "editor")]
+use framework::resources::editor::{EditorActionQueue, EditorUiState};
+use framework::resources::TimeState;
 
 #[cfg(feature = "editor")]
 use framework::components::editor::EditorSelectedComponent;
@@ -24,7 +22,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
         Read<EntitySet>,
         WriteComponent<EditorSelectedComponent>,
         Read<InputManager>,
-        Write<EditorActionQueue>
+        Write<EditorActionQueue>,
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -43,7 +41,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
             entity_set,
             mut editor_selected_components,
             input_manager,
-            mut editor_action_queue
+            mut editor_action_queue,
         ) = data;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
@@ -85,9 +83,8 @@ impl ResourceTaskImpl for RenderImguiEntityList {
                                 };
 
                                 let s = im_str!("{:?}", entity.handle());
-                                let clicked = imgui::Selectable::new(&s)
-                                    .selected(is_selected)
-                                    .build(ui);
+                                let clicked =
+                                    imgui::Selectable::new(&s).selected(is_selected).build(ui);
 
                                 if clicked {
                                     let is_control_held = input_manager

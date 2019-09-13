@@ -22,4 +22,3 @@ impl ResourceTaskImpl for ClearDebugDraw {
         debug_draw.clear();
     }
 }
-

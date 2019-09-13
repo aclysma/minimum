@@ -1,9 +1,10 @@
-
 #[cfg(feature = "editor")]
 use crate::components::PersistentEntityComponent;
 
 use crate::persist::ComponentPrototypeSerializer;
-use crate::{FrameworkComponentPrototype, FrameworkEntityPrototype, FrameworkEntityPersistencePolicy};
+use crate::{
+    FrameworkComponentPrototype, FrameworkEntityPersistencePolicy, FrameworkEntityPrototype,
+};
 use hashbrown::HashMap;
 use minimum::EntityPrototype;
 use minimum::ResourceMap;
@@ -13,44 +14,37 @@ use std::sync::Arc;
 #[derive(Serialize, Deserialize)]
 struct SavedComponent {
     pub type_name: String,
-    pub data: serde_json::Value
+    pub data: serde_json::Value,
 }
 
 impl SavedComponent {
     #[cfg(feature = "editor")]
     pub fn new(type_name: String, data: serde_json::Value) -> Self {
-        SavedComponent {
-            type_name,
-            data
-        }
+        SavedComponent { type_name, data }
     }
 }
 
 #[derive(Serialize, Deserialize)]
 struct SavedObject {
-    pub saved_components: Vec<SavedComponent>
+    pub saved_components: Vec<SavedComponent>,
 }
 
 impl SavedObject {
     #[cfg(feature = "editor")]
     pub fn new(saved_components: Vec<SavedComponent>) -> Self {
-        SavedObject {
-            saved_components
-        }
+        SavedObject { saved_components }
     }
 }
 
 #[derive(Serialize, Deserialize)]
 struct LevelFile {
-    pub saved_objects: Vec<SavedObject>
+    pub saved_objects: Vec<SavedObject>,
 }
 
 impl LevelFile {
     #[cfg(feature = "editor")]
     pub fn new(saved_objects: Vec<SavedObject>) -> Self {
-        LevelFile {
-            saved_objects
-        }
+        LevelFile { saved_objects }
     }
 }
 
@@ -72,14 +66,14 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
 
 struct RegisteredComponentPrototype<T> {
     phantom_data: PhantomData<T>,
-    name: &'static str
+    name: &'static str,
 }
 
 impl<T> RegisteredComponentPrototype<T> {
     fn new(name: &'static str) -> Self {
         RegisteredComponentPrototype {
             phantom_data: PhantomData,
-            name
+            name,
         }
     }
 }
@@ -123,7 +117,7 @@ pub enum SerializeError {
     #[fail(display = "Serde Error: {:?}", 0)]
     SerdeError(serde_json::error::Error),
     #[fail(display = "IO Error: {:?}", 0)]
-    IoError(std::io::Error)
+    IoError(std::io::Error),
 }
 
 impl From<serde_json::error::Error> for SerializeError {
@@ -145,7 +139,7 @@ pub enum DeserializeError {
     #[fail(display = "Serde Error: {:?}", 0)]
     SerdeError(serde_json::error::Error),
     #[fail(display = "IO Error: {:?}", 0)]
-    IoError(std::io::Error)
+    IoError(std::io::Error),
 }
 
 impl From<serde_json::error::Error> for DeserializeError {
@@ -185,7 +179,7 @@ impl PersistRegistry {
         T: FrameworkComponentPrototype + ComponentPrototypeSerializer<T> + Default,
     >(
         &mut self,
-        name: &'static str
+        name: &'static str,
     ) {
         self.registered_component_prototypes_by_type_id.insert(
             std::any::TypeId::of::<T>(),
@@ -198,13 +192,17 @@ impl PersistRegistry {
         );
     }
 
-    pub fn load<P: AsRef<std::path::Path>>(&self, resource_map: &ResourceMap, path: P) -> Result<(), DeserializeError> {
+    pub fn load<P: AsRef<std::path::Path>>(
+        &self,
+        resource_map: &ResourceMap,
+        path: P,
+    ) -> Result<(), DeserializeError> {
         let input = std::fs::read_to_string(path)?;
         let serialized_level = serde_json::from_str::<LevelFile>(&input)?;
 
-        let mut entities : Vec<Box<dyn EntityPrototype>> = vec![];
+        let mut entities: Vec<Box<dyn EntityPrototype>> = vec![];
         for entity in serialized_level.saved_objects {
-            let mut deserialized_components : Vec<Box<dyn FrameworkComponentPrototype>> = vec![];
+            let mut deserialized_components: Vec<Box<dyn FrameworkComponentPrototype>> = vec![];
             for component in entity.saved_components {
                 // Resolve the registered component that is able to serialize this component
                 let registered_type = self
@@ -214,21 +212,21 @@ impl PersistRegistry {
                 // Try to serialize the component
                 match registered_type {
                     Some(registered_type) => {
-                        let deserialized_component = (*registered_type).deserialize(component.data).unwrap();
+                        let deserialized_component =
+                            (*registered_type).deserialize(component.data).unwrap();
                         deserialized_components.push(deserialized_component);
                     }
                     None => {
                         // Skip unknown types
-                        return Err(DeserializeError::UnregisteredType(component.type_name))
+                        return Err(DeserializeError::UnregisteredType(component.type_name));
                     }
                 }
-
             }
 
             entities.push(Box::new(FrameworkEntityPrototype::new(
                 std::path::PathBuf::from("loaded from file"),
                 FrameworkEntityPersistencePolicy::Persistent,
-                deserialized_components
+                deserialized_components,
             )));
         }
 
@@ -241,9 +239,13 @@ impl PersistRegistry {
     }
 
     #[cfg(feature = "editor")]
-    pub fn save<P: AsRef<std::path::Path>>(&self, resource_map: &ResourceMap, path: P) -> Result<(), SerializeError> {
-        use minimum::EntitySet;
+    pub fn save<P: AsRef<std::path::Path>>(
+        &self,
+        resource_map: &ResourceMap,
+        path: P,
+    ) -> Result<(), SerializeError> {
         use minimum::Component;
+        use minimum::EntitySet;
 
         // Get the entities and all persistent entity components. This represents all the data we need to save
         let entity_set = resource_map.fetch::<EntitySet>();
@@ -261,9 +263,9 @@ impl PersistRegistry {
             // Iterate their component prototypes, adding them to the saved_components list
             let mut saved_components = vec![];
             for component_prototype in pep.component_prototypes() {
-
                 // Resolve the registered component that is able to serialize this component
-                let component_prototype_type = FrameworkComponentPrototype::type_id(&**component_prototype);
+                let component_prototype_type =
+                    FrameworkComponentPrototype::type_id(&**component_prototype);
                 let registered_type = self
                     .registered_component_prototypes_by_type_id
                     .get(&component_prototype_type);
@@ -271,8 +273,13 @@ impl PersistRegistry {
                 // Try to serialize the component
                 match registered_type {
                     Some(registered_type) => {
-                        let serialized_data = (*registered_type).serialize(&**component_prototype).unwrap();
-                        saved_components.push(SavedComponent::new(registered_type.name().to_string(), serialized_data));
+                        let serialized_data = (*registered_type)
+                            .serialize(&**component_prototype)
+                            .unwrap();
+                        saved_components.push(SavedComponent::new(
+                            registered_type.name().to_string(),
+                            serialized_data,
+                        ));
                     }
                     None => {
                         // Skip unknown types
@@ -291,11 +298,16 @@ impl PersistRegistry {
         Ok(())
     }
 
-    pub fn iter_names(&self) -> impl Iterator<Item=(&'_ std::any::TypeId, &'static str)> + '_ {
-        self.registered_component_prototypes_by_type_id.iter().map(|(t, x)| (t, x.name()))
+    pub fn iter_names(&self) -> impl Iterator<Item = (&'_ std::any::TypeId, &'static str)> + '_ {
+        self.registered_component_prototypes_by_type_id
+            .iter()
+            .map(|(t, x)| (t, x.name()))
     }
 
-    pub fn create_default(&self, type_id: std::any::TypeId) -> Box<dyn FrameworkComponentPrototype> {
+    pub fn create_default(
+        &self,
+        type_id: std::any::TypeId,
+    ) -> Box<dyn FrameworkComponentPrototype> {
         self.registered_component_prototypes_by_type_id[&type_id].default()
     }
 }

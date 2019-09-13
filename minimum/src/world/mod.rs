@@ -2,14 +2,17 @@
 use crate::resource::{Resource, ResourceMap};
 
 use crate::component::{
-    Component, ComponentCreateQueueFlushListener, ComponentFreeHandler,
-    ComponentRegistry, ComponentStorage,
+    Component, ComponentCreateQueueFlushListener, ComponentFreeHandler, ComponentRegistry,
+    ComponentStorage,
 };
 
 use crate::entity::{EntityFactory, EntitySet, PendingDeleteComponent};
-use crate::{TaskDependencyListBuilder, TaskDependencyList, TrustCell, TaskScheduleSingleThread, TaskScheduleBuilderSingleThread, DispatchControl};
-use crate::task::{TaskFactory, TaskContextFlags};
 use crate::task::Phase;
+use crate::task::{TaskContextFlags, TaskFactory};
+use crate::{
+    DispatchControl, TaskDependencyList, TaskDependencyListBuilder,
+    TaskScheduleBuilderSingleThread, TaskScheduleSingleThread, TrustCell,
+};
 
 /// A builder for setting up a `World`
 pub struct WorldBuilder {
@@ -77,8 +80,8 @@ impl WorldBuilder {
 
     /// Add a task
     pub fn with_task<T>(mut self) -> Self
-        where
-            T: TaskFactory
+    where
+        T: TaskFactory,
     {
         self.add_task::<T>();
         self
@@ -92,8 +95,8 @@ impl WorldBuilder {
 
     /// Add a custom phase
     pub fn with_phase<P>(mut self) -> Self
-        where
-            P: Phase
+    where
+        P: Phase,
     {
         self.add_phase::<P>();
         self
@@ -119,7 +122,7 @@ impl WorldBuilder {
 
     pub fn add_task<T>(&mut self)
     where
-        T: TaskFactory
+        T: TaskFactory,
     {
         self.tasks.add_task::<T>();
     }
@@ -138,7 +141,7 @@ impl WorldBuilder {
 
     pub fn add_phase<P>(&mut self)
     where
-        P: Phase
+        P: Phase,
     {
         self.tasks.add_phase::<P>();
     }
@@ -159,11 +162,14 @@ impl WorldBuilder {
         //TODO: Should conversion to dependency list happen later?
         World {
             resource_map: self.resource_map,
-            task_list
+            task_list,
         }
     }
 
-    pub fn build_update_loop_single_threaded(self, initial_context_flags: usize) -> UpdateLoopSingleThreaded {
+    pub fn build_update_loop_single_threaded(
+        self,
+        initial_context_flags: usize,
+    ) -> UpdateLoopSingleThreaded {
         let world = self.build();
         UpdateLoopSingleThreaded::new(world, initial_context_flags)
     }
@@ -173,26 +179,33 @@ impl WorldBuilder {
 /// you would construct it with a world builder, then create an update loop with it.
 pub struct World {
     pub resource_map: ResourceMap,
-    pub task_list: TaskDependencyList
+    pub task_list: TaskDependencyList,
 }
 
 pub struct UpdateLoopSingleThreaded {
     resource_map: TrustCell<ResourceMap>,
-    schedule: TaskScheduleSingleThread
+    schedule: TaskScheduleSingleThread,
 }
 
 impl UpdateLoopSingleThreaded {
     pub fn new(world: World, initial_context_flags: usize) -> Self {
-        *world.resource_map.fetch_mut::<DispatchControl>().next_frame_context_flags_mut() = initial_context_flags;
+        *world
+            .resource_map
+            .fetch_mut::<DispatchControl>()
+            .next_frame_context_flags_mut() = initial_context_flags;
 
         UpdateLoopSingleThreaded {
             resource_map: TrustCell::new(world.resource_map),
-            schedule: TaskScheduleBuilderSingleThread::new(world.task_list).build()
+            schedule: TaskScheduleBuilderSingleThread::new(world.task_list).build(),
         }
     }
 
     pub fn step(&self) {
-        let context_flags = self.resource_map.borrow().fetch::<DispatchControl>().next_frame_context_flags();
+        let context_flags = self
+            .resource_map
+            .borrow()
+            .fetch::<DispatchControl>()
+            .next_frame_context_flags();
         let context = TaskContextFlags::new(context_flags);
         self.schedule.step(&context, &self.resource_map);
     }
@@ -201,7 +214,12 @@ impl UpdateLoopSingleThreaded {
         loop {
             self.step();
 
-            if self.resource_map.borrow().fetch::<DispatchControl>().should_end_game_loop() {
+            if self
+                .resource_map
+                .borrow()
+                .fetch::<DispatchControl>()
+                .should_end_game_loop()
+            {
                 break;
             }
         }

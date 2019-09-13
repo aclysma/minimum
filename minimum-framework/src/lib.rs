@@ -1,4 +1,3 @@
-
 extern crate nalgebra_glm as glm;
 
 #[macro_use]
@@ -27,11 +26,10 @@ pub mod select;
 
 mod prototype;
 pub use prototype::FrameworkComponentPrototype;
-pub use prototype::FrameworkEntityPrototype;
 pub use prototype::FrameworkEntityPersistencePolicy;
+pub use prototype::FrameworkEntityPrototype;
 
 pub mod tasks;
-
 
 #[derive(Copy, Clone, PartialEq, strum_macros::EnumCount, Debug)]
 pub enum PlayMode {

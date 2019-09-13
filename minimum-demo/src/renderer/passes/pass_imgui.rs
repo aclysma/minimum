@@ -11,7 +11,7 @@ use rendy::{
     resource::{Buffer, BufferInfo, DescriptorSet, DescriptorSetLayout, Escape, Handle},
     texture::Texture,
     util::types::vertex,
-    wsi::winit
+    wsi::winit,
 };
 
 use minimum::resource::ResourceMap;
@@ -444,7 +444,6 @@ where
                 //TODO: Verify the draw list index doesn't exceed the vbuf/ibuf list
                 let mut draw_list_index = 0;
                 for draw_list in draw_data.draw_lists() {
-
                     // If for some reason we didn't actually create the buffers, don't try to draw them
                     if draw_list_index >= draw_list_vbufs.len()
                         || draw_list_index >= draw_list_ibufs.len()

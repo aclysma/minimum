@@ -1,9 +1,8 @@
-
-use minimum::task::WriteAllTaskImpl;
-use minimum::TaskConfig;
-use minimum::ResourceMap;
-use minimum::TaskContextFlags;
 use crate::resources;
+use minimum::task::WriteAllTaskImpl;
+use minimum::ResourceMap;
+use minimum::TaskConfig;
+use minimum::TaskContextFlags;
 
 pub struct RenderImguiInspector;
 pub type RenderImguiInspectorTask = minimum::WriteAllTask<RenderImguiInspector>;

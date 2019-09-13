@@ -4,7 +4,9 @@ use crate::resources::PhysicsManager;
 
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
-use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, ResourceTask, TaskContextFlags};
+use minimum::{
+    ComponentStorage, EntitySet, ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags,
+};
 
 pub struct PhysicsSyncPost;
 pub type PhysicsSyncPostTask = ResourceTask<PhysicsSyncPost>;

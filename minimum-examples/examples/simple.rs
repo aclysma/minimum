@@ -1,14 +1,14 @@
 use minimum::component::{Component, ComponentStorage};
-use minimum::{EntitySet, WriteAllTask, WriteAllTaskImpl, DispatchControl};
-use minimum::WorldBuilder;
+use minimum::DataRequirement;
 use minimum::Read;
-use minimum::Write;
+use minimum::ResourceMap;
 use minimum::ResourceTask;
 use minimum::ResourceTaskImpl;
-use minimum::DataRequirement;
 use minimum::TaskConfig;
-use minimum::ResourceMap;
 use minimum::TaskContextFlags;
+use minimum::WorldBuilder;
+use minimum::Write;
+use minimum::{DispatchControl, EntitySet, WriteAllTask, WriteAllTaskImpl};
 
 mod shared;
 
@@ -16,8 +16,8 @@ use shared::components::{PositionComponent, SpeedMultiplierComponent, VelocityCo
 
 use shared::resources::{TimeState, UpdateCount};
 
-use shared::Vec2;
 use minimum::world::UpdateLoopSingleThreaded;
+use shared::Vec2;
 
 pub struct UpdatePositions;
 pub type UpdatePositionsTask = ResourceTask<UpdatePositions>;
@@ -36,7 +36,7 @@ impl ResourceTaskImpl for UpdatePositions {
 
     fn run(
         _context_flags: &TaskContextFlags,
-        data: <Self::RequiredResources as DataRequirement>::Borrow
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         let (
             time_state,
@@ -103,16 +103,16 @@ impl WriteAllTaskImpl for UpdateEntitySet {
 pub struct IncrementUpdateCount;
 pub type IncrementUpdateCountTask = ResourceTask<IncrementUpdateCount>;
 impl ResourceTaskImpl for IncrementUpdateCount {
-    type RequiredResources = (
-        Write<UpdateCount>,
-        Write<DispatchControl>
-    );
+    type RequiredResources = (Write<UpdateCount>, Write<DispatchControl>);
 
     fn configure(task_config: &mut TaskConfig) {
         task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
     }
 
-    fn run(_context_flags: &TaskContextFlags, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        _context_flags: &TaskContextFlags,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         let (mut update_count, mut dispatch_control) = data;
 
         println!("update {}", update_count.count);
@@ -122,7 +122,6 @@ impl ResourceTaskImpl for IncrementUpdateCount {
         }
     }
 }
-
 
 //TODO: Rewrite to use an entity prototype
 fn create_objects(resource_map: &ResourceMap) {

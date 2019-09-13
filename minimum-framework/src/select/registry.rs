@@ -1,24 +1,26 @@
-
+use super::SelectableComponentPrototype;
 use crate::FrameworkComponentPrototype;
 use hashbrown::HashMap;
 use std::marker::PhantomData;
-use super::SelectableComponentPrototype;
 
 trait RegisteredComponentPrototypeTrait: Send + Sync {
     fn create_selection_shape(
         &self,
-        component_prototype: &dyn FrameworkComponentPrototype
-    )-> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>);
+        component_prototype: &dyn FrameworkComponentPrototype,
+    ) -> (
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    );
 }
 
 struct RegisteredComponentPrototype<T> {
-    phantom_data: PhantomData<T>
+    phantom_data: PhantomData<T>,
 }
 
 impl<T> RegisteredComponentPrototype<T> {
     fn new() -> Self {
         RegisteredComponentPrototype {
-            phantom_data: PhantomData
+            phantom_data: PhantomData,
         }
     }
 }
@@ -29,8 +31,11 @@ where
 {
     fn create_selection_shape(
         &self,
-        component_prototype: &dyn FrameworkComponentPrototype
-    ) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+        component_prototype: &dyn FrameworkComponentPrototype,
+    ) -> (
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    ) {
         let t = component_prototype.downcast_ref::<T>().unwrap();
         <T as SelectableComponentPrototype<T>>::create_selection_shape(t)
     }
@@ -62,10 +67,19 @@ impl SelectRegistry {
         );
     }
 
-    pub fn create_selection_shape(&self, component_prototype: &dyn FrameworkComponentPrototype) -> Option<(ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>)> {
+    pub fn create_selection_shape(
+        &self,
+        component_prototype: &dyn FrameworkComponentPrototype,
+    ) -> Option<(
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    )> {
         let component_prototype_type = FrameworkComponentPrototype::type_id(component_prototype);
 
-        if let Some(registered) = self.registered_component_prototypes.get(&component_prototype_type) {
+        if let Some(registered) = self
+            .registered_component_prototypes
+            .get(&component_prototype_type)
+        {
             Some(registered.create_selection_shape(component_prototype))
         } else {
             None

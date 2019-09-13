@@ -2,9 +2,9 @@ use std::prelude::v1::*;
 
 //use super::ResourceId;
 //use super::ResourceIdTrait;
-use std::marker::PhantomData;
 use crate::resource;
 use resource::ResourceId;
+use std::marker::PhantomData;
 
 pub trait ResourceIdTrait:
     Clone
@@ -20,14 +20,13 @@ pub trait ResourceIdTrait:
 {
 }
 
-
 // This is a helper that determines the reads/writes required for a system. I would have preferred
 // not to need this structure at all, but many of the shred types require lifetimes that just
 // don't play nicely with tasks. This gets rid of those lifetimes.
 #[derive(Debug)]
 pub struct RequiredResources<T, ResourceId>
-    where
-        ResourceId: ResourceIdTrait,
+where
+    ResourceId: ResourceIdTrait,
 {
     pub(super) reads: Vec<ResourceId>,
     pub(super) writes: Vec<ResourceId>,
@@ -35,9 +34,9 @@ pub struct RequiredResources<T, ResourceId>
 }
 
 impl<T, ResourceId> RequiredResources<T, ResourceId>
-    where
-        T: RequiresResources<ResourceId>,
-        ResourceId: ResourceIdTrait,
+where
+    T: RequiresResources<ResourceId>,
+    ResourceId: ResourceIdTrait,
 {
     pub fn new() -> Self {
         RequiredResources {
@@ -49,8 +48,8 @@ impl<T, ResourceId> RequiredResources<T, ResourceId>
 }
 
 pub trait RequiresResources<ResourceId>: Sized
-    where
-        ResourceId: ResourceIdTrait,
+where
+    ResourceId: ResourceIdTrait,
 {
     fn reads() -> Vec<ResourceId>;
     fn writes() -> Vec<ResourceId>;
@@ -61,8 +60,8 @@ pub trait RequiresResources<ResourceId>: Sized
 }
 
 impl<ResourceId> RequiresResources<ResourceId> for ()
-    where
-        ResourceId: ResourceIdTrait,
+where
+    ResourceId: ResourceIdTrait,
 {
     fn reads() -> Vec<ResourceId> {
         vec![]

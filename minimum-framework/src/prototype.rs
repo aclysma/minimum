@@ -15,10 +15,7 @@ use crate::components::editor::EditorShapeComponentPrototype;
 use crate::select::SelectRegistry;
 
 // impl ComponentPrototype for FrameworkComponentPrototype?
-pub trait FrameworkComponentPrototype:
-    minimum::component::ComponentCreator + mopa::Any
-{
-}
+pub trait FrameworkComponentPrototype: minimum::component::ComponentCreator + mopa::Any {}
 
 mopafy!(FrameworkComponentPrototype);
 
@@ -49,13 +46,13 @@ pub enum FrameworkEntityPersistencePolicy {
     Persistent,
 
     // Is destroyed on level reset (i.e. spawned at runtime)
-    Transient
+    Transient,
 }
 
 #[derive(Clone)]
 pub struct FrameworkEntityPrototype {
     inner: Arc<Mutex<FrameworkEntityPrototypeInner>>,
-    persistence_policy: FrameworkEntityPersistencePolicy
+    persistence_policy: FrameworkEntityPersistencePolicy,
 }
 
 impl FrameworkEntityPrototype {
@@ -69,7 +66,7 @@ impl FrameworkEntityPrototype {
                 path,
                 component_prototypes,
             })),
-            persistence_policy
+            persistence_policy,
         }
     }
 
@@ -84,7 +81,6 @@ impl FrameworkEntityPrototype {
 
 impl EntityPrototype for FrameworkEntityPrototype {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
-
         let entity_prototype_guard = self.get_mut();
         for c in entity_prototype_guard.component_prototypes() {
             c.enqueue_create(resource_map, &entity.handle());
@@ -106,7 +102,8 @@ impl EntityPrototype for FrameworkEntityPrototype {
             if !selection_shapes.is_empty() {
                 let compound_shape = ncollide2d::shape::Compound::new(selection_shapes);
                 let compound_shape_handle = ncollide2d::shape::ShapeHandle::new(compound_shape);
-                let editor_shape_component_prototype = EditorShapeComponentPrototype::new(compound_shape_handle);
+                let editor_shape_component_prototype =
+                    EditorShapeComponentPrototype::new(compound_shape_handle);
 
                 use minimum::ComponentPrototype;
                 editor_shape_component_prototype.enqueue_create(resource_map, &entity.handle());
@@ -120,7 +117,7 @@ impl EntityPrototype for FrameworkEntityPrototype {
                 let mut storage =
                     resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
                 entity.add_component(&mut *storage, PersistentEntityComponent::new(self.clone()));
-            },
+            }
             _ => {}
         }
     }

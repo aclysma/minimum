@@ -1,20 +1,20 @@
 use std::prelude::v1::*;
 
-use super::TaskConfig;
-use super::TaskDependencyList;
-use super::TrustCell;
 use super::ResourceMap;
+use super::TaskConfig;
 use super::TaskContextFlags;
+use super::TaskDependencyList;
 use super::TaskWithFilter;
+use super::TrustCell;
 
 pub struct TaskScheduleBuilderSingleThread {
-    execution_order: Vec<TaskConfig>
+    execution_order: Vec<TaskConfig>,
 }
 
 impl TaskScheduleBuilderSingleThread {
     pub fn new(execution_order: TaskDependencyList) -> Self {
         TaskScheduleBuilderSingleThread {
-            execution_order: execution_order.execution_order
+            execution_order: execution_order.execution_order,
         }
     }
 
@@ -29,14 +29,12 @@ impl TaskScheduleBuilderSingleThread {
 }
 
 pub struct TaskScheduleSingleThread {
-    tasks: Vec<TaskWithFilter>
+    tasks: Vec<TaskWithFilter>,
 }
 
 impl TaskScheduleSingleThread {
     pub fn new(tasks: Vec<TaskWithFilter>) -> Self {
-        TaskScheduleSingleThread {
-            tasks
-        }
+        TaskScheduleSingleThread { tasks }
     }
 
     pub fn step(&self, context_flags: &TaskContextFlags, resource_map: &TrustCell<ResourceMap>) {
@@ -45,4 +43,3 @@ impl TaskScheduleSingleThread {
         }
     }
 }
-

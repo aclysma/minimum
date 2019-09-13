@@ -5,10 +5,11 @@ use framework::resources::editor::EditorCollisionWorld;
 
 use crate::components;
 use minimum::component::ReadComponent;
-use minimum::{TaskContextFlags, ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig};
+use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 pub struct EditorUpdateSelectionShapesWithPosition;
-pub type EditorUpdateSelectionShapesWithPositionTask = minimum::ResourceTask<EditorUpdateSelectionShapesWithPosition>;
+pub type EditorUpdateSelectionShapesWithPositionTask =
+    minimum::ResourceTask<EditorUpdateSelectionShapesWithPosition>;
 impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
     type RequiredResources = (
         Read<EntitySet>,

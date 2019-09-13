@@ -124,7 +124,6 @@ impl ComponentCreateQueueFlushListener for EditorShapeComponentFactory {
         let mut storage = resource_map.fetch_mut::<<EditorShapeComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
-
                 let collider = collision_world.world_mut().add(
                     nalgebra::Isometry2::new(glm::vec2(0.0, 0.0), 0.0),
                     data.shape_handle.clone(),

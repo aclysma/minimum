@@ -1,11 +1,11 @@
 use std::prelude::v1::*;
 
+use super::Phase;
+use super::RegisteredType;
 use super::ResourceId;
 use super::Task;
-use super::RegisteredType;
-use super::TaskFactory;
-use super::Phase;
 use super::TaskContextFlagsFilter;
+use super::TaskFactory;
 
 /// Used internally to list all of a task's requirements
 /// Passed into a task's "configure" function to accumulate their settings
@@ -20,8 +20,8 @@ pub struct TaskConfig {
     pub(super) require_run_after: Vec<RegisteredType>,
     pub(super) require_run_during: Vec<RegisteredType>,
     pub(super) context_flags_filter: TaskContextFlagsFilter,
-    #[derivative(Debug="ignore")]
-    pub(super) task: Option<Box<dyn Task>>
+    #[derivative(Debug = "ignore")]
+    pub(super) task: Option<Box<dyn Task>>,
 }
 
 impl TaskConfig {
@@ -35,7 +35,7 @@ impl TaskConfig {
             require_run_after: vec![],
             require_run_during: vec![],
             context_flags_filter: TaskContextFlagsFilter::default(),
-            task
+            task,
         }
     }
 
@@ -50,26 +50,30 @@ impl TaskConfig {
     }
 
     /// Indicate that this task will need read access to all resources
-    pub fn read_all(&mut self) { self.read_all = true; }
+    pub fn read_all(&mut self) {
+        self.read_all = true;
+    }
 
     /// Indicate that this task will need write access to all resources
-    pub fn write_all(&mut self) { self.write_all = true; }
+    pub fn write_all(&mut self) {
+        self.write_all = true;
+    }
 
-//    /// Ensure that the current task will run before T
-//    pub fn this_runs_before_task<T: TaskFactory>(&mut self) {
-//        self.require_run_after.push(RegisteredType::of::<T>());
-//    }
-//
-//    /// Ensure that the current task will run after T
-//    pub fn this_runs_after_task<T: TaskFactory>(&mut self) {
-//        self.require_run_before.push(RegisteredType::of::<T>());
-//    }
+    //    /// Ensure that the current task will run before T
+    //    pub fn this_runs_before_task<T: TaskFactory>(&mut self) {
+    //        self.require_run_after.push(RegisteredType::of::<T>());
+    //    }
+    //
+    //    /// Ensure that the current task will run after T
+    //    pub fn this_runs_after_task<T: TaskFactory>(&mut self) {
+    //        self.require_run_before.push(RegisteredType::of::<T>());
+    //    }
 
     pub fn this_provides_data_to<T: TaskFactory>(&mut self) {
         self.require_run_after.push(RegisteredType::of::<T>());
     }
 
-    pub fn this_uses_data_from<T : TaskFactory>(&mut self) {
+    pub fn this_uses_data_from<T: TaskFactory>(&mut self) {
         self.require_run_before.push(RegisteredType::of::<T>());
     }
 

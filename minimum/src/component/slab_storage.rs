@@ -155,7 +155,7 @@ impl<T: Component> SlabComponentStorage<T> {
     }
 
     /// Iterate just the components
-    pub fn iter_values(& self) -> impl Iterator<Item = &T> {
+    pub fn iter_values(&self) -> impl Iterator<Item = &T> {
         self.slab.iter().map(|(_key, value)| value)
     }
 

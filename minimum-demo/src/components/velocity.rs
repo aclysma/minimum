@@ -1,4 +1,3 @@
-
 #[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
 
@@ -52,7 +51,7 @@ impl Default for VelocityComponent {
     fn default() -> Self {
         VelocityComponent {
             velocity: glm::zero(),
-            requires_sync_to_physics: false
+            requires_sync_to_physics: false,
         }
     }
 }

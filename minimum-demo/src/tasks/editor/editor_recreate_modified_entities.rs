@@ -1,5 +1,3 @@
-
-
 use minimum::task::WriteAllTaskImpl;
 
 use minimum::task::TaskConfig;
@@ -28,13 +26,17 @@ impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
             let persistent_entity_components = resource_map.fetch::<<framework::components::PersistentEntityComponent as Component>::Storage>();
             let editor_modified_components = resource_map.fetch::<<framework::components::editor::EditorModifiedComponent as Component>::Storage>();
             let editor_selected_components = resource_map.fetch::<<framework::components::editor::EditorSelectedComponent as Component>::Storage>();
-            let mut pending_delete_components = resource_map.fetch_mut::<<minimum::PendingDeleteComponent as Component>::Storage>();
+            let mut pending_delete_components =
+                resource_map.fetch_mut::<<minimum::PendingDeleteComponent as Component>::Storage>();
 
             let mut prototypes = vec![];
 
-            for (entity_handle, _editor_modified_component) in editor_modified_components.iter(&entity_set) {
-                if let Some(persistent_entity_component) = persistent_entity_components.get(&entity_handle) {
-
+            for (entity_handle, _editor_modified_component) in
+                editor_modified_components.iter(&entity_set)
+            {
+                if let Some(persistent_entity_component) =
+                    persistent_entity_components.get(&entity_handle)
+                {
                     let prototype = persistent_entity_component.entity_prototype().clone();
                     let selected = editor_selected_components.exists(&entity_handle);
 
@@ -63,7 +65,8 @@ impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
 
                 // If the entity was selected before it was deleted, re-select it
                 if is_selected {
-                    editor_selected_components.allocate(&entity.handle(), EditorSelectedComponent::new());
+                    editor_selected_components
+                        .allocate(&entity.handle(), EditorSelectedComponent::new());
                 }
             }
         }

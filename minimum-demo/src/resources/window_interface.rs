@@ -1,4 +1,3 @@
-
 use rendy::wsi::winit;
 use std::sync::Mutex;
 

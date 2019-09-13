@@ -1,10 +1,10 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-#[cfg(feature = "editor")]
-use framework::resources::editor::{EditorUiState, EditorTool};
-use framework::resources::{FrameworkActionQueue, TimeState};
 use crate::resources::{DebugOptions, ImguiManager};
+#[cfg(feature = "editor")]
+use framework::resources::editor::{EditorTool, EditorUiState};
+use framework::resources::{FrameworkActionQueue, TimeState};
 
 use imgui::im_str;
 
@@ -12,7 +12,12 @@ pub struct RenderImguiMainMenu;
 pub type RenderImguiMainMenuTask = minimum::ResourceTask<RenderImguiMainMenu>;
 
 impl RenderImguiMainMenu {
-    fn tool_button(ui: &imgui::Ui, editor_ui_state: &mut EditorUiState, editor_tool: EditorTool, string: &'static str) {
+    fn tool_button(
+        ui: &imgui::Ui,
+        editor_ui_state: &mut EditorUiState,
+        editor_tool: EditorTool,
+        string: &'static str,
+    ) {
         let color_stack_token = if editor_ui_state.active_editor_tool == editor_tool {
             Some(ui.push_style_color(imgui::StyleColor::Text, [0.8, 0.0, 0.0, 1.0]))
         } else {
@@ -65,7 +70,7 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
                 }
 
                 if window_settings.show_imgui_style_editor {
-                    imgui::Window::new(im_str!("Editor")).build(ui,|| {
+                    imgui::Window::new(im_str!("Editor")).build(ui, || {
                         ui.show_default_style_editor();
                     });
                 }
@@ -76,7 +81,6 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
             }
 
             ui.main_menu_bar(|| {
-
                 //cursor-default-outline
                 Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Select, "\u{f1b5}");
                 //axis-arrow
@@ -91,7 +95,8 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
                         for pack in &["placeholder1", "placeholder2", "placeholder3"] {
                             ui.menu(&im_str!("{}", pack), true, || {
                                 for level in &["level1", "level2", "level3"] {
-                                    let selected = imgui::MenuItem::new(&im_str!("{}", level)).build(ui);
+                                    let selected =
+                                        imgui::MenuItem::new(&im_str!("{}", level)).build(ui);
                                     if selected {
                                         info!("Loading {} {}", pack, level);
                                         //game_control.set_load_level(level.path.clone());
@@ -124,10 +129,7 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
                         im_str!("ImGui Style Editor"),
                         &mut window_settings.show_imgui_style_editor,
                     );
-                    ui.checkbox(
-                        im_str!("ImGui Demo"),
-                        &mut window_settings.show_imgui_demo,
-                    );
+                    ui.checkbox(im_str!("ImGui Demo"), &mut window_settings.show_imgui_demo);
                     ui.checkbox(
                         im_str!("Entity List"),
                         &mut window_settings.show_entity_list,

@@ -1,20 +1,20 @@
 use std::prelude::v1::*;
 
+use super::ResourceMap;
 use super::TaskConfig;
+use super::TaskContextFlags;
 use super::TaskDependencyList;
 use super::TaskStage;
 use super::TrustCell;
-use super::ResourceMap;
-use super::TaskContextFlags;
 
 pub struct TaskScheduleBuilderMultiThread {
-    execution_order: Vec<TaskConfig>
+    execution_order: Vec<TaskConfig>,
 }
 
 impl TaskScheduleBuilderMultiThread {
     pub fn new(execution_order: TaskDependencyList) -> Self {
         TaskScheduleBuilderMultiThread {
-            execution_order: execution_order.execution_order
+            execution_order: execution_order.execution_order,
         }
     }
 
@@ -44,14 +44,12 @@ impl TaskScheduleBuilderMultiThread {
 }
 
 pub struct TaskScheduleMultiThread {
-    stages: Vec<TaskStage>
+    stages: Vec<TaskStage>,
 }
 
 impl TaskScheduleMultiThread {
     pub fn new(stages: Vec<TaskStage>) -> Self {
-        TaskScheduleMultiThread {
-            stages
-        }
+        TaskScheduleMultiThread { stages }
     }
 
     pub fn step(&self, context_flags: &TaskContextFlags, resource_map: &TrustCell<ResourceMap>) {
@@ -64,6 +62,3 @@ impl TaskScheduleMultiThread {
         }
     }
 }
-
-
-

@@ -1,4 +1,3 @@
-
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;

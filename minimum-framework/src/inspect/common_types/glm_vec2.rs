@@ -1,6 +1,5 @@
-
-use imgui_inspect::InspectRenderDefault;
 use imgui_inspect::InspectArgsDefault;
+use imgui_inspect::InspectRenderDefault;
 
 pub struct ImGlmVec2;
 impl InspectRenderDefault<glm::Vec2> for ImGlmVec2 {

@@ -12,11 +12,12 @@ const COLLISION_GROUP_PLAYER_INDEX: u32 = 0;
 const COLLISION_GROUP_BULLETS_INDEX: u32 = 1;
 const COLLISION_GROUP_WALL_INDEX: u32 = 2;
 
-const COLLISION_GROUP_PLAYER_MASK: u32 = 1<<COLLISION_GROUP_PLAYER_INDEX;
-const COLLISION_GROUP_BULLETS_MASK: u32 = 1<<COLLISION_GROUP_BULLETS_INDEX;
-const COLLISION_GROUP_WALL_MASK: u32 = 1<<COLLISION_GROUP_WALL_INDEX;
+const COLLISION_GROUP_PLAYER_MASK: u32 = 1 << COLLISION_GROUP_PLAYER_INDEX;
+const COLLISION_GROUP_BULLETS_MASK: u32 = 1 << COLLISION_GROUP_BULLETS_INDEX;
+const COLLISION_GROUP_WALL_MASK: u32 = 1 << COLLISION_GROUP_WALL_INDEX;
 
-const COLLISION_GROUP_ALL_MASK: u32 = COLLISION_GROUP_PLAYER_MASK | COLLISION_GROUP_BULLETS_MASK | COLLISION_GROUP_WALL_MASK;
+const COLLISION_GROUP_ALL_MASK: u32 =
+    COLLISION_GROUP_PLAYER_MASK | COLLISION_GROUP_BULLETS_MASK | COLLISION_GROUP_WALL_MASK;
 
 // Left as an example, but this is being loaded from file
 pub fn create_wall(
@@ -42,7 +43,7 @@ pub fn create_wall(
                 mass,
                 COLLISION_GROUP_WALL_MASK,
                 COLLISION_GROUP_ALL_MASK,
-                0
+                0,
             )),
         ],
     );
@@ -75,9 +76,9 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
                 mass,
                 COLLISION_GROUP_PLAYER_MASK,
                 COLLISION_GROUP_WALL_MASK,
-                0
+                0,
             )),
-        ]
+        ],
     );
     entity_factory.enqueue_create(Box::new(entity_prototype));
 }
@@ -148,7 +149,7 @@ pub fn create_bullet(
                     time_state.playing().frame_start_instant + lifetime,
                 ),
             )),
-        ]
+        ],
     );
     entity_factory.enqueue_create(Box::new(entity_prototype));
 }

@@ -6,7 +6,6 @@ use framework::resources::TimeState;
 use crate::components;
 use minimum::component::{ReadComponent, WriteComponent};
 
-
 pub struct HandleFreeAtTimeComponents;
 pub type HandleFreeAtTimeComponentsTask = minimum::ResourceTask<HandleFreeAtTimeComponents>;
 impl ResourceTaskImpl for HandleFreeAtTimeComponents {

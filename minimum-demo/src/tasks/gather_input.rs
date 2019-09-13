@@ -12,7 +12,6 @@ use crate::resources::{InputManager, WindowInterface};
 pub struct GatherInput;
 pub type GatherInputTask = minimum::ResourceTask<GatherInput>;
 impl ResourceTaskImpl for GatherInput {
-
     #[cfg(feature = "editor")]
     type RequiredResources = (
         Read<winit::window::Window>,
@@ -43,12 +42,16 @@ impl ResourceTaskImpl for GatherInput {
         use winit::event::WindowEvent;
 
         #[cfg(feature = "editor")]
-        let (window, window_interface, mut imgui_manager, mut input_manager, mut framework_action_queue) =
-            data;
+        let (
+            window,
+            window_interface,
+            mut imgui_manager,
+            mut input_manager,
+            mut framework_action_queue,
+        ) = data;
 
         #[cfg(not(feature = "editor"))]
-        let (window_interface, mut input_manager, mut framework_action_queue) =
-            data;
+        let (window_interface, mut input_manager, mut framework_action_queue) = data;
 
         input_manager.pre_handle_events();
         let mut is_close_requested = false;
@@ -63,11 +66,9 @@ impl ResourceTaskImpl for GatherInput {
         #[cfg(not(feature = "editor"))]
         let imgui_want_capture_mouse = false;
 
-
         loop {
             match window_interface.event_rx.lock().unwrap().try_recv() {
                 Ok(event) => {
-
                     #[cfg(feature = "editor")]
                     {
                         imgui_manager.handle_event(&window, &event);

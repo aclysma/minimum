@@ -128,14 +128,14 @@ impl<T: Component> VecComponentStorage<T> {
     }
 
     /// Iterate just the components
-    pub fn iter_values(&self) -> impl Iterator<Item=&T> {
+    pub fn iter_values(&self) -> impl Iterator<Item = &T> {
         self.components
             .iter()
             .filter_map(|component_key| component_key.as_ref())
     }
 
     /// Iterate just the components mutably
-    pub fn iter_values_mut(&mut self) -> impl Iterator<Item=&mut T> {
+    pub fn iter_values_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.components
             .iter_mut()
             .filter_map(|component_key| component_key.as_mut())

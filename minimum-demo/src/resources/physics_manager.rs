@@ -1,4 +1,3 @@
-
 const GRAVITY: f32 = 0.0;
 
 //TODO: Are steps really necessary? Appropriate size?

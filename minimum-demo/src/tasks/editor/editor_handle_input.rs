@@ -1,10 +1,10 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
-use minimum::{ResourceTaskImpl, WriteComponent, TaskConfig, TaskContextFlags};
+use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent};
 
+use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState};
 #[cfg(feature = "editor")]
 use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
-use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState};
 
 #[cfg(feature = "editor")]
 use framework::components::editor::EditorSelectedComponent;
@@ -23,7 +23,7 @@ impl ResourceTaskImpl for EditorHandleInput {
         Read<EditorCollisionWorld>,
         WriteComponent<EditorSelectedComponent>,
         Write<DebugDraw>,
-        Write<EditorUiState>
+        Write<EditorUiState>,
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -43,7 +43,7 @@ impl ResourceTaskImpl for EditorHandleInput {
             editor_collision_world,
             mut editor_selected_components,
             mut debug_draw,
-            mut editor_ui_state
+            mut editor_ui_state,
         ) = data;
 
         if input_manager.is_key_just_down(VirtualKeyCode::Key1) {
@@ -63,7 +63,8 @@ impl ResourceTaskImpl for EditorHandleInput {
         }
 
         if context_flags.flags()
-            & (framework::context_flags::PLAYMODE_PAUSED | framework::context_flags::PLAYMODE_PLAYING)
+            & (framework::context_flags::PLAYMODE_PAUSED
+                | framework::context_flags::PLAYMODE_PLAYING)
             != 0
         {
             return;

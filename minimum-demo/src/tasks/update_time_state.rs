@@ -3,14 +3,17 @@ use rendy::wsi::winit;
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use framework::resources::{TimeState, FrameworkActionQueue};
-use crate::resources::{InputManager};
-
+use crate::resources::InputManager;
+use framework::resources::{FrameworkActionQueue, TimeState};
 
 pub struct UpdateTimeState;
 pub type UpdateTimeStateTask = minimum::ResourceTask<UpdateTimeState>;
 impl ResourceTaskImpl for UpdateTimeState {
-    type RequiredResources = (Write<TimeState>, Read<InputManager>, Write<FrameworkActionQueue>);
+    type RequiredResources = (
+        Write<TimeState>,
+        Read<InputManager>,
+        Write<FrameworkActionQueue>,
+    );
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
@@ -23,14 +26,13 @@ impl ResourceTaskImpl for UpdateTimeState {
         use framework::PlayMode;
         let (mut time_state, input_manager, mut game_control) = data;
 
-        let play_mode =
-            if context_flags.flags() & framework::context_flags::PLAYMODE_PLAYING != 0 {
-                PlayMode::Playing
-            } else if context_flags.flags() & framework::context_flags::PLAYMODE_PAUSED != 0 {
-                PlayMode::Paused
-            } else {
-                PlayMode::System
-            };
+        let play_mode = if context_flags.flags() & framework::context_flags::PLAYMODE_PLAYING != 0 {
+            PlayMode::Playing
+        } else if context_flags.flags() & framework::context_flags::PLAYMODE_PAUSED != 0 {
+            PlayMode::Paused
+        } else {
+            PlayMode::System
+        };
 
         time_state.update(play_mode);
 

@@ -1,6 +1,6 @@
-use crate::FrameworkComponentPrototype;
-use crate::components::editor::EditorModifiedComponent;
 use super::InspectorTab;
+use crate::components::editor::EditorModifiedComponent;
+use crate::FrameworkComponentPrototype;
 use hashbrown::HashMap;
 use minimum::component::ComponentStorage;
 use minimum::Component;
@@ -13,7 +13,7 @@ use imgui_inspect::InspectArgsStruct;
 enum InspectResult {
     Unchanged,
     Edited,
-    Deleted
+    Deleted,
 }
 
 //
@@ -116,9 +116,14 @@ where
         if data.len() > 0 {
             let header_text = &imgui::im_str!("{}", self.header_text);
             let _content_region = ui.window_content_region_max();
-            let draw_children = unsafe { imgui_sys::igCollapsingHeader(header_text.as_ptr(), imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32 | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32) };
+            let draw_children = unsafe {
+                imgui_sys::igCollapsingHeader(
+                    header_text.as_ptr(),
+                    imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32
+                        | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32,
+                )
+            };
             if draw_children {
-
                 //TODO: This is not woring well enough to be worth exposing
                 /*
                 ui.same_line(content_region[0] - 50.0);
@@ -134,7 +139,6 @@ where
                 } else
                 */
                 {
-
                     ui.indent();
 
                     let changed = <T as imgui_inspect::InspectRenderStruct<T>>::render_mut(
@@ -237,8 +241,7 @@ where
         &self,
         prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
         ui: &imgui::Ui,
-    ) -> InspectResult
-    {
+    ) -> InspectResult {
         if let Some(values) = prototypes.get_mut(&std::any::TypeId::of::<T>()) {
             let mut cast_values: Vec<&mut T> = vec![];
 
@@ -251,13 +254,17 @@ where
 
             {
                 let id_token = ui.push_id(core::any::type_name::<T>());
-                let draw_children = unsafe { imgui_sys::igCollapsingHeader(header_text.as_ptr(), imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32 | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32) };
+                let draw_children = unsafe {
+                    imgui_sys::igCollapsingHeader(
+                        header_text.as_ptr(),
+                        imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32
+                            | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32,
+                    )
+                };
                 ui.same_line(content_region[0] - 50.0);
                 let result = if ui.small_button(imgui::im_str!("Delete")) {
-
                     // The component was deleted
                     InspectResult::Deleted
-
                 } else if draw_children {
                     ui.indent();
 
@@ -280,7 +287,6 @@ where
                     } else {
                         InspectResult::Unchanged
                     }
-
                 } else {
                     // This component is collapsed, it cannot be edited
                     InspectResult::Unchanged
@@ -313,7 +319,7 @@ impl InspectRegistry {
 
     pub fn register_component<T: Component + 'static + imgui_inspect::InspectRenderStruct<T>>(
         &mut self,
-        header_text: &'static str
+        header_text: &'static str,
     ) {
         self.registered_components
             .push(Box::new(RegisteredComponent::<T>::new(header_text)));
@@ -323,10 +329,11 @@ impl InspectRegistry {
         T: FrameworkComponentPrototype + 'static + imgui_inspect::InspectRenderStruct<T>,
     >(
         &mut self,
-        header_text: &'static str
+        header_text: &'static str,
     ) {
-        self.registered_component_prototypes
-            .push(Box::new(RegisteredComponentPrototype::<T>::new(header_text)));
+        self.registered_component_prototypes.push(Box::new(
+            RegisteredComponentPrototype::<T>::new(header_text),
+        ));
     }
 
     pub fn render_mut(
@@ -334,7 +341,7 @@ impl InspectRegistry {
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
-        set_inspector_tab: &mut Option<InspectorTab>
+        set_inspector_tab: &mut Option<InspectorTab>,
     ) {
         let tab_bar_str = imgui::im_str!("Inspector");
 
@@ -359,15 +366,14 @@ impl InspectRegistry {
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
-        set_inspector_tab: &Option<InspectorTab>
+        set_inspector_tab: &Option<InspectorTab>,
     ) {
-
         // Gather all the prototype arcs we will be editing
         let mut storage = resource_map
-            .fetch_mut::<<crate::components::PersistentEntityComponent as Component>::Storage>();
+            .fetch_mut::<<crate::components::PersistentEntityComponent as Component>::Storage>(
+        );
 
         {
-
             let persistent_tab_str = imgui::im_str!("Persistent");
 
             let mut tab_flags = imgui_sys::ImGuiTabItemFlags_None;
@@ -386,14 +392,15 @@ impl InspectRegistry {
                 );
             }
 
-
             if tab_is_open {
                 // Prototypes is going to hold mut refs to values within the arcs/locks, so be careful with lifetimes here. (See unsafe block below)
                 let mut arcs = vec![];
                 let mut locks = vec![];
 
-                let mut prototypes =
-                    HashMap::<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>::new();
+                let mut prototypes = HashMap::<
+                    core::any::TypeId,
+                    Vec<&mut Box<dyn FrameworkComponentPrototype>>,
+                >::new();
 
                 for entity_handle in entity_handles {
                     let comp = storage.get_mut(&entity_handle);
@@ -433,10 +440,10 @@ impl InspectRegistry {
                     match rcp.render_mut(&mut prototypes, ui) {
                         InspectResult::Edited => {
                             mark_entity_modified = true;
-                        },
+                        }
                         InspectResult::Deleted => {
                             component_types_to_delete.push(rcp.handled_type());
-                        },
+                        }
                         InspectResult::Unchanged => {}
                     }
                 }
@@ -453,7 +460,8 @@ impl InspectRegistry {
                         // Iterate through the prototypes backwards so we can swap_remove them
                         for i in (0..component_prototypes.len()).rev() {
                             let component_prototype = &component_prototypes[i];
-                            let type_id = FrameworkComponentPrototype::type_id(&**component_prototype);
+                            let type_id =
+                                FrameworkComponentPrototype::type_id(&**component_prototype);
 
                             for component_type_to_delete in &component_types_to_delete {
                                 if type_id == *component_type_to_delete {
@@ -467,10 +475,12 @@ impl InspectRegistry {
 
                 // Put a EditorModifiedComponent component on all the given entities
                 if mark_entity_modified {
-                    let mut editor_modified_components = resource_map.fetch_mut::<<EditorModifiedComponent as Component>::Storage>();
+                    let mut editor_modified_components =
+                        resource_map.fetch_mut::<<EditorModifiedComponent as Component>::Storage>();
                     for entity_handle in entity_handles {
                         if !editor_modified_components.exists(&entity_handle) {
-                            editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
+                            editor_modified_components
+                                .allocate(&entity_handle, EditorModifiedComponent::new());
                         }
                     }
                 }
@@ -483,7 +493,7 @@ impl InspectRegistry {
         resource_map: &ResourceMap,
         entity_handles: &[EntityHandle],
         ui: &imgui::Ui,
-        set_inspector_tab: &Option<InspectorTab>
+        set_inspector_tab: &Option<InspectorTab>,
     ) {
         let runtime_tab_str = imgui::im_str!("Runtime");
 
@@ -506,11 +516,11 @@ impl InspectRegistry {
         if tab_is_open {
             for rc in &self.registered_components {
                 match rc.render_mut(resource_map, entity_handles, ui) {
-                    InspectResult::Edited => {},
+                    InspectResult::Edited => {}
                     InspectResult::Deleted => {
                         //TODO: Implement
-                    },
-                    InspectResult::Unchanged => {},
+                    }
+                    InspectResult::Unchanged => {}
                 }
             }
 

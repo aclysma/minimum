@@ -76,9 +76,7 @@ impl Renderer {
         // handling and recovery (such as the device being lost) are automatically handled
         let mut graph_builder = GraphBuilder::<Backend, ResourceMap>::new();
 
-        let size = window
-            .inner_size()
-            .to_physical(window.hidpi_factor());
+        let size = window.inner_size().to_physical(window.hidpi_factor());
         let window_kind = gfx_hal::image::Kind::D2(size.width as u32, size.height as u32, 1, 1);
 
         // The frame starts with a cleared color buffer
@@ -88,7 +86,7 @@ impl Renderer {
             self.factory.get_surface_format(&surface),
             Some(gfx_hal::command::ClearValue {
                 color: gfx_hal::command::ClearColor {
-                    float32: [0.1, 0.1, 0.1, 1.0].into()
+                    float32: [0.1, 0.1, 0.1, 1.0].into(),
                 },
             }),
         );
@@ -125,7 +123,7 @@ impl Renderer {
         let pass1 = pass0;
 
         let present_builder =
-        PresentNode::builder(&self.factory, surface, color).with_dependency(pass1);
+            PresentNode::builder(&self.factory, surface, color).with_dependency(pass1);
 
         let swapchain_backbuffer_count = present_builder.image_count();
         resource_map.fetch_mut::<resources::RenderState>().init(

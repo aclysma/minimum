@@ -2,10 +2,10 @@ use std::prelude::v1::*;
 
 use hashbrown::HashMap;
 
+use super::Phase;
 use super::RegisteredType;
 use super::TaskConfig;
 use super::TaskFactory;
-use super::Phase;
 
 // Register tasks in the TaskScheduleBuilder
 // Process unordered tasks to produce depenency-aware ordering
@@ -15,19 +15,19 @@ use super::Phase;
 
 /// Used to construct a task schedule
 pub struct TaskDependencyListBuilder {
-    tasks: HashMap<RegisteredType, TaskConfig>
+    tasks: HashMap<RegisteredType, TaskConfig>,
 }
 
 impl TaskDependencyListBuilder {
     /// Create an empty schedule
     pub fn new() -> Self {
         TaskDependencyListBuilder {
-            tasks: HashMap::default()
+            tasks: HashMap::default(),
         }
     }
 
     /// Add a task to be scheduled when `build()` is called
-    pub fn add_task<T : TaskFactory>(&mut self) {
+    pub fn add_task<T: TaskFactory>(&mut self) {
         let mut task_config = TaskConfig::new(Some(T::create()));
         let registered_type = RegisteredType::of::<T>();
         T::configure(&mut task_config);
@@ -37,7 +37,7 @@ impl TaskDependencyListBuilder {
     }
 
     /// Add a phase to be scheduled when `build()` is called
-    pub fn add_phase<T : Phase>(&mut self) {
+    pub fn add_phase<T: Phase>(&mut self) {
         let mut task_config = TaskConfig::new(None);
         let registered_type = RegisteredType::of::<T>();
         T::configure(&mut task_config);
@@ -55,7 +55,9 @@ impl TaskDependencyListBuilder {
 
         // Populate before_after_dependencies with require_run_before requirements
         for (task, config) in &self.tasks {
-            let entry = before_after_dependencies.entry(task.clone()).or_insert(vec![]);
+            let entry = before_after_dependencies
+                .entry(task.clone())
+                .or_insert(vec![]);
             for before_task in &config.require_run_before {
                 // task depends on before_task finishing
                 entry.push(before_task.clone());
@@ -66,7 +68,10 @@ impl TaskDependencyListBuilder {
         for (task, config) in &self.tasks {
             for after_task in &config.require_run_after {
                 // task depends on after_task finishing
-                before_after_dependencies.entry(after_task.clone()).or_insert(vec![]).push(task.clone());
+                before_after_dependencies
+                    .entry(after_task.clone())
+                    .or_insert(vec![])
+                    .push(task.clone());
             }
         }
 
@@ -80,13 +85,21 @@ impl TaskDependencyListBuilder {
             for during_phase in &config.require_run_during {
                 // task depends on during_phase's dependencies (phase_dependencies) AS THEY WERE BEFORE THIS LOOP
                 // This is why we keep before_after_dependencies and during_dependencies separate for now
-                let phase_dependencies = before_after_dependencies.entry(during_phase.clone()).or_insert(vec![]);
+                let phase_dependencies = before_after_dependencies
+                    .entry(during_phase.clone())
+                    .or_insert(vec![]);
                 for phase_dependency in phase_dependencies {
-                    during_dependencies.entry(task.clone()).or_insert(vec![]).push(phase_dependency.clone());
+                    during_dependencies
+                        .entry(task.clone())
+                        .or_insert(vec![])
+                        .push(phase_dependency.clone());
                 }
 
                 // during_phase depends on the task that executes within it
-                during_dependencies.entry(during_phase.clone()).or_insert(vec![]).push(task.clone());
+                during_dependencies
+                    .entry(during_phase.clone())
+                    .or_insert(vec![])
+                    .push(task.clone());
             }
         }
 
@@ -136,10 +149,12 @@ impl TaskDependencyListBuilder {
                                 println!("{:?} depends on {:?}", cycle[i], cycle[i + 1]);
                             }
 
-                            panic!("Could not produce schedule, a task dependency cycle was detected");
+                            panic!(
+                                "Could not produce schedule, a task dependency cycle was detected"
+                            );
                         }
                     }
-                };
+                }
             }
 
             // Remove each ready task from the hashmap (both keys/values)
@@ -149,7 +164,10 @@ impl TaskDependencyListBuilder {
 
                 // Remove the task from all other tasks's values, wherever it exists
                 for (_task, dependencies) in combined_dependencies.iter_mut() {
-                    dependencies.iter().position(|x| *x == *ready_task).map(|i| dependencies.swap_remove(i));
+                    dependencies
+                        .iter()
+                        .position(|x| *x == *ready_task)
+                        .map(|i| dependencies.swap_remove(i));
                 }
             }
 
@@ -167,7 +185,6 @@ impl TaskDependencyListBuilder {
 
         assert!(self.tasks.is_empty());
 
-
         for task in &execution_order {
             println!("task: {:?}", task);
         }
@@ -183,15 +200,11 @@ impl TaskDependencyListBuilder {
 
 /// A calculated task schedule. Can be used to call all tasks in the schedule
 pub struct TaskDependencyList {
-    pub execution_order: Vec<TaskConfig>
+    pub execution_order: Vec<TaskConfig>,
 }
 
 impl TaskDependencyList {
     pub fn new(execution_order: Vec<TaskConfig>) -> Self {
-        TaskDependencyList {
-            execution_order
-        }
+        TaskDependencyList { execution_order }
     }
 }
-
-

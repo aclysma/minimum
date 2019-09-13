@@ -6,17 +6,17 @@ pub use registry::InspectRegistry;
 #[derive(PartialEq, Debug)]
 pub enum InspectorTab {
     Persistent = 0,
-    Runtime = 1
+    Runtime = 1,
 }
 
-use minimum::ResourceMap;
+use crate::components;
+use crate::resources;
 use minimum::Component;
 use minimum::ComponentStorage;
-use crate::resources;
-use crate::components;
+use minimum::ResourceMap;
 
-use components::PersistentEntityComponent;
 use crate::components::editor::EditorModifiedComponent;
+use components::PersistentEntityComponent;
 
 pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
     let play_mode = resource_map.fetch::<resources::TimeState>().play_mode;
@@ -29,7 +29,8 @@ pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
     let entity_set = resource_map.fetch::<minimum::EntitySet>();
     let selected_entity_handles = {
         let selected_components =
-            resource_map.fetch_mut::<<components::editor::EditorSelectedComponent as Component>::Storage>();
+            resource_map
+                .fetch_mut::<<components::editor::EditorSelectedComponent as Component>::Storage>();
         let mut selected = vec![];
         for (entity_handle, _) in selected_components.iter(&entity_set) {
             selected.push(entity_handle);

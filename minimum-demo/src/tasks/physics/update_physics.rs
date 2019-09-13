@@ -1,9 +1,9 @@
 use minimum::resource::{DataRequirement, Read, Write};
 
-use framework::resources::TimeState;
 use crate::resources::PhysicsManager;
+use framework::resources::TimeState;
 
-use minimum::{ResourceTaskImpl, TaskConfig, ResourceTask, TaskContextFlags};
+use minimum::{ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 pub struct UpdatePhysics;
 pub type UpdatePhysicsTask = ResourceTask<UpdatePhysics>;

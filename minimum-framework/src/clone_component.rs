@@ -1,21 +1,21 @@
 use crate::persist::ComponentPrototypeSerializer;
-use crate::FrameworkComponentPrototype;
 #[cfg(feature = "editor")]
 use crate::select::SelectableComponentPrototype;
+use crate::FrameworkComponentPrototype;
+use minimum::BasicComponentPrototype;
 use minimum::Component;
 use minimum::ComponentFactory;
 use minimum::ComponentPrototype;
 use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
-use minimum::BasicComponentPrototype;
 
 use minimum::component::ComponentCreateQueueFlushListener;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 #[cfg(feature = "editor")]
-use imgui_inspect::{InspectRenderStruct, InspectArgsDefault, InspectArgsStruct};
+use imgui_inspect::{InspectArgsDefault, InspectArgsStruct, InspectRenderStruct};
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
@@ -50,7 +50,7 @@ impl<T: Component + Clone> FrameworkComponentPrototype for CloneComponentPrototy
 impl<T: Component + Clone + Default> Default for CloneComponentPrototype<T> {
     fn default() -> Self {
         CloneComponentPrototype {
-            inner: BasicComponentPrototype::new(Default::default())
+            inner: BasicComponentPrototype::new(Default::default()),
         }
     }
 }
@@ -60,9 +60,9 @@ impl<T: Component + Clone + Default> Default for CloneComponentPrototype<T> {
 //
 #[cfg(feature = "editor")]
 impl<T> imgui_inspect::InspectRenderDefault<CloneComponentPrototype<T>>
-for CloneComponentPrototype<T>
-    where
-        T: Component + Clone + InspectRenderStruct<T>,
+    for CloneComponentPrototype<T>
+where
+    T: Component + Clone + InspectRenderStruct<T>,
 {
     fn render(
         data: &[&CloneComponentPrototype<T>],
@@ -70,7 +70,12 @@ for CloneComponentPrototype<T>
         ui: &imgui::Ui,
         args: &imgui_inspect::InspectArgsDefault,
     ) {
-        <Self as imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>>::render(data, label, ui, &InspectArgsStruct::from((*args).clone()))
+        <Self as imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>>::render(
+            data,
+            label,
+            ui,
+            &InspectArgsStruct::from((*args).clone()),
+        )
     }
 
     fn render_mut(
@@ -79,7 +84,12 @@ for CloneComponentPrototype<T>
         ui: &imgui::Ui,
         args: &InspectArgsDefault,
     ) -> bool {
-        <Self as imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>>::render_mut(data, label, ui, &InspectArgsStruct::from((*args).clone()))
+        <Self as imgui_inspect::InspectRenderStruct<CloneComponentPrototype<T>>>::render_mut(
+            data,
+            label,
+            ui,
+            &InspectArgsStruct::from((*args).clone()),
+        )
     }
 }
 #[cfg(feature = "editor")]
@@ -122,7 +132,9 @@ where
 impl<T: Component + Clone + Serialize + DeserializeOwned>
     ComponentPrototypeSerializer<CloneComponentPrototype<T>> for CloneComponentPrototype<T>
 {
-    fn serialize(prototype: &CloneComponentPrototype<T>) -> Result<serde_json::Value, failure::Error> {
+    fn serialize(
+        prototype: &CloneComponentPrototype<T>,
+    ) -> Result<serde_json::Value, failure::Error> {
         Ok(serde_json::to_value(prototype.inner.data())?)
     }
 
@@ -134,8 +146,15 @@ impl<T: Component + Clone + Serialize + DeserializeOwned>
 }
 
 #[cfg(feature = "editor")]
-impl<T: Component + Clone + SelectableComponentPrototype<T>> SelectableComponentPrototype<CloneComponentPrototype<T>> for CloneComponentPrototype<T> {
-    fn create_selection_shape(data: &CloneComponentPrototype<T>) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+impl<T: Component + Clone + SelectableComponentPrototype<T>>
+    SelectableComponentPrototype<CloneComponentPrototype<T>> for CloneComponentPrototype<T>
+{
+    fn create_selection_shape(
+        data: &CloneComponentPrototype<T>,
+    ) -> (
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    ) {
         T::create_selection_shape(&data.inner.data())
     }
 }

@@ -1,6 +1,5 @@
-
-use imgui_inspect::InspectRenderDefault;
 use imgui_inspect::InspectArgsDefault;
+use imgui_inspect::InspectRenderDefault;
 
 pub struct ImGlmColor4;
 impl InspectRenderDefault<glm::Vec4> for ImGlmColor4 {
@@ -18,7 +17,7 @@ impl InspectRenderDefault<glm::Vec4> for ImGlmColor4 {
             &imgui::im_str!("{}", label),
             [data[0].x, data[0].y, data[0].z, data[0].w],
         )
-            .build(ui);
+        .build(ui);
     }
 
     fn render_mut(
@@ -34,10 +33,10 @@ impl InspectRenderDefault<glm::Vec4> for ImGlmColor4 {
         let mut changed = false;
         let mut val = [data[0].x, data[0].y, data[0].z, data[0].w];
         if imgui::ColorEdit::new(
-                &imgui::im_str!("{}", label),
-                imgui::EditableColor::from(&mut val),
-            )
-            .build(ui)
+            &imgui::im_str!("{}", label),
+            imgui::EditableColor::from(&mut val),
+        )
+        .build(ui)
         {
             changed = true;
             for d in data {

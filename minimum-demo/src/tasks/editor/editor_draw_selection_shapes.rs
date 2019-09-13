@@ -62,8 +62,6 @@ impl ResourceTaskImpl for EditorDrawSelectionShapes {
                     color,
                 );
             }
-
-
         }
     }
 }

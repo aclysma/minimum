@@ -1,10 +1,8 @@
-
 use minimum::task::ReadAllTaskImpl;
-use minimum::TaskConfig;
-use minimum::ResourceMap;
 use minimum::EntitySet;
+use minimum::ResourceMap;
+use minimum::TaskConfig;
 use minimum::TaskContextFlags;
-
 
 pub struct UpdateEntitySet;
 pub type UpdateEntitySetTask = minimum::ReadAllTask<UpdateEntitySet>;

@@ -1,4 +1,3 @@
-
 mod multi_thread;
 pub use multi_thread::TaskScheduleBuilderMultiThread;
 pub use multi_thread::TaskScheduleMultiThread;
@@ -9,10 +8,10 @@ pub use single_thread::TaskScheduleSingleThread;
 
 //TODO: Implement future_graph
 
+use super::ResourceMap;
 use super::TaskConfig;
+use super::TaskContextFlags;
 use super::TaskDependencyList;
 use super::TaskStage;
-use super::TrustCell;
-use super::ResourceMap;
-use super::TaskContextFlags;
 use super::TaskWithFilter;
+use super::TrustCell;

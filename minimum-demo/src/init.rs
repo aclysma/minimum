@@ -1,4 +1,3 @@
-
 use rendy::wsi::winit;
 
 #[cfg(feature = "editor")]
@@ -7,7 +6,6 @@ use crate::imgui_themes;
 use crate::resources::ImguiManager;
 #[cfg(feature = "editor")]
 use imgui;
-
 
 use crate::resources::WindowUserEvent;
 

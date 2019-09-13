@@ -88,12 +88,11 @@ impl ImguiManager {
                 // Do not pass along a backspace character
                 // This hack can be removed when https://github.com/Gekkio/imgui-rs/pull/253 is
                 // implemented upstream and I switch to using it
-            },
+            }
             _ => {
                 platform.handle_event(context.io_mut(), &window, &event);
             }
         }
-
     }
 
     // Allows access to the context without caller needing to be aware of locking

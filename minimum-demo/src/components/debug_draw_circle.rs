@@ -1,12 +1,11 @@
-
 #[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
 
 #[cfg(feature = "editor")]
+use framework::select::SelectableComponentPrototype;
+#[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
-#[cfg(feature = "editor")]
-use framework::select::SelectableComponentPrototype;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawCircleComponent {
@@ -21,18 +20,14 @@ impl Default for DebugDrawCircleComponent {
     fn default() -> Self {
         DebugDrawCircleComponent {
             radius: 10.0,
-            color: glm::vec4(1.0, 1.0, 1.0, 1.0)
+            color: glm::vec4(1.0, 1.0, 1.0, 1.0),
         }
     }
 }
 
 impl DebugDrawCircleComponent {
     pub fn new(radius: f32, color: glm::Vec4) -> Self {
-        DebugDrawCircleComponent {
-            radius,
-            color
-        }
-
+        DebugDrawCircleComponent { radius, color }
     }
 
     pub fn radius(&self) -> f32 {
@@ -46,9 +41,17 @@ impl DebugDrawCircleComponent {
 
 #[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
-    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+    fn create_selection_shape(
+        data: &Self,
+    ) -> (
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    ) {
         use ncollide2d::shape::{Ball, ShapeHandle};
-        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE))))
+        (
+            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE))),
+        )
     }
 }
 

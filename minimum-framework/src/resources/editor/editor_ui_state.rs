@@ -1,5 +1,5 @@
-use imgui::ImString;
 use crate::inspect::InspectorTab;
+use imgui::ImString;
 
 pub struct WindowOptions {
     pub show_imgui_metrics: bool,
@@ -49,7 +49,7 @@ pub struct EditorUiState {
     pub window_options_running: WindowOptions,
     pub window_options_editing: WindowOptions,
     pub set_inspector_tab: Option<InspectorTab>,
-    pub active_editor_tool: EditorTool
+    pub active_editor_tool: EditorTool,
 }
 
 impl EditorUiState {
@@ -59,7 +59,7 @@ impl EditorUiState {
             window_options_running: WindowOptions::new_runtime(),
             window_options_editing: WindowOptions::new_editing(),
             set_inspector_tab: None,
-            active_editor_tool: EditorTool::Select
+            active_editor_tool: EditorTool::Select,
         }
     }
 

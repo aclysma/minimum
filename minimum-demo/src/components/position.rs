@@ -1,4 +1,3 @@
-
 #[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
 
@@ -20,7 +19,7 @@ impl Default for PositionComponent {
     fn default() -> Self {
         PositionComponent {
             position: glm::zero(),
-            requires_sync_to_physics: false
+            requires_sync_to_physics: false,
         }
     }
 }

@@ -1,13 +1,12 @@
-
 #[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
 
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 
-use minimum::component::SlabComponentStorage;
 #[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
+use minimum::component::SlabComponentStorage;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawRectComponent {
@@ -22,17 +21,14 @@ impl Default for DebugDrawRectComponent {
     fn default() -> Self {
         DebugDrawRectComponent {
             size: glm::vec2(10.0, 10.0),
-            color: glm::vec4(1.0, 1.0, 1.0, 1.0)
+            color: glm::vec4(1.0, 1.0, 1.0, 1.0),
         }
     }
 }
 
 impl DebugDrawRectComponent {
     pub fn new(size: glm::Vec2, color: glm::Vec4) -> Self {
-        DebugDrawRectComponent {
-            size,
-            color
-        }
+        DebugDrawRectComponent { size, color }
     }
 
     pub fn size(&self) -> glm::Vec2 {
@@ -46,9 +42,17 @@ impl DebugDrawRectComponent {
 
 #[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for DebugDrawRectComponent {
-    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+    fn create_selection_shape(
+        data: &Self,
+    ) -> (
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    ) {
         use ncollide2d::shape::{Cuboid, ShapeHandle};
-        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Cuboid::new(data.size / 2.0)))
+        (
+            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ShapeHandle::new(Cuboid::new(data.size / 2.0)),
+        )
     }
 }
 

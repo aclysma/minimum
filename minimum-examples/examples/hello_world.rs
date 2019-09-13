@@ -1,4 +1,7 @@
-use minimum::{ResourceTask, ResourceTaskImpl, DataRequirement, Write, TaskConfig, WorldBuilder, TaskContextFlags};
+use minimum::{
+    DataRequirement, ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags, WorldBuilder,
+    Write,
+};
 
 //
 // This is an example resource. Resources contain data that tasks can operate on.
@@ -26,7 +29,10 @@ impl ResourceTaskImpl for Example {
         // task_config can be used to set up contraints on when this task can run
     }
 
-    fn run(_context_flags: &TaskContextFlags, data: <Self::RequiredResources as DataRequirement>::Borrow) {
+    fn run(
+        _context_flags: &TaskContextFlags,
+        data: <Self::RequiredResources as DataRequirement>::Borrow,
+    ) {
         let mut example_resource = data;
         example_resource.update();
     }

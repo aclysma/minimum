@@ -1,7 +1,5 @@
-
-
-use minimum::task::WriteAllTaskImpl;
 use crate::resources;
+use minimum::task::WriteAllTaskImpl;
 
 use minimum::task::TaskConfig;
 use minimum::ResourceMap;
@@ -15,7 +13,8 @@ impl WriteAllTaskImpl for FrameworkUpdateActionQueue {
     }
 
     fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
-        let mut framework_action_queue = resource_map.fetch_mut::<resources::FrameworkActionQueue>();
+        let mut framework_action_queue =
+            resource_map.fetch_mut::<resources::FrameworkActionQueue>();
         framework_action_queue.process_queue(resource_map);
     }
 }

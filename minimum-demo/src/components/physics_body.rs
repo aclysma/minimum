@@ -156,15 +156,20 @@ pub struct PhysicsBodyComponentPrototypeBox {
     collision_group_blacklist: u32,
 }
 
-
 impl PhysicsBodyComponentPrototypeBox {
-    pub fn new(size: glm::Vec2, mass: f32, collision_group_membership: u32, collision_group_whitelist: u32, collision_group_blacklist: u32) -> Self {
+    pub fn new(
+        size: glm::Vec2,
+        mass: f32,
+        collision_group_membership: u32,
+        collision_group_whitelist: u32,
+        collision_group_blacklist: u32,
+    ) -> Self {
         PhysicsBodyComponentPrototypeBox {
             size,
             mass,
             collision_group_membership,
             collision_group_whitelist,
-            collision_group_blacklist
+            collision_group_blacklist,
         }
     }
 }
@@ -176,7 +181,7 @@ impl Default for PhysicsBodyComponentPrototypeBox {
             mass: 0.0,
             collision_group_membership: 0,
             collision_group_whitelist: 0,
-            collision_group_blacklist: 0
+            collision_group_blacklist: 0,
         }
     }
 }
@@ -189,9 +194,17 @@ impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeBox {}
 
 #[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeBox {
-    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+    fn create_selection_shape(
+        data: &Self,
+    ) -> (
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    ) {
         use ncollide2d::shape::{Cuboid, ShapeHandle};
-        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Cuboid::new(data.size / 2.0)))
+        (
+            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ShapeHandle::new(Cuboid::new(data.size / 2.0)),
+        )
     }
 }
 
@@ -207,15 +220,20 @@ pub struct PhysicsBodyComponentPrototypeCircle {
     collision_group_blacklist: u32,
 }
 
-
 impl PhysicsBodyComponentPrototypeCircle {
-    pub fn new(radius: f32, mass: f32, collision_group_membership: u32, collision_group_whitelist: u32, collision_group_blacklist: u32) -> Self {
+    pub fn new(
+        radius: f32,
+        mass: f32,
+        collision_group_membership: u32,
+        collision_group_whitelist: u32,
+        collision_group_blacklist: u32,
+    ) -> Self {
         PhysicsBodyComponentPrototypeCircle {
             radius,
             mass,
             collision_group_membership,
             collision_group_whitelist,
-            collision_group_blacklist
+            collision_group_blacklist,
         }
     }
 }
@@ -227,7 +245,7 @@ impl Default for PhysicsBodyComponentPrototypeCircle {
             mass: 0.0,
             collision_group_membership: 0,
             collision_group_whitelist: 0,
-            collision_group_blacklist: 0
+            collision_group_blacklist: 0,
         }
     }
 }
@@ -240,9 +258,17 @@ impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCircle {}
 
 #[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeCircle {
-    fn create_selection_shape(data: &Self) -> (ncollide2d::math::Isometry<f32>, ncollide2d::shape::ShapeHandle<f32>) {
+    fn create_selection_shape(
+        data: &Self,
+    ) -> (
+        ncollide2d::math::Isometry<f32>,
+        ncollide2d::shape::ShapeHandle<f32>,
+    ) {
         use ncollide2d::shape::{Ball, ShapeHandle};
-        (ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0), ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE))))
+        (
+            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE))),
+        )
     }
 }
 
@@ -306,7 +332,11 @@ impl ComponentFactory<PhysicsBodyComponentPrototypeCircle> for PhysicsBodyCompon
     }
 }
 
-fn create_collision_groups(membership: u32, whitelist: u32, blacklist: u32) -> ncollide2d::world::CollisionGroups {
+fn create_collision_groups(
+    membership: u32,
+    whitelist: u32,
+    blacklist: u32,
+) -> ncollide2d::world::CollisionGroups {
     // Start with an empty group. (If we don't specify membership, it will default to being in all groups)
     let mut groups = ncollide2d::world::CollisionGroups::new()
         .with_membership(&[])
@@ -314,9 +344,9 @@ fn create_collision_groups(membership: u32, whitelist: u32, blacklist: u32) -> n
         .with_blacklist(&[]);
 
     for i in 0..ncollide2d::world::CollisionGroups::max_group_id() as u32 {
-        groups.modify_membership(i as usize, membership & (1<<i) != 0);
-        groups.modify_whitelist(i as usize, whitelist & (1<<i) != 0);
-        groups.modify_blacklist(i as usize, blacklist & (1<<i) != 0);
+        groups.modify_membership(i as usize, membership & (1 << i) != 0);
+        groups.modify_whitelist(i as usize, whitelist & (1 << i) != 0);
+        groups.modify_blacklist(i as usize, blacklist & (1 << i) != 0);
     }
 
     groups
@@ -352,9 +382,11 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
 
                         let collider_desc = ColliderDesc::new(shape)
                             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
-                            .collision_groups(
-                                create_collision_groups(data.collision_group_membership, data.collision_group_whitelist, data.collision_group_blacklist)
-                            );
+                            .collision_groups(create_collision_groups(
+                                data.collision_group_membership,
+                                data.collision_group_whitelist,
+                                data.collision_group_blacklist,
+                            ));
 
                         let body_desc = RigidBodyDesc::new()
                             .translation(center)
@@ -364,19 +396,22 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                         let body = physics.world_mut().add_body(&body_desc);
                         entity
                             .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
-                    },
+                    }
 
                     QueuedPhysicsBodyPrototypes::Circle(data) => {
                         use ncollide2d::shape::{Ball, ShapeHandle};
                         use nphysics2d::material::{BasicMaterial, MaterialHandle};
 
-                        let shape = ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE)));
+                        let shape =
+                            ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE)));
 
                         let collider_desc = ColliderDesc::new(shape)
                             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
-                            .collision_groups(
-                                create_collision_groups(data.collision_group_membership, data.collision_group_whitelist, data.collision_group_blacklist)
-                            );
+                            .collision_groups(create_collision_groups(
+                                data.collision_group_membership,
+                                data.collision_group_whitelist,
+                                data.collision_group_blacklist,
+                            ));
 
                         let body_desc = RigidBodyDesc::new()
                             .translation(center)
