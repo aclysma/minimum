@@ -1,4 +1,5 @@
 mod debug_draw;
+mod editor_draw;
 mod debug_options;
 mod input_manager;
 mod physics_manager;
@@ -6,6 +7,7 @@ mod render_state;
 mod window_interface;
 
 pub use debug_draw::DebugDraw;
+pub use editor_draw::EditorDraw;
 pub use debug_options::DebugOptions;
 pub use input_manager::InputManager;
 pub use input_manager::MouseButtons;

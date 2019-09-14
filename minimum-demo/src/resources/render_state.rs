@@ -7,6 +7,10 @@ pub struct RenderState {
     world_space_matrix: glm::Mat4,
 }
 
+// UI space: pixels, top-left: (0, 0), bottom-right: (window width in pixels, window height in pixels)
+// Raw space: top-left: (-1, -1), bottom-right: (1, 1)
+// world space: x positive to the right, y positive going up. width/values depend on camera
+// screen space: top-left: (0, 600), bottom-right: (+x, 0) where +x is 600 * screen ratio (i.e. 1066 = ((16/9 * 600) for a 16:9 screen)
 impl RenderState {
     //TODO: Find some alternative that prevents this from having to ever be in an invalid state
     pub fn empty() -> Self {
@@ -56,25 +60,15 @@ impl RenderState {
         &self.world_space_matrix
     }
 
-    // this is based on window size (i.e. pixels)
-    // bottom-left: (0, 0)
-    // top-right: (window_width_in_pixels, window_height_in_pixels)
     pub fn set_ui_space_view(&mut self, matrix: glm::Mat4) {
         self.ui_space_matrix = matrix;
     }
 
-    // this is a virtual coordinate system
-    // top-left: (0, 0)
-    // bottom-right: (600 * aspect_ratio, 600) where aspect_ratio is window_width / window_height
     pub fn set_screen_space_view(&mut self, matrix: glm::Mat4, dimensions: glm::Vec2) {
         self.screen_space_matrix = matrix;
         self.screen_space_dimensions = dimensions;
     }
 
-    // this is a virtual coordinate system where h = 600 and w = 600 * aspect_ratio where
-    // aspect_ratio is window_width / window_height
-    // top-left: (-w/2, -h/2)
-    // bottom-right: (w/2, h/2)
     pub fn set_world_space_view(&mut self, camera_position: glm::Vec3, matrix: glm::Mat4) {
         self.world_space_camera_position = camera_position;
         self.world_space_matrix = matrix;
@@ -92,4 +86,34 @@ impl RenderState {
 
         position.xy()
     }
+
+    pub fn ui_space_to_screen_space(&self, ui_position: glm::Vec2) -> glm::Vec2 {
+        // input is a position in pixels
+        let position = glm::vec4(ui_position.x, ui_position.y, 0.0, 1.0);
+
+        // project to raw space
+        let position = self.ui_space_matrix * position;
+
+        // project to world space
+        let position = glm::inverse(&self.screen_space_matrix) * position;
+
+        position.xy()
+    }
+
+    pub fn world_space_to_ui_space(&self, world_position: glm::Vec2) -> glm::Vec2 {
+        // input is a position in pixels
+        let position = glm::vec4(world_position.x, world_position.y, 0.0, 1.0);
+
+        // project to raw space
+        let position = self.world_space_matrix * position;
+
+        // project to world space
+        let position = glm::inverse(&self.ui_space_matrix) * position;
+
+        position.xy()
+    }
+
+
+
+
 }

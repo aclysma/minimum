@@ -91,6 +91,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
                 .with_resource(framework::resources::editor::EditorCollisionWorld::new())
                 .with_resource(framework::resources::editor::EditorUiState::new())
                 .with_resource(framework::resources::editor::EditorActionQueue::new())
+                .with_resource(resources::EditorDraw::new())
                 .with_component_and_free_handler::<_, _, framework::components::editor::EditorShapeComponentFreeHandler>(
                     <framework::components::editor::EditorShapeComponent as Component>::Storage::new(),
                 )

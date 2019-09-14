@@ -54,6 +54,12 @@ impl DebugDraw {
         self.add_polygon(points, color);
     }
 
+    pub fn add_line(&mut self, p0: glm::Vec2, p1: glm::Vec2, color: glm::Vec4) {
+        let points = vec![p0, p1];
+
+        self.add_polygon(points, color);
+    }
+
     // Returns the draw data, leaving this object in an empty state
     pub fn take_line_lists(&mut self) -> Vec<LineList> {
         std::mem::replace(&mut self.line_lists, vec![])
