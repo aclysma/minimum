@@ -33,7 +33,7 @@ pub fn create_wall(
         FrameworkEntityPersistencePolicy::Persistent,
         vec![
             Box::new(CloneComponentPrototype::new(
-                components::PositionComponent::new(center),
+                components::TransformComponent::new(center, glm::vec2(1.0, 1.0), 0.0),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::DebugDrawRectComponent::new(size, color),
@@ -66,7 +66,7 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
                 components::PlayerComponent::new(),
             )),
             Box::new(CloneComponentPrototype::new(
-                components::PositionComponent::new(position),
+                components::TransformComponent::new(position, glm::vec2(1.0, 1.0), 0.0),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::DebugDrawCircleComponent::new(radius, color),
@@ -130,7 +130,7 @@ pub fn create_bullet(
         FrameworkEntityPersistencePolicy::Transient,
         vec![
             Box::new(CloneComponentPrototype::new(
-                components::PositionComponent::new(position),
+                components::TransformComponent::new(position, glm::vec2(1.0, 1.0), 0.0),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::VelocityComponent::new(velocity),

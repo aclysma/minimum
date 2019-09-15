@@ -20,7 +20,7 @@ impl ResourceTaskImpl for ControlPlayerEntity {
         Read<TimeState>,
         Read<RenderState>,
         ReadComponent<components::PlayerComponent>,
-        ReadComponent<components::PositionComponent>,
+        ReadComponent<components::TransformComponent>,
         Write<EntityFactory>,
         ReadComponent<components::PhysicsBodyComponent>,
         Write<PhysicsManager>,
@@ -42,7 +42,7 @@ impl ResourceTaskImpl for ControlPlayerEntity {
             time_state,
             render_state,
             player_components,
-            position_components,
+            transform_components,
             mut entity_factory,
             physics_body_components,
             mut physics_manager,
@@ -52,7 +52,7 @@ impl ResourceTaskImpl for ControlPlayerEntity {
 
         for (entity, _p) in player_components.iter(&entity_set) {
             if let (Some(pos), Some(physics_body_component)) = (
-                position_components.get(&entity),
+                transform_components.get(&entity),
                 physics_body_components.get(&entity),
             ) {
                 let mut direction: glm::Vec2 = glm::zero();

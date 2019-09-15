@@ -4,30 +4,44 @@ use framework::inspect::common_types::*;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::VecComponentStorage;
+use framework::CloneComponentPrototype;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
-pub struct PositionComponent {
-    #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_position_updated")]
+pub struct TransformComponent {
+    #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_transform_updated")]
     position: glm::Vec2,
+
+    #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_transform_updated")]
+    scale: glm::Vec2,
+
+    #[inspect(on_set = "inspect_transform_updated")]
+    rotation: f32,
 
     #[inspect(skip)]
     #[serde(skip)]
     requires_sync_to_physics: bool,
 }
 
-impl Default for PositionComponent {
+pub type TransformComponentPrototype = CloneComponentPrototype<TransformComponent>;
+
+impl Default for TransformComponent {
     fn default() -> Self {
-        PositionComponent {
+        TransformComponent {
             position: glm::zero(),
+            scale: glm::zero(),
+            rotation: 0.0,
             requires_sync_to_physics: false,
         }
     }
 }
 
-impl PositionComponent {
-    pub fn new(position: glm::Vec2) -> Self {
-        PositionComponent {
+impl TransformComponent {
+    pub fn new(position: glm::Vec2, scale: glm::Vec2, rotation: f32) -> Self {
+        TransformComponent {
             position,
+            scale,
+            rotation,
             requires_sync_to_physics: false,
         }
     }
@@ -52,11 +66,15 @@ impl PositionComponent {
     // - Allow register callback on inspector?
     // - Some sort of flagging system?
     // - Attach an extra component?
-    pub fn inspect_position_updated(&mut self) {
+    pub fn inspect_transform_updated(&mut self) {
+        self.requires_sync_to_physics = true;
+    }
+
+    pub fn editor_transform_updated(&mut self) {
         self.requires_sync_to_physics = true;
     }
 }
 
-impl minimum::Component for PositionComponent {
+impl minimum::Component for TransformComponent {
     type Storage = VecComponentStorage<Self>;
 }

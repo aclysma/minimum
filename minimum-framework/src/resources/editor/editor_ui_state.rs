@@ -38,10 +38,10 @@ impl WindowOptions {
 // If adding to this, don't forget to hook up keyboard shortcuts and buttons
 #[derive(PartialEq)]
 pub enum EditorTool {
-    Select,
+    //Select,
     Translate,
-    Rotate,
     Scale,
+    Rotate,
 }
 
 pub struct EditorUiState {
@@ -59,7 +59,7 @@ impl EditorUiState {
             window_options_running: WindowOptions::new_runtime(),
             window_options_editing: WindowOptions::new_editing(),
             set_inspector_tab: None,
-            active_editor_tool: EditorTool::Select,
+            active_editor_tool: EditorTool::Translate,
         }
     }
 

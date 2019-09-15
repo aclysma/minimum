@@ -3,13 +3,15 @@ use minimum::ComponentStorage;
 use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, ReadComponent, Component, EntitySet};
 
 use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState, EditorDraw};
-#[cfg(feature = "editor")]
 use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
+use framework::components::PersistentEntityComponent;
 
-#[cfg(feature = "editor")]
 use framework::components::editor::EditorSelectedComponent;
+use framework::components::editor::EditorTranslatedComponent;
+
 use ncollide2d::world::CollisionGroups;
-use crate::components::PositionComponent;
+use crate::components::TransformComponent;
+use crate::components::TransformComponentPrototype;
 
 use rendy::wsi::winit;
 use winit::event::VirtualKeyCode;
@@ -26,7 +28,8 @@ impl ResourceTaskImpl for EditorHandleInput {
         Write<DebugDraw>,
         Write<EditorUiState>,
         Write<EditorDraw>,
-        ReadComponent<PositionComponent>
+        WriteComponent<TransformComponent>,
+        WriteComponent<PersistentEntityComponent>
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -48,23 +51,20 @@ impl ResourceTaskImpl for EditorHandleInput {
             mut debug_draw,
             mut editor_ui_state,
             mut editor_draw,
-            position_components
+            mut transform_components,
+            mut persistent_entity_components
         ) = data;
 
         if input_manager.is_key_just_down(VirtualKeyCode::Key1) {
-            editor_ui_state.active_editor_tool = EditorTool::Select;
+            editor_ui_state.active_editor_tool = EditorTool::Translate;
         }
 
         if input_manager.is_key_just_down(VirtualKeyCode::Key2) {
-            editor_ui_state.active_editor_tool = EditorTool::Translate;
+            editor_ui_state.active_editor_tool = EditorTool::Scale;
         }
 
         if input_manager.is_key_just_down(VirtualKeyCode::Key3) {
             editor_ui_state.active_editor_tool = EditorTool::Rotate;
-        }
-
-        if input_manager.is_key_just_down(VirtualKeyCode::Key4) {
-            editor_ui_state.active_editor_tool = EditorTool::Scale;
         }
 
         if context_flags.flags()
@@ -80,16 +80,22 @@ impl ResourceTaskImpl for EditorHandleInput {
             editor_selected_components.free_all();
         }
 
+        editor_draw.update(&*input_manager, &*render_state);
+
+
+        handle_translate_gizmo_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components);
+        handle_select_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, & *transform_components);
+
         match editor_ui_state.active_editor_tool {
-            EditorTool::Select => handle_select_tool_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state),
-            EditorTool::Translate => handle_translate_tool_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* position_components),
-            EditorTool::Scale => handle_scale_tool_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* position_components),
-            EditorTool::Rotate => handle_rotate_tool_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* position_components)
+            //EditorTool::Select => handle_select_tool_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state),
+            EditorTool::Translate => draw_translate_gizmo(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* transform_components),
+            EditorTool::Scale => draw_scale_gizmo(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* transform_components),
+            EditorTool::Rotate => draw_rotate_gizmo(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* transform_components)
         }
     }
 }
 
-fn handle_translate_tool_input(
+fn handle_translate_gizmo_input(
     entity_set: &EntitySet,
     input_manager: &InputManager,
     render_state: &RenderState,
@@ -98,14 +104,72 @@ fn handle_translate_tool_input(
     debug_draw: &mut DebugDraw,
     editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
-    position_components: &<PositionComponent as Component>::Storage
+    transform_components: &mut <TransformComponent as Component>::Storage,
+    persistent_entity_components: &mut <PersistentEntityComponent as Component>::Storage
+) {
+    //editor_translated_components.free_all();
+    if let Some(drag_in_progress) = editor_draw.shape_drag_just_finished(MouseButtons::Left) {
+        let mut translate_x = false;
+        let mut translate_y = false;
+        if drag_in_progress.shape_id == "x_axis_translate" {
+            translate_x = true;
+        } else if drag_in_progress.shape_id == "y_axis_translate" {
+            translate_y = true;
+        } else if drag_in_progress.shape_id == "xy_axis_translate" {
+            translate_x = true;
+            translate_y = true;
+        }
+
+        //let mut delta = drag_in_progress.previous_frame_delta;
+        let mut delta = drag_in_progress.end_position - drag_in_progress.begin_position;
+        if !translate_x {
+            delta.x = 0.0;
+        }
+
+        if !translate_y {
+            delta.y = 0.0;
+        }
+
+        let world_space_zero = render_state.ui_space_to_world_space(glm::zero());
+        let world_space_delta = render_state.ui_space_to_world_space(delta) - world_space_zero;
+        println!("translate delta: ui: {:?} world: {:?}", delta, world_space_delta);
+
+        for (entity, _) in editor_selected_components.iter(&entity_set) {
+
+            if let Some(mut persistent_entity_component) = persistent_entity_components.get_mut(&entity) {
+                let mut entity_prototype = persistent_entity_component.entity_prototype_mut().get_mut();
+                if let Some(transform_component) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
+                    *transform_component.data_mut().position_mut() += world_space_delta;
+                    //TODO: Mark the entity as changed
+                }
+            }
+
+            //editor_translated_components.allocate(&entity, EditorTranslatedComponent::new(delta));
+            if let Some(transform_component) = transform_components.get_mut(&entity) {
+                *transform_component.position_mut() += world_space_delta;
+                transform_component.editor_transform_updated()
+            }
+        }
+    }
+}
+
+fn draw_translate_gizmo(
+    entity_set: &EntitySet,
+    input_manager: &InputManager,
+    render_state: &RenderState,
+    editor_collision_world: &EditorCollisionWorld,
+    editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
+    debug_draw: &mut DebugDraw,
+    editor_ui_state: &EditorUiState,
+    editor_draw: &mut EditorDraw,
+    transform_components: &<TransformComponent as Component>::Storage
 ) {
     for (entity, _) in editor_selected_components.iter(&entity_set) {
-        if let Some(pos) = position_components.get(&entity) {
-            let position = pos.position();
+        if let Some(transform) = transform_components.get(&entity) {
+            let position = transform.position();
 
             //TODO: Make this resolution independent. Need a UI multiplier?
-            editor_draw.line(
+            editor_draw.add_line(
                 "x_axis_translate",
                 debug_draw,
                 position,
@@ -113,7 +177,7 @@ fn handle_translate_tool_input(
                 glm::vec4(0.0, 0.0, 1.0, 1.0)
             );
 
-            editor_draw.line(
+            editor_draw.add_line(
                 "y_axis_translate",
                 debug_draw,
                 position,
@@ -121,8 +185,7 @@ fn handle_translate_tool_input(
                 glm::vec4(0.0, 1.0, 0.0, 1.0)
             );
 
-
-            editor_draw.line(
+            editor_draw.add_line(
                 "xy_axis_translate",
                 debug_draw,
                 position + glm::vec2(0.0, 25.0),
@@ -130,8 +193,7 @@ fn handle_translate_tool_input(
                 glm::vec4(1.0, 1.0, 0.0, 1.0)
             );
 
-
-            editor_draw.line(
+            editor_draw.add_line(
                 "xy_axis_translate",
                 debug_draw,
                 position + glm::vec2(25.0, 0.0),
@@ -140,11 +202,9 @@ fn handle_translate_tool_input(
             );
         }
     }
-
-    editor_draw.update(input_manager, render_state);
 }
 
-fn handle_scale_tool_input(
+fn draw_scale_gizmo(
     entity_set: &EntitySet,
     input_manager: &InputManager,
     render_state: &RenderState,
@@ -153,14 +213,65 @@ fn handle_scale_tool_input(
     debug_draw: &mut DebugDraw,
     editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
-    position_components: &<PositionComponent as Component>::Storage
+    transform_components: &<TransformComponent as Component>::Storage
 ) {
     for (entity, _) in editor_selected_components.iter(&entity_set) {
-        if let Some(pos) = position_components.get(&entity) {
+        if let Some(transform) = transform_components.get(&entity) {
+            let position = transform.position();
+
+            //TODO: Make this resolution independent. Need a UI multiplier?
+            editor_draw.add_line(
+                "x_axis_scale",
+                debug_draw,
+                position,
+                position + glm::vec2(100.0, 0.0),
+                glm::vec4(0.0, 0.0, 1.0, 1.0)
+            );
+
+            editor_draw.add_line(
+                "y_axis_scale",
+                debug_draw,
+                position,
+                position + glm::vec2(0.0, 100.0),
+                glm::vec4(0.0, 1.0, 0.0, 1.0)
+            );
+
+            editor_draw.add_line(
+                "xy_axis_scale",
+                debug_draw,
+                position + glm::vec2(0.0, 25.0),
+                position + glm::vec2(25.0, 25.0),
+                glm::vec4(1.0, 1.0, 0.0, 1.0)
+            );
+
+            editor_draw.add_line(
+                "xy_axis_scale",
+                debug_draw,
+                position + glm::vec2(25.0, 0.0),
+                position + glm::vec2(25.0, 25.0),
+                glm::vec4(1.0, 1.0, 0.0, 1.0)
+            );
+        }
+    }
+}
+
+fn draw_rotate_gizmo(
+    entity_set: &EntitySet,
+    input_manager: &InputManager,
+    render_state: &RenderState,
+    editor_collision_world: &EditorCollisionWorld,
+    editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
+    debug_draw: &mut DebugDraw,
+    editor_ui_state: &EditorUiState,
+    editor_draw: &mut EditorDraw,
+    transform_components: &<TransformComponent as Component>::Storage
+) {
+    for (entity, _) in editor_selected_components.iter(&entity_set) {
+        if let Some(pos) = transform_components.get(&entity) {
             let position = pos.position();
 
             //TODO: Make this resolution independent. Need a UI multiplier?
-            editor_draw.circle_outline(
+            editor_draw.add_circle_outline(
                 "z_axis_rotate",
                 debug_draw,
                 position,
@@ -169,11 +280,9 @@ fn handle_scale_tool_input(
             );
         }
     }
-
-    editor_draw.update(input_manager, render_state);
 }
 
-fn handle_rotate_tool_input(
+fn handle_select_input(
     entity_set: &EntitySet,
     input_manager: &InputManager,
     render_state: &RenderState,
@@ -182,65 +291,16 @@ fn handle_rotate_tool_input(
     debug_draw: &mut DebugDraw,
     editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
-    position_components: &<PositionComponent as Component>::Storage
-) {
-    for (entity, _) in editor_selected_components.iter(&entity_set) {
-        if let Some(pos) = position_components.get(&entity) {
-            let position = pos.position();
-
-            //TODO: Make this resolution independent. Need a UI multiplier?
-            editor_draw.line(
-                "x_axis_translate",
-                debug_draw,
-                position,
-                position + glm::vec2(100.0, 0.0),
-                glm::vec4(0.0, 0.0, 1.0, 1.0)
-            );
-
-            editor_draw.line(
-                "y_axis_translate",
-                debug_draw,
-                position,
-                position + glm::vec2(0.0, 100.0),
-                glm::vec4(0.0, 1.0, 0.0, 1.0)
-            );
-
-            editor_draw.line(
-                "xy_axis_translate",
-                debug_draw,
-                position + glm::vec2(0.0, 25.0),
-                position + glm::vec2(25.0, 25.0),
-                glm::vec4(1.0, 1.0, 0.0, 1.0)
-            );
-
-            editor_draw.line(
-                "xy_axis_translate",
-                debug_draw,
-                position + glm::vec2(25.0, 0.0),
-                position + glm::vec2(25.0, 25.0),
-                glm::vec4(1.0, 1.0, 0.0, 1.0)
-            );
-        }
-    }
-
-    editor_draw.update(input_manager, render_state);
-}
-
-fn handle_select_tool_input(
-    entity_set: &EntitySet,
-    input_manager: &InputManager,
-    render_state: &RenderState,
-    editor_collision_world: &EditorCollisionWorld,
-    editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
-    debug_draw: &mut DebugDraw,
-    editor_ui_state: &EditorUiState
+    transform_components: &<TransformComponent as Component>::Storage
 ) {
     // This will contain the entities to operate on, or None if we haven't issues a select operation
     let mut new_selection: Option<Vec<_>> = None;
 
     let selection_collision_group = CollisionGroups::new();
 
-    if let Some(drag_complete) = input_manager.mouse_drag_just_finished(MouseButtons::Left) {
+    if editor_draw.is_interacting_with_anything() {
+        // drop input, the clicking/dragging is happening on editor shapes
+    } else if let Some(drag_complete) = input_manager.mouse_drag_just_finished(MouseButtons::Left) {
         // Drag complete, check AABB
         let target_position0: glm::Vec2 = render_state
             .ui_space_to_world_space(drag_complete.begin_position)

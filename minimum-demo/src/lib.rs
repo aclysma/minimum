@@ -11,6 +11,12 @@ extern crate imgui_inspect_derive;
 #[macro_use]
 extern crate serde_derive;
 
+#[macro_use]
+extern crate num_derive;
+
+#[macro_use]
+extern crate strum_macros;
+
 extern crate minimum_framework as framework;
 
 mod components;
@@ -54,7 +60,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
         .with_resource(resources::DebugOptions::new())
-        .with_component(<components::PositionComponent as Component>::Storage::new())
+        .with_component(<components::TransformComponent as Component>::Storage::new())
         .with_component(<components::VelocityComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
         .with_component(<components::DebugDrawRectComponent as Component>::Storage::new())
@@ -68,7 +74,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
             <components::PhysicsBodyComponent as Component>::Storage::new(),
         )
         //TODO: Ideally we don't need to register the factory in addition to the component itself
-        .with_component_factory(CloneComponentFactory::<components::PositionComponent>::new())
+        .with_component_factory(CloneComponentFactory::<components::TransformComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::VelocityComponent>::new())
         .with_component_factory(
             CloneComponentFactory::<components::DebugDrawCircleComponent>::new(),
@@ -88,6 +94,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         world_builder = world_builder
                 .with_component(<framework::components::editor::EditorModifiedComponent as Component>::Storage::new())
                 .with_component(<framework::components::editor::EditorSelectedComponent as Component>::Storage::new())
+                .with_component(<framework::components::editor::EditorTranslatedComponent as Component>::Storage::new())
                 .with_resource(framework::resources::editor::EditorCollisionWorld::new())
                 .with_resource(framework::resources::editor::EditorUiState::new())
                 .with_resource(framework::resources::editor::EditorActionQueue::new())
@@ -117,7 +124,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "editor")]
     {
         let mut inspect_registry = framework::inspect::InspectRegistry::new();
-        inspect_registry.register_component::<components::PositionComponent>("Position");
+        inspect_registry.register_component::<components::TransformComponent>("Position");
         inspect_registry.register_component::<components::VelocityComponent>("Velocity");
         inspect_registry
             .register_component::<components::DebugDrawCircleComponent>("Debug Draw Circle");
@@ -128,7 +135,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
             .register_component::<components::PhysicsBodyComponent>("Physics Body Circle");
         inspect_registry.register_component::<components::PlayerComponent>("Player");
 
-        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::TransformComponent>>("Position");
         inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
         inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
         inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
@@ -151,7 +158,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     // Register loadable/savable types
     let mut persist_registry = framework::persist::PersistRegistry::new();
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::PositionComponent>>("Position");
+    persist_registry.register_component_prototype::<components::TransformComponentPrototype>("Position");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
     persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");

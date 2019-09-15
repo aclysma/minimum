@@ -30,6 +30,8 @@ strum = "0.15"
 strum_macros = "0.15"
 mopa = "0.2"
 hashbrown = "0.5"
+num-traits = "0.2"
+num-derive = "0.2"
 
 # rendering
 #gfx-hal = "0.2"

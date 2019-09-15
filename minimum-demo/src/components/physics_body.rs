@@ -10,7 +10,7 @@ use nphysics2d::object::BodyHandle;
 use nphysics2d::object::ColliderDesc;
 use nphysics2d::object::RigidBodyDesc;
 
-use crate::components::PositionComponent;
+use crate::components::TransformComponent;
 #[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
 use framework::FrameworkComponentPrototype;
@@ -359,14 +359,14 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
         }
 
         //TODO: Either need two-phase entity construction or deterministic construct order.
-        let position = resource_map.fetch::<<PositionComponent as Component>::Storage>();
+        let position = resource_map.fetch::<<TransformComponent as Component>::Storage>();
 
         let mut physics = resource_map.fetch_mut::<crate::resources::PhysicsManager>();
         let mut storage = resource_map.fetch_mut::<<PhysicsBodyComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
                 let center: glm::Vec2 =
-                    if let Some(p) = entity.get_component::<PositionComponent>(&*position) {
+                    if let Some(p) = entity.get_component::<TransformComponent>(&*position) {
                         p.position()
                     } else {
                         glm::zero()

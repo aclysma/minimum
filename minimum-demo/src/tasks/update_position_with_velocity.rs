@@ -13,7 +13,7 @@ impl ResourceTaskImpl for UpdatePositionWithVelocity {
     type RequiredResources = (
         Read<minimum::EntitySet>,
         Read<TimeState>,
-        WriteComponent<components::PositionComponent>,
+        WriteComponent<components::TransformComponent>,
         ReadComponent<components::VelocityComponent>,
         ReadComponent<components::PhysicsBodyComponent>,
     );
@@ -31,7 +31,7 @@ impl ResourceTaskImpl for UpdatePositionWithVelocity {
         let (
             entity_set,
             time_state,
-            mut position_components,
+            mut transform_components,
             velocity_components,
             physics_body_components,
         ) = data;
@@ -45,7 +45,7 @@ impl ResourceTaskImpl for UpdatePositionWithVelocity {
                 continue;
             }
 
-            if let Some(pos) = position_components.get_mut(&entity) {
+            if let Some(pos) = transform_components.get_mut(&entity) {
                 *pos.position_mut() += vel.velocity() * dt;
             }
         }

@@ -15,7 +15,7 @@ impl ResourceTaskImpl for PhysicsSyncPre {
         Read<EntitySet>,
         Write<PhysicsManager>,
         ReadComponent<components::PhysicsBodyComponent>,
-        WriteComponent<components::PositionComponent>,
+        WriteComponent<components::TransformComponent>,
         WriteComponent<components::VelocityComponent>,
     );
 

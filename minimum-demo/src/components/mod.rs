@@ -4,7 +4,7 @@ mod debug_draw_rect;
 mod free_at_time;
 mod physics_body;
 mod player;
-mod position;
+mod transform;
 mod velocity;
 
 pub use bullet::BulletComponent;
@@ -14,7 +14,8 @@ pub use free_at_time::FreeAtTimeComponent;
 pub use physics_body::PhysicsBodyComponent;
 pub use physics_body::PhysicsBodyComponentFreeHandler;
 pub use player::PlayerComponent;
-pub use position::PositionComponent;
+pub use transform::TransformComponent;
+pub use transform::TransformComponentPrototype;
 pub use velocity::VelocityComponent;
 
 pub use physics_body::PhysicsBodyComponentDesc;

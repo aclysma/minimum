@@ -212,9 +212,14 @@ impl PersistRegistry {
                 // Try to serialize the component
                 match registered_type {
                     Some(registered_type) => {
-                        let deserialized_component =
-                            (*registered_type).deserialize(component.data).unwrap();
-                        deserialized_components.push(deserialized_component);
+                        match (*registered_type).deserialize(component.data) {
+                            Ok(deserialized_component) => {
+                                deserialized_components.push(deserialized_component);
+                            },
+                            Err(e) => {
+                                println!("Failed to load component: {}", e);
+                            }
+                        }
                     }
                     None => {
                         // Skip unknown types

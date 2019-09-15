@@ -81,14 +81,12 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
             }
 
             ui.main_menu_bar(|| {
-                //cursor-default-outline
-                Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Select, "\u{f1b5}");
                 //axis-arrow
                 Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Translate, "\u{fd25}");
-                //rotate-orbit
-                Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Rotate, "\u{fd74}");
                 //resize
                 Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Scale, "\u{fa67}");
+                //rotate-orbit
+                Self::tool_button(ui, &mut *editor_ui_state, EditorTool::Rotate, "\u{fd74}");
 
                 ui.menu(im_str!("File"), true, || {
                     ui.menu(im_str!("Sub Menu"), true, || {

@@ -9,3 +9,6 @@ pub use editor_selected::EditorSelectedComponent;
 
 mod editor_modified;
 pub use editor_modified::EditorModifiedComponent;
+
+mod editor_translated;
+pub use editor_translated::EditorTranslatedComponent;

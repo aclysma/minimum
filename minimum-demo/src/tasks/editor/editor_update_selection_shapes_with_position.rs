@@ -15,7 +15,7 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
         Read<EntitySet>,
         Write<EditorCollisionWorld>,
         ReadComponent<framework::components::editor::EditorShapeComponent>,
-        ReadComponent<components::PositionComponent>,
+        ReadComponent<components::TransformComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -28,13 +28,13 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
         _context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
-        let (entity_set, mut collision_world, editor_shape_components, position_components) = data;
+        let (entity_set, mut collision_world, editor_shape_components, transform_components) = data;
 
         for (entity, editor_shape_component) in editor_shape_components.iter(&entity_set) {
-            if let Some(position_component) = position_components.get(&entity) {
+            if let Some(transform_component) = transform_components.get(&entity) {
                 collision_world.world_mut().set_position(
                     *editor_shape_component.collider_handle(),
-                    nalgebra::Isometry2::new(position_component.position(), 0.0),
+                    nalgebra::Isometry2::new(transform_component.position(), 0.0),
                 );
             }
         }

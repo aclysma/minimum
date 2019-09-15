@@ -38,6 +38,28 @@ impl FrameworkEntityPrototypeInner {
     ) -> &'b mut Vec<Box<dyn FrameworkComponentPrototype>> {
         &mut self.component_prototypes
     }
+
+    pub fn find_component_prototype<T : FrameworkComponentPrototype>(&self) -> Option<&T> {
+        for p in &self.component_prototypes {
+            match p.downcast_ref::<T>() {
+                Some(downcast) => return Some(downcast),
+                _ => {}
+            }
+        }
+
+        None
+    }
+
+    pub fn find_component_prototype_mut<T : FrameworkComponentPrototype>(&mut self) -> Option<&mut T> {
+        for p in &mut self.component_prototypes {
+            match p.downcast_mut::<T>() {
+                Some(downcast) => return Some(downcast),
+                _ => {}
+            }
+        }
+
+        None
+    }
 }
 
 #[derive(Clone)]

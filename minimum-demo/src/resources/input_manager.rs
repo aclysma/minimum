@@ -1,53 +1,60 @@
 use rendy::wsi::winit;
 use winit::event::KeyboardInput;
 
+#[derive(EnumCount, FromPrimitive, Copy, Clone)]
+pub enum MouseButtons {
+    Left = 0,
+    Middle = 1,
+    Right = 2,
+}
+
+impl InputManager {
+    pub const KEYBOARD_BUTTON_COUNT: usize = 255;
+    pub const MOUSE_BUTTON_COUNT: usize = MOUSEBUTTONS_COUNT;
+    const MIN_DRAG_DISTANCE : f32 = 2.0;
+}
+
 #[derive(Copy, Clone, Debug)]
 pub struct MouseDragState {
     pub begin_position: glm::Vec2,
     pub end_position: glm::Vec2,
+    pub previous_frame_delta: glm::Vec2
 }
 
 pub struct InputManager {
-    key_is_down: [bool; 255],
-    key_just_down: [bool; 255],
-    key_just_up: [bool; 255],
+    key_is_down: [bool; Self::KEYBOARD_BUTTON_COUNT],
+    key_just_down: [bool; Self::KEYBOARD_BUTTON_COUNT],
+    key_just_up: [bool; Self::KEYBOARD_BUTTON_COUNT],
 
     mouse_position: glm::Vec2,
-    mouse_button_is_down: [bool; 3],
-    mouse_button_just_down: [Option<glm::Vec2>; 3],
-    mouse_button_just_up: [Option<glm::Vec2>; 3],
+    mouse_button_is_down: [bool; Self::MOUSE_BUTTON_COUNT],
+    mouse_button_just_down: [Option<glm::Vec2>; Self::MOUSE_BUTTON_COUNT],
+    mouse_button_just_up: [Option<glm::Vec2>; Self::MOUSE_BUTTON_COUNT],
 
-    mouse_button_just_clicked: [Option<glm::Vec2>; 3],
+    mouse_button_just_clicked: [Option<glm::Vec2>; Self::MOUSE_BUTTON_COUNT],
 
-    mouse_button_went_down_position: [Option<glm::Vec2>; 3],
-    mouse_button_went_up_position: [Option<glm::Vec2>; 3],
+    mouse_button_went_down_position: [Option<glm::Vec2>; Self::MOUSE_BUTTON_COUNT],
+    mouse_button_went_up_position: [Option<glm::Vec2>; Self::MOUSE_BUTTON_COUNT],
 
-    mouse_drag_in_progress: [Option<MouseDragState>; 3],
-    mouse_drag_just_finished: [Option<MouseDragState>; 3],
-}
-
-#[derive(strum_macros::EnumCount)]
-pub enum MouseButtons {
-    Left,
-    Middle,
-    Right,
+    mouse_drag_in_progress: [Option<MouseDragState>; Self::MOUSE_BUTTON_COUNT],
+    mouse_drag_just_finished: [Option<MouseDragState>; Self::MOUSE_BUTTON_COUNT],
 }
 
 impl InputManager {
     pub fn new() -> InputManager {
         return InputManager {
-            key_is_down: [false; 255],
-            key_just_down: [false; 255],
-            key_just_up: [false; 255],
+            key_is_down: [false; Self::KEYBOARD_BUTTON_COUNT],
+            key_just_down: [false; Self::KEYBOARD_BUTTON_COUNT],
+            key_just_up: [false; Self::KEYBOARD_BUTTON_COUNT],
             mouse_position: glm::zero(),
-            mouse_button_is_down: [false; MOUSEBUTTONS_COUNT],
-            mouse_button_just_down: [None; MOUSEBUTTONS_COUNT],
-            mouse_button_just_up: [None; MOUSEBUTTONS_COUNT],
-            mouse_button_just_clicked: [None; MOUSEBUTTONS_COUNT],
-            mouse_button_went_down_position: [None; MOUSEBUTTONS_COUNT],
-            mouse_button_went_up_position: [None; MOUSEBUTTONS_COUNT],
-            mouse_drag_in_progress: [None; MOUSEBUTTONS_COUNT],
-            mouse_drag_just_finished: [None; MOUSEBUTTONS_COUNT],
+            mouse_button_is_down: [false; Self::MOUSE_BUTTON_COUNT],
+            mouse_button_just_down: [None; Self::MOUSE_BUTTON_COUNT],
+            mouse_button_just_up: [None; Self::MOUSE_BUTTON_COUNT],
+            mouse_button_just_clicked: [None; Self::MOUSE_BUTTON_COUNT],
+            mouse_button_went_down_position: [None; Self::MOUSE_BUTTON_COUNT],
+            mouse_button_went_up_position: [None; Self::MOUSE_BUTTON_COUNT],
+            mouse_drag_in_progress: [None; Self::MOUSE_BUTTON_COUNT],
+            mouse_drag_just_finished: [None; Self::MOUSE_BUTTON_COUNT],
         };
     }
 
@@ -148,13 +155,19 @@ impl InputManager {
         for value in self.mouse_drag_just_finished.iter_mut() {
             *value = None;
         }
+
+        for value in self.mouse_drag_in_progress.iter_mut() {
+            if let Some(v) = value {
+                v.previous_frame_delta = glm::zero();
+            }
+        }
     }
 
     pub fn handle_keyboard_event(&mut self, event: &KeyboardInput) {
         //TODO: Find a safer way to change enum back/forth with int
         // Assign true if key is down, or false if key is up
         if let Some(kc) = event.virtual_keycode {
-            if kc as u32 > 255 {
+            if kc as usize > Self::KEYBOARD_BUTTON_COUNT {
                 error!("kc {} out of expected range", kc as u32);
             }
 
@@ -223,6 +236,7 @@ impl InputManager {
                         self.mouse_drag_just_finished[button_index] = Some(MouseDragState {
                             begin_position: in_progress.begin_position,
                             end_position: self.mouse_position,
+                            previous_frame_delta: self.mouse_position - in_progress.end_position
                         });
                     }
                     None => {
@@ -242,21 +256,21 @@ impl InputManager {
         self.mouse_position = glm::vec2(position.x as f32, position.y as f32);
 
         // Update drag in progress state
-        for i in 0..MOUSEBUTTONS_COUNT {
+        for i in 0..Self::MOUSE_BUTTON_COUNT {
             if self.mouse_button_is_down[i] {
                 self.mouse_drag_in_progress[i] = match self.mouse_drag_in_progress[i] {
                     None => {
                         match self.mouse_button_went_down_position[i] {
                             Some(went_down_position) => {
-                                const MIN_DRAG_DISTANCE: f32 = 3.0;
                                 let min_drag_distance_met =
                                     glm::distance(&went_down_position, &self.mouse_position)
-                                        > MIN_DRAG_DISTANCE;
+                                        > Self::MIN_DRAG_DISTANCE;
                                 if min_drag_distance_met {
                                     // We dragged a non-trivial amount, start the drag
                                     Some(MouseDragState {
                                         begin_position: went_down_position,
                                         end_position: self.mouse_position,
+                                        previous_frame_delta: self.mouse_position - went_down_position
                                     })
                                 } else {
                                     // Mouse moved too small an amount to be considered a drag
@@ -273,6 +287,7 @@ impl InputManager {
                         Some(MouseDragState {
                             begin_position: old_drag_state.begin_position,
                             end_position: self.mouse_position,
+                            previous_frame_delta: self.mouse_position - old_drag_state.end_position
                         })
                     }
                 };

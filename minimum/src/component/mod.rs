@@ -20,7 +20,7 @@
 //! we try to find velocity and speed multiplier components. (If the speed multiplier component doesn't
 //! exist, the entity will be skipped)
 //! ```
-//! for (entity_index, pos) in position_components.iter_mut(&game_entities) {
+//! for (entity_index, pos) in transform_components.iter_mut(&game_entities) {
 //!     if let (Some(vel), mul) = (
 //!         velocity_components.get(&entity_index),
 //!         speed_multiplier_components.get(&entity_index),
