@@ -41,15 +41,16 @@ impl ResourceTaskImpl for EditorDrawSelectionShapes {
 
         for collision_object in editor_collision_world.world().collision_objects() {
             let co: &ncollide2d::world::CollisionObject<f32, EntityHandle> = collision_object;
-            //println!("found a co {:?}", co.position());
 
-            //let mut color = glm::vec4(1.0, 0.0, 0.0, 0.0);a
             if selected_components.exists(co.data()) {
-                let color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+                // Color to highlight with.
+                let color = glm::vec4(1.0, 1.0, 0.0, 1.0);
+
+                // An amount to expand the AABB by so that we don't draw on top of the shape.
+                // Found in actual usage this ended up being annoying.
+                let expand = glm::vec2(0.0, 0.0);
+
                 let aabb = co.shape().aabb(co.position());
-
-                let expand = glm::vec2(2.0, 2.0);
-
                 debug_draw.add_rect(
                     glm::vec2(aabb.mins().x, aabb.mins().y) - expand,
                     glm::vec2(aabb.maxs().x, aabb.maxs().y) + expand,

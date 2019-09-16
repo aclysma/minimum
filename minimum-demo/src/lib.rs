@@ -94,7 +94,6 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         world_builder = world_builder
                 .with_component(<framework::components::editor::EditorModifiedComponent as Component>::Storage::new())
                 .with_component(<framework::components::editor::EditorSelectedComponent as Component>::Storage::new())
-                .with_component(<framework::components::editor::EditorTranslatedComponent as Component>::Storage::new())
                 .with_resource(framework::resources::editor::EditorCollisionWorld::new())
                 .with_resource(framework::resources::editor::EditorUiState::new())
                 .with_resource(framework::resources::editor::EditorActionQueue::new())

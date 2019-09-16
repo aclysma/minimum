@@ -114,6 +114,10 @@ impl RenderState {
     }
 
 
-
+    pub fn ui_space_delta_to_world_space_delta(&self, ui_space_delta: glm::Vec2) -> glm::Vec2 {
+        // Find the world space delta
+        let world_space_zero = self.ui_space_to_world_space(glm::zero());
+        self.ui_space_to_world_space(ui_space_delta) - world_space_zero
+    }
 
 }

@@ -18,7 +18,8 @@ impl InputManager {
 pub struct MouseDragState {
     pub begin_position: glm::Vec2,
     pub end_position: glm::Vec2,
-    pub previous_frame_delta: glm::Vec2
+    pub previous_frame_delta: glm::Vec2,
+    pub accumulated_frame_delta: glm::Vec2
 }
 
 pub struct InputManager {
@@ -233,10 +234,13 @@ impl InputManager {
 
                 match self.mouse_drag_in_progress[button_index] {
                     Some(in_progress) => {
+
+                        let delta = self.mouse_position - (in_progress.begin_position + in_progress.accumulated_frame_delta);
                         self.mouse_drag_just_finished[button_index] = Some(MouseDragState {
                             begin_position: in_progress.begin_position,
                             end_position: self.mouse_position,
-                            previous_frame_delta: self.mouse_position - in_progress.end_position
+                            previous_frame_delta: delta,
+                            accumulated_frame_delta: in_progress.accumulated_frame_delta + delta
                         });
                     }
                     None => {
@@ -270,7 +274,8 @@ impl InputManager {
                                     Some(MouseDragState {
                                         begin_position: went_down_position,
                                         end_position: self.mouse_position,
-                                        previous_frame_delta: self.mouse_position - went_down_position
+                                        previous_frame_delta: self.mouse_position - went_down_position,
+                                        accumulated_frame_delta: self.mouse_position - went_down_position
                                     })
                                 } else {
                                     // Mouse moved too small an amount to be considered a drag
@@ -284,10 +289,13 @@ impl InputManager {
                     }
                     Some(old_drag_state) => {
                         // We were already dragging, so just update the end position
+
+                        let delta = self.mouse_position - (old_drag_state.begin_position + old_drag_state.accumulated_frame_delta);
                         Some(MouseDragState {
                             begin_position: old_drag_state.begin_position,
                             end_position: self.mouse_position,
-                            previous_frame_delta: self.mouse_position - old_drag_state.end_position
+                            previous_frame_delta: delta,
+                            accumulated_frame_delta: old_drag_state.accumulated_frame_delta + delta
                         })
                     }
                 };

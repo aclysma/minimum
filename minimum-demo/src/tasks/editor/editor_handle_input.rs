@@ -1,13 +1,13 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
-use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, ReadComponent, Component, EntitySet};
+use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, Component, EntitySet};
 
 use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState, EditorDraw};
 use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
 use framework::components::PersistentEntityComponent;
 
 use framework::components::editor::EditorSelectedComponent;
-use framework::components::editor::EditorTranslatedComponent;
+use framework::components::editor::EditorModifiedComponent;
 
 use ncollide2d::world::CollisionGroups;
 use crate::components::TransformComponent;
@@ -29,7 +29,8 @@ impl ResourceTaskImpl for EditorHandleInput {
         Write<EditorUiState>,
         Write<EditorDraw>,
         WriteComponent<TransformComponent>,
-        WriteComponent<PersistentEntityComponent>
+        WriteComponent<PersistentEntityComponent>,
+        WriteComponent<EditorModifiedComponent>
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -52,7 +53,8 @@ impl ResourceTaskImpl for EditorHandleInput {
             mut editor_ui_state,
             mut editor_draw,
             mut transform_components,
-            mut persistent_entity_components
+            mut persistent_entity_components,
+            mut editor_modified_components
         ) = data;
 
         if input_manager.is_key_just_down(VirtualKeyCode::Key1) {
@@ -83,7 +85,7 @@ impl ResourceTaskImpl for EditorHandleInput {
         editor_draw.update(&*input_manager, &*render_state);
 
 
-        handle_translate_gizmo_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components);
+        handle_translate_gizmo_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
         handle_select_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, & *transform_components);
 
         match editor_ui_state.active_editor_tool {
@@ -97,18 +99,20 @@ impl ResourceTaskImpl for EditorHandleInput {
 
 fn handle_translate_gizmo_input(
     entity_set: &EntitySet,
-    input_manager: &InputManager,
-    render_state: &RenderState,
-    editor_collision_world: &EditorCollisionWorld,
+    _input_manager: &InputManager,
+    _render_state: &RenderState,
+    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
-    debug_draw: &mut DebugDraw,
-    editor_ui_state: &EditorUiState,
+    _debug_draw: &mut DebugDraw,
+    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &mut <TransformComponent as Component>::Storage,
-    persistent_entity_components: &mut <PersistentEntityComponent as Component>::Storage
+    persistent_entity_components: &mut <PersistentEntityComponent as Component>::Storage,
+    editor_modified_components: &mut <EditorModifiedComponent as Component>::Storage
+
 ) {
-    //editor_translated_components.free_all();
-    if let Some(drag_in_progress) = editor_draw.shape_drag_just_finished(MouseButtons::Left) {
+    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButtons::Left) {
+        // See what if any axis we will operate on
         let mut translate_x = false;
         let mut translate_y = false;
         if drag_in_progress.shape_id == "x_axis_translate" {
@@ -120,47 +124,102 @@ fn handle_translate_gizmo_input(
             translate_y = true;
         }
 
-        //let mut delta = drag_in_progress.previous_frame_delta;
-        let mut delta = drag_in_progress.end_position - drag_in_progress.begin_position;
+        // Early out if we didn't touch either axis
+        if !translate_x && !translate_y {
+            return;
+        }
+
+        // Determine the drag distance in ui_space
+        let mut world_space_previous_frame_delta = drag_in_progress.world_space_previous_frame_delta;
+        let mut world_space_accumulated_delta = drag_in_progress.world_space_accumulated_frame_delta;
         if !translate_x {
-            delta.x = 0.0;
+            world_space_previous_frame_delta.x = 0.0;
+            world_space_accumulated_delta.x = 0.0;
         }
 
         if !translate_y {
-            delta.y = 0.0;
+            world_space_previous_frame_delta.y = 0.0;
+            world_space_accumulated_delta.y = 0.0;
         }
 
-        let world_space_zero = render_state.ui_space_to_world_space(glm::zero());
-        let world_space_delta = render_state.ui_space_to_world_space(delta) - world_space_zero;
-        println!("translate delta: ui: {:?} world: {:?}", delta, world_space_delta);
+        for (entity_handle, _) in editor_selected_components.iter(&entity_set) {
 
-        for (entity, _) in editor_selected_components.iter(&entity_set) {
+            // If we are ending the drag and manage to find a persistent component prototype, we will
+            // update that and recreate the object. In which case, we can skip updating the transform
+            // component itself.
+            let mut update_transform_component = true;
+            if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
+                // update the prototype and invalidate the object
+                if let Some(persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
+                    let mut entity_prototype = persistent_entity_component.entity_prototype_mut().get_mut();
+                    if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
 
-            if let Some(mut persistent_entity_component) = persistent_entity_components.get_mut(&entity) {
-                let mut entity_prototype = persistent_entity_component.entity_prototype_mut().get_mut();
-                if let Some(transform_component) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
-                    *transform_component.data_mut().position_mut() += world_space_delta;
-                    //TODO: Mark the entity as changed
+                        // Edit the prototype
+                        *transform_component_prototype.data_mut().position_mut() += world_space_accumulated_delta;
+
+                        // Mark the object as needing to be recreated
+                        if !editor_modified_components.exists(&entity_handle) {
+                            editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
+                        }
+
+                        // Skip updating the transform component
+                        update_transform_component = false;
+                    }
                 }
             }
 
-            //editor_translated_components.allocate(&entity, EditorTranslatedComponent::new(delta));
-            if let Some(transform_component) = transform_components.get_mut(&entity) {
-                *transform_component.position_mut() += world_space_delta;
-                transform_component.editor_transform_updated()
+            if update_transform_component {
+                if let Some(transform_component) = transform_components.get_mut(&entity_handle) {
+                    // Edit the component - recompute a new position. This is done using original values
+                    // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
+                    // drag is complete.
+                    *transform_component.position_mut() += world_space_previous_frame_delta;
+                    transform_component.requires_sync_to_physics();
+                }
             }
+
+            // Find the transform component prototype
+            //let mut transform_component_prototype = None;
+//            if let Some(mut persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
+//                let mut entity_prototype = persistent_entity_component.entity_prototype_mut().get_mut();
+//                if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
+//                    if let Some(transform_component) = transform_components.get_mut(&entity_handle) {
+//                        if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
+//
+//                            println!(
+//                                "frame delta delta {:?}   diff {:?} ",
+//                                drag_in_progress.accumulated_frame_delta,
+//                                drag_in_progress.end_position - drag_in_progress.begin_position
+//                            );
+//
+//                            // Edit the prototype
+//                            *transform_component_prototype.data_mut().position_mut() += world_space_delta;
+//                            if !editor_modified_components.exists(&entity_handle) {
+//                                editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
+//                            }
+//                        } else {
+//                            // Edit the component - recompute a new position. This is done using original values
+//                            // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
+//                            // drag is complete.
+//                            let new_position = transform_component_prototype.data().position() + world_space_delta;
+//                            *transform_component.position_mut() = new_position;
+//                            transform_component.requires_sync_to_physics();
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 }
 
 fn draw_translate_gizmo(
     entity_set: &EntitySet,
-    input_manager: &InputManager,
-    render_state: &RenderState,
-    editor_collision_world: &EditorCollisionWorld,
+    _input_manager: &InputManager,
+    _render_state: &RenderState,
+    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    editor_ui_state: &EditorUiState,
+    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &<TransformComponent as Component>::Storage
 ) {
@@ -206,12 +265,12 @@ fn draw_translate_gizmo(
 
 fn draw_scale_gizmo(
     entity_set: &EntitySet,
-    input_manager: &InputManager,
-    render_state: &RenderState,
-    editor_collision_world: &EditorCollisionWorld,
+    _input_manager: &InputManager,
+    _render_state: &RenderState,
+    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    editor_ui_state: &EditorUiState,
+    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &<TransformComponent as Component>::Storage
 ) {
@@ -257,12 +316,12 @@ fn draw_scale_gizmo(
 
 fn draw_rotate_gizmo(
     entity_set: &EntitySet,
-    input_manager: &InputManager,
-    render_state: &RenderState,
-    editor_collision_world: &EditorCollisionWorld,
+    _input_manager: &InputManager,
+    _render_state: &RenderState,
+    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    editor_ui_state: &EditorUiState,
+    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &<TransformComponent as Component>::Storage
 ) {
@@ -283,15 +342,15 @@ fn draw_rotate_gizmo(
 }
 
 fn handle_select_input(
-    entity_set: &EntitySet,
+    _entity_set: &EntitySet,
     input_manager: &InputManager,
     render_state: &RenderState,
     editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    editor_ui_state: &EditorUiState,
+    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
-    transform_components: &<TransformComponent as Component>::Storage
+    _transform_components: &<TransformComponent as Component>::Storage
 ) {
     // This will contain the entities to operate on, or None if we haven't issues a select operation
     let mut new_selection: Option<Vec<_>> = None;
