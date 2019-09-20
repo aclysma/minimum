@@ -85,7 +85,7 @@ impl<T: Component + Clone> ComponentCreateQueueFlushListener for BasicComponentF
         // Drain the queue, converting all queued prototypes to real components
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
-                entity.add_component(&mut *storage, data);
+                entity.add_component(&mut *storage, data).unwrap();
             }
         }
     }

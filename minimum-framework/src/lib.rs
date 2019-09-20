@@ -25,6 +25,7 @@ pub mod persist;
 pub mod select;
 
 mod prototype;
+pub use prototype::FrameworkComponentPrototypeDyn;
 pub use prototype::FrameworkComponentPrototype;
 pub use prototype::FrameworkEntityPersistencePolicy;
 pub use prototype::FrameworkEntityPrototype;

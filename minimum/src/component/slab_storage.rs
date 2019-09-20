@@ -5,6 +5,8 @@ use super::ComponentStorage;
 use super::EntityHandle;
 use super::RawSlab;
 use super::RawSlabKey;
+use super::ComponentAllocateResult;
+use super::ComponentAllocateError;
 
 /// Allows iteration of all components
 pub struct SlabComponentIterator<'a, T, I>
@@ -182,7 +184,7 @@ impl<T: Component> SlabComponentStorage<T> {
 }
 
 impl<T: Component> ComponentStorage<T> for SlabComponentStorage<T> {
-    fn allocate(&mut self, entity: &EntityHandle, data: T) {
+    fn allocate(&mut self, entity: &EntityHandle, data: T) -> ComponentAllocateResult {
         let slab_key = self.slab.allocate(data);
 
         // If the slab keys vec isn't long enough, expand it
@@ -194,8 +196,12 @@ impl<T: Component> ComponentStorage<T> for SlabComponentStorage<T> {
             }
         }
 
-        assert!(self.slab_keys[entity.index() as usize].is_none());
+        if self.slab_keys[entity.index() as usize].is_some() {
+            return Err(ComponentAllocateError::AlreadyHasComponent);
+        }
+
         self.slab_keys[entity.index() as usize] = Some(slab_key);
+        Ok(())
     }
 
     fn free(&mut self, entity: &EntityHandle) {

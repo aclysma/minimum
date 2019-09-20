@@ -1,5 +1,5 @@
 use minimum::entity::EntityPrototype;
-use minimum::Component;
+use minimum::{Component, ComponentPrototype};
 
 use minimum::EntityRef;
 use minimum::ResourceMap;
@@ -14,14 +14,26 @@ use crate::components::editor::EditorShapeComponentPrototype;
 #[cfg(feature = "editor")]
 use crate::select::SelectRegistry;
 
-// impl ComponentPrototype for FrameworkComponentPrototype?
-pub trait FrameworkComponentPrototype: minimum::component::ComponentCreator + mopa::Any {}
+pub trait FrameworkComponentPrototype {
+    fn component_type() -> std::any::TypeId;
+}
 
-mopafy!(FrameworkComponentPrototype);
+pub trait FrameworkComponentPrototypeDyn: minimum::component::ComponentPrototypeDyn + mopa::Any {
+    fn component_type(&self) -> std::any::TypeId;
+}
+
+impl<T> FrameworkComponentPrototypeDyn for T
+where T : FrameworkComponentPrototype + ComponentPrototype {
+    fn component_type(&self) -> std::any::TypeId {
+        T::component_type()
+    }
+}
+
+mopafy!(FrameworkComponentPrototypeDyn);
 
 pub struct FrameworkEntityPrototypeInner {
     path: std::path::PathBuf,
-    component_prototypes: Vec<Box<dyn FrameworkComponentPrototype>>,
+    component_prototypes: Vec<Box<dyn FrameworkComponentPrototypeDyn>>,
 }
 
 impl FrameworkEntityPrototypeInner {
@@ -29,17 +41,17 @@ impl FrameworkEntityPrototypeInner {
         &self.path
     }
 
-    pub fn component_prototypes(&self) -> &Vec<Box<dyn FrameworkComponentPrototype>> {
+    pub fn component_prototypes(&self) -> &Vec<Box<dyn FrameworkComponentPrototypeDyn>> {
         &self.component_prototypes
     }
 
     pub fn component_prototypes_mut<'a: 'b, 'b>(
         &'a mut self,
-    ) -> &'b mut Vec<Box<dyn FrameworkComponentPrototype>> {
+    ) -> &'b mut Vec<Box<dyn FrameworkComponentPrototypeDyn>> {
         &mut self.component_prototypes
     }
 
-    pub fn find_component_prototype<T : FrameworkComponentPrototype>(&self) -> Option<&T> {
+    pub fn find_component_prototype<T : FrameworkComponentPrototypeDyn>(&self) -> Option<&T> {
         for p in &self.component_prototypes {
             match p.downcast_ref::<T>() {
                 Some(downcast) => return Some(downcast),
@@ -50,11 +62,21 @@ impl FrameworkEntityPrototypeInner {
         None
     }
 
-    pub fn find_component_prototype_mut<T : FrameworkComponentPrototype>(&mut self) -> Option<&mut T> {
+    pub fn find_component_prototype_mut<T : FrameworkComponentPrototypeDyn>(&mut self) -> Option<&mut T> {
         for p in &mut self.component_prototypes {
             match p.downcast_mut::<T>() {
                 Some(downcast) => return Some(downcast),
                 _ => {}
+            }
+        }
+
+        None
+    }
+
+    pub fn find_component_prototype_by_component_type_id(&self, type_id: std::any::TypeId) -> Option<&dyn FrameworkComponentPrototypeDyn> {
+        for p in &self.component_prototypes {
+            if p.component_type() == type_id {
+                return Some(&**p)
             }
         }
 
@@ -81,7 +103,7 @@ impl FrameworkEntityPrototype {
     pub fn new(
         path: std::path::PathBuf,
         persistence_policy: FrameworkEntityPersistencePolicy,
-        component_prototypes: Vec<Box<dyn FrameworkComponentPrototype>>,
+        component_prototypes: Vec<Box<dyn FrameworkComponentPrototypeDyn>>,
     ) -> Self {
         FrameworkEntityPrototype {
             inner: Arc::new(Mutex::new(FrameworkEntityPrototypeInner {
@@ -92,7 +114,7 @@ impl FrameworkEntityPrototype {
         }
     }
 
-    pub fn get_mut(&self) -> std::sync::MutexGuard<FrameworkEntityPrototypeInner> {
+    pub fn lock(&self) -> std::sync::MutexGuard<FrameworkEntityPrototypeInner> {
         self.inner.lock().unwrap()
     }
 
@@ -103,7 +125,7 @@ impl FrameworkEntityPrototype {
 
 impl EntityPrototype for FrameworkEntityPrototype {
     fn create(&self, resource_map: &ResourceMap, entity: &EntityRef) {
-        let entity_prototype_guard = self.get_mut();
+        let entity_prototype_guard = self.lock();
         for c in entity_prototype_guard.component_prototypes() {
             c.enqueue_create(resource_map, &entity.handle());
         }
@@ -127,7 +149,6 @@ impl EntityPrototype for FrameworkEntityPrototype {
                 let editor_shape_component_prototype =
                     EditorShapeComponentPrototype::new(compound_shape_handle);
 
-                use minimum::ComponentPrototype;
                 editor_shape_component_prototype.enqueue_create(resource_map, &entity.handle());
             }
         }
@@ -138,7 +159,7 @@ impl EntityPrototype for FrameworkEntityPrototype {
                 // Add PersistentEntityComponent to any component that is persistent
                 let mut storage =
                     resource_map.fetch_mut::<<PersistentEntityComponent as Component>::Storage>();
-                entity.add_component(&mut *storage, PersistentEntityComponent::new(self.clone()));
+                entity.add_component(&mut *storage, PersistentEntityComponent::new(self.clone())).unwrap();
             }
             _ => {}
         }

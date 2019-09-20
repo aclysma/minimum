@@ -1,6 +1,6 @@
 use std::prelude::v1::*;
 
-use crate::slab;
+use crate::{slab, ComponentStorage};
 use slab::GenSlab;
 
 use super::Entity;
@@ -62,9 +62,14 @@ impl EntitySet {
         entity_handle: &EntityHandle,
         delete_components: &mut <PendingDeleteComponent as Component>::Storage,
     ) {
+        if delete_components.exists(entity_handle) {
+            return;
+        }
+
         self.get_entity_ref(entity_handle)
             .unwrap()
-            .add_component(delete_components, PendingDeleteComponent {});
+            .add_component(delete_components, PendingDeleteComponent {})
+            .unwrap();
     }
 
     /// Get the number of entities that exist

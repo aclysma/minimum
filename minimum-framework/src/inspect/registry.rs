@@ -1,6 +1,6 @@
 use super::InspectorTab;
 use crate::components::editor::EditorModifiedComponent;
-use crate::FrameworkComponentPrototype;
+use crate::FrameworkComponentPrototypeDyn;
 use hashbrown::HashMap;
 use minimum::component::ComponentStorage;
 use minimum::Component;
@@ -174,19 +174,19 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
 
     fn render(
         &self,
-        prototypes: &HashMap<core::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototype>>>,
+        prototypes: &HashMap<core::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototypeDyn>>>,
         ui: &imgui::Ui,
     );
     fn render_mut(
         &self,
-        prototypes: &mut HashMap<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
+        prototypes: &mut HashMap<core::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototypeDyn>>>,
         ui: &imgui::Ui,
     ) -> InspectResult;
 }
 
 pub struct RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T>,
+    T: FrameworkComponentPrototypeDyn + imgui_inspect::InspectRenderStruct<T>,
 {
     header_text: &'static str,
     phantom_data: PhantomData<T>,
@@ -194,7 +194,7 @@ where
 
 impl<T> RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T>,
+    T: FrameworkComponentPrototypeDyn + imgui_inspect::InspectRenderStruct<T>,
 {
     fn new(header_text: &'static str) -> Self {
         RegisteredComponentPrototype {
@@ -206,7 +206,7 @@ where
 
 impl<T> RegisteredComponentPrototypeTrait for RegisteredComponentPrototype<T>
 where
-    T: FrameworkComponentPrototype + imgui_inspect::InspectRenderStruct<T>,
+    T: FrameworkComponentPrototypeDyn + imgui_inspect::InspectRenderStruct<T>,
 {
     fn header_text(&self) -> &'static str {
         self.header_text
@@ -218,7 +218,7 @@ where
 
     fn render(
         &self,
-        prototypes: &HashMap<std::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototype>>>,
+        prototypes: &HashMap<std::any::TypeId, Vec<&Box<dyn FrameworkComponentPrototypeDyn>>>,
         ui: &imgui::Ui,
     ) {
         if let Some(values) = prototypes.get(&std::any::TypeId::of::<T>()) {
@@ -239,7 +239,7 @@ where
 
     fn render_mut(
         &self,
-        prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototype>>>,
+        prototypes: &mut HashMap<std::any::TypeId, Vec<&mut Box<dyn FrameworkComponentPrototypeDyn>>>,
         ui: &imgui::Ui,
     ) -> InspectResult {
         if let Some(values) = prototypes.get_mut(&std::any::TypeId::of::<T>()) {
@@ -326,7 +326,7 @@ impl InspectRegistry {
     }
 
     pub fn register_component_prototype<
-        T: FrameworkComponentPrototype + 'static + imgui_inspect::InspectRenderStruct<T>,
+        T: FrameworkComponentPrototypeDyn + 'static + imgui_inspect::InspectRenderStruct<T>,
     >(
         &mut self,
         header_text: &'static str,
@@ -399,7 +399,7 @@ impl InspectRegistry {
 
                 let mut prototypes = HashMap::<
                     core::any::TypeId,
-                    Vec<&mut Box<dyn FrameworkComponentPrototype>>,
+                    Vec<&mut Box<dyn FrameworkComponentPrototypeDyn>>,
                 >::new();
 
                 for entity_handle in entity_handles {
@@ -416,7 +416,7 @@ impl InspectRegistry {
                     let pep = &mut *guard;
                     for component_prototype in pep.component_prototypes_mut() {
                         let component_prototype_type =
-                            FrameworkComponentPrototype::type_id(&**component_prototype);
+                            FrameworkComponentPrototypeDyn::type_id(&**component_prototype);
                         let prototypes_entry =
                             prototypes.entry(component_prototype_type).or_insert(vec![]);
 
@@ -425,7 +425,7 @@ impl InspectRegistry {
                         // As long as we're holding the WriteBorrow on PersistentEntityComponent storage
                         //prototypes_entry.push(&mut *component_prototype);
                         unsafe {
-                            let component_prototype_ptr: *mut Box<dyn FrameworkComponentPrototype> =
+                            let component_prototype_ptr: *mut Box<dyn FrameworkComponentPrototypeDyn> =
                                 component_prototype;
                             prototypes_entry.push(&mut *component_prototype_ptr);
                         }
@@ -461,7 +461,7 @@ impl InspectRegistry {
                         for i in (0..component_prototypes.len()).rev() {
                             let component_prototype = &component_prototypes[i];
                             let type_id =
-                                FrameworkComponentPrototype::type_id(&**component_prototype);
+                                FrameworkComponentPrototypeDyn::type_id(&**component_prototype);
 
                             for component_type_to_delete in &component_types_to_delete {
                                 if type_id == *component_type_to_delete {
@@ -480,7 +480,8 @@ impl InspectRegistry {
                     for entity_handle in entity_handles {
                         if !editor_modified_components.exists(&entity_handle) {
                             editor_modified_components
-                                .allocate(&entity_handle, EditorModifiedComponent::new());
+                                .allocate(&entity_handle, EditorModifiedComponent::new())
+                                .unwrap();
                         }
                     }
                 }

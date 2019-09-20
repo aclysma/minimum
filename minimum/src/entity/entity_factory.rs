@@ -5,7 +5,7 @@
 //! logic yourself.
 use std::prelude::v1::*;
 
-use crate::ComponentCreator;
+use crate::ComponentPrototypeDyn;
 use crate::EntityRef;
 use crate::EntitySet;
 use crate::ResourceMap;
@@ -58,11 +58,11 @@ impl EntityFactory {
 /// Represents an entity that can be created and the components it should start out with
 pub struct BasicEntityPrototype {
     /// Prototypes for the components to place on the entity
-    components: Vec<Box<dyn ComponentCreator>>,
+    components: Vec<Box<dyn ComponentPrototypeDyn>>,
 }
 
 impl BasicEntityPrototype {
-    pub fn new(components: Vec<Box<dyn ComponentCreator>>) -> Self {
+    pub fn new(components: Vec<Box<dyn ComponentPrototypeDyn>>) -> Self {
         BasicEntityPrototype { components }
     }
 }
@@ -112,7 +112,7 @@ mod tests {
             let c1_prototype = BasicComponentPrototype::new(TestComponent1);
             let c2_prototype = BasicComponentPrototype::new(TestComponent2);
 
-            let c_list: Vec<Box<dyn ComponentCreator>> =
+            let c_list: Vec<Box<dyn ComponentPrototypeDyn>> =
                 vec![Box::new(c1_prototype), Box::new(c2_prototype)];
 
             let e_prototype = BasicEntityPrototype::new(c_list);

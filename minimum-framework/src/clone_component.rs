@@ -1,7 +1,6 @@
 use crate::persist::ComponentPrototypeSerializer;
 #[cfg(feature = "editor")]
 use crate::select::SelectableComponentPrototype;
-use crate::FrameworkComponentPrototype;
 use minimum::BasicComponentPrototype;
 use minimum::Component;
 use minimum::ComponentFactory;
@@ -16,6 +15,7 @@ use serde::Serialize;
 
 #[cfg(feature = "editor")]
 use imgui_inspect::{InspectArgsDefault, InspectArgsStruct, InspectRenderStruct};
+use crate::prototype::FrameworkComponentPrototype;
 
 // The only reason for wrapping BasicComponentPrototype and BasicComponentFactory is so that traits
 // can be added non-intrusively
@@ -45,7 +45,9 @@ impl<T: Component + Clone> ComponentPrototype for CloneComponentPrototype<T> {
     type Factory = CloneComponentFactory<T>;
 }
 
-impl<T: Component + Clone> FrameworkComponentPrototype for CloneComponentPrototype<T> {}
+impl<T: Component + Clone> FrameworkComponentPrototype for CloneComponentPrototype<T> {
+    fn component_type() -> std::any::TypeId { std::any::TypeId::of::<T>() }
+}
 
 impl<T: Component + Clone + Default> Default for CloneComponentPrototype<T> {
     fn default() -> Self {

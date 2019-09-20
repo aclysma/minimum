@@ -32,7 +32,7 @@ pub use component::BasicComponentFactory;
 pub use component::BasicComponentPrototype;
 pub use component::Component;
 pub use component::ComponentCreateQueueFlushListener;
-pub use component::ComponentCreator;
+pub use component::ComponentPrototypeDyn;
 pub use component::ComponentFactory;
 pub use component::ComponentPrototype;
 pub use component::ComponentStorage;

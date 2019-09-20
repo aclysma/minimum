@@ -3,6 +3,7 @@ use super::EntityHandle;
 use crate::component;
 use component::Component;
 use component::ComponentStorage;
+use crate::component::ComponentAllocateResult;
 
 /// Represents a created entity. All data for entities is stored in components. Usually, you will work
 /// with an EntityRef, not an entity directly.
@@ -68,8 +69,8 @@ impl<'e> EntityRef<'e> {
 
     /// Add a component to the entity. This is an immediate operation. Component prototypes are the
     /// recommended way to add components to entities.
-    pub fn add_component<T: Component>(&self, storage: &mut T::Storage, data: T) {
-        storage.allocate(&self.handle, data);
+    pub fn add_component<T: Component>(&self, storage: &mut T::Storage, data: T) -> ComponentAllocateResult {
+        storage.allocate(&self.handle, data)
     }
 
     // TODO: Cannot support this without calling free handler

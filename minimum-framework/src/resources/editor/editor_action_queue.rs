@@ -35,7 +35,7 @@ impl EditorActionQueue {
                 entity_ref.add_component(
                     &mut *editor_selected_components,
                     EditorSelectedComponent::new(),
-                );
+                ).unwrap();
             }
 
             entity_set.flush_creates(resource_map);

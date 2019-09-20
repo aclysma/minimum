@@ -94,7 +94,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
                                             editor_selected_components.allocate(
                                                 &entity.handle(),
                                                 EditorSelectedComponent::new(),
-                                            );
+                                            ).unwrap();
                                         } else {
                                             editor_selected_components.free(&entity.handle());
                                         }
@@ -104,7 +104,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
                                             editor_selected_components.allocate(
                                                 &entity.handle(),
                                                 EditorSelectedComponent::new(),
-                                            );
+                                            ).unwrap();
                                         }
                                     }
                                 }

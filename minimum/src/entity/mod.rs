@@ -84,7 +84,7 @@ mod tests {
         // Add the component
         {
             let mut test_component_storage = resource_map.fetch_mut::<Storage>();
-            entity.add_component(&mut *test_component_storage, TestComponent::new(1));
+            entity.add_component(&mut *test_component_storage, TestComponent::new(1)).unwrap();
         }
 
         // Ensure after we enqueue free and flush free, the component is released
@@ -126,7 +126,7 @@ mod tests {
         assert!(component.is_none());
 
         // Add the component
-        entity.add_component(&mut *test_component_storage, TestComponent::new(1));
+        entity.add_component(&mut *test_component_storage, TestComponent::new(1)).unwrap();
 
         // Succeed in finding the component
         let component = entity.get_component::<TestComponent>(&test_component_storage);

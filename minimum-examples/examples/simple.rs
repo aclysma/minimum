@@ -138,14 +138,14 @@ fn create_objects(resource_map: &ResourceMap) {
         entity.add_component(
             &mut *pos_components,
             PositionComponent::new(Vec2::new(i as f32, 6.0)),
-        );
+        ).unwrap();
 
         // Put velocity on half of the entities
         if i % 2 == 0 {
             entity.add_component(
                 &mut *vel_components,
                 VelocityComponent::new(Vec2::new(i as f32, 6.0)),
-            );
+            ).unwrap();
         }
 
         // Add an extra component to a particular entity
@@ -153,7 +153,7 @@ fn create_objects(resource_map: &ResourceMap) {
             entity.add_component(
                 &mut *speed_multiplier_components,
                 SpeedMultiplierComponent::new(12.0),
-            );
+            ).unwrap();
         }
     }
 }

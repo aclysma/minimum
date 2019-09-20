@@ -49,7 +49,7 @@ use crate::entity;
 use entity::EntityHandle;
 
 pub use component_factory::ComponentCreateQueueFlushListener;
-pub use component_factory::ComponentCreator;
+pub use component_factory::ComponentPrototypeDyn;
 pub use component_factory::ComponentFactory;
 pub use component_factory::ComponentPrototype;
 pub use registry::ComponentFreeHandler;
@@ -65,6 +65,14 @@ pub use basic::BasicComponentPrototype;
 // trying to fetch components directly (these are not checking generation.. it's assumed
 // we are calling through the entity code, which does a gen check there
 
+#[derive(Debug)]
+pub enum ComponentAllocateError {
+    PoolIsFull,
+    AlreadyHasComponent
+}
+
+pub type ComponentAllocateResult = Result<(), ComponentAllocateError>;
+
 /// Generalizes storage for components. Typical implementation would be a parallel array to entities (i.e. VecStorage)
 /// or a pool with a 1:1 lookup table to map entities to components (SlabStorage). EntityHandle includes the concept
 /// of generations in it
@@ -73,7 +81,7 @@ where
     T: Component,
 {
     /// Create a component for the given entity
-    fn allocate(&mut self, entity: &EntityHandle, data: T);
+    fn allocate(&mut self, entity: &EntityHandle, data: T) -> ComponentAllocateResult;
 
     /// Free the component that is on a given entity. This function is allowed to panic if the component
     /// does not exist. Use free_if_exists if it's unknown whether the component exists or not

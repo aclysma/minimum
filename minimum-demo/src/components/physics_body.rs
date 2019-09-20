@@ -13,6 +13,7 @@ use nphysics2d::object::RigidBodyDesc;
 use crate::components::TransformComponent;
 #[cfg(feature = "editor")]
 use framework::inspect::common_types::*;
+use framework::FrameworkComponentPrototypeDyn;
 use framework::FrameworkComponentPrototype;
 use std::collections::VecDeque;
 
@@ -141,7 +142,11 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeCustom {
     type Factory = PhysicsBodyComponentFactory;
 }
 
-impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCustom {}
+impl FrameworkComponentPrototypeDyn for PhysicsBodyComponentPrototypeCustom {
+    fn component_type(&self) -> std::any::TypeId {
+        std::any::TypeId::of::<PhysicsBodyComponent>()
+    }
+}
 
 //
 // Box Prototype
@@ -190,7 +195,11 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeBox {
     type Factory = PhysicsBodyComponentFactory;
 }
 
-impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeBox {}
+impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeBox {
+    fn component_type() -> std::any::TypeId {
+        std::any::TypeId::of::<PhysicsBodyComponent>()
+    }
+}
 
 #[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeBox {
@@ -254,7 +263,11 @@ impl ComponentPrototype for PhysicsBodyComponentPrototypeCircle {
     type Factory = PhysicsBodyComponentFactory;
 }
 
-impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCircle {}
+impl FrameworkComponentPrototype for PhysicsBodyComponentPrototypeCircle {
+    fn component_type() -> std::any::TypeId {
+        std::any::TypeId::of::<PhysicsBodyComponent>()
+    }
+}
 
 #[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeCircle {
@@ -395,7 +408,8 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
 
                         let body = physics.world_mut().add_body(&body_desc);
                         entity
-                            .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
+                            .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()))
+                            .unwrap();
                     }
 
                     QueuedPhysicsBodyPrototypes::Circle(data) => {
@@ -421,13 +435,15 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
 
                         let body = physics.world_mut().add_body(&body_desc);
                         entity
-                            .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
+                            .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()))
+                            .unwrap();
                     }
 
                     QueuedPhysicsBodyPrototypes::Custom(data) => {
                         let body = physics.world_mut().add_body(data.desc.rigid_body_desc());
                         entity
-                            .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()));
+                            .add_component(&mut *storage, PhysicsBodyComponent::new(body.handle()))
+                            .unwrap();
                     }
                 }
             }

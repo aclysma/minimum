@@ -11,13 +11,13 @@ use crate::ResourceMap;
 /// associated type.
 ///
 /// Ideally this type would not exist and we would use ComponentPrototype directly
-pub trait ComponentCreator: Sync + Send {
+pub trait ComponentPrototypeDyn: Sync + Send {
     fn enqueue_create(&self, resource_map: &ResourceMap, entity_handle: &EntityHandle);
 }
 
 /// General component prototype.. it knows the factory type that can construct it, and queue_create()
 /// is implemented so that we can simply dynamic dispatch to enqueue the prototype
-pub trait ComponentPrototype: ComponentCreator + Sized + Send + Sync + 'static {
+pub trait ComponentPrototype: Sized + Send + Sync + 'static {
     type Factory: ComponentFactory<Self>;
 
     fn enqueue_create(&self, resource_map: &ResourceMap, entity_handle: &EntityHandle) {
@@ -26,7 +26,7 @@ pub trait ComponentPrototype: ComponentCreator + Sized + Send + Sync + 'static {
     }
 }
 
-impl<T> ComponentCreator for T
+impl<T> ComponentPrototypeDyn for T
 where
     T: ComponentPrototype + Sync + Send,
 {

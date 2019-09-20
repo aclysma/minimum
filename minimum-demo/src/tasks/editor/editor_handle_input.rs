@@ -151,7 +151,7 @@ fn handle_translate_gizmo_input(
             if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
                 // update the prototype and invalidate the object
                 if let Some(persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
-                    let mut entity_prototype = persistent_entity_component.entity_prototype_mut().get_mut();
+                    let mut entity_prototype = persistent_entity_component.entity_prototype_mut().lock();
                     if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
 
                         // Edit the prototype
@@ -159,7 +159,7 @@ fn handle_translate_gizmo_input(
 
                         // Mark the object as needing to be recreated
                         if !editor_modified_components.exists(&entity_handle) {
-                            editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
+                            editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new()).unwrap();
                         }
 
                         // Skip updating the transform component
@@ -422,7 +422,7 @@ fn handle_select_input(
                 editor_selected_components.free_if_exists(entity);
             } else {
                 if !editor_selected_components.exists(entity) {
-                    editor_selected_components.allocate(entity, EditorSelectedComponent::new());
+                    editor_selected_components.allocate(entity, EditorSelectedComponent::new()).unwrap();
                 }
             }
         }

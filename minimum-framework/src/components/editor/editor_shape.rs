@@ -85,7 +85,11 @@ impl ComponentPrototype for EditorShapeComponentPrototype {
     type Factory = EditorShapeComponentFactory;
 }
 
-impl FrameworkComponentPrototype for EditorShapeComponentPrototype {}
+impl FrameworkComponentPrototype for EditorShapeComponentPrototype {
+    fn component_type() -> std::any::TypeId {
+        std::any::TypeId::of::<EditorShapeComponent>()
+    }
+}
 
 //
 // Factory for PhysicsBody components
@@ -135,7 +139,7 @@ impl ComponentCreateQueueFlushListener for EditorShapeComponentFactory {
                 entity.add_component(
                     &mut *storage,
                     EditorShapeComponent::new(data.shape_handle, collider.handle()),
-                );
+                ).unwrap();
             }
         }
     }

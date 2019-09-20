@@ -55,6 +55,9 @@ impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
         // Delete marked entities
         entity_set.flush_free(resource_map);
 
+        //TODO: Validation? Ideally we can determine if a set of entities is improperly set up and
+        // try to recover or roll back. At least, we can flag an error.
+
         // Recreate the entities (the scoping here is intentional, we want to avoid having any active fetch when we call flush_creates)
         {
             let mut editor_selected_components = resource_map.fetch_mut::<<framework::components::editor::EditorSelectedComponent as Component>::Storage>();
@@ -66,7 +69,8 @@ impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
                 // If the entity was selected before it was deleted, re-select it
                 if is_selected {
                     editor_selected_components
-                        .allocate(&entity.handle(), EditorSelectedComponent::new());
+                        .allocate(&entity.handle(), EditorSelectedComponent::new())
+                        .unwrap();
                 }
             }
         }

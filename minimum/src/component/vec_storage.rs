@@ -3,6 +3,8 @@ use std::prelude::v1::*;
 use super::Component;
 use super::ComponentStorage;
 use super::EntityHandle;
+use super::ComponentAllocateResult;
+use super::ComponentAllocateError;
 
 /// Allows iteration of all components
 pub struct VecComponentIterator<'a, T, I>
@@ -156,7 +158,7 @@ impl<T: Component> VecComponentStorage<T> {
 }
 
 impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
-    fn allocate(&mut self, entity: &EntityHandle, data: T) {
+    fn allocate(&mut self, entity: &EntityHandle, data: T) -> ComponentAllocateResult {
         // If the slab keys vec isn't long enough, expand it
         if self.components.len() <= entity.index() as usize {
             // Can't use resize() because T is not guaranteed to be cloneable
@@ -167,8 +169,12 @@ impl<T: Component> ComponentStorage<T> for VecComponentStorage<T> {
             }
         }
 
-        assert!(self.components[entity.index() as usize].is_none());
+        if self.components[entity.index() as usize].is_some() {
+            return Err(ComponentAllocateError::AlreadyHasComponent);
+        }
+
         self.components[entity.index() as usize] = Some(data);
+        Ok(())
     }
 
     fn free(&mut self, entity: &EntityHandle) {
