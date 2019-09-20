@@ -54,6 +54,16 @@ impl TransformComponent {
         &mut self.position
     }
 
+    pub fn scale(&self) -> glm::Vec2 {
+        self.scale
+    }
+
+    pub fn scale_mut(&mut self) -> &mut glm::Vec2 {
+        &mut self.scale
+    }
+
+    pub fn uniform_scale(&self) -> f32 { self.scale.x.max(self.scale.y) }
+
     pub fn requires_sync_to_physics(&self) -> bool {
         self.requires_sync_to_physics
     }

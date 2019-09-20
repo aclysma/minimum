@@ -372,17 +372,17 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
         }
 
         //TODO: Either need two-phase entity construction or deterministic construct order.
-        let position = resource_map.fetch::<<TransformComponent as Component>::Storage>();
+        let transform = resource_map.fetch::<<TransformComponent as Component>::Storage>();
 
         let mut physics = resource_map.fetch_mut::<crate::resources::PhysicsManager>();
         let mut storage = resource_map.fetch_mut::<<PhysicsBodyComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
-                let center: glm::Vec2 =
-                    if let Some(p) = entity.get_component::<TransformComponent>(&*position) {
-                        p.position()
+                let (center, scale) : (glm::Vec2, glm::Vec2) =
+                    if let Some(p) = entity.get_component::<TransformComponent>(&*transform) {
+                        (p.position(), p.scale())
                     } else {
-                        glm::zero()
+                        (glm::zero(), glm::vec2(1.0, 1.0))
                     };
 
                 //TODO: There is a silly amount of duplicated code in here
@@ -391,7 +391,21 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                         use ncollide2d::shape::{Cuboid, ShapeHandle};
                         use nphysics2d::material::{BasicMaterial, MaterialHandle};
 
-                        let shape = ShapeHandle::new(Cuboid::new(data.size / 2.0));
+                        let mut x_half_extent = (scale.x * data.size.x) / 2.0;
+                        if x_half_extent < std::f32::MIN_POSITIVE {
+                            warn!("Tried to create a box with with <=0 x half-extent");
+                            x_half_extent = std::f32::MIN_POSITIVE;
+                        }
+
+                        let mut y_half_extent = (scale.y * data.size.y) / 2.0;
+                        if y_half_extent < std::f32::MIN_POSITIVE {
+                            warn!("Tried to create a box with with <=0 y half-extent");
+                            y_half_extent = std::f32::MIN_POSITIVE;
+                        }
+
+                        let half_extents = glm::vec2(x_half_extent, y_half_extent);
+
+                        let shape = ShapeHandle::new(Cuboid::new(half_extents));
 
                         let collider_desc = ColliderDesc::new(shape)
                             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))
@@ -416,8 +430,15 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                         use ncollide2d::shape::{Ball, ShapeHandle};
                         use nphysics2d::material::{BasicMaterial, MaterialHandle};
 
+                        let mut radius = data.radius * f32::max(scale.x, scale.y);
+
+                        if radius < std::f32::MIN_POSITIVE {
+                            warn!("Tried to create a circle with <=0 radius");
+                            radius = std::f32::MIN_POSITIVE;
+                        }
+
                         let shape =
-                            ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE)));
+                            ShapeHandle::new(Ball::new(radius));
 
                         let collider_desc = ColliderDesc::new(shape)
                             .material(MaterialHandle::new(BasicMaterial::new(0.0, 0.3)))

@@ -47,10 +47,17 @@ impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
         ncollide2d::math::Isometry<f32>,
         ncollide2d::shape::ShapeHandle<f32>,
     ) {
+        let scale = glm::vec2(1.0, 1.0);
+        let mut radius = data.radius * f32::max(scale.x, scale.y);
+        if radius < std::f32::MIN_POSITIVE {
+            warn!("Tried to create a circle with <=0 radius");
+            radius = std::f32::MIN_POSITIVE;
+        }
+
         use ncollide2d::shape::{Ball, ShapeHandle};
         (
             ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
-            ShapeHandle::new(Ball::new(data.radius.max(std::f32::MIN_POSITIVE))),
+            ShapeHandle::new(Ball::new(radius)),
         )
     }
 }

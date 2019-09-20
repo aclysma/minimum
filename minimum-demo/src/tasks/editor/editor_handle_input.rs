@@ -86,6 +86,7 @@ impl ResourceTaskImpl for EditorHandleInput {
 
 
         handle_translate_gizmo_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
+        handle_scale_gizmo_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
         handle_select_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, & *transform_components);
 
         match editor_ui_state.active_editor_tool {
@@ -177,37 +178,6 @@ fn handle_translate_gizmo_input(
                     transform_component.requires_sync_to_physics();
                 }
             }
-
-            // Find the transform component prototype
-            //let mut transform_component_prototype = None;
-//            if let Some(mut persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
-//                let mut entity_prototype = persistent_entity_component.entity_prototype_mut().get_mut();
-//                if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
-//                    if let Some(transform_component) = transform_components.get_mut(&entity_handle) {
-//                        if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
-//
-//                            println!(
-//                                "frame delta delta {:?}   diff {:?} ",
-//                                drag_in_progress.accumulated_frame_delta,
-//                                drag_in_progress.end_position - drag_in_progress.begin_position
-//                            );
-//
-//                            // Edit the prototype
-//                            *transform_component_prototype.data_mut().position_mut() += world_space_delta;
-//                            if !editor_modified_components.exists(&entity_handle) {
-//                                editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new());
-//                            }
-//                        } else {
-//                            // Edit the component - recompute a new position. This is done using original values
-//                            // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
-//                            // drag is complete.
-//                            let new_position = transform_component_prototype.data().position() + world_space_delta;
-//                            *transform_component.position_mut() = new_position;
-//                            transform_component.requires_sync_to_physics();
-//                        }
-//                    }
-//                }
-//            }
         }
     }
 }
@@ -259,6 +229,93 @@ fn draw_translate_gizmo(
                 position + glm::vec2(25.0, 25.0),
                 glm::vec4(1.0, 1.0, 0.0, 1.0)
             );
+        }
+    }
+}
+
+
+fn handle_scale_gizmo_input(
+    entity_set: &EntitySet,
+    _input_manager: &InputManager,
+    _render_state: &RenderState,
+    _editor_collision_world: &EditorCollisionWorld,
+    editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
+    _debug_draw: &mut DebugDraw,
+    _editor_ui_state: &EditorUiState,
+    editor_draw: &mut EditorDraw,
+    transform_components: &mut <TransformComponent as Component>::Storage,
+    persistent_entity_components: &mut <PersistentEntityComponent as Component>::Storage,
+    editor_modified_components: &mut <EditorModifiedComponent as Component>::Storage
+
+) {
+    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButtons::Left) {
+        // See what if any axis we will operate on
+        let mut translate_x = false;
+        let mut translate_y = false;
+        if drag_in_progress.shape_id == "x_axis_scale" {
+            translate_x = true;
+        } else if drag_in_progress.shape_id == "y_axis_scale" {
+            translate_y = true;
+        } else if drag_in_progress.shape_id == "xy_axis_scale" {
+            translate_x = true;
+            translate_y = true;
+        }
+
+        // Early out if we didn't touch either axis
+        if !translate_x && !translate_y {
+            return;
+        }
+
+        // Determine the drag distance in ui_space
+        //TODO: I was intending this to use ui space but the values during drag are not lining up
+        // with values on end drag. This is likely an fp precision issue.
+        let mut ui_space_previous_frame_delta = drag_in_progress.world_space_previous_frame_delta;
+        let mut ui_space_accumulated_delta = drag_in_progress.world_space_accumulated_frame_delta;
+        if !translate_x {
+            ui_space_previous_frame_delta.x = 0.0;
+            ui_space_accumulated_delta.x = 0.0;
+        }
+
+        if !translate_y {
+            ui_space_previous_frame_delta.y = 0.0;
+            ui_space_accumulated_delta.y = 0.0;
+        }
+
+        for (entity_handle, _) in editor_selected_components.iter(&entity_set) {
+
+            // If we are ending the drag and manage to find a persistent component prototype, we will
+            // update that and recreate the object. In which case, we can skip updating the transform
+            // component itself.
+            let mut update_transform_component = true;
+            if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
+                // update the prototype and invalidate the object
+                if let Some(persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
+                    let mut entity_prototype = persistent_entity_component.entity_prototype_mut().lock();
+                    if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
+
+                        // Edit the prototype
+                        *transform_component_prototype.data_mut().scale_mut() += ui_space_accumulated_delta * 0.1;
+
+                        // Mark the object as needing to be recreated
+                        if !editor_modified_components.exists(&entity_handle) {
+                            editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new()).unwrap();
+                        }
+
+                        // Skip updating the transform component
+                        update_transform_component = false;
+                    }
+                }
+            }
+
+            if update_transform_component {
+                if let Some(transform_component) = transform_components.get_mut(&entity_handle) {
+                    // Edit the component - recompute a new position. This is done using original values
+                    // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
+                    // drag is complete.
+                    *transform_component.scale_mut() += ui_space_previous_frame_delta * 0.1;
+                    transform_component.requires_sync_to_physics();
+                }
+            }
         }
     }
 }

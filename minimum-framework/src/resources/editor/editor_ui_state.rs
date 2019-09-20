@@ -36,7 +36,7 @@ impl WindowOptions {
 }
 
 // If adding to this, don't forget to hook up keyboard shortcuts and buttons
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum EditorTool {
     //Select,
     Translate,
