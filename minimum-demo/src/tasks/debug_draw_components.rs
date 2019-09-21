@@ -37,10 +37,20 @@ impl ResourceTaskImpl for DebugDrawComponents {
             if let Some(transform) = transform_components.get(&entity_index) {
                 let rect_size = glm::vec2(rect.size().x * transform.scale().x, rect.size().y * transform.scale().y);
                 let half_extents = rect_size / 2.0;
-                let p0 = transform.position() + half_extents;
-                let p1 = transform.position() - half_extents;
+                let p0 = half_extents;
+                let p1 = glm::vec2(0.0, 0.0) - half_extents;
 
-                debug_draw.add_rect(p0, p1, rect.color());
+                if transform.rotation().abs() > std::f32::MIN_POSITIVE {
+                    let mut points = vec![p0, glm::vec2(p0.x, p1.y), p1, glm::vec2(p1.x, p0.y)];
+                    for p in &mut points {
+
+                        *p = glm::rotate_vec2(p, transform.rotation()) + transform.position();
+                    }
+                    debug_draw.add_polygon(points, rect.color());
+
+                } else {
+                    debug_draw.add_rect(p0 + transform.position(), p1 + transform.position(), rect.color());
+                }
             }
         }
     }

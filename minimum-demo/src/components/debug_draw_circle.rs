@@ -6,6 +6,8 @@ use framework::select::SelectableComponentPrototype;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
+use framework::FrameworkEntityPrototypeInner;
+use crate::components::TransformComponentPrototype;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawCircleComponent {
@@ -42,13 +44,18 @@ impl DebugDrawCircleComponent {
 #[cfg(feature = "editor")]
 impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
     fn create_selection_shape(
+        framework_entity: &FrameworkEntityPrototypeInner,
         data: &Self,
     ) -> (
         ncollide2d::math::Isometry<f32>,
         ncollide2d::shape::ShapeHandle<f32>,
     ) {
-        let scale = glm::vec2(1.0, 1.0);
-        let mut radius = data.radius * f32::max(scale.x, scale.y);
+        let mut scale = 1.0;
+        if let Some(transform) = framework_entity.find_component_prototype::<TransformComponentPrototype>() {
+            scale = transform.data().uniform_scale();
+        }
+
+        let mut radius = data.radius * scale;
         if radius < std::f32::MIN_POSITIVE {
             warn!("Tried to create a circle with <=0 radius");
             radius = std::f32::MIN_POSITIVE;

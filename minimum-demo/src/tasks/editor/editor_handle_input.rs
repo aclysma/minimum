@@ -85,27 +85,24 @@ impl ResourceTaskImpl for EditorHandleInput {
         editor_draw.update(&*input_manager, &*render_state);
 
 
-        handle_translate_gizmo_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
-        handle_scale_gizmo_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
-        handle_select_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, & *transform_components);
+        handle_translate_gizmo_input(&*entity_set,  &mut* editor_selected_components,  &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
+        handle_scale_gizmo_input(&*entity_set, &mut* editor_selected_components, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
+        handle_rotate_gizmo_input(&*entity_set,  &mut* editor_selected_components, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
+
+        handle_select_input( &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw);
 
         match editor_ui_state.active_editor_tool {
             //EditorTool::Select => handle_select_tool_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state),
-            EditorTool::Translate => draw_translate_gizmo(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* transform_components),
-            EditorTool::Scale => draw_scale_gizmo(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* transform_components),
-            EditorTool::Rotate => draw_rotate_gizmo(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state, &mut *editor_draw, &* transform_components)
+            EditorTool::Translate => draw_translate_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components),
+            EditorTool::Scale => draw_scale_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components),
+            EditorTool::Rotate => draw_rotate_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components)
         }
     }
 }
 
 fn handle_translate_gizmo_input(
     entity_set: &EntitySet,
-    _input_manager: &InputManager,
-    _render_state: &RenderState,
-    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
-    _debug_draw: &mut DebugDraw,
-    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &mut <TransformComponent as Component>::Storage,
     persistent_entity_components: &mut <PersistentEntityComponent as Component>::Storage,
@@ -184,12 +181,8 @@ fn handle_translate_gizmo_input(
 
 fn draw_translate_gizmo(
     entity_set: &EntitySet,
-    _input_manager: &InputManager,
-    _render_state: &RenderState,
-    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &<TransformComponent as Component>::Storage
 ) {
@@ -197,51 +190,107 @@ fn draw_translate_gizmo(
         if let Some(transform) = transform_components.get(&entity) {
             let position = transform.position();
 
+            let x_color = glm::vec4(0.0, 1.0, 0.0, 1.0);
+            let y_color = glm::vec4(1.0, 0.6, 0.0, 1.0);
+            let xy_color = glm::vec4(1.0, 1.0, 0.0, 1.0);
+
             //TODO: Make this resolution independent. Need a UI multiplier?
+
+            // x axis line
             editor_draw.add_line(
                 "x_axis_translate",
                 debug_draw,
                 position,
                 position + glm::vec2(100.0, 0.0),
-                glm::vec4(0.0, 0.0, 1.0, 1.0)
+                x_color
             );
 
+            editor_draw.add_line(
+                "x_axis_translate",
+                debug_draw,
+                position + glm::vec2(85.0, 15.0),
+                position + glm::vec2(100.0, 0.0),
+                x_color
+            );
+
+            editor_draw.add_line(
+                "x_axis_translate",
+                debug_draw,
+                position + glm::vec2(85.0, -15.0),
+                position + glm::vec2(100.0, 0.0),
+                x_color
+            );
+
+            // y axis line
             editor_draw.add_line(
                 "y_axis_translate",
                 debug_draw,
                 position,
                 position + glm::vec2(0.0, 100.0),
-                glm::vec4(0.0, 1.0, 0.0, 1.0)
+                y_color
             );
 
+            editor_draw.add_line(
+                "y_axis_translate",
+                debug_draw,
+                position + glm::vec2(-15.0, 85.0),
+                position + glm::vec2(0.0, 100.0),
+                y_color
+            );
+
+            editor_draw.add_line(
+                "y_axis_translate",
+                debug_draw,
+                position + glm::vec2(15.0, 85.0),
+                position + glm::vec2(0.0, 100.0),
+                y_color
+            );
+
+            // xy line
             editor_draw.add_line(
                 "xy_axis_translate",
                 debug_draw,
                 position + glm::vec2(0.0, 25.0),
                 position + glm::vec2(25.0, 25.0),
-                glm::vec4(1.0, 1.0, 0.0, 1.0)
+                xy_color
             );
 
+            // xy line
             editor_draw.add_line(
                 "xy_axis_translate",
                 debug_draw,
                 position + glm::vec2(25.0, 0.0),
                 position + glm::vec2(25.0, 25.0),
-                glm::vec4(1.0, 1.0, 0.0, 1.0)
+                xy_color
             );
         }
     }
 }
 
+fn sign_aware_magnitude(v: glm::Vec2) -> f32 {
+    let mut total = 0.0;
+    total += if v.x > 0.0 {
+        v.x * v.x
+    } else {
+        v.x * v.x * -1.0
+    };
+
+    total += if v.y > 0.0 {
+        v.y * v.y
+    } else {
+        v.y * v.y * -1.0
+    };
+
+    if total >= 0.0 {
+        total.sqrt()
+    } else {
+        (total * -1.0).sqrt() * -1.0
+    }
+}
 
 fn handle_scale_gizmo_input(
     entity_set: &EntitySet,
-    _input_manager: &InputManager,
-    _render_state: &RenderState,
-    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
-    _debug_draw: &mut DebugDraw,
-    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &mut <TransformComponent as Component>::Storage,
     persistent_entity_components: &mut <PersistentEntityComponent as Component>::Storage,
@@ -252,17 +301,17 @@ fn handle_scale_gizmo_input(
         // See what if any axis we will operate on
         let mut translate_x = false;
         let mut translate_y = false;
+        let mut uniform_scale = false;
         if drag_in_progress.shape_id == "x_axis_scale" {
             translate_x = true;
         } else if drag_in_progress.shape_id == "y_axis_scale" {
             translate_y = true;
-        } else if drag_in_progress.shape_id == "xy_axis_scale" {
-            translate_x = true;
-            translate_y = true;
+        } else if drag_in_progress.shape_id == "uniform_scale" {
+            uniform_scale = true;
         }
 
         // Early out if we didn't touch either axis
-        if !translate_x && !translate_y {
+        if !translate_x && !translate_y && !uniform_scale {
             return;
         }
 
@@ -271,14 +320,21 @@ fn handle_scale_gizmo_input(
         // with values on end drag. This is likely an fp precision issue.
         let mut ui_space_previous_frame_delta = drag_in_progress.world_space_previous_frame_delta;
         let mut ui_space_accumulated_delta = drag_in_progress.world_space_accumulated_frame_delta;
-        if !translate_x {
+        if !translate_x && !uniform_scale {
             ui_space_previous_frame_delta.x = 0.0;
             ui_space_accumulated_delta.x = 0.0;
         }
 
-        if !translate_y {
+        if !translate_y && !uniform_scale {
             ui_space_previous_frame_delta.y = 0.0;
             ui_space_accumulated_delta.y = 0.0;
+        }
+
+        if uniform_scale {
+            ui_space_previous_frame_delta.x = sign_aware_magnitude(ui_space_previous_frame_delta);
+            ui_space_previous_frame_delta.y = ui_space_previous_frame_delta.x;
+            ui_space_accumulated_delta.x = sign_aware_magnitude(ui_space_accumulated_delta);
+            ui_space_accumulated_delta.y = ui_space_accumulated_delta.x;
         }
 
         for (entity_handle, _) in editor_selected_components.iter(&entity_set) {
@@ -294,7 +350,7 @@ fn handle_scale_gizmo_input(
                     if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
 
                         // Edit the prototype
-                        *transform_component_prototype.data_mut().scale_mut() += ui_space_accumulated_delta * 0.1;
+                        *transform_component_prototype.data_mut().scale_mut() += ui_space_accumulated_delta * 0.05;
 
                         // Mark the object as needing to be recreated
                         if !editor_modified_components.exists(&entity_handle) {
@@ -312,7 +368,7 @@ fn handle_scale_gizmo_input(
                     // Edit the component - recompute a new position. This is done using original values
                     // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
                     // drag is complete.
-                    *transform_component.scale_mut() += ui_space_previous_frame_delta * 0.1;
+                    *transform_component.scale_mut() += ui_space_previous_frame_delta * 0.05;
                     transform_component.requires_sync_to_physics();
                 }
             }
@@ -322,12 +378,8 @@ fn handle_scale_gizmo_input(
 
 fn draw_scale_gizmo(
     entity_set: &EntitySet,
-    _input_manager: &InputManager,
-    _render_state: &RenderState,
-    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &<TransformComponent as Component>::Storage
 ) {
@@ -336,49 +388,137 @@ fn draw_scale_gizmo(
             let position = transform.position();
 
             //TODO: Make this resolution independent. Need a UI multiplier?
+
+            let x_color = glm::vec4(0.0, 1.0, 0.0, 1.0);
+            let y_color = glm::vec4(1.0, 0.6, 0.0, 1.0);
+            let xy_color = glm::vec4(1.0, 1.0, 0.0, 1.0);
+
+            // x axis line
             editor_draw.add_line(
                 "x_axis_scale",
                 debug_draw,
                 position,
                 position + glm::vec2(100.0, 0.0),
-                glm::vec4(0.0, 0.0, 1.0, 1.0)
+                x_color
             );
 
+            // x axis line end
+            editor_draw.add_line(
+                "x_axis_scale",
+                debug_draw,
+                position + glm::vec2(100.0, -20.0),
+                position + glm::vec2(100.0, 20.0),
+                x_color
+            );
+
+            // y axis line
             editor_draw.add_line(
                 "y_axis_scale",
                 debug_draw,
                 position,
                 position + glm::vec2(0.0, 100.0),
-                glm::vec4(0.0, 1.0, 0.0, 1.0)
+                y_color
             );
 
+            // y axis line end
             editor_draw.add_line(
-                "xy_axis_scale",
+                "y_axis_scale",
                 debug_draw,
-                position + glm::vec2(0.0, 25.0),
-                position + glm::vec2(25.0, 25.0),
-                glm::vec4(1.0, 1.0, 0.0, 1.0)
+                position + glm::vec2(-20.0, 100.0),
+                position + glm::vec2(20.0, 100.0),
+                y_color
             );
 
+            // xy line
             editor_draw.add_line(
-                "xy_axis_scale",
+                "uniform_scale",
                 debug_draw,
-                position + glm::vec2(25.0, 0.0),
-                position + glm::vec2(25.0, 25.0),
-                glm::vec4(1.0, 1.0, 0.0, 1.0)
+                position + glm::vec2(0.0, 0.0),
+                position + glm::vec2(50.0, 50.0),
+                xy_color
             );
+
+            // xy line
+            editor_draw.add_line(
+                "uniform_scale",
+                debug_draw,
+                position + glm::vec2(40.0, 60.0),
+                position + glm::vec2(60.0, 40.0),
+                xy_color
+            );
+        }
+    }
+}
+
+fn handle_rotate_gizmo_input(
+    entity_set: &EntitySet,
+    editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
+    editor_draw: &mut EditorDraw,
+    transform_components: &mut <TransformComponent as Component>::Storage,
+    persistent_entity_components: &mut <PersistentEntityComponent as Component>::Storage,
+    editor_modified_components: &mut <EditorModifiedComponent as Component>::Storage
+
+) {
+    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButtons::Left) {
+        // See what if any axis we will operate on
+        let mut rotate_z = false;
+        if drag_in_progress.shape_id == "z_axis_rotate" {
+            rotate_z = true;
+        }
+
+        // Early out if we didn't touch either axis
+        if !rotate_z {
+            return;
+        }
+
+        // Determine the drag distance in ui_space
+        let ui_space_previous_frame_delta = sign_aware_magnitude(drag_in_progress.world_space_previous_frame_delta);
+        let ui_space_accumulated_delta = sign_aware_magnitude(drag_in_progress.world_space_accumulated_frame_delta);
+
+        for (entity_handle, _) in editor_selected_components.iter(&entity_set) {
+
+            // If we are ending the drag and manage to find a persistent component prototype, we will
+            // update that and recreate the object. In which case, we can skip updating the transform
+            // component itself.
+            let mut update_transform_component = true;
+            if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
+                // update the prototype and invalidate the object
+                if let Some(persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
+                    let mut entity_prototype = persistent_entity_component.entity_prototype_mut().lock();
+                    if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
+
+                        // Edit the prototype
+                        *transform_component_prototype.data_mut().rotation_mut() += ui_space_accumulated_delta * 0.05;
+
+                        // Mark the object as needing to be recreated
+                        if !editor_modified_components.exists(&entity_handle) {
+                            editor_modified_components.allocate(&entity_handle, EditorModifiedComponent::new()).unwrap();
+                        }
+
+                        // Skip updating the transform component
+                        update_transform_component = false;
+                    }
+                }
+            }
+
+            if update_transform_component {
+                if let Some(transform_component) = transform_components.get_mut(&entity_handle) {
+                    // Edit the component - recompute a new position. This is done using original values
+                    // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
+                    // drag is complete.
+                    //*transform_component.scale_mut() += ui_space_previous_frame_delta * 0.05;
+                    *transform_component.rotation_mut() += ui_space_previous_frame_delta * 0.05;
+                    transform_component.requires_sync_to_physics();
+                }
+            }
         }
     }
 }
 
 fn draw_rotate_gizmo(
     entity_set: &EntitySet,
-    _input_manager: &InputManager,
-    _render_state: &RenderState,
-    _editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
     transform_components: &<TransformComponent as Component>::Storage
 ) {
@@ -391,7 +531,14 @@ fn draw_rotate_gizmo(
                 "z_axis_rotate",
                 debug_draw,
                 position,
-                150.0,
+                50.0,
+                glm::vec4(0.0, 1.0, 0.0, 1.0)
+            );
+            editor_draw.add_circle_outline(
+                "z_axis_rotate",
+                debug_draw,
+                position,
+                52.0,
                 glm::vec4(0.0, 1.0, 0.0, 1.0)
             );
         }
@@ -399,15 +546,12 @@ fn draw_rotate_gizmo(
 }
 
 fn handle_select_input(
-    _entity_set: &EntitySet,
     input_manager: &InputManager,
     render_state: &RenderState,
     editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
-    _editor_ui_state: &EditorUiState,
     editor_draw: &mut EditorDraw,
-    _transform_components: &<TransformComponent as Component>::Storage
 ) {
     // This will contain the entities to operate on, or None if we haven't issues a select operation
     let mut new_selection: Option<Vec<_>> = None;

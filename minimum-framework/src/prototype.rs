@@ -95,6 +95,8 @@ pub enum FrameworkEntityPersistencePolicy {
 
 #[derive(Clone)]
 pub struct FrameworkEntityPrototype {
+    //TODO: Consider copy-on-write and an asset reload rather than a mutex. This will avoid
+    // having to acquire locks to read
     inner: Arc<Mutex<FrameworkEntityPrototypeInner>>,
     persistence_policy: FrameworkEntityPersistencePolicy,
 }
@@ -133,10 +135,10 @@ impl EntityPrototype for FrameworkEntityPrototype {
         #[cfg(feature = "editor")]
         {
             let mut selection_shapes = vec![];
-
-            for c in entity_prototype_guard.component_prototypes() {
+            let component_prototypes = entity_prototype_guard.component_prototypes();
+            for c in component_prototypes {
                 let select_registry = resource_map.fetch::<SelectRegistry>();
-                if let Some(shape) = select_registry.create_selection_shape(&**c) {
+                if let Some(shape) = select_registry.create_selection_shape(&*entity_prototype_guard, &**c) {
                     selection_shapes.push(shape);
                 }
             }

@@ -64,6 +64,10 @@ impl TransformComponent {
 
     pub fn uniform_scale(&self) -> f32 { self.scale.x.max(self.scale.y) }
 
+    pub fn rotation(&self) -> f32 { self.rotation }
+
+    pub fn rotation_mut(&mut self) -> &mut f32 { &mut self.rotation }
+
     pub fn requires_sync_to_physics(&self) -> bool {
         self.requires_sync_to_physics
     }

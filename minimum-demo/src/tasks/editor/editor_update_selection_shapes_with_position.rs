@@ -34,7 +34,7 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
             if let Some(transform_component) = transform_components.get(&entity) {
                 collision_world.world_mut().set_position(
                     *editor_shape_component.collider_handle(),
-                    nalgebra::Isometry2::new(transform_component.position(), 0.0),
+                    nalgebra::Isometry2::new(transform_component.position(), transform_component.rotation()),
                 );
             }
         }

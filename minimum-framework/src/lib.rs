@@ -29,6 +29,7 @@ pub use prototype::FrameworkComponentPrototypeDyn;
 pub use prototype::FrameworkComponentPrototype;
 pub use prototype::FrameworkEntityPersistencePolicy;
 pub use prototype::FrameworkEntityPrototype;
+pub use prototype::FrameworkEntityPrototypeInner;
 
 pub mod tasks;
 

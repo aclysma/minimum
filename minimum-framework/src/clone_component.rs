@@ -8,6 +8,7 @@ use minimum::ComponentPrototype;
 use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
+use crate::prototype::FrameworkEntityPrototypeInner;
 
 use minimum::component::ComponentCreateQueueFlushListener;
 use serde::de::DeserializeOwned;
@@ -152,12 +153,13 @@ impl<T: Component + Clone + SelectableComponentPrototype<T>>
     SelectableComponentPrototype<CloneComponentPrototype<T>> for CloneComponentPrototype<T>
 {
     fn create_selection_shape(
+        framework_entity: &FrameworkEntityPrototypeInner,
         data: &CloneComponentPrototype<T>,
     ) -> (
         ncollide2d::math::Isometry<f32>,
         ncollide2d::shape::ShapeHandle<f32>,
     ) {
-        T::create_selection_shape(&data.inner.data())
+        T::create_selection_shape(framework_entity, &data.inner.data())
     }
 }
 

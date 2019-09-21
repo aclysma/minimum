@@ -2,10 +2,12 @@ use super::SelectableComponentPrototype;
 use crate::FrameworkComponentPrototypeDyn;
 use hashbrown::HashMap;
 use std::marker::PhantomData;
+use crate::prototype::FrameworkEntityPrototypeInner;
 
 trait RegisteredComponentPrototypeTrait: Send + Sync {
     fn create_selection_shape(
         &self,
+        framework_entity: &FrameworkEntityPrototypeInner,
         component_prototype: &dyn FrameworkComponentPrototypeDyn,
     ) -> (
         ncollide2d::math::Isometry<f32>,
@@ -31,13 +33,14 @@ where
 {
     fn create_selection_shape(
         &self,
+        framework_entity: &FrameworkEntityPrototypeInner,
         component_prototype: &dyn FrameworkComponentPrototypeDyn,
     ) -> (
         ncollide2d::math::Isometry<f32>,
         ncollide2d::shape::ShapeHandle<f32>,
     ) {
         let t = component_prototype.downcast_ref::<T>().unwrap();
-        <T as SelectableComponentPrototype<T>>::create_selection_shape(t)
+        <T as SelectableComponentPrototype<T>>::create_selection_shape(framework_entity, t)
     }
 }
 
@@ -69,7 +72,9 @@ impl SelectRegistry {
 
     pub fn create_selection_shape(
         &self,
+        framework_entity: &FrameworkEntityPrototypeInner,
         component_prototype: &dyn FrameworkComponentPrototypeDyn,
+
     ) -> Option<(
         ncollide2d::math::Isometry<f32>,
         ncollide2d::shape::ShapeHandle<f32>,
@@ -80,7 +85,7 @@ impl SelectRegistry {
             .registered_component_prototypes
             .get(&component_prototype_type)
         {
-            Some(registered.create_selection_shape(component_prototype))
+            Some(registered.create_selection_shape(framework_entity, component_prototype))
         } else {
             None
         }
