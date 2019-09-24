@@ -29,7 +29,7 @@ impl Default for TransformComponent {
     fn default() -> Self {
         TransformComponent {
             position: glm::zero(),
-            scale: glm::zero(),
+            scale: glm::vec2(1.0, 1.0),
             rotation: 0.0,
             requires_sync_to_physics: false,
         }
