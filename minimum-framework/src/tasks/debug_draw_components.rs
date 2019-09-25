@@ -1,9 +1,7 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use crate::components;
 use crate::resources::DebugDraw;
-use nalgebra::UnitQuaternion;
 
 pub struct DebugDrawComponents;
 pub type DebugDrawComponentsTask = minimum::ResourceTask<DebugDrawComponents>;
@@ -11,14 +9,14 @@ impl ResourceTaskImpl for DebugDrawComponents {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<minimum::EntitySet>,
-        ReadComponent<components::DebugDrawCircleComponent>,
-        ReadComponent<components::DebugDrawRectComponent>,
-        ReadComponent<components::TransformComponent>,
+        ReadComponent<crate::components::DebugDrawCircleComponent>,
+        ReadComponent<crate::components::DebugDrawRectComponent>,
+        ReadComponent<crate::components::TransformComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhasePreRender>();
-        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
+        config.run_only_if(crate::context_flags::AUTHORITY_CLIENT);
     }
 
     fn run(

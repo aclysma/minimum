@@ -1,7 +1,10 @@
 use crate::components;
 use framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
-use components::transform;
+use framework::components::transform;
 use framework::FrameworkEntityPrototype;
+
+use framework::components::TransformComponent;
+use framework::components::VelocityComponent;
 
 use components::PhysicsBodyComponentPrototypeBox;
 use components::PhysicsBodyComponentPrototypeCircle;
@@ -38,10 +41,10 @@ pub fn create_wall(
         FrameworkEntityPersistencePolicy::Persistent,
         vec![
             Box::new(CloneComponentPrototype::new(
-                components::TransformComponent::new(center, transform::default_scale(), transform::default_rotation()),
+                TransformComponent::new(center, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
-                components::DebugDrawRectComponent::new(size, color),
+                framework::components::DebugDrawRectComponent::new(size, color),
             )),
             Box::new(PhysicsBodyComponentPrototypeBox::new(
                 size,
@@ -71,10 +74,10 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
                 components::PlayerComponent::new(),
             )),
             Box::new(CloneComponentPrototype::new(
-                components::TransformComponent::new(position, transform::default_scale(), transform::default_rotation()),
+                TransformComponent::new(position, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
-                components::DebugDrawCircleComponent::new(radius, color),
+                framework::components::DebugDrawCircleComponent::new(radius, color),
             )),
             Box::new(PhysicsBodyComponentPrototypeCircle::new(
                 radius,
@@ -144,22 +147,22 @@ pub fn create_bullet(
         FrameworkEntityPersistencePolicy::Transient,
         vec![
             Box::new(CloneComponentPrototype::new(
-                components::TransformComponent::new(position, transform::default_scale(), transform::default_rotation()),
+                TransformComponent::new(position, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
-                components::VelocityComponent::new(velocity),
+                VelocityComponent::new(velocity),
             )),
             Box::new(PhysicsBodyComponentPrototypeCustom::new(
                 body_component_desc,
             )),
             Box::new(CloneComponentPrototype::new(
-                components::DebugDrawCircleComponent::new(radius, color),
+                framework::components::DebugDrawCircleComponent::new(radius, color),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::BulletComponent::new(),
             )),
             Box::new(CloneComponentPrototype::new(
-                components::FreeAtTimeComponent::new(
+                framework::components::FreeAtTimeComponent::new(
                     time_state.playing().frame_start_instant + lifetime,
                 ),
             )),

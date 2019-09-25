@@ -1,7 +1,8 @@
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use crate::resources::{DebugOptions, ImguiManager};
+use framework::resources::FrameworkOptions;
+use crate::resources::ImguiManager;
 #[cfg(feature = "editor")]
 use framework::resources::editor::{EditorTool, EditorUiState};
 use framework::resources::{FrameworkActionQueue, TimeState};
@@ -40,7 +41,7 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
         Write<ImguiManager>,
         Write<FrameworkActionQueue>,
         Write<EditorUiState>,
-        Write<DebugOptions>,
+        Write<FrameworkOptions>,
     );
 
     fn configure(config: &mut TaskConfig) {

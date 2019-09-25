@@ -1,12 +1,12 @@
 #[cfg(feature = "editor")]
-use framework::inspect::common_types::*;
+use crate::inspect::common_types::*;
 
 #[cfg(feature = "editor")]
-use framework::select::SelectableComponentPrototype;
+use crate::select::SelectableComponentPrototype;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
-use framework::FrameworkEntityPrototypeInner;
+use crate::FrameworkEntityPrototypeInner;
 use crate::components::TransformComponentPrototype;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]

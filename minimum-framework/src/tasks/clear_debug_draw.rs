@@ -10,7 +10,7 @@ impl ResourceTaskImpl for ClearDebugDraw {
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
-        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
+        config.run_only_if(crate::context_flags::AUTHORITY_CLIENT);
     }
 
     fn run(

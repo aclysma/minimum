@@ -1,10 +1,10 @@
 #[cfg(feature = "editor")]
-use framework::inspect::common_types::*;
+use crate::inspect::common_types::*;
 
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::VecComponentStorage;
-use framework::CloneComponentPrototype;
+use crate::CloneComponentPrototype;
 
 #[cfg(feature = "dim2")]
 pub type Position = glm::Vec2;

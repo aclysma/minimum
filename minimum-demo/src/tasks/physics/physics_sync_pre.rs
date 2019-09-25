@@ -15,8 +15,8 @@ impl ResourceTaskImpl for PhysicsSyncPre {
         Read<EntitySet>,
         Write<PhysicsManager>,
         ReadComponent<components::PhysicsBodyComponent>,
-        WriteComponent<components::TransformComponent>,
-        WriteComponent<components::VelocityComponent>,
+        WriteComponent<framework::components::TransformComponent>,
+        WriteComponent<framework::components::VelocityComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {

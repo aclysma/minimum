@@ -1,6 +1,6 @@
 use minimum::component::SlabComponentStorage;
 
-use framework::resources::TimeState;
+use crate::resources::TimeState;
 
 #[derive(Debug, Clone)]
 pub struct FreeAtTimeComponent {

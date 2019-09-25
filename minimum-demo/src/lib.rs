@@ -62,20 +62,20 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut world_builder = minimum::WorldBuilder::new()
         .with_resource(framework::resources::FrameworkActionQueue::new())
-        .with_resource(resources::DebugDraw::new())
+        .with_resource(framework::resources::DebugDraw::new())
         .with_resource(resources::InputManager::new())
         .with_resource(framework::resources::TimeState::new())
         .with_resource(resources::PhysicsManager::new())
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
-        .with_resource(resources::DebugOptions::new())
-        .with_component(<components::TransformComponent as Component>::Storage::new())
-        .with_component(<components::VelocityComponent as Component>::Storage::new())
-        .with_component(<components::DebugDrawCircleComponent as Component>::Storage::new())
-        .with_component(<components::DebugDrawRectComponent as Component>::Storage::new())
+        .with_resource(framework::resources::FrameworkOptions::new())
+        .with_component(<framework::components::TransformComponent as Component>::Storage::new())
+        .with_component(<framework::components::VelocityComponent as Component>::Storage::new())
+        .with_component(<framework::components::DebugDrawCircleComponent as Component>::Storage::new())
+        .with_component(<framework::components::DebugDrawRectComponent as Component>::Storage::new())
         .with_component(<components::PlayerComponent as Component>::Storage::new())
         .with_component(<components::BulletComponent as Component>::Storage::new())
-        .with_component(<components::FreeAtTimeComponent as Component>::Storage::new())
+        .with_component(<framework::components::FreeAtTimeComponent as Component>::Storage::new())
         .with_component(
             <framework::components::PersistentEntityComponent as Component>::Storage::new(),
         )
@@ -83,15 +83,15 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
             <components::PhysicsBodyComponent as Component>::Storage::new(),
         )
         //TODO: Ideally we don't need to register the factory in addition to the component itself
-        .with_component_factory(CloneComponentFactory::<components::TransformComponent>::new())
-        .with_component_factory(CloneComponentFactory::<components::VelocityComponent>::new())
+        .with_component_factory(CloneComponentFactory::<framework::components::TransformComponent>::new())
+        .with_component_factory(CloneComponentFactory::<framework::components::VelocityComponent>::new())
         .with_component_factory(
-            CloneComponentFactory::<components::DebugDrawCircleComponent>::new(),
+            CloneComponentFactory::<framework::components::DebugDrawCircleComponent>::new(),
         )
-        .with_component_factory(CloneComponentFactory::<components::DebugDrawRectComponent>::new())
+        .with_component_factory(CloneComponentFactory::<framework::components::DebugDrawRectComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::PlayerComponent>::new())
         .with_component_factory(CloneComponentFactory::<components::BulletComponent>::new())
-        .with_component_factory(CloneComponentFactory::<components::FreeAtTimeComponent>::new())
+        .with_component_factory(CloneComponentFactory::<framework::components::FreeAtTimeComponent>::new())
         .with_component_factory(components::PhysicsBodyComponentFactory::new())
         .with_component_factory(CloneComponentFactory::<
             framework::components::PersistentEntityComponent,
@@ -122,8 +122,8 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
             .register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>();
         select_registry
             .register_component_prototype::<components::PhysicsBodyComponentPrototypeCircle>();
-        select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>();
-        select_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>();
+        select_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::DebugDrawCircleComponent>>();
+        select_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::DebugDrawRectComponent>>();
 
         world_builder.add_resource(select_registry);
     }
@@ -132,21 +132,21 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "editor")]
     {
         let mut inspect_registry = framework::inspect::InspectRegistry::new();
-        inspect_registry.register_component::<components::TransformComponent>("Position");
-        inspect_registry.register_component::<components::VelocityComponent>("Velocity");
+        inspect_registry.register_component::<framework::components::TransformComponent>("Position");
+        inspect_registry.register_component::<framework::components::VelocityComponent>("Velocity");
         inspect_registry
-            .register_component::<components::DebugDrawCircleComponent>("Debug Draw Circle");
+            .register_component::<framework::components::DebugDrawCircleComponent>("Debug Draw Circle");
         inspect_registry
-            .register_component::<components::DebugDrawRectComponent>("Debug Draw Rectangle");
+            .register_component::<framework::components::DebugDrawRectComponent>("Debug Draw Rectangle");
         inspect_registry.register_component::<components::BulletComponent>("Physics Body Box");
         inspect_registry
             .register_component::<components::PhysicsBodyComponent>("Physics Body Circle");
         inspect_registry.register_component::<components::PlayerComponent>("Player");
 
-        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::TransformComponent>>("Position");
-        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
-        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
-        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::TransformComponent>>("Position");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::VelocityComponent>>("Velocity");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::DebugDrawCircleComponent>>("Debug Draw Circle");
+        inspect_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::DebugDrawRectComponent>>("Debug Draw Rectangle");
         inspect_registry
             .register_component_prototype::<components::PhysicsBodyComponentPrototypeCustom>(
                 "Physics Body Custom",
@@ -166,10 +166,10 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
 
     // Register loadable/savable types
     let mut persist_registry = framework::persist::PersistRegistry::new();
-    persist_registry.register_component_prototype::<components::TransformComponentPrototype>("Position");
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::VelocityComponent>>("Velocity");
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawCircleComponent>>("Debug Draw Circle");
-    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<components::DebugDrawRectComponent>>("Debug Draw Rectangle");
+    persist_registry.register_component_prototype::<framework::components::TransformComponentPrototype>("Position");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::VelocityComponent>>("Velocity");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::DebugDrawCircleComponent>>("Debug Draw Circle");
+    persist_registry.register_component_prototype::<framework::CloneComponentPrototype<framework::components::DebugDrawRectComponent>>("Debug Draw Rectangle");
     persist_registry.register_component_prototype::<components::PhysicsBodyComponentPrototypeBox>(
         "Physics Body Box",
     );
@@ -255,7 +255,7 @@ fn register_tasks(world_builder: &mut WorldBuilder) {
     }
 
     // Frame Begin
-    world_builder.add_task::<tasks::ClearDebugDrawTask>();
+    world_builder.add_task::<framework::tasks::ClearDebugDrawTask>();
     world_builder.add_task::<tasks::UpdateTimeStateTask>();
 
     // Gather Input
@@ -263,7 +263,7 @@ fn register_tasks(world_builder: &mut WorldBuilder) {
 
     // Pre Physics Gameplay
     world_builder.add_task::<tasks::ControlPlayerEntityTask>();
-    world_builder.add_task::<tasks::HandleFreeAtTimeComponentsTask>();
+    world_builder.add_task::<framework::tasks::HandleFreeAtTimeComponentsTask>();
     world_builder.add_task::<tasks::UpdatePositionWithVelocityTask>();
 
     // Physics
@@ -272,14 +272,14 @@ fn register_tasks(world_builder: &mut WorldBuilder) {
     world_builder.add_task::<tasks::PhysicsSyncPostTask>();
 
     // Pre-Render
-    world_builder.add_task::<tasks::DebugDrawComponentsTask>();
+    world_builder.add_task::<framework::tasks::DebugDrawComponentsTask>();
 
     // Render
     world_builder.add_task::<tasks::UpdateRendererTask>();
 
     // Frame End
     // This must be called once per frame to create/destroy entities
-    world_builder.add_task::<tasks::UpdateEntitySetTask>();
+    world_builder.add_task::<framework::tasks::UpdateEntitySetTask>();
     world_builder.add_task::<framework::tasks::FrameworkUpdateActionQueueTask>();
 }
 

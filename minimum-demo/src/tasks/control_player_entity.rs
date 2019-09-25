@@ -20,7 +20,7 @@ impl ResourceTaskImpl for ControlPlayerEntity {
         Read<TimeState>,
         Read<RenderState>,
         ReadComponent<components::PlayerComponent>,
-        ReadComponent<components::TransformComponent>,
+        ReadComponent<framework::components::TransformComponent>,
         Write<EntityFactory>,
         ReadComponent<components::PhysicsBodyComponent>,
         Write<PhysicsManager>,

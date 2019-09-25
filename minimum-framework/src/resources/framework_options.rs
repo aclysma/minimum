@@ -1,10 +1,10 @@
-pub struct DebugOptions {
+pub struct FrameworkOptions {
     pub show_debug_info: bool,
 }
 
-impl DebugOptions {
+impl FrameworkOptions {
     pub fn new() -> Self {
-        DebugOptions {
+        FrameworkOptions {
             show_debug_info: false,
         }
     }

@@ -5,13 +5,13 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 use minimum::{Component, ComponentStorage};
-use crate::components::transform;
+use framework::components::transform;
 
 use nphysics::object::BodyHandle;
 use nphysics::object::ColliderDesc;
 use nphysics::object::RigidBodyDesc;
 
-use crate::components::TransformComponent;
+use framework::components::TransformComponent;
 use framework::FrameworkComponentPrototypeDyn;
 use framework::FrameworkComponentPrototype;
 use std::collections::VecDeque;
@@ -20,8 +20,7 @@ use framework::FrameworkEntityPrototypeInner;
 #[cfg(feature = "editor")]
 use framework::select::SelectableComponentPrototype;
 
-use crate::components::TransformComponentPrototype;
-use nalgebra::UnitQuaternion;
+use framework::components::TransformComponentPrototype;
 
 #[derive(Debug, Inspect)]
 pub struct PhysicsBodyComponent {

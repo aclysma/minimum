@@ -2,7 +2,7 @@ use minimum::component::ComponentStorage;
 use minimum::resource::{DataRequirement, Read, Write};
 use minimum::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use crate::resources::DebugDraw;
+use framework::resources::DebugDraw;
 #[cfg(feature = "editor")]
 use framework::resources::editor::EditorCollisionWorld;
 use ncollide::shape::ShapeHandle;

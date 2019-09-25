@@ -3,10 +3,8 @@ use minimum::resource::{DataRequirement, Read, Write};
 #[cfg(feature = "editor")]
 use framework::resources::editor::EditorCollisionWorld;
 
-use crate::components;
 use minimum::component::ReadComponent;
 use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags};
-use nalgebra::UnitQuaternion;
 
 pub struct EditorUpdateSelectionShapesWithPosition;
 pub type EditorUpdateSelectionShapesWithPositionTask =
@@ -16,7 +14,7 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
         Read<EntitySet>,
         Write<EditorCollisionWorld>,
         ReadComponent<framework::components::editor::EditorShapeComponent>,
-        ReadComponent<components::TransformComponent>,
+        ReadComponent<framework::components::TransformComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {

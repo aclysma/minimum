@@ -252,7 +252,7 @@ where
         let mut commands = vec![];
 
         {
-            let mut debug_draw = aux.fetch_mut::<resources::DebugDraw>();
+            let mut debug_draw = aux.fetch_mut::<framework::resources::DebugDraw>();
             let line_lists = debug_draw.take_line_lists();
 
             //TODO: Would be better to pre-size array

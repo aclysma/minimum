@@ -13,8 +13,8 @@ impl ResourceTaskImpl for UpdatePositionWithVelocity {
     type RequiredResources = (
         Read<minimum::EntitySet>,
         Read<TimeState>,
-        WriteComponent<components::TransformComponent>,
-        ReadComponent<components::VelocityComponent>,
+        WriteComponent<framework::components::TransformComponent>,
+        ReadComponent<framework::components::VelocityComponent>,
         ReadComponent<components::PhysicsBodyComponent>,
     );
 

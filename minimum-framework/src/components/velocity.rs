@@ -4,6 +4,7 @@ use minimum::component::SlabComponentStorage;
 use crate::components::transform;
 
 pub type Velocity = transform::Position;
+#[cfg(feature = "editor")]
 pub type ImVelocity = transform::ImPosition;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]

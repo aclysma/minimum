@@ -7,7 +7,7 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 
-use nphysics::object::ColliderHandle;
+use ncollide::world::CollisionObjectHandle;
 
 use crate::FrameworkComponentPrototype;
 use ncollide::shape::ShapeHandle;
@@ -17,18 +17,18 @@ use std::collections::VecDeque;
 #[derive(Clone)]
 pub struct EditorShapeComponent {
     shape_handle: ShapeHandle<f32>,
-    collider_handle: ColliderHandle,
+    collider_handle: CollisionObjectHandle,
 }
 
 impl EditorShapeComponent {
-    pub fn new(shape_handle: ShapeHandle<f32>, collider_handle: ColliderHandle) -> Self {
+    pub fn new(shape_handle: ShapeHandle<f32>, collider_handle: CollisionObjectHandle) -> Self {
         EditorShapeComponent {
             shape_handle,
             collider_handle,
         }
     }
 
-    pub fn collider_handle(&self) -> &ColliderHandle {
+    pub fn collider_handle(&self) -> &CollisionObjectHandle {
         &self.collider_handle
     }
 

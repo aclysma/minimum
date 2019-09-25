@@ -2,7 +2,8 @@ use minimum::resource::{DataRequirement, Read, Write};
 use minimum::ComponentStorage;
 use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, Component, EntitySet};
 
-use crate::resources::{DebugDraw, InputManager, MouseButtons, RenderState, EditorDraw};
+use framework::resources::DebugDraw;
+use crate::resources::{InputManager, MouseButtons, RenderState, EditorDraw};
 use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
 use framework::components::PersistentEntityComponent;
 
@@ -10,8 +11,8 @@ use framework::components::editor::EditorSelectedComponent;
 use framework::components::editor::EditorModifiedComponent;
 
 use ncollide::world::CollisionGroups;
-use crate::components::TransformComponent;
-use crate::components::TransformComponentPrototype;
+use framework::components::TransformComponent;
+use framework::components::TransformComponentPrototype;
 
 use rendy::wsi::winit;
 use winit::event::VirtualKeyCode;
