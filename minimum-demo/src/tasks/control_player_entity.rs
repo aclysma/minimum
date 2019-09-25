@@ -78,20 +78,22 @@ impl ResourceTaskImpl for ControlPlayerEntity {
                     .rigid_body_mut(physics_body_component.body_handle())
                     .unwrap();
 
-                body.set_velocity(nphysics2d::math::Velocity::new(direction * 150.0, 0.0));
+                #[cfg(feature = "dim3")]
+                let direction = glm::vec2_to_vec3(&direction);
+                body.set_velocity(nphysics::math::Velocity::new(direction * 150.0, glm::zero()));
 
                 if input_manager.is_mouse_down(MouseButtons::Left) {
                     let target_position =
                         render_state.ui_space_to_world_space(input_manager.mouse_position());
 
-                    let mut velocity = target_position - pos.position();
+                    let mut velocity = target_position - pos.position().xy();
 
                     if glm::magnitude(&velocity) > 0.0 {
                         velocity = glm::normalize(&velocity) * 300.0;
                     }
 
                     crate::constructors::create_bullet(
-                        pos.position(),
+                        pos.position().xy(),
                         velocity,
                         &time_state,
                         &mut entity_factory,

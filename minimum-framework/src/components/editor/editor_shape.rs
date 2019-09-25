@@ -7,11 +7,11 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 
-use nphysics2d::object::ColliderHandle;
+use nphysics::object::ColliderHandle;
 
 use crate::FrameworkComponentPrototype;
-use ncollide2d::shape::ShapeHandle;
-use ncollide2d::world::{CollisionGroups, GeometricQueryType};
+use ncollide::shape::ShapeHandle;
+use ncollide::world::{CollisionGroups, GeometricQueryType};
 use std::collections::VecDeque;
 
 #[derive(Clone)]
@@ -56,7 +56,7 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
     ) {
         let mut editor_collision_world =
             resource_map.fetch_mut::<crate::resources::editor::EditorCollisionWorld>();
-        let physics_world: &mut ncollide2d::world::CollisionWorld<f32, EntityHandle> =
+        let physics_world: &mut ncollide::world::CollisionWorld<f32, EntityHandle> =
             editor_collision_world.world_mut();
 
         for entity_handle in entity_handles {
@@ -72,11 +72,11 @@ impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
 //
 #[derive(Clone)]
 pub struct EditorShapeComponentPrototype {
-    shape_handle: ncollide2d::shape::ShapeHandle<f32>,
+    shape_handle: ncollide::shape::ShapeHandle<f32>,
 }
 
 impl EditorShapeComponentPrototype {
-    pub fn new(shape_handle: ncollide2d::shape::ShapeHandle<f32>) -> Self {
+    pub fn new(shape_handle: ncollide::shape::ShapeHandle<f32>) -> Self {
         EditorShapeComponentPrototype { shape_handle }
     }
 }
@@ -128,8 +128,9 @@ impl ComponentCreateQueueFlushListener for EditorShapeComponentFactory {
         let mut storage = resource_map.fetch_mut::<<EditorShapeComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
+
                 let collider = collision_world.world_mut().add(
-                    nalgebra::Isometry2::new(glm::vec2(0.0, 0.0), 0.0),
+                    ncollide::math::Isometry::new(glm::zero(), glm::zero()),
                     data.shape_handle.clone(),
                     CollisionGroups::new(),
                     GeometricQueryType::Proximity(0.001),

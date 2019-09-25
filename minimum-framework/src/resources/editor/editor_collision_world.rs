@@ -3,12 +3,12 @@ use minimum::EntityHandle;
 const MARGIN: f32 = 0.02;
 
 pub struct EditorCollisionWorld {
-    world: ncollide2d::world::CollisionWorld<f32, EntityHandle>,
+    world: ncollide::world::CollisionWorld<f32, EntityHandle>,
 }
 
 impl EditorCollisionWorld {
     pub fn new() -> Self {
-        let world = ncollide2d::world::CollisionWorld::new(MARGIN);
+        let world = ncollide::world::CollisionWorld::new(MARGIN);
 
         EditorCollisionWorld { world }
     }
@@ -17,11 +17,11 @@ impl EditorCollisionWorld {
         self.world.update();
     }
 
-    pub fn world(&self) -> &ncollide2d::world::CollisionWorld<f32, EntityHandle> {
+    pub fn world(&self) -> &ncollide::world::CollisionWorld<f32, EntityHandle> {
         &self.world
     }
 
-    pub fn world_mut(&mut self) -> &mut ncollide2d::world::CollisionWorld<f32, EntityHandle> {
+    pub fn world_mut(&mut self) -> &mut ncollide::world::CollisionWorld<f32, EntityHandle> {
         &mut self.world
     }
 }

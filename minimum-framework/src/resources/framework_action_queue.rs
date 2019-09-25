@@ -6,6 +6,12 @@ use minimum::ResourceMap;
 use std::collections::VecDeque;
 use std::path::PathBuf;
 
+#[cfg(feature = "dim2")]
+const LEVEL_FILE : &str = "test_level_file_2d.txt";
+
+#[cfg(feature = "dim3")]
+const LEVEL_FILE : &str = "test_level_file_3d.txt";
+
 pub struct FrameworkActionQueue {
     queue: VecDeque<Box<dyn FnOnce(&ResourceMap) + Send + Sync>>,
 }
@@ -39,7 +45,7 @@ impl FrameworkActionQueue {
             Self::new_level(resource_map);
             match persist_registry.load(
                 resource_map,
-                std::path::PathBuf::from("test_level_file.txt"),
+                std::path::PathBuf::from(LEVEL_FILE),
             ) {
                 Ok(_) => {}
                 Err(e) => {
@@ -59,7 +65,7 @@ impl FrameworkActionQueue {
             let persist_registry = resource_map.fetch::<crate::persist::PersistRegistry>();
             match persist_registry.save(
                 resource_map,
-                std::path::PathBuf::from("test_level_file.txt"),
+                std::path::PathBuf::from(LEVEL_FILE),
             ) {
                 Ok(_) => {}
                 Err(e) => {

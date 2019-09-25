@@ -38,13 +38,14 @@ impl ResourceTaskImpl for PhysicsSyncPost {
         ) = data;
 
         for (entity, body_component) in physics_body_components.iter(&entity_set) {
-            let body: &nphysics2d::object::RigidBody<f32> = physics_manager
+            let body: &nphysics::object::RigidBody<f32> = physics_manager
                 .world()
                 .rigid_body(body_component.body_handle())
                 .unwrap();
 
             if let Some(pos_component) = pos_components.get_mut(&entity) {
-                *pos_component.position_mut() = body.position().translation.vector;
+                let position = body.position().translation.vector;
+                *pos_component.position_mut() = position;
             }
 
             if let Some(vel_component) = vel_components.get_mut(&entity) {

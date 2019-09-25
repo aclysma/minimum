@@ -1,0 +1,511 @@
+{
+  "saved_objects": [
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.9874407052993774,
+              1.0,
+              0.0,
+              1.0
+            ],
+            "size": [
+              20.0,
+              100.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              20.0,
+              100.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              -131.84637451171875,
+              0.0
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": []
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.9874407052993774,
+              1.0,
+              0.0,
+              1.0
+            ],
+            "size": [
+              50.0,
+              100.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              50.0,
+              100.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              148.2056884765625,
+              43.54947280883789
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.10126590728759766,
+              1.0,
+              0.0,
+              1.0
+            ],
+            "size": [
+              15.0,
+              40.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              15.0,
+              40.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              0.0,
+              -86.9478988647461
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.9796940684318542,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "size": [
+              30.0,
+              50.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              30.0,
+              50.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              88.65885162353516,
+              87.5390625
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.10126590728759766,
+              1.0,
+              0.0,
+              1.0
+            ],
+            "size": [
+              100.0,
+              10.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              100.0,
+              10.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              -129.02606201171875,
+              103.63021087646484
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Player",
+          "data": {}
+        },
+        {
+          "type_name": "Debug Draw Circle",
+          "data": {
+            "color": [
+              0.0,
+              1.0,
+              0.0,
+              1.0
+            ],
+            "radius": 15.0
+          }
+        },
+        {
+          "type_name": "Physics Body Circle",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 1,
+            "collision_group_whitelist": 4,
+            "mass": 1000.0,
+            "radius": 15.0
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              19.505199432373047,
+              0.0
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "size": [
+              50.0,
+              20.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              50.0,
+              20.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              -131.28121948242188,
+              -104.125
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "size": [
+              800.0,
+              10.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              800.0,
+              10.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              0.0,
+              140.6276092529297
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "size": [
+              800.0,
+              10.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              800.0,
+              10.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              0.0,
+              -141.58074951171875
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "size": [
+              10.0,
+              600.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              10.0,
+              600.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              -216.05471801757812,
+              0.0
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "saved_components": [
+        {
+          "type_name": "Debug Draw Rectangle",
+          "data": {
+            "color": [
+              0.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "size": [
+              10.0,
+              600.0
+            ]
+          }
+        },
+        {
+          "type_name": "Physics Body Box",
+          "data": {
+            "collision_group_blacklist": 0,
+            "collision_group_membership": 4,
+            "collision_group_whitelist": 7,
+            "mass": 0.0,
+            "size": [
+              10.0,
+              600.0
+            ]
+          }
+        },
+        {
+          "type_name": "Position",
+          "data": {
+            "position": [
+              202.38021850585938,
+              0.0
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

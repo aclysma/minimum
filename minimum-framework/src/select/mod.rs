@@ -8,7 +8,7 @@ pub trait SelectableComponentPrototype<T>: Send + Sync {
         framework_entity: &FrameworkEntityPrototypeInner,
         data: &T,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     );
 }

@@ -6,17 +6,69 @@ use imgui_inspect_derive::Inspect;
 use minimum::component::VecComponentStorage;
 use framework::CloneComponentPrototype;
 
+#[cfg(feature = "dim2")]
+pub type Position = glm::Vec2;
+#[cfg(feature = "dim2")]
+pub type Scale = glm::Vec2;
+#[cfg(feature = "dim2")]
+pub type Rotation = f32;
+
+#[cfg(feature = "dim2")]
+pub type ImPosition = ImGlmVec2;
+#[cfg(feature = "dim2")]
+pub type ImScale = ImGlmVec2;
+#[cfg(feature = "dim2")]
+pub type ImRotation = f32;
+
+
+#[cfg(feature = "dim3")]
+pub type Position = glm::Vec3;
+#[cfg(feature = "dim3")]
+pub type Scale = glm::Vec3;
+#[cfg(feature = "dim3")]
+pub type Rotation = glm::Quat;
+
+#[cfg(feature = "dim3")]
+pub type ImPosition = ImGlmVec3;
+#[cfg(feature = "dim3")]
+pub type ImScale = ImGlmVec3;
+#[cfg(feature = "dim3")]
+pub type ImRotation = ImGlmQuat;
+
+pub fn default_position() -> Position {
+    glm::zero()
+}
+
+#[cfg(feature = "dim2")]
+pub fn default_scale() -> Scale {
+    glm::vec2(1.0, 1.0)
+}
+
+#[cfg(feature = "dim3")]
+pub fn default_scale() -> Scale {
+    glm::vec3(1.0, 1.0, 1.0)
+}
+
+#[cfg(feature = "dim2")]
+pub fn default_rotation() -> Rotation {
+    0.0
+}
+
+#[cfg(feature = "dim3")]
+pub fn default_rotation() -> Rotation {
+    glm::quat_identity()
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct TransformComponent {
-    #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_transform_updated")]
-    position: glm::Vec2,
+    #[inspect(proxy_type = "ImPosition", on_set = "inspect_transform_updated")]
+    position: Position,
 
-    #[inspect(proxy_type = "ImGlmVec2", on_set = "inspect_transform_updated")]
-    scale: glm::Vec2,
+    #[inspect(proxy_type = "ImScale", on_set = "inspect_transform_updated")]
+    scale: Scale,
 
-    #[inspect(on_set = "inspect_transform_updated")]
-    rotation: f32,
+    #[inspect(proxy_type = "ImRotation", on_set = "inspect_transform_updated")]
+    rotation: Rotation,
 
     #[inspect(skip)]
     #[serde(skip)]
@@ -28,16 +80,16 @@ pub type TransformComponentPrototype = CloneComponentPrototype<TransformComponen
 impl Default for TransformComponent {
     fn default() -> Self {
         TransformComponent {
-            position: glm::zero(),
-            scale: glm::vec2(1.0, 1.0),
-            rotation: 0.0,
+            position: default_position(),
+            scale: default_scale(),
+            rotation: default_rotation(),
             requires_sync_to_physics: false,
         }
     }
 }
 
 impl TransformComponent {
-    pub fn new(position: glm::Vec2, scale: glm::Vec2, rotation: f32) -> Self {
+    pub fn new(position: Position, scale: Scale, rotation: Rotation) -> Self {
         TransformComponent {
             position,
             scale,
@@ -46,27 +98,27 @@ impl TransformComponent {
         }
     }
 
-    pub fn position(&self) -> glm::Vec2 {
+    pub fn position(&self) -> Position {
         self.position
     }
 
-    pub fn position_mut(&mut self) -> &mut glm::Vec2 {
+    pub fn position_mut(&mut self) -> &mut Position {
         &mut self.position
     }
 
-    pub fn scale(&self) -> glm::Vec2 {
+    pub fn scale(&self) -> Scale {
         self.scale
     }
 
-    pub fn scale_mut(&mut self) -> &mut glm::Vec2 {
+    pub fn scale_mut(&mut self) -> &mut Scale {
         &mut self.scale
     }
 
     pub fn uniform_scale(&self) -> f32 { self.scale.x.max(self.scale.y) }
 
-    pub fn rotation(&self) -> f32 { self.rotation }
+    pub fn rotation(&self) -> Rotation { self.rotation }
 
-    pub fn rotation_mut(&mut self) -> &mut f32 { &mut self.rotation }
+    pub fn rotation_mut(&mut self) -> &mut Rotation { &mut self.rotation }
 
     pub fn requires_sync_to_physics(&self) -> bool {
         self.requires_sync_to_physics

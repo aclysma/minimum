@@ -38,15 +38,15 @@ impl ResourceTaskImpl for PhysicsSyncPre {
         ) = data;
 
         for (entity, body_component) in physics_body_components.iter(&entity_set) {
-            let body: &mut nphysics2d::object::RigidBody<f32> = physics_manager
+            let body: &mut nphysics::object::RigidBody<f32> = physics_manager
                 .world_mut()
                 .rigid_body_mut(body_component.body_handle())
                 .unwrap();
 
             if let Some(pos_component) = pos_components.get_mut(&entity) {
                 if pos_component.requires_sync_to_physics() {
-                    body.set_position(nphysics2d::math::Isometry::from_parts(
-                        nphysics2d::math::Translation::from(pos_component.position()),
+                    body.set_position(nphysics::math::Isometry::from_parts(
+                        nphysics::math::Translation::from(pos_component.position()),
                         body.position().rotation,
                     ));
 

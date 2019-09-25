@@ -4,15 +4,18 @@ const GRAVITY: f32 = 0.0;
 const STEP_SIZE: f32 = 1.0 / 60.0;
 
 pub struct PhysicsManager {
-    world: nphysics2d::world::World<f32>,
+    world: nphysics::world::World<f32>,
 
     time_accumulator: f32,
 }
 
 impl PhysicsManager {
     pub fn new() -> Self {
-        let mut world = nphysics2d::world::World::<f32>::new();
+        let mut world = nphysics::world::World::<f32>::new();
+        #[cfg(feature = "dim2")]
         let gravity = glm::Vec2::y() * GRAVITY;
+        #[cfg(feature = "dim3")]
+        let gravity = glm::Vec3::y() * GRAVITY;
         world.set_gravity(gravity);
         world.integration_parameters_mut().dt = STEP_SIZE;
 
@@ -46,11 +49,11 @@ impl PhysicsManager {
         );
     }
 
-    pub fn world(&self) -> &nphysics2d::world::World<f32> {
+    pub fn world(&self) -> &nphysics::world::World<f32> {
         &self.world
     }
 
-    pub fn world_mut(&mut self) -> &mut nphysics2d::world::World<f32> {
+    pub fn world_mut(&mut self) -> &mut nphysics::world::World<f32> {
         &mut self.world
     }
 }

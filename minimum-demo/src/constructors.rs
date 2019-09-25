@@ -1,6 +1,6 @@
 use crate::components;
 use framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
-
+use components::transform;
 use framework::FrameworkEntityPrototype;
 
 use components::PhysicsBodyComponentPrototypeBox;
@@ -25,6 +25,11 @@ pub fn create_wall(
     size: glm::Vec2,
     entity_factory: &mut minimum::EntityFactory,
 ) {
+    #[cfg(feature = "dim3")]
+    let center = glm::vec2_to_vec3(&center);
+    #[cfg(feature = "dim3")]
+    let size = glm::vec2_to_vec3(&size);
+
     let color = glm::Vec4::new(0.0, 1.0, 1.0, 1.0);
     let mass = 0.0;
 
@@ -33,7 +38,7 @@ pub fn create_wall(
         FrameworkEntityPersistencePolicy::Persistent,
         vec![
             Box::new(CloneComponentPrototype::new(
-                components::TransformComponent::new(center, glm::vec2(1.0, 1.0), 0.0),
+                components::TransformComponent::new(center, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::DebugDrawRectComponent::new(size, color),
@@ -66,7 +71,7 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
                 components::PlayerComponent::new(),
             )),
             Box::new(CloneComponentPrototype::new(
-                components::TransformComponent::new(position, glm::vec2(1.0, 1.0), 0.0),
+                components::TransformComponent::new(position, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::DebugDrawCircleComponent::new(radius, color),
@@ -89,6 +94,11 @@ pub fn create_bullet(
     time_state: &framework::resources::TimeState,
     entity_factory: &mut minimum::EntityFactory,
 ) {
+    #[cfg(feature = "dim3")]
+    let position = glm::vec2_to_vec3(&position);
+    #[cfg(feature = "dim3")]
+    let velocity = glm::vec2_to_vec3(&velocity);
+
     let radius = 5.0;
     let color = glm::Vec4::new(1.0, 1.0, 0.0, 1.0);
     let lifetime = std::time::Duration::from_secs(4);
@@ -96,17 +106,17 @@ pub fn create_bullet(
 
     let restitution = rng.gen_range(0.8, 1.0);
 
-    use ncollide2d::shape::{Ball, ShapeHandle};
+    use ncollide::shape::{Ball, ShapeHandle};
     let shape = ShapeHandle::new(Ball::new(radius));
 
     let body_component_desc = {
-        use nphysics2d::material::{BasicMaterial, MaterialHandle};
-        use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
+        use nphysics::material::{BasicMaterial, MaterialHandle};
+        use nphysics::object::{ColliderDesc, RigidBodyDesc};
 
         let collider_desc = ColliderDesc::new(shape.clone())
             .material(MaterialHandle::new(BasicMaterial::new(restitution, 0.0)))
             .collision_groups(
-                ncollide2d::world::CollisionGroups::new()
+                ncollide::world::CollisionGroups::new()
                     .with_membership(&[COLLISION_GROUP_BULLETS_INDEX as usize])
                     .with_blacklist(&[COLLISION_GROUP_BULLETS_INDEX as usize]),
             )
@@ -114,10 +124,14 @@ pub fn create_bullet(
 
         let body_desc = RigidBodyDesc::new()
             .translation(position)
-            .velocity(nphysics2d::math::Velocity::<f32>::new(velocity, 0.0))
+            .velocity(nphysics::math::Velocity::<f32>::new(velocity, glm::zero()))
             .mass(1000.0)
-            .kinematic_rotation(false)
             .name("bullet".to_string());
+
+        #[cfg(feature = "dim2")]
+        let body_desc = body_desc.kinematic_rotation(false);
+        #[cfg(feature = "dim3")]
+        let body_desc = body_desc.kinematic_rotations(nphysics::math::Vector::repeat(false));
 
         let mut body_component_desc = components::PhysicsBodyComponentDesc::new(body_desc);
         body_component_desc.add_collider(collider_desc);
@@ -130,7 +144,7 @@ pub fn create_bullet(
         FrameworkEntityPersistencePolicy::Transient,
         vec![
             Box::new(CloneComponentPrototype::new(
-                components::TransformComponent::new(position, glm::vec2(1.0, 1.0), 0.0),
+                components::TransformComponent::new(position, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::VelocityComponent::new(velocity),

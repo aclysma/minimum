@@ -5,14 +5,13 @@ use minimum::EntityHandle;
 use minimum::EntitySet;
 use minimum::ResourceMap;
 use minimum::{Component, ComponentStorage};
+use crate::components::transform;
 
-use nphysics2d::object::BodyHandle;
-use nphysics2d::object::ColliderDesc;
-use nphysics2d::object::RigidBodyDesc;
+use nphysics::object::BodyHandle;
+use nphysics::object::ColliderDesc;
+use nphysics::object::RigidBodyDesc;
 
 use crate::components::TransformComponent;
-#[cfg(feature = "editor")]
-use framework::inspect::common_types::*;
 use framework::FrameworkComponentPrototypeDyn;
 use framework::FrameworkComponentPrototype;
 use std::collections::VecDeque;
@@ -22,6 +21,7 @@ use framework::FrameworkEntityPrototypeInner;
 use framework::select::SelectableComponentPrototype;
 
 use crate::components::TransformComponentPrototype;
+use nalgebra::UnitQuaternion;
 
 #[derive(Debug, Inspect)]
 pub struct PhysicsBodyComponent {
@@ -67,7 +67,7 @@ impl minimum::component::ComponentFreeHandler<PhysicsBodyComponent>
         storage: &mut <PhysicsBodyComponent as Component>::Storage,
     ) {
         let mut physics_manager = resource_map.fetch_mut::<crate::resources::PhysicsManager>();
-        let physics_world: &mut nphysics2d::world::World<f32> = physics_manager.world_mut();
+        let physics_world: &mut nphysics::world::World<f32> = physics_manager.world_mut();
 
         for entity_handle in entity_handles {
             if let Some(c) = storage.get_mut(&entity_handle) {
@@ -151,13 +151,16 @@ impl FrameworkComponentPrototypeDyn for PhysicsBodyComponentPrototypeCustom {
     }
 }
 
+type RectSize = transform::Scale;
+type ImRectSize = transform::ImScale;
+
 //
 // Box Prototype
 //
 #[derive(Clone, Serialize, Deserialize, Inspect)]
 pub struct PhysicsBodyComponentPrototypeBox {
-    #[inspect(proxy_type = "ImGlmVec2")]
-    size: glm::Vec2,
+    #[inspect(proxy_type = "ImRectSize")]
+    size: RectSize,
     mass: f32,
     collision_group_membership: u32,
     collision_group_whitelist: u32,
@@ -166,7 +169,7 @@ pub struct PhysicsBodyComponentPrototypeBox {
 
 impl PhysicsBodyComponentPrototypeBox {
     pub fn new(
-        size: glm::Vec2,
+        size: RectSize,
         mass: f32,
         collision_group_membership: u32,
         collision_group_whitelist: u32,
@@ -185,7 +188,7 @@ impl PhysicsBodyComponentPrototypeBox {
 impl Default for PhysicsBodyComponentPrototypeBox {
     fn default() -> Self {
         PhysicsBodyComponentPrototypeBox {
-            size: glm::vec2(10.0, 10.0),
+            size: transform::default_scale(),
             mass: 0.0,
             collision_group_membership: 0,
             collision_group_whitelist: 0,
@@ -210,18 +213,18 @@ impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeBox {
         framework_entity: &FrameworkEntityPrototypeInner,
         data: &Self,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     ) {
-        let mut scale = glm::vec2(1.0, 1.0);
+        let mut scale = transform::default_scale();
         if let Some(transform) = framework_entity.find_component_prototype::<TransformComponentPrototype>() {
             scale = transform.data().scale();
         }
 
-        let extents = glm::vec2(scale.x * data.size.x, scale.y * data.size.y);
-        use ncollide2d::shape::{Cuboid, ShapeHandle};
+        let extents = scale.component_mul(&data.size);
+        use ncollide::shape::{Cuboid, ShapeHandle};
         (
-            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ncollide::math::Isometry::<f32>::new(glm::zero(), glm::zero()),
             ShapeHandle::new(Cuboid::new(extents / 2.0)),
         )
     }
@@ -285,17 +288,17 @@ impl SelectableComponentPrototype<Self> for PhysicsBodyComponentPrototypeCircle 
         framework_entity: &FrameworkEntityPrototypeInner,
         data: &Self,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     ) {
         let mut scale = 1.0;
         if let Some(transform) = framework_entity.find_component_prototype::<TransformComponentPrototype>() {
             scale = transform.data().uniform_scale();
         }
 
-        use ncollide2d::shape::{Ball, ShapeHandle};
+        use ncollide::shape::{Ball, ShapeHandle};
         (
-            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ncollide::math::Isometry::<f32>::new(glm::zero(), glm::zero()),
             ShapeHandle::new(Ball::new((data.radius * scale).max(std::f32::MIN_POSITIVE))),
         )
     }
@@ -365,14 +368,14 @@ fn create_collision_groups(
     membership: u32,
     whitelist: u32,
     blacklist: u32,
-) -> ncollide2d::world::CollisionGroups {
+) -> ncollide::world::CollisionGroups {
     // Start with an empty group. (If we don't specify membership, it will default to being in all groups)
-    let mut groups = ncollide2d::world::CollisionGroups::new()
+    let mut groups = ncollide::world::CollisionGroups::new()
         .with_membership(&[])
         .with_whitelist(&[])
         .with_blacklist(&[]);
 
-    for i in 0..ncollide2d::world::CollisionGroups::max_group_id() as u32 {
+    for i in 0..ncollide::world::CollisionGroups::max_group_id() as u32 {
         groups.modify_membership(i as usize, membership & (1 << i) != 0);
         groups.modify_whitelist(i as usize, whitelist & (1 << i) != 0);
         groups.modify_blacklist(i as usize, blacklist & (1 << i) != 0);
@@ -394,18 +397,18 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
         let mut storage = resource_map.fetch_mut::<<PhysicsBodyComponent as Component>::Storage>();
         for (entity_handle, data) in self.prototypes.drain(..) {
             if let Some(entity) = entity_set.get_entity_ref(&entity_handle) {
-                let (center, scale, rotation) : (glm::Vec2, glm::Vec2, f32) =
+                let (center, scale, rotation) : (transform::Position, transform::Scale, transform::Rotation) =
                     if let Some(p) = entity.get_component::<TransformComponent>(&*transform) {
                         (p.position(), p.scale(), p.rotation())
                     } else {
-                        (glm::zero(), glm::vec2(1.0, 1.0), 0.0)
+                        (transform::default_position(), transform::default_scale(), transform::default_rotation())
                     };
 
                 //TODO: There is a silly amount of duplicated code in here
                 match data {
                     QueuedPhysicsBodyPrototypes::Box(data) => {
-                        use ncollide2d::shape::{Cuboid, ShapeHandle};
-                        use nphysics2d::material::{BasicMaterial, MaterialHandle};
+                        use ncollide::shape::{Cuboid, ShapeHandle};
+                        use nphysics::material::{BasicMaterial, MaterialHandle};
 
                         let mut x_half_extent = (scale.x * data.size.x) / 2.0;
                         if x_half_extent < std::f32::MIN_POSITIVE {
@@ -419,7 +422,19 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                             y_half_extent = std::f32::MIN_POSITIVE;
                         }
 
+                        #[cfg(feature = "dim2")]
                         let half_extents = glm::vec2(x_half_extent, y_half_extent);
+
+                        #[cfg(feature = "dim3")]
+                        let half_extents = {
+                            let mut z_half_extent = (scale.y * data.size.y) / 2.0;
+                            if z_half_extent < std::f32::MIN_POSITIVE {
+                                warn!("Tried to create a box with with <=0 y half-extent");
+                                z_half_extent = std::f32::MIN_POSITIVE;
+                            }
+
+                            glm::vec3(x_half_extent, y_half_extent, z_half_extent)
+                        };
 
                         let shape = ShapeHandle::new(Cuboid::new(half_extents));
 
@@ -431,11 +446,20 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                                 data.collision_group_blacklist,
                             ));
 
+                        #[cfg(feature = "dim2")]
+                        let isometry = ncollide::math::Isometry::new(center, rotation);
+
+                        #[cfg(feature = "dim3")]
+                        let isometry = ncollide::math::Isometry::from_parts(center.into(), UnitQuaternion::from_quaternion(rotation));
+
                         let body_desc = RigidBodyDesc::new()
-                            .translation(center)
-                            .rotation(rotation)
-                            .kinematic_rotation(false)
+                            .position(isometry)
                             .collider(&collider_desc);
+
+                        #[cfg(feature = "dim2")]
+                        let body_desc = body_desc.kinematic_rotation(false);
+                        #[cfg(feature = "dim3")]
+                        let body_desc = body_desc.kinematic_rotations(nphysics::math::Vector::repeat(false));
 
                         let body = physics.world_mut().add_body(&body_desc);
                         entity
@@ -444,8 +468,8 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                     }
 
                     QueuedPhysicsBodyPrototypes::Circle(data) => {
-                        use ncollide2d::shape::{Ball, ShapeHandle};
-                        use nphysics2d::material::{BasicMaterial, MaterialHandle};
+                        use ncollide::shape::{Ball, ShapeHandle};
+                        use nphysics::material::{BasicMaterial, MaterialHandle};
 
                         let mut radius = data.radius * f32::max(scale.x, scale.y);
 
@@ -465,12 +489,21 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                                 data.collision_group_blacklist,
                             ));
 
+                        #[cfg(feature = "dim2")]
+                        let isometry = ncollide::math::Isometry::new(center, rotation);
+
+                        #[cfg(feature = "dim3")]
+                        let isometry = ncollide::math::Isometry::from_parts(center.into(), UnitQuaternion::from_quaternion(rotation));
+
                         let body_desc = RigidBodyDesc::new()
-                            .translation(center)
-                            .rotation(rotation)
+                            .position(isometry)
                             .mass(data.mass)
-                            .kinematic_rotation(false)
                             .collider(&collider_desc);
+
+                        #[cfg(feature = "dim2")]
+                        let body_desc = body_desc.kinematic_rotation(false);
+                        #[cfg(feature = "dim3")]
+                        let body_desc = body_desc.kinematic_rotations(nphysics::math::Vector::repeat(false));
 
                         let body = physics.world_mut().add_body(&body_desc);
                         entity
@@ -479,9 +512,14 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                     }
 
                     QueuedPhysicsBodyPrototypes::Custom(data) => {
+                        #[cfg(feature = "dim2")]
+                        let isometry = ncollide::math::Isometry::new(center, rotation);
+
+                        #[cfg(feature = "dim3")]
+                        let isometry = ncollide::math::Isometry::from_parts(center.into(), UnitQuaternion::from_quaternion(rotation));
+
                         let body_desc = data.desc.clone_rigid_body_desc()
-                            .translation(center)
-                            .rotation(rotation);
+                            .position(isometry);
 
                         let body = physics.world_mut().add_body(&body_desc);
                         entity

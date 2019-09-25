@@ -47,8 +47,8 @@ impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
         framework_entity: &FrameworkEntityPrototypeInner,
         data: &Self,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     ) {
         let mut scale = 1.0;
         if let Some(transform) = framework_entity.find_component_prototype::<TransformComponentPrototype>() {
@@ -61,9 +61,9 @@ impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
             radius = std::f32::MIN_POSITIVE;
         }
 
-        use ncollide2d::shape::{Ball, ShapeHandle};
+        use ncollide::shape::{Ball, ShapeHandle};
         (
-            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ncollide::math::Isometry::<f32>::new(glm::zero(), glm::zero()),
             ShapeHandle::new(Ball::new(radius)),
         )
     }

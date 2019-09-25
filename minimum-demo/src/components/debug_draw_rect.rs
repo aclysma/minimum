@@ -8,12 +8,18 @@ use imgui_inspect_derive::Inspect;
 use framework::select::SelectableComponentPrototype;
 use minimum::component::SlabComponentStorage;
 use framework::FrameworkEntityPrototypeInner;
-use crate::components::TransformComponentPrototype;
+use crate::components;
+use components::transform;
+use components::TransformComponentPrototype;
+
+type RectSize = transform::Scale;
+type ImRectSize = transform::ImScale;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct DebugDrawRectComponent {
-    #[inspect(proxy_type = "ImGlmVec2")]
-    size: glm::Vec2,
+    #[inspect(proxy_type = "ImRectSize")]
+    size: RectSize,
 
     #[inspect(proxy_type = "ImGlmColor4")]
     color: glm::Vec4,
@@ -22,18 +28,18 @@ pub struct DebugDrawRectComponent {
 impl Default for DebugDrawRectComponent {
     fn default() -> Self {
         DebugDrawRectComponent {
-            size: glm::vec2(10.0, 10.0),
+            size: transform::default_scale(),
             color: glm::vec4(1.0, 1.0, 1.0, 1.0),
         }
     }
 }
 
 impl DebugDrawRectComponent {
-    pub fn new(size: glm::Vec2, color: glm::Vec4) -> Self {
+    pub fn new(size: RectSize, color: glm::Vec4) -> Self {
         DebugDrawRectComponent { size, color }
     }
 
-    pub fn size(&self) -> glm::Vec2 {
+    pub fn size(&self) -> RectSize {
         self.size
     }
 
@@ -48,18 +54,19 @@ impl SelectableComponentPrototype<Self> for DebugDrawRectComponent {
         framework_entity: &FrameworkEntityPrototypeInner,
         data: &Self,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     ) {
-        let mut scale = glm::vec2(1.0, 1.0);
+
+        let mut scale = transform::default_scale();
         if let Some(transform) = framework_entity.find_component_prototype::<TransformComponentPrototype>() {
             scale = transform.data().scale();
         }
 
-        use ncollide2d::shape::{Cuboid, ShapeHandle};
-        let extents = glm::vec2(scale.x * data.size.x, scale.y * data.size.y);
+        use ncollide::shape::{Cuboid, ShapeHandle};
+        let extents = scale.component_mul(&data.size);
         (
-            ncollide2d::math::Isometry::<f32>::new(glm::vec2(0.0, 0.0), 0.0),
+            ncollide::math::Isometry::<f32>::new(glm::zero(), glm::zero()),
             ShapeHandle::new(Cuboid::new(extents / 2.0)),
         )
     }

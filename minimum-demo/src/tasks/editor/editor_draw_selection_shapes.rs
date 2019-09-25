@@ -5,8 +5,8 @@ use minimum::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig, TaskCon
 use crate::resources::DebugDraw;
 #[cfg(feature = "editor")]
 use framework::resources::editor::EditorCollisionWorld;
-use ncollide2d::shape::ShapeHandle;
-use nphysics2d::object::ColliderHandle;
+use ncollide::shape::ShapeHandle;
+use nphysics::object::ColliderHandle;
 
 pub struct EditorDrawSelectionShapes;
 pub type EditorDrawSelectionShapesTask = minimum::ResourceTask<EditorDrawSelectionShapes>;
@@ -40,7 +40,7 @@ impl ResourceTaskImpl for EditorDrawSelectionShapes {
         }
 
         for collision_object in editor_collision_world.world().collision_objects() {
-            let co: &ncollide2d::world::CollisionObject<f32, EntityHandle> = collision_object;
+            let co: &ncollide::world::CollisionObject<f32, EntityHandle> = collision_object;
 
             if selected_components.exists(co.data()) {
                 // Color to highlight with.

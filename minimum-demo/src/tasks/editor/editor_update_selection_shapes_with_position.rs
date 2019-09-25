@@ -6,6 +6,7 @@ use framework::resources::editor::EditorCollisionWorld;
 use crate::components;
 use minimum::component::ReadComponent;
 use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use nalgebra::UnitQuaternion;
 
 pub struct EditorUpdateSelectionShapesWithPosition;
 pub type EditorUpdateSelectionShapesWithPositionTask =
@@ -32,9 +33,16 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
 
         for (entity, editor_shape_component) in editor_shape_components.iter(&entity_set) {
             if let Some(transform_component) = transform_components.get(&entity) {
+
+                #[cfg(feature = "dim2")]
+                let isometry = ncollide::math::Isometry::new(transform_component.position(), transform_component.rotation());
+
+                #[cfg(feature = "dim3")]
+                let isometry = ncollide::math::Isometry::from_parts(transform_component.position().into(), UnitQuaternion::from_quaternion(transform_component.rotation()));
+
                 collision_world.world_mut().set_position(
                     *editor_shape_component.collider_handle(),
-                    nalgebra::Isometry2::new(transform_component.position(), transform_component.rotation()),
+                    isometry,
                 );
             }
         }

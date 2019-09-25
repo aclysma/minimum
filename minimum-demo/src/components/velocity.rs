@@ -1,32 +1,33 @@
 #[cfg(feature = "editor")]
-use framework::inspect::common_types::*;
-
-#[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
 use minimum::component::SlabComponentStorage;
+use crate::components::transform;
+
+pub type Velocity = transform::Position;
+pub type ImVelocity = transform::ImPosition;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Inspect)]
 pub struct VelocityComponent {
-    #[inspect(proxy_type = "ImGlmVec2")]
-    velocity: glm::Vec2,
+    #[inspect(proxy_type = "ImVelocity")]
+    velocity: Velocity,
 
     #[inspect(skip)]
     requires_sync_to_physics: bool,
 }
 
 impl VelocityComponent {
-    pub fn new(velocity: glm::Vec2) -> Self {
+    pub fn new(velocity: Velocity) -> Self {
         VelocityComponent {
             velocity,
             requires_sync_to_physics: false,
         }
     }
 
-    pub fn velocity(&self) -> glm::Vec2 {
+    pub fn velocity(&self) -> Velocity {
         self.velocity
     }
 
-    pub fn velocity_mut(&mut self) -> &mut glm::Vec2 {
+    pub fn velocity_mut(&mut self) -> &mut Velocity {
         &mut self.velocity
     }
 

@@ -9,6 +9,15 @@ extern crate mopa;
 #[macro_use]
 extern crate serde_derive;
 
+#[cfg(feature = "dim2")]
+extern crate ncollide2d as ncollide;
+#[cfg(feature = "dim3")]
+extern crate ncollide3d as ncollide;
+#[cfg(feature = "dim2")]
+extern crate nphysics2d as nphysics;
+#[cfg(feature = "dim3")]
+extern crate nphysics3d as nphysics;
+
 mod clone_component;
 pub use clone_component::CloneComponentFactory;
 pub use clone_component::CloneComponentPrototype;

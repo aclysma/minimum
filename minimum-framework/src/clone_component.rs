@@ -156,8 +156,8 @@ impl<T: Component + Clone + SelectableComponentPrototype<T>>
         framework_entity: &FrameworkEntityPrototypeInner,
         data: &CloneComponentPrototype<T>,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     ) {
         T::create_selection_shape(framework_entity, &data.inner.data())
     }

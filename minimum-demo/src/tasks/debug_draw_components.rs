@@ -3,6 +3,7 @@ use minimum::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig, Tas
 
 use crate::components;
 use crate::resources::DebugDraw;
+use nalgebra::UnitQuaternion;
 
 pub struct DebugDrawComponents;
 pub type DebugDrawComponentsTask = minimum::ResourceTask<DebugDrawComponents>;
@@ -29,7 +30,7 @@ impl ResourceTaskImpl for DebugDrawComponents {
 
         for (entity_index, circle) in circle_components.iter(&entity_set) {
             if let Some(transform) = transform_components.get(&entity_index) {
-                debug_draw.add_circle(transform.position(), circle.radius() * transform.uniform_scale(), circle.color())
+                debug_draw.add_circle(transform.position().xy(), circle.radius() * transform.uniform_scale(), circle.color())
             }
         }
 
@@ -40,16 +41,25 @@ impl ResourceTaskImpl for DebugDrawComponents {
                 let p0 = half_extents;
                 let p1 = glm::vec2(0.0, 0.0) - half_extents;
 
-                if transform.rotation().abs() > std::f32::MIN_POSITIVE {
+
+
+                #[cfg(feature = "dim2")]
+                let rotation = transform.rotation();
+
+                #[cfg(feature = "dim3")]
+                let rotation = UnitQuaternion::from_quaternion(transform.rotation()).euler_angles().2;
+
+                let has_rotation = rotation.abs() > std::f32::MIN_POSITIVE;
+
+                if has_rotation {
                     let mut points = vec![p0, glm::vec2(p0.x, p1.y), p1, glm::vec2(p1.x, p0.y)];
                     for p in &mut points {
-
-                        *p = glm::rotate_vec2(p, transform.rotation()) + transform.position();
+                        *p = glm::rotate_vec2(p, rotation) + transform.position().xy();
                     }
                     debug_draw.add_polygon(points, rect.color());
 
                 } else {
-                    debug_draw.add_rect(p0 + transform.position(), p1 + transform.position(), rect.color());
+                    debug_draw.add_rect(p0 + transform.position().xy(), p1 + transform.position().xy(), rect.color());
                 }
             }
         }

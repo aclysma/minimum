@@ -9,7 +9,7 @@ use framework::components::PersistentEntityComponent;
 use framework::components::editor::EditorSelectedComponent;
 use framework::components::editor::EditorModifiedComponent;
 
-use ncollide2d::world::CollisionGroups;
+use ncollide::world::CollisionGroups;
 use crate::components::TransformComponent;
 use crate::components::TransformComponentPrototype;
 
@@ -153,6 +153,8 @@ fn handle_translate_gizmo_input(
                     if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
 
                         // Edit the prototype
+                        #[cfg(feature = "dim3")]
+                        let world_space_accumulated_delta = glm::vec2_to_vec3(&world_space_accumulated_delta);
                         *transform_component_prototype.data_mut().position_mut() += world_space_accumulated_delta;
 
                         // Mark the object as needing to be recreated
@@ -171,6 +173,8 @@ fn handle_translate_gizmo_input(
                     // Edit the component - recompute a new position. This is done using original values
                     // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
                     // drag is complete.
+                    #[cfg(feature = "dim3")]
+                    let world_space_previous_frame_delta = glm::vec2_to_vec3(&world_space_previous_frame_delta);
                     *transform_component.position_mut() += world_space_previous_frame_delta;
                     transform_component.requires_sync_to_physics();
                 }
@@ -200,24 +204,24 @@ fn draw_translate_gizmo(
             editor_draw.add_line(
                 "x_axis_translate",
                 debug_draw,
-                position,
-                position + glm::vec2(100.0, 0.0),
+                position.xy(),
+                position.xy() + glm::vec2(100.0, 0.0),
                 x_color
             );
 
             editor_draw.add_line(
                 "x_axis_translate",
                 debug_draw,
-                position + glm::vec2(85.0, 15.0),
-                position + glm::vec2(100.0, 0.0),
+                position.xy() + glm::vec2(85.0, 15.0),
+                position.xy() + glm::vec2(100.0, 0.0),
                 x_color
             );
 
             editor_draw.add_line(
                 "x_axis_translate",
                 debug_draw,
-                position + glm::vec2(85.0, -15.0),
-                position + glm::vec2(100.0, 0.0),
+                position.xy() + glm::vec2(85.0, -15.0),
+                position.xy() + glm::vec2(100.0, 0.0),
                 x_color
             );
 
@@ -225,24 +229,24 @@ fn draw_translate_gizmo(
             editor_draw.add_line(
                 "y_axis_translate",
                 debug_draw,
-                position,
-                position + glm::vec2(0.0, 100.0),
+                position.xy(),
+                position.xy() + glm::vec2(0.0, 100.0),
                 y_color
             );
 
             editor_draw.add_line(
                 "y_axis_translate",
                 debug_draw,
-                position + glm::vec2(-15.0, 85.0),
-                position + glm::vec2(0.0, 100.0),
+                position.xy() + glm::vec2(-15.0, 85.0),
+                position.xy() + glm::vec2(0.0, 100.0),
                 y_color
             );
 
             editor_draw.add_line(
                 "y_axis_translate",
                 debug_draw,
-                position + glm::vec2(15.0, 85.0),
-                position + glm::vec2(0.0, 100.0),
+                position.xy() + glm::vec2(15.0, 85.0),
+                position.xy() + glm::vec2(0.0, 100.0),
                 y_color
             );
 
@@ -250,8 +254,8 @@ fn draw_translate_gizmo(
             editor_draw.add_line(
                 "xy_axis_translate",
                 debug_draw,
-                position + glm::vec2(0.0, 25.0),
-                position + glm::vec2(25.0, 25.0),
+                position.xy() + glm::vec2(0.0, 25.0),
+                position.xy() + glm::vec2(25.0, 25.0),
                 xy_color
             );
 
@@ -259,8 +263,8 @@ fn draw_translate_gizmo(
             editor_draw.add_line(
                 "xy_axis_translate",
                 debug_draw,
-                position + glm::vec2(25.0, 0.0),
-                position + glm::vec2(25.0, 25.0),
+                position.xy() + glm::vec2(25.0, 0.0),
+                position.xy() + glm::vec2(25.0, 25.0),
                 xy_color
             );
         }
@@ -350,7 +354,10 @@ fn handle_scale_gizmo_input(
                     if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
 
                         // Edit the prototype
-                        *transform_component_prototype.data_mut().scale_mut() += ui_space_accumulated_delta * 0.05;
+                        let adjusted = ui_space_accumulated_delta * 0.05;
+                        #[cfg(feature = "dim3")]
+                        let adjusted = glm::vec2_to_vec3(&adjusted);
+                        *transform_component_prototype.data_mut().scale_mut() += adjusted;
 
                         // Mark the object as needing to be recreated
                         if !editor_modified_components.exists(&entity_handle) {
@@ -368,7 +375,10 @@ fn handle_scale_gizmo_input(
                     // Edit the component - recompute a new position. This is done using original values
                     // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
                     // drag is complete.
-                    *transform_component.scale_mut() += ui_space_previous_frame_delta * 0.05;
+                    let adjusted = ui_space_previous_frame_delta * 0.05;
+                    #[cfg(feature = "dim3")]
+                    let adjusted = glm::vec2_to_vec3(&adjusted);
+                    *transform_component.scale_mut() += adjusted;
                     transform_component.requires_sync_to_physics();
                 }
             }
@@ -397,8 +407,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "x_axis_scale",
                 debug_draw,
-                position,
-                position + glm::vec2(100.0, 0.0),
+                position.xy(),
+                position.xy() + glm::vec2(100.0, 0.0),
                 x_color
             );
 
@@ -406,8 +416,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "x_axis_scale",
                 debug_draw,
-                position + glm::vec2(100.0, -20.0),
-                position + glm::vec2(100.0, 20.0),
+                position.xy() + glm::vec2(100.0, -20.0),
+                position.xy() + glm::vec2(100.0, 20.0),
                 x_color
             );
 
@@ -415,8 +425,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "y_axis_scale",
                 debug_draw,
-                position,
-                position + glm::vec2(0.0, 100.0),
+                position.xy(),
+                position.xy() + glm::vec2(0.0, 100.0),
                 y_color
             );
 
@@ -424,8 +434,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "y_axis_scale",
                 debug_draw,
-                position + glm::vec2(-20.0, 100.0),
-                position + glm::vec2(20.0, 100.0),
+                position.xy() + glm::vec2(-20.0, 100.0),
+                position.xy() + glm::vec2(20.0, 100.0),
                 y_color
             );
 
@@ -433,8 +443,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "uniform_scale",
                 debug_draw,
-                position + glm::vec2(0.0, 0.0),
-                position + glm::vec2(50.0, 50.0),
+                position.xy() + glm::vec2(0.0, 0.0),
+                position.xy() + glm::vec2(50.0, 50.0),
                 xy_color
             );
 
@@ -442,8 +452,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "uniform_scale",
                 debug_draw,
-                position + glm::vec2(40.0, 60.0),
-                position + glm::vec2(60.0, 40.0),
+                position.xy() + glm::vec2(40.0, 60.0),
+                position.xy() + glm::vec2(60.0, 40.0),
                 xy_color
             );
         }
@@ -487,8 +497,19 @@ fn handle_rotate_gizmo_input(
                     let mut entity_prototype = persistent_entity_component.entity_prototype_mut().lock();
                     if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
 
-                        // Edit the prototype
-                        *transform_component_prototype.data_mut().rotation_mut() += ui_space_accumulated_delta * 0.05;
+                        let adjusted = ui_space_accumulated_delta * 0.05;
+                        #[cfg(feature = "dim2")]
+                        {
+                            // Edit the prototype
+                            *transform_component_prototype.data_mut().rotation_mut() += adjusted;
+                        }
+
+                        #[cfg(feature = "dim3")]
+                        {
+                            // Edit the prototype
+                            let rotation = glm::quat_angle_axis(adjusted, &glm::Vec3::z());
+                            *transform_component_prototype.data_mut().rotation_mut() *= rotation;
+                        }
 
                         // Mark the object as needing to be recreated
                         if !editor_modified_components.exists(&entity_handle) {
@@ -507,7 +528,20 @@ fn handle_rotate_gizmo_input(
                     // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
                     // drag is complete.
                     //*transform_component.scale_mut() += ui_space_previous_frame_delta * 0.05;
-                    *transform_component.rotation_mut() += ui_space_previous_frame_delta * 0.05;
+
+                    let adjusted = ui_space_previous_frame_delta * 0.05;
+                    #[cfg(feature = "dim2")]
+                    {
+                        *transform_component.rotation_mut() += adjusted;
+                    }
+
+                    #[cfg(feature = "dim3")]
+                    {
+                        // Edit the prototype
+                        let rotation = glm::quat_angle_axis(adjusted, &glm::Vec3::z());
+                        *transform_component.rotation_mut() *= rotation;
+                    }
+
                     transform_component.requires_sync_to_physics();
                 }
             }
@@ -530,14 +564,14 @@ fn draw_rotate_gizmo(
             editor_draw.add_circle_outline(
                 "z_axis_rotate",
                 debug_draw,
-                position,
+                position.xy(),
                 50.0,
                 glm::vec4(0.0, 1.0, 0.0, 1.0)
             );
             editor_draw.add_circle_outline(
                 "z_axis_rotate",
                 debug_draw,
-                position,
+                position.xy(),
                 52.0,
                 glm::vec4(0.0, 1.0, 0.0, 1.0)
             );
@@ -579,7 +613,12 @@ fn handle_select_input(
             f32::max(target_position0.y, target_position1.y),
         );
 
-        let aabb = ncollide2d::bounding_volume::AABB::new(
+        #[cfg(feature = "dim3")]
+        let (mins, maxs) = {
+            (glm::vec3(mins.x, mins.y, std::f32::MIN), glm::vec3(maxs.x, maxs.y, std::f32::MAX))
+        };
+
+        let aabb = ncollide::bounding_volume::AABB::new(
             nalgebra::Point::from(mins),
             nalgebra::Point::from(maxs),
         );
@@ -591,7 +630,10 @@ fn handle_select_input(
         new_selection = Some(results.map(|x| x.data()).collect());
     } else if let Some(clicked) = input_manager.mouse_button_just_clicked_position(MouseButtons::Left) {
         // Clicked, do a raycast
-        let target_position = render_state.ui_space_to_world_space(clicked).into();
+        let target_position = render_state.ui_space_to_world_space(clicked);
+        #[cfg(feature = "dim3")]
+        let target_position = glm::vec2_to_vec3(&target_position);
+        let target_position = ncollide::math::Point::from(target_position);
 
         let results = editor_collision_world
             .world()

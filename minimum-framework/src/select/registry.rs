@@ -10,8 +10,8 @@ trait RegisteredComponentPrototypeTrait: Send + Sync {
         framework_entity: &FrameworkEntityPrototypeInner,
         component_prototype: &dyn FrameworkComponentPrototypeDyn,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     );
 }
 
@@ -36,8 +36,8 @@ where
         framework_entity: &FrameworkEntityPrototypeInner,
         component_prototype: &dyn FrameworkComponentPrototypeDyn,
     ) -> (
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     ) {
         let t = component_prototype.downcast_ref::<T>().unwrap();
         <T as SelectableComponentPrototype<T>>::create_selection_shape(framework_entity, t)
@@ -76,8 +76,8 @@ impl SelectRegistry {
         component_prototype: &dyn FrameworkComponentPrototypeDyn,
 
     ) -> Option<(
-        ncollide2d::math::Isometry<f32>,
-        ncollide2d::shape::ShapeHandle<f32>,
+        ncollide::math::Isometry<f32>,
+        ncollide::shape::ShapeHandle<f32>,
     )> {
         let component_prototype_type = FrameworkComponentPrototypeDyn::type_id(component_prototype);
 

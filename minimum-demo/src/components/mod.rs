@@ -4,7 +4,7 @@ mod debug_draw_rect;
 mod free_at_time;
 mod physics_body;
 mod player;
-mod transform;
+pub mod transform;
 mod velocity;
 
 pub use bullet::BulletComponent;

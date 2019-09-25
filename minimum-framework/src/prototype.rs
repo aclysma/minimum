@@ -146,8 +146,8 @@ impl EntityPrototype for FrameworkEntityPrototype {
             // If we detect any components that want to be selectable, attach an EditorShapeComponentPrototype
             // to the entity with those shapes
             if !selection_shapes.is_empty() {
-                let compound_shape = ncollide2d::shape::Compound::new(selection_shapes);
-                let compound_shape_handle = ncollide2d::shape::ShapeHandle::new(compound_shape);
+                let compound_shape = ncollide::shape::Compound::new(selection_shapes);
+                let compound_shape_handle = ncollide::shape::ShapeHandle::new(compound_shape);
                 let editor_shape_component_prototype =
                     EditorShapeComponentPrototype::new(compound_shape_handle);
 
