@@ -1,8 +1,8 @@
 use super::Vec2;
 
-use minimum::component::Component;
-use minimum::component::SlabComponentStorage;
-use minimum::component::VecComponentStorage;
+use minimum::base::component::Component;
+use minimum::base::component::SlabComponentStorage;
+use minimum::base::component::VecComponentStorage;
 
 #[derive(Debug)]
 pub struct PositionComponent {

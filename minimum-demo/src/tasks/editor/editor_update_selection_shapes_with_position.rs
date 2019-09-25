@@ -1,26 +1,26 @@
-use minimum::resource::{DataRequirement, Read, Write};
+use crate::base::resource::{DataRequirement, Read, Write};
 
 #[cfg(feature = "editor")]
-use framework::resources::editor::EditorCollisionWorld;
+use crate::framework::resources::editor::EditorCollisionWorld;
 
-use minimum::component::ReadComponent;
-use minimum::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use crate::base::component::ReadComponent;
+use crate::base::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 pub struct EditorUpdateSelectionShapesWithPosition;
 pub type EditorUpdateSelectionShapesWithPositionTask =
-    minimum::ResourceTask<EditorUpdateSelectionShapesWithPosition>;
+    crate::base::ResourceTask<EditorUpdateSelectionShapesWithPosition>;
 impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
     type RequiredResources = (
         Read<EntitySet>,
         Write<EditorCollisionWorld>,
-        ReadComponent<framework::components::editor::EditorShapeComponent>,
-        ReadComponent<framework::components::TransformComponent>,
+        ReadComponent<crate::framework::components::editor::EditorShapeComponent>,
+        ReadComponent<crate::framework::components::TransformComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
         config.this_provides_data_to::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
-        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
+        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(

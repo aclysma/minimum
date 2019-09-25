@@ -1,22 +1,22 @@
-use minimum::resource::{DataRequirement, Read};
-use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use base::resource::{DataRequirement, Read};
+use base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::TimeState;
 
-use minimum::component::{ReadComponent, WriteComponent};
+use base::component::{ReadComponent, WriteComponent};
 
 pub struct HandleFreeAtTimeComponents;
-pub type HandleFreeAtTimeComponentsTask = minimum::ResourceTask<HandleFreeAtTimeComponents>;
+pub type HandleFreeAtTimeComponentsTask = base::ResourceTask<HandleFreeAtTimeComponents>;
 impl ResourceTaskImpl for HandleFreeAtTimeComponents {
     type RequiredResources = (
-        Read<minimum::EntitySet>,
-        WriteComponent<minimum::PendingDeleteComponent>,
+        Read<base::EntitySet>,
+        WriteComponent<base::PendingDeleteComponent>,
         Read<TimeState>,
         ReadComponent<crate::components::FreeAtTimeComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
+        config.this_runs_during_phase::<base::task::PhaseFrameBegin>();
         config.run_only_if(crate::context_flags::PLAYMODE_PLAYING);
     }
 

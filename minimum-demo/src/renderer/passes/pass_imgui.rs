@@ -14,7 +14,7 @@ use rendy::{
     wsi::winit,
 };
 
-use minimum::resource::ResourceMap;
+use crate::base::resource::ResourceMap;
 
 use nalgebra_glm as glm;
 
@@ -47,7 +47,7 @@ const UNIFORM_SIZE: u64 = std::mem::size_of::<UniformArgs>() as u64;
 #[derive(Debug, Default)]
 pub struct ImguiRenderPipelineDesc;
 
-impl<B> SimpleGraphicsPipelineDesc<B, minimum::resource::ResourceMap> for ImguiRenderPipelineDesc
+impl<B> SimpleGraphicsPipelineDesc<B, crate::base::resource::ResourceMap> for ImguiRenderPipelineDesc
 where
     B: gfx_hal::Backend,
 {

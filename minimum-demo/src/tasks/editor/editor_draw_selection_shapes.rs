@@ -1,28 +1,28 @@
-use minimum::component::ComponentStorage;
-use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use crate::base::component::ComponentStorage;
+use crate::base::resource::{DataRequirement, Read, Write};
+use crate::base::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use framework::resources::DebugDraw;
+use crate::framework::resources::DebugDraw;
 #[cfg(feature = "editor")]
-use framework::resources::editor::EditorCollisionWorld;
+use crate::framework::resources::editor::EditorCollisionWorld;
 use ncollide::shape::ShapeHandle;
 use nphysics::object::ColliderHandle;
 
 pub struct EditorDrawSelectionShapes;
-pub type EditorDrawSelectionShapesTask = minimum::ResourceTask<EditorDrawSelectionShapes>;
+pub type EditorDrawSelectionShapesTask = crate::base::ResourceTask<EditorDrawSelectionShapes>;
 impl ResourceTaskImpl for EditorDrawSelectionShapes {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<EditorCollisionWorld>,
-        ReadComponent<framework::components::editor::EditorShapeComponent>,
-        ReadComponent<framework::components::editor::EditorSelectedComponent>,
+        ReadComponent<crate::framework::components::editor::EditorShapeComponent>,
+        ReadComponent<crate::framework::components::editor::EditorSelectedComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
         config.this_uses_data_from::<crate::tasks::editor::EditorHandleInputTask>();
-        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
-        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
+        config.run_only_if(crate::framework::context_flags::AUTHORITY_CLIENT);
+        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(

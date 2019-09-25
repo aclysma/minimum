@@ -1,10 +1,10 @@
 use crate::components;
-use framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
-use framework::components::transform;
-use framework::FrameworkEntityPrototype;
+use crate::framework::{CloneComponentPrototype, FrameworkEntityPersistencePolicy};
+use crate::framework::components::transform;
+use crate::framework::FrameworkEntityPrototype;
 
-use framework::components::TransformComponent;
-use framework::components::VelocityComponent;
+use crate::framework::components::TransformComponent;
+use crate::framework::components::VelocityComponent;
 
 use components::PhysicsBodyComponentPrototypeBox;
 use components::PhysicsBodyComponentPrototypeCircle;
@@ -26,7 +26,7 @@ const COLLISION_GROUP_ALL_MASK: u32 =
 pub fn create_wall(
     center: glm::Vec2,
     size: glm::Vec2,
-    entity_factory: &mut minimum::EntityFactory,
+    entity_factory: &mut crate::base::EntityFactory,
 ) {
     #[cfg(feature = "dim3")]
     let center = glm::vec2_to_vec3(&center);
@@ -44,7 +44,7 @@ pub fn create_wall(
                 TransformComponent::new(center, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
-                framework::components::DebugDrawRectComponent::new(size, color),
+                crate::framework::components::DebugDrawRectComponent::new(size, color),
             )),
             Box::new(PhysicsBodyComponentPrototypeBox::new(
                 size,
@@ -60,7 +60,7 @@ pub fn create_wall(
 }
 
 // Left as an example, but this is being loaded from file
-pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
+pub fn create_player(entity_factory: &mut crate::base::EntityFactory) {
     let position = glm::zero();
     let radius = 15.0;
     let color = glm::Vec4::new(0.0, 1.0, 0.0, 1.0);
@@ -77,7 +77,7 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
                 TransformComponent::new(position, transform::default_scale(), transform::default_rotation()),
             )),
             Box::new(CloneComponentPrototype::new(
-                framework::components::DebugDrawCircleComponent::new(radius, color),
+                crate::framework::components::DebugDrawCircleComponent::new(radius, color),
             )),
             Box::new(PhysicsBodyComponentPrototypeCircle::new(
                 radius,
@@ -94,8 +94,8 @@ pub fn create_player(entity_factory: &mut minimum::EntityFactory) {
 pub fn create_bullet(
     position: glm::Vec2,
     velocity: glm::Vec2,
-    time_state: &framework::resources::TimeState,
-    entity_factory: &mut minimum::EntityFactory,
+    time_state: &crate::framework::resources::TimeState,
+    entity_factory: &mut crate::base::EntityFactory,
 ) {
     #[cfg(feature = "dim3")]
     let position = glm::vec2_to_vec3(&position);
@@ -156,13 +156,13 @@ pub fn create_bullet(
                 body_component_desc,
             )),
             Box::new(CloneComponentPrototype::new(
-                framework::components::DebugDrawCircleComponent::new(radius, color),
+                crate::framework::components::DebugDrawCircleComponent::new(radius, color),
             )),
             Box::new(CloneComponentPrototype::new(
                 components::BulletComponent::new(),
             )),
             Box::new(CloneComponentPrototype::new(
-                framework::components::FreeAtTimeComponent::new(
+                crate::framework::components::FreeAtTimeComponent::new(
                     time_state.playing().frame_start_instant + lifetime,
                 ),
             )),

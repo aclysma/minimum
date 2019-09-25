@@ -1,27 +1,27 @@
-use minimum::resource::{DataRequirement, Read, Write};
-use minimum::ComponentStorage;
-use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, Component, EntitySet};
+use crate::base::resource::{DataRequirement, Read, Write};
+use crate::base::ComponentStorage;
+use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, Component, EntitySet};
 
-use framework::resources::DebugDraw;
+use crate::framework::resources::DebugDraw;
 use crate::resources::{InputManager, MouseButtons, RenderState, EditorDraw};
-use framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
-use framework::components::PersistentEntityComponent;
+use crate::framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
+use crate::framework::components::PersistentEntityComponent;
 
-use framework::components::editor::EditorSelectedComponent;
-use framework::components::editor::EditorModifiedComponent;
+use crate::framework::components::editor::EditorSelectedComponent;
+use crate::framework::components::editor::EditorModifiedComponent;
 
 use ncollide::world::CollisionGroups;
-use framework::components::TransformComponent;
-use framework::components::TransformComponentPrototype;
+use crate::framework::components::TransformComponent;
+use crate::framework::components::TransformComponentPrototype;
 
 use rendy::wsi::winit;
 use winit::event::VirtualKeyCode;
 
 pub struct EditorHandleInput;
-pub type EditorHandleInputTask = minimum::ResourceTask<EditorHandleInput>;
+pub type EditorHandleInputTask = crate::base::ResourceTask<EditorHandleInput>;
 impl ResourceTaskImpl for EditorHandleInput {
     type RequiredResources = (
-        Read<minimum::EntitySet>,
+        Read<crate::base::EntitySet>,
         Read<InputManager>,
         Read<RenderState>,
         Read<EditorCollisionWorld>,
@@ -35,9 +35,9 @@ impl ResourceTaskImpl for EditorHandleInput {
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
         config.this_uses_data_from::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
-        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
+        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(
@@ -71,8 +71,8 @@ impl ResourceTaskImpl for EditorHandleInput {
         }
 
         if context_flags.flags()
-            & (framework::context_flags::PLAYMODE_PAUSED
-                | framework::context_flags::PLAYMODE_PLAYING)
+            & (crate::framework::context_flags::PLAYMODE_PAUSED
+                | crate::framework::context_flags::PLAYMODE_PLAYING)
             != 0
         {
             return;

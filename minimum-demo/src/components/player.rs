@@ -1,6 +1,6 @@
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
-use minimum::component::SlabComponentStorage;
+use crate::base::component::SlabComponentStorage;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Inspect)]
 pub struct PlayerComponent {}
@@ -11,6 +11,6 @@ impl PlayerComponent {
     }
 }
 
-impl minimum::Component for PlayerComponent {
+impl crate::base::Component for PlayerComponent {
     type Storage = SlabComponentStorage<PlayerComponent>;
 }

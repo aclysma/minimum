@@ -1,27 +1,27 @@
-use minimum::resource::{DataRequirement, Read};
-use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use crate::base::resource::{DataRequirement, Read};
+use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use framework::resources::TimeState;
+use crate::framework::resources::TimeState;
 
 use crate::components;
-use minimum::component::{ReadComponent, WriteComponent};
-use minimum::ComponentStorage;
+use crate::base::component::{ReadComponent, WriteComponent};
+use crate::base::ComponentStorage;
 
 pub struct UpdatePositionWithVelocity;
-pub type UpdatePositionWithVelocityTask = minimum::ResourceTask<UpdatePositionWithVelocity>;
+pub type UpdatePositionWithVelocityTask = crate::base::ResourceTask<UpdatePositionWithVelocity>;
 impl ResourceTaskImpl for UpdatePositionWithVelocity {
     type RequiredResources = (
-        Read<minimum::EntitySet>,
+        Read<crate::base::EntitySet>,
         Read<TimeState>,
-        WriteComponent<framework::components::TransformComponent>,
-        ReadComponent<framework::components::VelocityComponent>,
+        WriteComponent<crate::framework::components::TransformComponent>,
+        ReadComponent<crate::framework::components::VelocityComponent>,
         ReadComponent<components::PhysicsBodyComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePrePhysicsGameplay>();
+        config.this_runs_during_phase::<crate::base::task::PhasePrePhysicsGameplay>();
         config.this_provides_data_to::<crate::tasks::PhysicsSyncPreTask>();
-        config.run_only_if(framework::context_flags::PLAYMODE_PLAYING);
+        config.run_only_if(crate::framework::context_flags::PLAYMODE_PLAYING);
     }
 
     fn run(

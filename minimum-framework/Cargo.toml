@@ -22,7 +22,7 @@ ncollide2d      = { version = "0.19", optional = true }
 ncollide3d      = { version = "0.19", optional = true }
 rand            = "0.7.0"
 
-minimum = { path = "../minimum", features = ["std"] }
+minimum-base = { path = "../minimum-base", features = ["std"] }
 
 serde = "1.0"
 serde_derive = "1.0"

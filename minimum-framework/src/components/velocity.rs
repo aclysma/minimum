@@ -1,6 +1,6 @@
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
-use minimum::component::SlabComponentStorage;
+use base::component::SlabComponentStorage;
 use crate::components::transform;
 
 pub type Velocity = transform::Position;
@@ -58,6 +58,6 @@ impl Default for VelocityComponent {
     }
 }
 
-impl minimum::Component for VelocityComponent {
+impl base::Component for VelocityComponent {
     type Storage = SlabComponentStorage<Self>;
 }

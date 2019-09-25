@@ -12,7 +12,7 @@ use rendy::{
     util::types::vertex,
 };
 
-use minimum::resource::ResourceMap;
+use crate::base::resource::ResourceMap;
 
 use nalgebra_glm as glm;
 
@@ -45,7 +45,7 @@ const UNIFORM_SIZE: u64 = std::mem::size_of::<UniformArgs>() as u64;
 #[derive(Debug, Default)]
 pub struct DebugDrawRenderPipelineDesc;
 
-impl<B> SimpleGraphicsPipelineDesc<B, minimum::resource::ResourceMap>
+impl<B> SimpleGraphicsPipelineDesc<B, crate::base::resource::ResourceMap>
     for DebugDrawRenderPipelineDesc
 where
     B: gfx_hal::Backend,
@@ -252,7 +252,7 @@ where
         let mut commands = vec![];
 
         {
-            let mut debug_draw = aux.fetch_mut::<framework::resources::DebugDraw>();
+            let mut debug_draw = aux.fetch_mut::<crate::framework::resources::DebugDraw>();
             let line_lists = debug_draw.take_line_lists();
 
             //TODO: Would be better to pre-size array

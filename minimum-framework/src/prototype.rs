@@ -1,8 +1,8 @@
-use minimum::entity::EntityPrototype;
-use minimum::{Component, ComponentPrototype};
+use base::entity::EntityPrototype;
+use base::{Component, ComponentPrototype};
 
-use minimum::EntityRef;
-use minimum::ResourceMap;
+use base::EntityRef;
+use base::ResourceMap;
 
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -18,7 +18,7 @@ pub trait FrameworkComponentPrototype {
     fn component_type() -> std::any::TypeId;
 }
 
-pub trait FrameworkComponentPrototypeDyn: minimum::component::ComponentPrototypeDyn + mopa::Any {
+pub trait FrameworkComponentPrototypeDyn: base::component::ComponentPrototypeDyn + mopa::Any {
     fn component_type(&self) -> std::any::TypeId;
 }
 

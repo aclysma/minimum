@@ -1,15 +1,15 @@
 use crate::renderer::Renderer;
-use minimum::task::ReadAllTaskImpl;
-use minimum::ResourceMap;
-use minimum::TaskConfig;
-use minimum::TaskContextFlags;
+use crate::base::task::ReadAllTaskImpl;
+use crate::base::ResourceMap;
+use crate::base::TaskConfig;
+use crate::base::TaskContextFlags;
 use rendy::wsi::winit;
 
 pub struct UpdateRenderer;
-pub type UpdateRendererTask = minimum::ReadAllTask<UpdateRenderer>;
+pub type UpdateRendererTask = crate::base::ReadAllTask<UpdateRenderer>;
 impl ReadAllTaskImpl for UpdateRenderer {
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhaseRender>();
+        config.this_runs_during_phase::<crate::base::task::PhaseRender>();
     }
 
     fn run(_context_flags: &TaskContextFlags, resource_map: &ResourceMap) {

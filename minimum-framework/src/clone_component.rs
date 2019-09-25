@@ -1,16 +1,16 @@
 use crate::persist::ComponentPrototypeSerializer;
 #[cfg(feature = "editor")]
 use crate::select::SelectableComponentPrototype;
-use minimum::BasicComponentPrototype;
-use minimum::Component;
-use minimum::ComponentFactory;
-use minimum::ComponentPrototype;
-use minimum::EntityHandle;
-use minimum::EntitySet;
-use minimum::ResourceMap;
+use base::BasicComponentPrototype;
+use base::Component;
+use base::ComponentFactory;
+use base::ComponentPrototype;
+use base::EntityHandle;
+use base::EntitySet;
+use base::ResourceMap;
 use crate::prototype::FrameworkEntityPrototypeInner;
 
-use minimum::component::ComponentCreateQueueFlushListener;
+use base::component::ComponentCreateQueueFlushListener;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
@@ -23,7 +23,7 @@ use crate::prototype::FrameworkComponentPrototype;
 
 #[derive(Clone)]
 pub struct CloneComponentPrototype<T: Component + Clone> {
-    inner: minimum::BasicComponentPrototype<T>,
+    inner: base::BasicComponentPrototype<T>,
 }
 
 impl<T: Component + Clone> CloneComponentPrototype<T> {
@@ -164,13 +164,13 @@ impl<T: Component + Clone + SelectableComponentPrototype<T>>
 }
 
 pub struct CloneComponentFactory<T: Component> {
-    inner: minimum::BasicComponentFactory<T>,
+    inner: base::BasicComponentFactory<T>,
 }
 
 impl<T: Component> CloneComponentFactory<T> {
     pub fn new() -> Self {
         CloneComponentFactory::<T> {
-            inner: minimum::BasicComponentFactory::new(),
+            inner: base::BasicComponentFactory::new(),
         }
     }
 }

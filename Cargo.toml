@@ -4,10 +4,11 @@
 [workspace]
 
 members = [
-    "minimum",
+    "minimum-base",
     "minimum-framework",
     "minimum-examples",
-    "minimum-demo"
+    "minimum-demo",
+    "minimum"
 ]
 
 exclude = [

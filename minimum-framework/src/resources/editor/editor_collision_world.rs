@@ -1,4 +1,4 @@
-use minimum::EntityHandle;
+use base::EntityHandle;
 
 const MARGIN: f32 = 0.02;
 

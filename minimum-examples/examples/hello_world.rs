@@ -1,4 +1,4 @@
-use minimum::{
+use minimum::base::{
     DataRequirement, ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags, WorldBuilder,
     Write,
 };

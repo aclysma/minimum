@@ -1,14 +1,14 @@
 use crate::resources;
-use minimum::task::WriteAllTaskImpl;
-use minimum::ResourceMap;
-use minimum::TaskConfig;
-use minimum::TaskContextFlags;
+use crate::base::task::WriteAllTaskImpl;
+use crate::base::ResourceMap;
+use crate::base::TaskConfig;
+use crate::base::TaskContextFlags;
 
 pub struct RenderImguiInspector;
-pub type RenderImguiInspectorTask = minimum::WriteAllTask<RenderImguiInspector>;
+pub type RenderImguiInspectorTask = crate::base::WriteAllTask<RenderImguiInspector>;
 impl WriteAllTaskImpl for RenderImguiInspector {
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
     }
 
     fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
@@ -16,7 +16,7 @@ impl WriteAllTaskImpl for RenderImguiInspector {
 
         //TODO: draw_inspector could potentially take a <T: ImguiManager> param
         imgui_manager.with_ui(|ui| {
-            framework::inspect::draw_inspector(&resource_map, ui);
+            crate::framework::inspect::draw_inspector(&resource_map, ui);
         });
     }
 }

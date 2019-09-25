@@ -6,8 +6,8 @@ use crate::{
     FrameworkComponentPrototypeDyn, FrameworkEntityPersistencePolicy, FrameworkEntityPrototype, FrameworkComponentPrototype
 };
 use hashbrown::HashMap;
-use minimum::EntityPrototype;
-use minimum::ResourceMap;
+use base::EntityPrototype;
+use base::ResourceMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -273,7 +273,7 @@ impl PersistRegistry {
             )));
         }
 
-        let mut entity_factory = resource_map.fetch_mut::<minimum::EntityFactory>();
+        let mut entity_factory = resource_map.fetch_mut::<base::EntityFactory>();
         for e in entities {
             entity_factory.enqueue_create(e);
         }
@@ -287,8 +287,8 @@ impl PersistRegistry {
         resource_map: &ResourceMap,
         path: P,
     ) -> Result<(), SerializeError> {
-        use minimum::Component;
-        use minimum::EntitySet;
+        use base::Component;
+        use base::EntitySet;
 
         // Get the entities and all persistent entity components. This represents all the data we need to save
         let entity_set = resource_map.fetch::<EntitySet>();

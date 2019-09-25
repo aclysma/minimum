@@ -1,6 +1,6 @@
 use crate::components::editor::EditorSelectedComponent;
 use crate::{FrameworkEntityPersistencePolicy, FrameworkEntityPrototype};
-use minimum::{Component, EntityPrototype, EntitySet, PendingDeleteComponent, ResourceMap};
+use base::{Component, EntityPrototype, EntitySet, PendingDeleteComponent, ResourceMap};
 use std::collections::VecDeque;
 
 pub struct EditorActionQueue {

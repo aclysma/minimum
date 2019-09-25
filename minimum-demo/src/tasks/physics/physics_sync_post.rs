@@ -1,10 +1,10 @@
-use minimum::resource::{DataRequirement, Read};
+use crate::base::resource::{DataRequirement, Read};
 
 use crate::resources::PhysicsManager;
 
 use crate::components;
-use minimum::component::{ReadComponent, WriteComponent};
-use minimum::{
+use crate::base::component::{ReadComponent, WriteComponent};
+use crate::base::{
     ComponentStorage, EntitySet, ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags,
 };
 
@@ -15,14 +15,14 @@ impl ResourceTaskImpl for PhysicsSyncPost {
         Read<EntitySet>,
         Read<PhysicsManager>,
         ReadComponent<components::PhysicsBodyComponent>,
-        WriteComponent<framework::components::TransformComponent>,
-        WriteComponent<framework::components::VelocityComponent>,
+        WriteComponent<crate::framework::components::TransformComponent>,
+        WriteComponent<crate::framework::components::VelocityComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePhysics>();
+        config.this_runs_during_phase::<crate::base::task::PhasePhysics>();
         config.this_uses_data_from::<crate::tasks::UpdatePhysicsTask>();
-        config.run_only_if(framework::context_flags::PLAYMODE_PLAYING);
+        config.run_only_if(crate::framework::context_flags::PLAYMODE_PLAYING);
     }
 
     fn run(

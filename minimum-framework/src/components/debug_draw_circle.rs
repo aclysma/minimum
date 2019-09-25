@@ -5,7 +5,7 @@ use crate::inspect::common_types::*;
 use crate::select::SelectableComponentPrototype;
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
-use minimum::component::SlabComponentStorage;
+use base::component::SlabComponentStorage;
 use crate::FrameworkEntityPrototypeInner;
 use crate::components::TransformComponentPrototype;
 
@@ -69,6 +69,6 @@ impl SelectableComponentPrototype<Self> for DebugDrawCircleComponent {
     }
 }
 
-impl minimum::Component for DebugDrawCircleComponent {
+impl base::Component for DebugDrawCircleComponent {
     type Storage = SlabComponentStorage<Self>;
 }

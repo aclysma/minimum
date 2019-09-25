@@ -11,9 +11,9 @@ pub enum InspectorTab {
 
 use crate::components;
 use crate::resources;
-use minimum::Component;
-use minimum::ComponentStorage;
-use minimum::ResourceMap;
+use base::Component;
+use base::ComponentStorage;
+use base::ResourceMap;
 
 use crate::components::editor::EditorModifiedComponent;
 use components::PersistentEntityComponent;
@@ -26,7 +26,7 @@ pub fn draw_inspector(resource_map: &ResourceMap, ui: &imgui::Ui) {
         return;
     }
 
-    let entity_set = resource_map.fetch::<minimum::EntitySet>();
+    let entity_set = resource_map.fetch::<base::EntitySet>();
     let selected_entity_handles = {
         let selected_components =
             resource_map

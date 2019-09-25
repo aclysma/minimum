@@ -1,4 +1,4 @@
-use framework::resources::DebugDraw;
+use crate::framework::resources::DebugDraw;
 use super::InputManager;
 use super::RenderState;
 use crate::resources::MouseButtons;

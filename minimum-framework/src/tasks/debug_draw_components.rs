@@ -1,21 +1,21 @@
-use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use base::resource::{DataRequirement, Read, Write};
+use base::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::DebugDraw;
 
 pub struct DebugDrawComponents;
-pub type DebugDrawComponentsTask = minimum::ResourceTask<DebugDrawComponents>;
+pub type DebugDrawComponentsTask = base::ResourceTask<DebugDrawComponents>;
 impl ResourceTaskImpl for DebugDrawComponents {
     type RequiredResources = (
         Write<DebugDraw>,
-        Read<minimum::EntitySet>,
+        Read<base::EntitySet>,
         ReadComponent<crate::components::DebugDrawCircleComponent>,
         ReadComponent<crate::components::DebugDrawRectComponent>,
         ReadComponent<crate::components::TransformComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
+        config.this_runs_during_phase::<base::task::PhasePreRender>();
         config.run_only_if(crate::context_flags::AUTHORITY_CLIENT);
     }
 

@@ -1,8 +1,8 @@
 use crate::components;
 use crate::PlayMode;
-use minimum::Component;
-use minimum::EntitySet;
-use minimum::ResourceMap;
+use base::Component;
+use base::EntitySet;
+use base::ResourceMap;
 use std::collections::VecDeque;
 use std::path::PathBuf;
 
@@ -82,7 +82,7 @@ impl FrameworkActionQueue {
         self.queue.push_back(Box::new(move |resource_map| {
             info!("change_play_mode {:?}", new_play_mode);
             // Clear playmode flags
-            let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
+            let mut dispatch_control = resource_map.fetch_mut::<base::DispatchControl>();
             *dispatch_control.next_frame_context_flags_mut() &=
                 !(crate::context_flags::PLAYMODE_SYSTEM
                     | crate::context_flags::PLAYMODE_PAUSED
@@ -138,10 +138,10 @@ impl FrameworkActionQueue {
                 prototypes
             };
 
-            let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
+            let mut entity_set = resource_map.fetch_mut::<base::EntitySet>();
             entity_set.clear(resource_map);
 
-            let mut entity_factory = resource_map.fetch_mut::<minimum::EntityFactory>();
+            let mut entity_factory = resource_map.fetch_mut::<base::EntityFactory>();
             for prototype in prototypes {
                 entity_factory.enqueue_create(Box::new(prototype));
             }
@@ -162,7 +162,7 @@ impl FrameworkActionQueue {
     pub fn enqueue_terminate_process(&mut self) {
         self.queue.push_back(Box::new(move |resource_map| {
             info!("enqueue_terminate_process");
-            let mut dispatch_control = resource_map.fetch_mut::<minimum::DispatchControl>();
+            let mut dispatch_control = resource_map.fetch_mut::<base::DispatchControl>();
             dispatch_control.end_game_loop();
         }));
     }

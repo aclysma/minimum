@@ -9,10 +9,10 @@ default = ["editor", "dim2"]
 dx12 = ["rendy/dx12"]
 metal = ["rendy/metal"]
 vulkan = ["rendy/vulkan"]
-editor = ["minimum-framework/editor", "imgui-inspect-derive/generate_code", "minimum-framework/editor", "imgui", "imgui-sys", "imgui-winit-support", "imgui-inspect"]
+editor = ["minimum/editor", "imgui-inspect-derive/generate_code", "imgui", "imgui-sys", "imgui-winit-support", "imgui-inspect"]
 
-dim2 = ["nphysics2d", "ncollide2d", "minimum-framework/dim2"]
-dim3 = ["nphysics3d", "ncollide3d", "minimum-framework/dim3"]
+dim2 = ["nphysics2d", "ncollide2d", "minimum/dim2"]
+dim3 = ["nphysics3d", "ncollide3d", "minimum/dim3"]
 
 [dependencies]
 # math
@@ -61,8 +61,9 @@ serde_derive = "1.0"
 serde_json = "1.0"
 
 # minimum
-minimum = { path = "../minimum", features = ["std"] }
-minimum-framework = { path = "../minimum-framework" }
+#minimum-base = { path = "../minimum-base", features = ["std"] }
+#minimum-framework = { path = "../minimum-framework" }
+minimum = { path = "../minimum" }
 
 [dependencies.gfx-backend-vulkan]
 version = "0.2"

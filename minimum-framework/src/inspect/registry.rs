@@ -2,10 +2,10 @@ use super::InspectorTab;
 use crate::components::editor::EditorModifiedComponent;
 use crate::FrameworkComponentPrototypeDyn;
 use hashbrown::HashMap;
-use minimum::component::ComponentStorage;
-use minimum::Component;
-use minimum::EntityHandle;
-use minimum::ResourceMap;
+use base::component::ComponentStorage;
+use base::Component;
+use base::EntityHandle;
+use base::ResourceMap;
 use std::marker::PhantomData;
 
 use imgui_inspect::InspectArgsStruct;

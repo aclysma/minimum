@@ -1,16 +1,16 @@
-use minimum::task::WriteAllTaskImpl;
-use minimum::ResourceMap;
-use minimum::TaskConfig;
-use minimum::TaskContextFlags;
+use crate::base::task::WriteAllTaskImpl;
+use crate::base::ResourceMap;
+use crate::base::TaskConfig;
+use crate::base::TaskContextFlags;
 
-use framework::resources::editor::EditorActionQueue;
+use crate::framework::resources::editor::EditorActionQueue;
 
 pub struct EditorUpdateActionQueue;
-pub type EditorUpdateActionQueueTask = minimum::WriteAllTask<EditorUpdateActionQueue>;
+pub type EditorUpdateActionQueueTask = crate::base::WriteAllTask<EditorUpdateActionQueue>;
 impl WriteAllTaskImpl for EditorUpdateActionQueue {
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
-        config.this_provides_data_to::<framework::tasks::FrameworkUpdateActionQueueTask>();
+        config.this_runs_during_phase::<crate::base::task::PhaseEndFrame>();
+        config.this_provides_data_to::<crate::framework::tasks::FrameworkUpdateActionQueueTask>();
     }
 
     fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {

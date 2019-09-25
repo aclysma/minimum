@@ -1,16 +1,16 @@
-use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use crate::base::resource::{DataRequirement, Read, Write};
+use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use framework::resources::FrameworkOptions;
+use crate::framework::resources::FrameworkOptions;
 use crate::resources::ImguiManager;
 #[cfg(feature = "editor")]
-use framework::resources::editor::{EditorTool, EditorUiState};
-use framework::resources::{FrameworkActionQueue, TimeState};
+use crate::framework::resources::editor::{EditorTool, EditorUiState};
+use crate::framework::resources::{FrameworkActionQueue, TimeState};
 
 use imgui::im_str;
 
 pub struct RenderImguiMainMenu;
-pub type RenderImguiMainMenuTask = minimum::ResourceTask<RenderImguiMainMenu>;
+pub type RenderImguiMainMenuTask = crate::base::ResourceTask<RenderImguiMainMenu>;
 
 impl RenderImguiMainMenu {
     fn tool_button(
@@ -45,8 +45,8 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
-        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
+        config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
+        config.run_only_if(crate::framework::context_flags::AUTHORITY_CLIENT);
     }
 
     fn run(
@@ -61,7 +61,7 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
             mut debug_options,
         ) = data;
 
-        let is_edit_mode = time_state.play_mode == framework::PlayMode::System;
+        let is_edit_mode = time_state.play_mode == crate::framework::PlayMode::System;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             {
@@ -147,20 +147,20 @@ impl ResourceTaskImpl for RenderImguiMainMenu {
                 if is_edit_mode {
                     if imgui::MenuItem::new(im_str!("\u{e8c4} Reset")).build(ui) {
                         game_control.enqueue_reset_level();
-                        game_control.enqueue_change_play_mode(framework::PlayMode::System);
+                        game_control.enqueue_change_play_mode(crate::framework::PlayMode::System);
                     }
 
                     if imgui::MenuItem::new(im_str!("\u{f40a} Play")).build(ui) {
-                        game_control.enqueue_change_play_mode(framework::PlayMode::Playing);
+                        game_control.enqueue_change_play_mode(crate::framework::PlayMode::Playing);
                     }
                 } else {
                     if imgui::MenuItem::new(im_str!("\u{e8c4} Reset")).build(ui) {
                         game_control.enqueue_reset_level();
-                        game_control.enqueue_change_play_mode(framework::PlayMode::System);
+                        game_control.enqueue_change_play_mode(crate::framework::PlayMode::System);
                     }
 
                     if imgui::MenuItem::new(im_str!("\u{f3e4} Pause")).build(ui) {
-                        game_control.enqueue_change_play_mode(framework::PlayMode::System);
+                        game_control.enqueue_change_play_mode(crate::framework::PlayMode::System);
                     }
                 }
 

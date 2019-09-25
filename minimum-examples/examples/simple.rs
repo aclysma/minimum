@@ -1,14 +1,14 @@
-use minimum::component::{Component, ComponentStorage};
-use minimum::DataRequirement;
-use minimum::Read;
-use minimum::ResourceMap;
-use minimum::ResourceTask;
-use minimum::ResourceTaskImpl;
-use minimum::TaskConfig;
-use minimum::TaskContextFlags;
-use minimum::WorldBuilder;
-use minimum::Write;
-use minimum::{DispatchControl, EntitySet, WriteAllTask, WriteAllTaskImpl};
+use minimum::base::component::{Component, ComponentStorage};
+use minimum::base::DataRequirement;
+use minimum::base::Read;
+use minimum::base::ResourceMap;
+use minimum::base::ResourceTask;
+use minimum::base::ResourceTaskImpl;
+use minimum::base::TaskConfig;
+use minimum::base::TaskContextFlags;
+use minimum::base::WorldBuilder;
+use minimum::base::Write;
+use minimum::base::{DispatchControl, EntitySet, WriteAllTask, WriteAllTaskImpl};
 
 mod shared;
 
@@ -16,7 +16,8 @@ use shared::components::{PositionComponent, SpeedMultiplierComponent, VelocityCo
 
 use shared::resources::{TimeState, UpdateCount};
 
-use minimum::world::UpdateLoopSingleThreaded;
+use minimum::base::world::UpdateLoopSingleThreaded;
+use minimum::base::task;
 use shared::Vec2;
 
 pub struct UpdatePositions;
@@ -31,7 +32,7 @@ impl ResourceTaskImpl for UpdatePositions {
     );
 
     fn configure(task_config: &mut TaskConfig) {
-        task_config.this_runs_during_phase::<minimum::task::PhasePhysics>();
+        task_config.this_runs_during_phase::<task::PhasePhysics>();
     }
 
     fn run(
@@ -91,11 +92,11 @@ pub struct UpdateEntitySet;
 pub type UpdateEntitySetTask = WriteAllTask<UpdateEntitySet>;
 impl WriteAllTaskImpl for UpdateEntitySet {
     fn configure(task_config: &mut TaskConfig) {
-        task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
+        task_config.this_runs_during_phase::<task::PhaseEndFrame>();
     }
 
     fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
-        let mut entity_set = resource_map.fetch_mut::<minimum::EntitySet>();
+        let mut entity_set = resource_map.fetch_mut::<EntitySet>();
         entity_set.flush_free(&resource_map);
     }
 }
@@ -106,7 +107,7 @@ impl ResourceTaskImpl for IncrementUpdateCount {
     type RequiredResources = (Write<UpdateCount>, Write<DispatchControl>);
 
     fn configure(task_config: &mut TaskConfig) {
-        task_config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
+        task_config.this_runs_during_phase::<task::PhaseEndFrame>();
     }
 
     fn run(
@@ -125,7 +126,7 @@ impl ResourceTaskImpl for IncrementUpdateCount {
 
 //TODO: Rewrite to use an entity prototype
 fn create_objects(resource_map: &ResourceMap) {
-    let mut game_entities = resource_map.fetch_mut::<minimum::EntitySet>();
+    let mut game_entities = resource_map.fetch_mut::<EntitySet>();
     let mut pos_components = resource_map.fetch_mut::<<PositionComponent as Component>::Storage>();
     let mut vel_components = resource_map.fetch_mut::<<VelocityComponent as Component>::Storage>();
     let mut speed_multiplier_components =
@@ -169,6 +170,7 @@ fn main() {
         .with_task::<UpdatePositionsTask>()
         .with_task::<UpdateEntitySetTask>()
         .with_task::<IncrementUpdateCountTask>()
+        .with_default_phases()
         .build();
 
     // Create a bunch of objects

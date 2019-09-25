@@ -14,6 +14,8 @@ extern crate ncollide2d as ncollide;
 #[cfg(feature = "dim3")]
 extern crate ncollide3d as ncollide;
 
+extern crate minimum_base as base;
+
 mod clone_component;
 pub use clone_component::CloneComponentFactory;
 pub use clone_component::CloneComponentPrototype;

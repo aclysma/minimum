@@ -1,26 +1,26 @@
-use minimum::component::{ComponentCreateQueueFlushListener, SlabComponentStorage};
-use minimum::ComponentFactory;
-use minimum::ComponentPrototype;
-use minimum::EntityHandle;
-use minimum::EntitySet;
-use minimum::ResourceMap;
-use minimum::{Component, ComponentStorage};
-use framework::components::transform;
+use crate::base::component::{ComponentCreateQueueFlushListener, SlabComponentStorage};
+use crate::base::ComponentFactory;
+use crate::base::ComponentPrototype;
+use crate::base::EntityHandle;
+use crate::base::EntitySet;
+use crate::base::ResourceMap;
+use crate::base::{Component, ComponentStorage};
+use crate::framework::components::transform;
 
 use nphysics::object::BodyHandle;
 use nphysics::object::ColliderDesc;
 use nphysics::object::RigidBodyDesc;
 
-use framework::components::TransformComponent;
-use framework::FrameworkComponentPrototypeDyn;
-use framework::FrameworkComponentPrototype;
+use crate::framework::components::TransformComponent;
+use crate::framework::FrameworkComponentPrototypeDyn;
+use crate::framework::FrameworkComponentPrototype;
 use std::collections::VecDeque;
-use framework::FrameworkEntityPrototypeInner;
+use crate::framework::FrameworkEntityPrototypeInner;
 
 #[cfg(feature = "editor")]
-use framework::select::SelectableComponentPrototype;
+use crate::framework::select::SelectableComponentPrototype;
 
-use framework::components::TransformComponentPrototype;
+use crate::framework::components::TransformComponentPrototype;
 
 #[derive(Debug, Inspect)]
 pub struct PhysicsBodyComponent {
@@ -48,7 +48,7 @@ impl PhysicsBodyComponent {
     }
 }
 
-impl minimum::Component for PhysicsBodyComponent {
+impl crate::base::Component for PhysicsBodyComponent {
     type Storage = SlabComponentStorage<Self>;
 }
 
@@ -57,12 +57,12 @@ impl minimum::Component for PhysicsBodyComponent {
 //
 pub struct PhysicsBodyComponentFreeHandler {}
 
-impl minimum::component::ComponentFreeHandler<PhysicsBodyComponent>
+impl crate::base::component::ComponentFreeHandler<PhysicsBodyComponent>
     for PhysicsBodyComponentFreeHandler
 {
     fn on_entities_free(
-        resource_map: &minimum::ResourceMap,
-        entity_handles: &[minimum::EntityHandle],
+        resource_map: &crate::base::ResourceMap,
+        entity_handles: &[crate::base::EntityHandle],
         storage: &mut <PhysicsBodyComponent as Component>::Storage,
     ) {
         let mut physics_manager = resource_map.fetch_mut::<crate::resources::PhysicsManager>();
@@ -150,8 +150,8 @@ impl FrameworkComponentPrototypeDyn for PhysicsBodyComponentPrototypeCustom {
     }
 }
 
-type RectSize = transform::Scale;
-type ImRectSize = transform::ImScale;
+type RectSize = crate::framework::components::transform::Scale;
+type ImRectSize = crate::framework::components::transform::ImScale;
 
 //
 // Box Prototype

@@ -1,4 +1,4 @@
-use minimum::component::SlabComponentStorage;
+use base::component::SlabComponentStorage;
 
 use crate::resources::TimeState;
 
@@ -17,6 +17,6 @@ impl FreeAtTimeComponent {
     }
 }
 
-impl minimum::Component for FreeAtTimeComponent {
+impl base::Component for FreeAtTimeComponent {
     type Storage = SlabComponentStorage<Self>;
 }

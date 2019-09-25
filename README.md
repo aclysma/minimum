@@ -41,7 +41,7 @@ Youtube Video:
 
 ## Directory map
 
- * [/minimum](minimum) - A lightweight ECS and update loop system
+ * [/minimum](minimum-base) - A lightweight ECS and update loop system
  * [/minimum-framework](minimum-framework) - More opinionated framework built on top of the ECS to provide a good
    tooling and workflow baseline
  * [/minimum-demo](minimum-demo) - An example project that demonstrates integrating minimum with several popular

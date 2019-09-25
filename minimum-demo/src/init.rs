@@ -96,7 +96,7 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
 }
 
 #[cfg(feature = "editor")]
-pub fn init_imgui_manager(resource_map: &minimum::resource::ResourceMap) -> ImguiManager {
+pub fn init_imgui_manager(resource_map: &crate::base::resource::ResourceMap) -> ImguiManager {
     let window = resource_map.fetch::<winit::window::Window>();
     let mut imgui_context = init_imgui(&window);
     let mut imgui_platform = imgui_winit_support::WinitPlatform::init(&mut imgui_context);
@@ -110,7 +110,7 @@ pub fn init_imgui_manager(resource_map: &minimum::resource::ResourceMap) -> Imgu
 }
 
 pub fn create_window_interface(
-    resource_map: &mut minimum::resource::ResourceMap,
+    resource_map: &mut crate::base::resource::ResourceMap,
     event_loop: &winit::event_loop::EventLoop<WindowUserEvent>,
 ) -> std::sync::mpsc::Sender<winit::event::Event<WindowUserEvent>> {
     let (winit_event_tx, winit_event_rx) =
@@ -127,7 +127,7 @@ pub fn create_window_interface(
     winit_event_tx
 }
 
-pub fn create_renderer(resource_map: &minimum::resource::ResourceMap) -> crate::renderer::Renderer {
+pub fn create_renderer(resource_map: &crate::base::resource::ResourceMap) -> crate::renderer::Renderer {
     let window = resource_map.fetch::<winit::window::Window>();
     let window = &*window;
 

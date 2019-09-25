@@ -1,6 +1,6 @@
 #[cfg(feature = "editor")]
 use imgui_inspect_derive::Inspect;
-use minimum::component::SlabComponentStorage;
+use crate::base::component::SlabComponentStorage;
 
 // This component contains no data, however an empty component can still be useful to "tag" entities
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Inspect)]
@@ -12,6 +12,6 @@ impl BulletComponent {
     }
 }
 
-impl minimum::Component for BulletComponent {
+impl crate::base::Component for BulletComponent {
     type Storage = SlabComponentStorage<Self>;
 }

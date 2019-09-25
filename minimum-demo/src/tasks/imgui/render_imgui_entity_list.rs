@@ -1,19 +1,19 @@
-use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{
+use crate::base::resource::{DataRequirement, Read, Write};
+use crate::base::{
     ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent,
 };
 use rendy::wsi::winit;
 
 use crate::resources::{ImguiManager, InputManager};
 #[cfg(feature = "editor")]
-use framework::resources::editor::{EditorActionQueue, EditorUiState};
-use framework::resources::TimeState;
+use crate::framework::resources::editor::{EditorActionQueue, EditorUiState};
+use crate::framework::resources::TimeState;
 
 #[cfg(feature = "editor")]
-use framework::components::editor::EditorSelectedComponent;
+use crate::framework::components::editor::EditorSelectedComponent;
 
 pub struct RenderImguiEntityList;
-pub type RenderImguiEntityListTask = minimum::ResourceTask<RenderImguiEntityList>;
+pub type RenderImguiEntityListTask = crate::base::ResourceTask<RenderImguiEntityList>;
 impl ResourceTaskImpl for RenderImguiEntityList {
     type RequiredResources = (
         Read<TimeState>,
@@ -26,8 +26,8 @@ impl ResourceTaskImpl for RenderImguiEntityList {
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePreRender>();
-        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
+        config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
+        config.run_only_if(crate::framework::context_flags::AUTHORITY_CLIENT);
     }
 
     fn run(

@@ -1,15 +1,15 @@
 use crate::resources;
-use minimum::task::WriteAllTaskImpl;
+use base::task::WriteAllTaskImpl;
 
-use minimum::task::TaskConfig;
-use minimum::ResourceMap;
-use minimum::TaskContextFlags;
+use base::task::TaskConfig;
+use base::ResourceMap;
+use base::TaskContextFlags;
 
 pub struct FrameworkUpdateActionQueue;
-pub type FrameworkUpdateActionQueueTask = minimum::WriteAllTask<FrameworkUpdateActionQueue>;
+pub type FrameworkUpdateActionQueueTask = base::WriteAllTask<FrameworkUpdateActionQueue>;
 impl WriteAllTaskImpl for FrameworkUpdateActionQueue {
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhaseEndFrame>();
+        config.this_runs_during_phase::<base::task::PhaseEndFrame>();
     }
 
     fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {

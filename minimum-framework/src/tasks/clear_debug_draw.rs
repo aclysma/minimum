@@ -1,5 +1,5 @@
-use minimum::resource::{DataRequirement, Write};
-use minimum::{ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use base::resource::{DataRequirement, Write};
+use base::{ResourceTask, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::DebugDraw;
 
@@ -9,7 +9,7 @@ impl ResourceTaskImpl for ClearDebugDraw {
     type RequiredResources = (Write<DebugDraw>);
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhaseFrameBegin>();
+        config.this_runs_during_phase::<base::task::PhaseFrameBegin>();
         config.run_only_if(crate::context_flags::AUTHORITY_CLIENT);
     }
 

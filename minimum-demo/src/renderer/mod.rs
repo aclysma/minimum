@@ -19,7 +19,7 @@ use rendy::{
     graph::GraphBuilder,
 };
 
-use minimum::resource::ResourceMap;
+use crate::base::resource::ResourceMap;
 
 use passes::DebugDrawRenderPipeline;
 
@@ -67,7 +67,7 @@ impl Renderer {
     pub fn init_render_graph(
         &mut self,
         window: &winit::window::Window,
-        resource_map: &minimum::resource::ResourceMap,
+        resource_map: &crate::base::resource::ResourceMap,
     ) {
         let surface = self.factory.create_surface(window);
 
@@ -152,7 +152,7 @@ impl Renderer {
     pub fn render(
         &mut self,
         window: &winit::window::Window,
-        resource_map: &minimum::resource::ResourceMap,
+        resource_map: &crate::base::resource::ResourceMap,
     ) {
         self.factory.maintain(&mut self.families);
 
@@ -187,7 +187,7 @@ impl Renderer {
         }
     }
 
-    pub fn dispose(mut self, resource_map: &minimum::resource::ResourceMap) {
+    pub fn dispose(mut self, resource_map: &crate::base::resource::ResourceMap) {
         match self.graph {
             Some(x) => x.dispose(&mut self.factory, resource_map),
             _ => {}

@@ -1,11 +1,11 @@
-use minimum::component::VecComponentStorage;
-use minimum::component::{ComponentCreateQueueFlushListener, ComponentStorage};
-use minimum::Component;
-use minimum::ComponentFactory;
-use minimum::ComponentPrototype;
-use minimum::EntityHandle;
-use minimum::EntitySet;
-use minimum::ResourceMap;
+use base::component::VecComponentStorage;
+use base::component::{ComponentCreateQueueFlushListener, ComponentStorage};
+use base::Component;
+use base::ComponentFactory;
+use base::ComponentPrototype;
+use base::EntityHandle;
+use base::EntitySet;
+use base::ResourceMap;
 
 use ncollide::world::CollisionObjectHandle;
 
@@ -37,7 +37,7 @@ impl EditorShapeComponent {
     }
 }
 
-impl minimum::Component for EditorShapeComponent {
+impl base::Component for EditorShapeComponent {
     type Storage = VecComponentStorage<Self>;
 }
 
@@ -46,12 +46,12 @@ impl minimum::Component for EditorShapeComponent {
 //
 pub struct EditorShapeComponentFreeHandler {}
 
-impl minimum::component::ComponentFreeHandler<EditorShapeComponent>
+impl base::component::ComponentFreeHandler<EditorShapeComponent>
     for EditorShapeComponentFreeHandler
 {
     fn on_entities_free(
-        resource_map: &minimum::ResourceMap,
-        entity_handles: &[minimum::EntityHandle],
+        resource_map: &base::ResourceMap,
+        entity_handles: &[base::EntityHandle],
         storage: &mut <EditorShapeComponent as Component>::Storage,
     ) {
         let mut editor_collision_world =

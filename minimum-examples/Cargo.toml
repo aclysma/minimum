@@ -8,4 +8,4 @@ publish = false
 [features]
 
 [dev-dependencies]
-minimum = { path = "../minimum", features = ["std"] }
+minimum = { path = "../minimum" }

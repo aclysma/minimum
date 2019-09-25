@@ -1,16 +1,16 @@
 use rendy::wsi::winit;
 
-use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use crate::base::resource::{DataRequirement, Read, Write};
+use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use framework::resources::FrameworkActionQueue;
+use crate::framework::resources::FrameworkActionQueue;
 
 #[cfg(feature = "editor")]
 use crate::resources::ImguiManager;
 use crate::resources::{InputManager, WindowInterface};
 
 pub struct GatherInput;
-pub type GatherInputTask = minimum::ResourceTask<GatherInput>;
+pub type GatherInputTask = crate::base::ResourceTask<GatherInput>;
 impl ResourceTaskImpl for GatherInput {
     #[cfg(feature = "editor")]
     type RequiredResources = (
@@ -29,9 +29,9 @@ impl ResourceTaskImpl for GatherInput {
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhaseGatherInput>();
-        config.run_only_if(framework::context_flags::AUTHORITY_CLIENT);
-        config.run_only_if(framework::context_flags::PLAYMODE_SYSTEM);
+        config.this_runs_during_phase::<crate::base::task::PhaseGatherInput>();
+        config.run_only_if(crate::framework::context_flags::AUTHORITY_CLIENT);
+        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(

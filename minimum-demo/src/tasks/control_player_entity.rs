@@ -1,34 +1,34 @@
 use rendy::wsi::winit;
 
-use minimum::resource::{DataRequirement, Read, Write};
-use minimum::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
+use crate::base::resource::{DataRequirement, Read, Write};
+use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::{InputManager, MouseButtons, PhysicsManager, RenderState};
-use framework::resources::TimeState;
+use crate::framework::resources::TimeState;
 
 use crate::components;
-use minimum::component::ReadComponent;
-use minimum::ComponentStorage;
-use minimum::EntityFactory;
+use crate::base::component::ReadComponent;
+use crate::base::ComponentStorage;
+use crate::base::EntityFactory;
 
 pub struct ControlPlayerEntity;
-pub type ControlPlayerEntityTask = minimum::ResourceTask<ControlPlayerEntity>;
+pub type ControlPlayerEntityTask = crate::base::ResourceTask<ControlPlayerEntity>;
 impl ResourceTaskImpl for ControlPlayerEntity {
     type RequiredResources = (
-        Read<minimum::EntitySet>,
+        Read<crate::base::EntitySet>,
         Read<InputManager>,
         Read<TimeState>,
         Read<RenderState>,
         ReadComponent<components::PlayerComponent>,
-        ReadComponent<framework::components::TransformComponent>,
+        ReadComponent<crate::framework::components::TransformComponent>,
         Write<EntityFactory>,
         ReadComponent<components::PhysicsBodyComponent>,
         Write<PhysicsManager>,
     );
 
     fn configure(config: &mut TaskConfig) {
-        config.this_runs_during_phase::<minimum::task::PhasePrePhysicsGameplay>();
-        config.run_only_if(framework::context_flags::PLAYMODE_PLAYING);
+        config.this_runs_during_phase::<crate::base::task::PhasePrePhysicsGameplay>();
+        config.run_only_if(crate::framework::context_flags::PLAYMODE_PLAYING);
     }
 
     fn run(

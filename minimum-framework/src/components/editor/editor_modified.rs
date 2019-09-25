@@ -1,5 +1,5 @@
-use minimum::component::SlabComponentStorage;
-use minimum::Component;
+use base::component::SlabComponentStorage;
+use base::Component;
 
 #[derive(Clone)]
 pub struct EditorModifiedComponent {}
