@@ -17,7 +17,7 @@ matrix:
       env: PACKAGE="minimum-demo" FEATURES="vulkan dim2"
     - name: "Windows Game dim2"
       rust: beta
-      os: linux
+      os: windows
       env: PACKAGE="minimum-demo" FEATURES="dx12 dim2"
     - name: "OSX Editor dim2"
       rust: beta
@@ -41,7 +41,7 @@ matrix:
       env: PACKAGE="minimum-demo" FEATURES="vulkan dim3"
     - name: "Windows Game dim3"
       rust: beta
-      os: linux
+      os: windows
       env: PACKAGE="minimum-demo" FEATURES="dx12 dim3"
     - name: "OSX Editor dim3"
       rust: beta
@@ -65,7 +65,7 @@ matrix:
       env: PACKAGE="minimum" FEATURES="std"
     - name: "Windows Base"
       rust: beta
-      os: window
+      os: windows
       env: PACKAGE="minimum" FEATURES="std"
     - name: "OSX Base no_std"
       rust: beta
@@ -77,6 +77,6 @@ matrix:
       env: PACKAGE="minimum" FEATURES=""
     - name: "Windows Base no_std"
       rust: beta
-      os: window
+      os: windows
       env: PACKAGE="minimum" FEATURES=""
   fast_finish: true
