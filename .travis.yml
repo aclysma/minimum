@@ -7,22 +7,26 @@ install:
 before_script: cd $PACKAGE
 matrix:
   include:
-    - name: "OSX Game Only"
+    - name: "OSX Game dim2"
       rust: nightly
       os: osx
-      env: PACKAGE="minimum-demo" FEATURES="metal"
-    - name: "OSX Editor"
+      env: PACKAGE="minimum-demo" FEATURES="metal dim2"
+    - name: "OSX Editor dim2"
       rust: nightly
       os: osx
-      env: PACKAGE="minimum-demo" FEATURES="metal editor"
-    - name: "Linux Editor"
+      env: PACKAGE="minimum-demo" FEATURES="metal editor dim2"
+    - name: "Linux Editor dim2"
       rust: nightly
       os: linux
-      env: PACKAGE="minimum-demo" FEATURES="vulkan editor"
-    - name: "Windows Editor"
+      env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim2"
+    - name: "Linux Editor dim3"
+      rust: nightly
+      os: linux
+      env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim3"
+    - name: "Windows Editor dim2"
       rust: nightly
       os: windows
-      env: PACKAGE="minimum-demo" FEATURES="dx12 editor"
+      env: PACKAGE="minimum-demo" FEATURES="dx12 editor dim2"
     - name: "OSX Base"
       rust: nightly
       os: osx
