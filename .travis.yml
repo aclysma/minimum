@@ -8,47 +8,47 @@ before_script: cd $PACKAGE
 matrix:
   include:
     - name: "OSX Game dim2"
-      rust: nightly
+      rust: beta
       os: osx
       env: PACKAGE="minimum-demo" FEATURES="metal dim2"
     - name: "OSX Editor dim2"
-      rust: nightly
+      rust: beta
       os: osx
       env: PACKAGE="minimum-demo" FEATURES="metal editor dim2"
     - name: "Linux Editor dim2"
-      rust: nightly
+      rust: beta
       os: linux
       env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim2"
     - name: "Linux Editor dim3"
-      rust: nightly
+      rust: beta
       os: linux
       env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim3"
     - name: "Windows Editor dim2"
-      rust: nightly
+      rust: beta
       os: windows
       env: PACKAGE="minimum-demo" FEATURES="dx12 editor dim2"
     - name: "OSX Base"
-      rust: nightly
+      rust: beta
       os: osx
       env: PACKAGE="minimum" FEATURES="std"
     - name: "Linux Base"
-      rust: nightly
+      rust: beta
       os: linux
       env: PACKAGE="minimum" FEATURES="std"
     - name: "Windows Base"
-      rust: nightly
+      rust: beta
       os: window
       env: PACKAGE="minimum" FEATURES="std"
     - name: "OSX Base no_std"
-      rust: nightly
+      rust: beta
       os: osx
       env: PACKAGE="minimum" FEATURES=""
     - name: "Linux Base no_std"
-      rust: nightly
+      rust: beta
       os: linux
       env: PACKAGE="minimum" FEATURES=""
     - name: "Windows Base no_std"
-      rust: nightly
+      rust: beta
       os: window
       env: PACKAGE="minimum" FEATURES=""
   fast_finish: true
