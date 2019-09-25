@@ -6,13 +6,16 @@ extension points for integrating custom and 3rd-party libraries with your game l
 This library is best suited for use by those who want to start with something thin and bring their own tech to put on
 top of it. It's your very own build-a-game-engine toolkit.
 
+Currently requires Rust Beta channel. Stable will be supported in 1.38, schedule for release on 2019-09-26.
+
 [![Build Status](https://travis-ci.org/aclysma/minimum.svg?branch=master)](https://travis-ci.org/aclysma/minimum)
 
 ## Platform Support
  * The base/ECS is very portable. It's pure rust and has few upstream dependencies. `no_std` (for this 
    portion of the library only) builds but is not yet tested. To use `no_std`, disable default features and 
    don't use feature `std` 
- * The demo builds for Windows/MacOS/Linux.
+ * The demo builds for Windows/MacOS/Linux. Only being tested on MacOS for now. Outside testing and pull requests to
+   improve support for other platforms very welcome!
 
 The no-editor build of this library could realistically support embedded (`no_std`), mobile, PC, and web platforms 
 because this avoids coupling to a renderer/windowing system. For the time being, the focus is on PC.
@@ -23,11 +26,12 @@ Editing functionality is currently limited, but the core loop is implemented:
  * Entities with components can be loaded from file and saved to file
  * Entities can be selected and their components can be edited (at design-time and run-time)
  * Entities and components can be added or removed
+ * Entities can be moved, scaled, and rotated
  * Can start/stop/reset the simulation
  
 Youtube Video:
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/lCB2XpXdlFw/0.jpg)](http://www.youtube.com/watch?v=lCB2XpXdlFw "Video of Editor in Use")
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/BON_RvVFiWY/0.jpg)](https://www.youtube.com/watch?v=BON_RvVFiWY "Video of Editor in Use")
 
 ## Alternatives
  * For a mature ecs, I suggest looking at `shred` or `specs`. (In fact some of this library is quite similar to shred!)
@@ -61,10 +65,9 @@ To run the demo:
 ## Roadmap
 
 In no particular order:
- * Finish the tasking/dispatching rewrite
- * Core editing functionality: moving, scaling, rotating, copy/paste, undo/redo, parenting, etc.
+ * Another pass on the tasking/dispatching logic
+ * Core editing functionality: copy/paste, undo/redo, parenting, etc.
  * Extract editing functionality out of the demo to a new sub-crate
- * Better portability, and ensure that anything optional is fully compiled out for non-tools builds
  * Continue building the demo to do more interesting physics, rendering, and gameplay logic
  * API-level and conceptual-level documentation
 
