@@ -13,11 +13,11 @@ pub type Scale = glm::Vec2;
 #[cfg(feature = "dim2")]
 pub type Rotation = f32;
 
-#[cfg(feature = "dim2")]
+#[cfg(all(feature = "dim2", feature = "editor"))]
 pub type ImPosition = ImGlmVec2;
-#[cfg(feature = "dim2")]
+#[cfg(all(feature = "dim2", feature = "editor"))]
 pub type ImScale = ImGlmVec2;
-#[cfg(feature = "dim2")]
+#[cfg(all(feature = "dim2", feature = "editor"))]
 pub type ImRotation = f32;
 
 
@@ -28,11 +28,11 @@ pub type Scale = glm::Vec3;
 #[cfg(feature = "dim3")]
 pub type Rotation = glm::Quat;
 
-#[cfg(feature = "dim3")]
+#[cfg(all(feature = "dim3", feature = "editor"))]
 pub type ImPosition = ImGlmVec3;
-#[cfg(feature = "dim3")]
+#[cfg(all(feature = "dim3", feature = "editor"))]
 pub type ImScale = ImGlmVec3;
-#[cfg(feature = "dim3")]
+#[cfg(all(feature = "dim3", feature = "editor"))]
 pub type ImRotation = ImGlmQuat;
 
 pub fn default_position() -> Position {
