@@ -82,7 +82,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
     let mut world_builder = crate::base::WorldBuilder::new()
         .with_resource(crate::framework::resources::FrameworkActionQueue::new())
         .with_resource(crate::framework::resources::DebugDraw::new())
-        .with_resource(crate::framework::resources::InputManager::new())
+        .with_resource(crate::framework::resources::InputState::new())
         .with_resource(crate::framework::resources::TimeState::new())
         .with_resource(resources::PhysicsManager::new())
         .with_resource(window)

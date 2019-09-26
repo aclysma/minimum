@@ -1,5 +1,5 @@
 use crate::resources::DebugDraw;
-use crate::resources::InputManager;
+use crate::resources::InputState;
 use crate::resources::CameraState;
 use crate::resources::MouseButton;
 
@@ -127,10 +127,10 @@ const MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ : f32 = 30.0 * 30.0;
 //TODO: How does this interact with the select/inspect registry?
 pub struct EditorDraw {
     shapes: Vec<ShapeWithId>,
-    shape_just_clicked: [Option<EditorShapeClickedState>; InputManager::MOUSE_BUTTON_COUNT],
-    shape_drag_in_progress: [Option<EditorShapeDragState>; InputManager::MOUSE_BUTTON_COUNT],
-    shape_drag_just_finished: [Option<EditorShapeDragState>; InputManager::MOUSE_BUTTON_COUNT],
-    mouse_is_down_on_shape: [Option<EditorShapeClickedState>; InputManager::MOUSE_BUTTON_COUNT],
+    shape_just_clicked: [Option<EditorShapeClickedState>; InputState::MOUSE_BUTTON_COUNT],
+    shape_drag_in_progress: [Option<EditorShapeDragState>; InputState::MOUSE_BUTTON_COUNT],
+    shape_drag_just_finished: [Option<EditorShapeDragState>; InputState::MOUSE_BUTTON_COUNT],
+    mouse_is_down_on_shape: [Option<EditorShapeClickedState>; InputState::MOUSE_BUTTON_COUNT],
     shape_last_interacted: String,
     closest_shape_to_mouse: ClosestShapeIdDistance,
 }
@@ -217,7 +217,7 @@ impl EditorDraw {
 
     pub fn update(
         &mut self,
-        input_manager: &InputManager,
+        input_state: &InputState,
         camera_state: &CameraState
     ) {
         // See if the user interacted with anything. If they did, then cache it. User code would need to
@@ -225,7 +225,7 @@ impl EditorDraw {
         // We likely need a measure of depth if we draw in the 3D world in a way that can be occluded.
 
         // Get mouse UI-space position
-        let mouse_position = input_manager.mouse_position();
+        let mouse_position = input_state.mouse_position();
         let closest_shape = self.get_closest_shape(mouse_position, camera_state);
 
         if let Some(closest_shape) = closest_shape {
@@ -239,13 +239,13 @@ impl EditorDraw {
         self.shape_last_interacted.clear();
 
         // Check for clicking/dragging for each mouse button
-        for mouse_button_index in 0..InputManager::MOUSE_BUTTON_COUNT {
+        for mouse_button_index in 0..InputState::MOUSE_BUTTON_COUNT {
             use num_traits::FromPrimitive;
             let mouse_button : MouseButton = MouseButton::from_usize(mouse_button_index).unwrap();
 
             // See if mouse button went down and is over a shape. Check this first because we may need to know this in the next block
             // that handles click/drag detection.
-            if let Some(down_position) = input_manager.mouse_button_went_down_position(mouse_button) {
+            if let Some(down_position) = input_state.mouse_button_went_down_position(mouse_button) {
                 if let Some(closest_shape) = self.get_closest_shape(down_position, camera_state) {
                     if closest_shape.distance_sq < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ {
                         self.mouse_is_down_on_shape[mouse_button_index] = Some(EditorShapeClickedState {
@@ -263,18 +263,18 @@ impl EditorDraw {
             if let Some(current_drag_in_progress) = &self.shape_drag_in_progress[mouse_button_index] {
                 // Check several cases (drag in progress, drag finished, unexpectedly not dragging) and set
                 // shape_drag_in_progress, shape_drag_just_finished. May also set shape_last_interacted.
-                if let Some(input_manager_drag_in_progress) = &input_manager.mouse_drag_in_progress(mouse_button) {
+                if let Some(input_state_drag_in_progress) = &input_state.mouse_drag_in_progress(mouse_button) {
                     // update shape drag state
                     self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
 
-                    let world_space_end_position = camera_state.ui_space_to_world_space(input_manager_drag_in_progress.end_position);
+                    let world_space_end_position = camera_state.ui_space_to_world_space(input_state_drag_in_progress.end_position);
                     let delta = world_space_end_position - (current_drag_in_progress.world_space_begin_position + current_drag_in_progress.world_space_accumulated_frame_delta);
 
                     self.shape_drag_in_progress[mouse_button_index] = Some(EditorShapeDragState {
-                        begin_position: input_manager_drag_in_progress.begin_position,
-                        end_position: input_manager_drag_in_progress.end_position,
-                        previous_frame_delta: input_manager_drag_in_progress.previous_frame_delta,
-                        accumulated_frame_delta: input_manager_drag_in_progress.accumulated_frame_delta,
+                        begin_position: input_state_drag_in_progress.begin_position,
+                        end_position: input_state_drag_in_progress.end_position,
+                        previous_frame_delta: input_state_drag_in_progress.previous_frame_delta,
+                        accumulated_frame_delta: input_state_drag_in_progress.accumulated_frame_delta,
                         world_space_begin_position: current_drag_in_progress.world_space_begin_position,
                         world_space_end_position,
                         world_space_previous_frame_delta: delta,
@@ -282,18 +282,18 @@ impl EditorDraw {
                         shape_id: current_drag_in_progress.shape_id.clone()
                     });
                     self.shape_drag_just_finished[mouse_button_index] = None;
-                } else if let Some(input_manager_drag_just_finished) = &input_manager.mouse_drag_just_finished(mouse_button) {
+                } else if let Some(input_state_drag_just_finished) = &input_state.mouse_drag_just_finished(mouse_button) {
                     // update mouse drag
 
-                    let world_space_end_position = camera_state.ui_space_to_world_space(input_manager_drag_just_finished.end_position);
+                    let world_space_end_position = camera_state.ui_space_to_world_space(input_state_drag_just_finished.end_position);
                     let delta = world_space_end_position - (current_drag_in_progress.world_space_begin_position + current_drag_in_progress.world_space_accumulated_frame_delta);
 
                     self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
                     self.shape_drag_just_finished[mouse_button_index] = Some(EditorShapeDragState {
-                        begin_position: input_manager_drag_just_finished.begin_position,
-                        end_position: input_manager_drag_just_finished.end_position,
-                        previous_frame_delta: input_manager_drag_just_finished.previous_frame_delta,
-                        accumulated_frame_delta: input_manager_drag_just_finished.accumulated_frame_delta,
+                        begin_position: input_state_drag_just_finished.begin_position,
+                        end_position: input_state_drag_just_finished.end_position,
+                        previous_frame_delta: input_state_drag_just_finished.previous_frame_delta,
+                        accumulated_frame_delta: input_state_drag_just_finished.accumulated_frame_delta,
                         world_space_begin_position: current_drag_in_progress.world_space_begin_position,
                         world_space_end_position,
                         world_space_previous_frame_delta: delta,
@@ -304,7 +304,7 @@ impl EditorDraw {
                 } else {
                     // This is unexpected but we should gracefully recover here. We expect that if shape
                     // dragging is in progress, that mouse dragging is in progress or just finished
-                    warn!("Unexpected input_manager when updating editor shapes");
+                    warn!("Unexpected input_state when updating editor shapes");
                     self.shape_drag_in_progress[mouse_button_index] = None;
                 }
             } else {
@@ -314,7 +314,7 @@ impl EditorDraw {
                 // Can't click or drag a shape unless it's nearby
                 if self.closest_shape_to_mouse.distance_sq < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ {
                     //need to use the click position isntead of mosue position
-                    if let Some(mouse_drag_in_progress) = input_manager.mouse_drag_in_progress(mouse_button) {
+                    if let Some(mouse_drag_in_progress) = input_state.mouse_drag_in_progress(mouse_button) {
                         // we started dragging a shape
                         if let Some(down_on_shape) = &self.mouse_is_down_on_shape[mouse_button_index] {
                             if let Some(closest_shape) = self.get_closest_shape(mouse_drag_in_progress.begin_position, camera_state) {
@@ -341,7 +341,7 @@ impl EditorDraw {
                                 }
                             }
                         }
-                    } else if let Some(just_clicked_position) = input_manager.mouse_button_just_clicked_position(mouse_button) {
+                    } else if let Some(just_clicked_position) = input_state.mouse_button_just_clicked_position(mouse_button) {
                         // check if we clicked a shape
                         if let Some(down_on_shape) = &self.mouse_is_down_on_shape[mouse_button_index] {
                             if let Some(closest_shape) = self.get_closest_shape(just_clicked_position, camera_state) {
@@ -362,7 +362,7 @@ impl EditorDraw {
             }
 
             // Handle mouse up = mouse is no longer down on a shape
-            if input_manager.mouse_button_went_up_position(mouse_button).is_some() {
+            if input_state.mouse_button_went_up_position(mouse_button).is_some() {
                 self.mouse_is_down_on_shape[mouse_button_index] = None;
             }
         }

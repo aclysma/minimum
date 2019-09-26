@@ -7,7 +7,7 @@ use crate::framework::resources::FrameworkActionQueue;
 
 #[cfg(feature = "editor")]
 use crate::resources::ImguiManager;
-use crate::framework::resources::InputManager;
+use crate::framework::resources::InputState;
 use crate::resources::WindowInterface;
 
 pub struct GatherInput;
@@ -18,14 +18,14 @@ impl ResourceTaskImpl for GatherInput {
         Read<winit::window::Window>,
         Read<WindowInterface>,
         Write<ImguiManager>,
-        Write<InputManager>,
+        Write<InputState>,
         Write<FrameworkActionQueue>,
     );
 
     #[cfg(not(feature = "editor"))]
     type RequiredResources = (
         Read<WindowInterface>,
-        Write<InputManager>,
+        Write<InputState>,
         Write<FrameworkActionQueue>,
     );
 
@@ -47,14 +47,14 @@ impl ResourceTaskImpl for GatherInput {
             window,
             window_interface,
             mut imgui_manager,
-            mut input_manager,
+            mut input_state,
             mut framework_action_queue,
         ) = data;
 
         #[cfg(not(feature = "editor"))]
-        let (window_interface, mut input_manager, mut framework_action_queue) = data;
+        let (window_interface, mut input_state, mut framework_action_queue) = data;
 
-        input_manager.pre_handle_events();
+        input_state.pre_handle_events();
         let mut is_close_requested = false;
 
         #[cfg(feature = "editor")]
@@ -113,7 +113,7 @@ impl ResourceTaskImpl for GatherInput {
                                         winit::event::ElementState::Released => crate::framework::resources::KeyboardButtonEvent::Released,
                                     };
 
-                                    input_manager.handle_keyboard_event(keyboard_button, keyboard_event);
+                                    input_state.handle_keyboard_event(keyboard_button, keyboard_event);
                                 }
                             }
                         }
@@ -150,7 +150,7 @@ impl ResourceTaskImpl for GatherInput {
 
                             if !imgui_want_capture_mouse {
                                 if let Some(mouse_button) = mouse_button {
-                                    input_manager.handle_mouse_button_event(mouse_button, mouse_event);
+                                    input_state.handle_mouse_button_event(mouse_button, mouse_event);
                                 }
                             }
                         }
@@ -166,7 +166,7 @@ impl ResourceTaskImpl for GatherInput {
                         } => {
                             trace!("mouse {:?} {:?} {:?}", device_id, position, modifiers);
 
-                            input_manager.handle_mouse_move_event(glm::vec2(position.x as f32, position.y as f32));
+                            input_state.handle_mouse_move_event(glm::vec2(position.x as f32, position.y as f32));
                         }
 
                         // Ignore any other events

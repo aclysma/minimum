@@ -3,7 +3,7 @@ use crate::base::ComponentStorage;
 use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, Component, EntitySet};
 
 use crate::framework::resources::DebugDraw;
-use crate::framework::resources::InputManager;
+use crate::framework::resources::InputState;
 use crate::framework::resources::MouseButton;
 use crate::framework::resources::FrameworkOptions;
 use crate::framework::resources::editor::EditorDraw;
@@ -23,7 +23,7 @@ pub type EditorHandleInputTask = crate::base::ResourceTask<EditorHandleInput>;
 impl ResourceTaskImpl for EditorHandleInput {
     type RequiredResources = (
         Read<crate::base::EntitySet>,
-        Read<InputManager>,
+        Read<InputState>,
         Read<CameraState>,
         Read<EditorCollisionWorld>,
         WriteComponent<EditorSelectedComponent>,
@@ -48,7 +48,7 @@ impl ResourceTaskImpl for EditorHandleInput {
     ) {
         let (
             entity_set,
-            input_manager,
+            input_state,
             camera_state,
             editor_collision_world,
             mut editor_selected_components,
@@ -61,15 +61,15 @@ impl ResourceTaskImpl for EditorHandleInput {
             framework_options
         ) = data;
 
-        if input_manager.is_key_just_down(framework_options.keybinds.translate_tool) {
+        if input_state.is_key_just_down(framework_options.keybinds.translate_tool) {
             editor_ui_state.active_editor_tool = EditorTool::Translate;
         }
 
-        if input_manager.is_key_just_down(framework_options.keybinds.scale_tool) {
+        if input_state.is_key_just_down(framework_options.keybinds.scale_tool) {
             editor_ui_state.active_editor_tool = EditorTool::Scale;
         }
 
-        if input_manager.is_key_just_down(framework_options.keybinds.rotate_tool) {
+        if input_state.is_key_just_down(framework_options.keybinds.rotate_tool) {
             editor_ui_state.active_editor_tool = EditorTool::Rotate;
         }
 
@@ -82,21 +82,21 @@ impl ResourceTaskImpl for EditorHandleInput {
         }
 
         // Escape cancels the selection
-        if input_manager.is_key_just_down(framework_options.keybinds.clear_selection) {
+        if input_state.is_key_just_down(framework_options.keybinds.clear_selection) {
             editor_selected_components.free_all();
         }
 
-        editor_draw.update(&*input_manager, &*camera_state);
+        editor_draw.update(&*input_state, &*camera_state);
 
 
         handle_translate_gizmo_input(&*entity_set,  &mut* editor_selected_components,  &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
         handle_scale_gizmo_input(&*entity_set, &mut* editor_selected_components, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
         handle_rotate_gizmo_input(&*entity_set,  &mut* editor_selected_components, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
 
-        handle_select_input( &*input_manager, &* camera_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* framework_options);
+        handle_select_input( &*input_state, &* camera_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* framework_options);
 
         match editor_ui_state.active_editor_tool {
-            //EditorTool::Select => handle_select_tool_input(&*entity_set, &*input_manager, &* camera_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state),
+            //EditorTool::Select => handle_select_tool_input(&*entity_set, &*input_state, &* camera_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state),
             EditorTool::Translate => draw_translate_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components),
             EditorTool::Scale => draw_scale_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components),
             EditorTool::Rotate => draw_rotate_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components)
@@ -584,7 +584,7 @@ fn draw_rotate_gizmo(
 }
 
 fn handle_select_input(
-    input_manager: &InputManager,
+    input_state: &InputState,
     camera_state: &CameraState,
     editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
@@ -599,7 +599,7 @@ fn handle_select_input(
 
     if editor_draw.is_interacting_with_anything() {
         // drop input, the clicking/dragging is happening on editor shapes
-    } else if let Some(drag_complete) = input_manager.mouse_drag_just_finished(MouseButton::Left) {
+    } else if let Some(drag_complete) = input_state.mouse_drag_just_finished(MouseButton::Left) {
         // Drag complete, check AABB
         let target_position0: glm::Vec2 = camera_state
             .ui_space_to_world_space(drag_complete.begin_position)
@@ -633,7 +633,7 @@ fn handle_select_input(
             .interferences_with_aabb(&aabb, &selection_collision_group);
 
         new_selection = Some(results.map(|x| x.data()).collect());
-    } else if let Some(clicked) = input_manager.mouse_button_just_clicked_position(MouseButton::Left) {
+    } else if let Some(clicked) = input_state.mouse_button_just_clicked_position(MouseButton::Left) {
         // Clicked, do a raycast
         let target_position = camera_state.ui_space_to_world_space(clicked);
         #[cfg(feature = "dim3")]
@@ -645,7 +645,7 @@ fn handle_select_input(
             .interferences_with_point(&target_position, &selection_collision_group);
 
         new_selection = Some(results.map(|x| x.data()).collect());
-    } else if let Some(drag_in_progress) = input_manager.mouse_drag_in_progress(MouseButton::Left) {
+    } else if let Some(drag_in_progress) = input_state.mouse_drag_in_progress(MouseButton::Left) {
         // Dragging, draw a rectangle
         debug_draw.add_rect(
             camera_state.ui_space_to_world_space(drag_in_progress.begin_position),
@@ -655,10 +655,10 @@ fn handle_select_input(
     }
 
     if let Some(entities) = new_selection {
-        let add_to_selection = input_manager.is_key_down(framework_options.keybinds.modify_selection_add1)
-            || input_manager.is_key_down(framework_options.keybinds.modify_selection_add2);
-        let subtract_from_selection = input_manager.is_key_down(framework_options.keybinds.modify_selection_subtract1)
-            || input_manager.is_key_down(framework_options.keybinds.modify_selection_subtract2);
+        let add_to_selection = input_state.is_key_down(framework_options.keybinds.modify_selection_add1)
+            || input_state.is_key_down(framework_options.keybinds.modify_selection_add2);
+        let subtract_from_selection = input_state.is_key_down(framework_options.keybinds.modify_selection_subtract1)
+            || input_state.is_key_down(framework_options.keybinds.modify_selection_subtract2);
 
         // default selecting behavior is to drop the old selection
         if !add_to_selection && !subtract_from_selection {

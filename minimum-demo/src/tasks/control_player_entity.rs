@@ -3,7 +3,7 @@ use rendy::wsi::winit;
 use crate::base::resource::{DataRequirement, Read, Write};
 use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use crate::framework::resources::InputManager;
+use crate::framework::resources::InputState;
 use crate::framework::resources::MouseButton;
 use crate::framework::resources::CameraState;
 use crate::resources::PhysicsManager;
@@ -19,7 +19,7 @@ pub type ControlPlayerEntityTask = crate::base::ResourceTask<ControlPlayerEntity
 impl ResourceTaskImpl for ControlPlayerEntity {
     type RequiredResources = (
         Read<crate::base::EntitySet>,
-        Read<InputManager>,
+        Read<InputState>,
         Read<TimeState>,
         Read<CameraState>,
         ReadComponent<components::PlayerComponent>,
@@ -41,7 +41,7 @@ impl ResourceTaskImpl for ControlPlayerEntity {
     ) {
         let (
             entity_set,
-            input_manager,
+            input_state,
             time_state,
             camera_state,
             player_components,
@@ -60,19 +60,19 @@ impl ResourceTaskImpl for ControlPlayerEntity {
             ) {
                 let mut direction: glm::Vec2 = glm::zero();
 
-                if input_manager.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::S as u32)) {
+                if input_state.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::S as u32)) {
                     direction.y -= 1.0;
                 }
 
-                if input_manager.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::W as u32)) {
+                if input_state.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::W as u32)) {
                     direction.y += 1.0;
                 }
 
-                if input_manager.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::A as u32)) {
+                if input_state.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::A as u32)) {
                     direction.x -= 1.0;
                 }
 
-                if input_manager.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::D as u32)) {
+                if input_state.is_key_down(crate::framework::resources::KeyboardButton::new(VirtualKeyCode::D as u32)) {
                     direction.x += 1.0;
                 }
 
@@ -85,9 +85,9 @@ impl ResourceTaskImpl for ControlPlayerEntity {
                 let direction = glm::vec2_to_vec3(&direction);
                 body.set_velocity(nphysics::math::Velocity::new(direction * 150.0, glm::zero()));
 
-                if input_manager.is_mouse_down(MouseButton::Left) {
+                if input_state.is_mouse_down(MouseButton::Left) {
                     let target_position =
-                        camera_state.ui_space_to_world_space(input_manager.mouse_position());
+                        camera_state.ui_space_to_world_space(input_state.mouse_position());
 
                     let mut velocity = target_position - pos.position().xy();
 

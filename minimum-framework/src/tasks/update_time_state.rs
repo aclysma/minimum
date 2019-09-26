@@ -1,7 +1,7 @@
 use crate::base::resource::{DataRequirement, Read, Write};
 use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use crate::resources::InputManager;
+use crate::resources::InputState;
 use crate::resources::FrameworkOptions;
 use crate::resources::{FrameworkActionQueue, TimeState};
 
@@ -10,7 +10,7 @@ pub type UpdateTimeStateTask = crate::base::ResourceTask<UpdateTimeState>;
 impl ResourceTaskImpl for UpdateTimeState {
     type RequiredResources = (
         Write<TimeState>,
-        Read<InputManager>,
+        Read<InputState>,
         Write<FrameworkActionQueue>,
         Read<FrameworkOptions>
     );
@@ -24,7 +24,7 @@ impl ResourceTaskImpl for UpdateTimeState {
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
         use crate::PlayMode;
-        let (mut time_state, input_manager, mut game_control, framework_options) = data;
+        let (mut time_state, input_state, mut game_control, framework_options) = data;
 
         let play_mode = if context_flags.flags() & crate::context_flags::PLAYMODE_PLAYING != 0 {
             PlayMode::Playing
@@ -36,7 +36,7 @@ impl ResourceTaskImpl for UpdateTimeState {
 
         time_state.update(play_mode);
 
-        if input_manager.is_key_just_down(framework_options.keybinds.edit_play_toggle) {
+        if input_state.is_key_just_down(framework_options.keybinds.edit_play_toggle) {
             let new_play_mode = match play_mode {
                 PlayMode::System => PlayMode::Playing,
                 PlayMode::Paused => PlayMode::Playing,

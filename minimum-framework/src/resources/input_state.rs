@@ -1,7 +1,4 @@
-//use rendy::wsi::winit;
-//use winit::event::KeyboardInput;
 
-//TODO: Rename to input_state
 #[derive(Copy, Clone)]
 pub struct KeyboardButton {
     index: u32
@@ -33,7 +30,7 @@ pub enum MouseButton {
     Middle = 2,
 }
 
-impl InputManager {
+impl InputState {
     pub const KEYBOARD_BUTTON_COUNT: usize = 255;
     pub const MOUSE_BUTTON_COUNT: usize = MOUSEBUTTON_COUNT;
     const MIN_DRAG_DISTANCE : f32 = 2.0;
@@ -47,7 +44,7 @@ pub struct MouseDragState {
     pub accumulated_frame_delta: glm::Vec2
 }
 
-pub struct InputManager {
+pub struct InputState {
     key_is_down: [bool; Self::KEYBOARD_BUTTON_COUNT],
     key_just_down: [bool; Self::KEYBOARD_BUTTON_COUNT],
     key_just_up: [bool; Self::KEYBOARD_BUTTON_COUNT],
@@ -66,9 +63,9 @@ pub struct InputManager {
     mouse_drag_just_finished: [Option<MouseDragState>; Self::MOUSE_BUTTON_COUNT],
 }
 
-impl InputManager {
-    pub fn new() -> InputManager {
-        return InputManager {
+impl InputState {
+    pub fn new() -> InputState {
+        return InputState {
             key_is_down: [false; Self::KEYBOARD_BUTTON_COUNT],
             key_just_down: [false; Self::KEYBOARD_BUTTON_COUNT],
             key_just_up: [false; Self::KEYBOARD_BUTTON_COUNT],
@@ -156,7 +153,7 @@ impl InputManager {
     }
 }
 
-impl InputManager {
+impl InputState {
     pub fn pre_handle_events(&mut self) {
         for value in self.key_just_down.iter_mut() {
             *value = false;

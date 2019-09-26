@@ -3,7 +3,7 @@ use crate::base::{
     ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent,
 };
 
-use crate::framework::resources::InputManager;
+use crate::framework::resources::InputState;
 use crate::resources::ImguiManager;
 #[cfg(feature = "editor")]
 use crate::framework::resources::editor::{EditorActionQueue, EditorUiState};
@@ -22,7 +22,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
         Read<EditorUiState>,
         Read<EntitySet>,
         WriteComponent<EditorSelectedComponent>,
-        Read<InputManager>,
+        Read<InputState>,
         Write<EditorActionQueue>,
         Read<FrameworkOptions>
     );
@@ -42,7 +42,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
             editor_ui_state,
             entity_set,
             mut editor_selected_components,
-            input_manager,
+            input_state,
             mut editor_action_queue,
             framework_options
         ) = data;
@@ -91,8 +91,8 @@ impl ResourceTaskImpl for RenderImguiEntityList {
 
                                 if clicked {
                                     let is_control_held =
-                                        input_manager.is_key_down(framework_options.keybinds.modify_imgui_entity_list_modify_selection_add1) ||
-                                        input_manager.is_key_down(framework_options.keybinds.modify_imgui_entity_list_modify_selection_add2);
+                                        input_state.is_key_down(framework_options.keybinds.modify_imgui_entity_list_modify_selection_add1) ||
+                                        input_state.is_key_down(framework_options.keybinds.modify_imgui_entity_list_modify_selection_add2);
                                     if is_control_held {
                                         if !editor_selected_components.exists(&entity.handle()) {
                                             editor_selected_components.allocate(
