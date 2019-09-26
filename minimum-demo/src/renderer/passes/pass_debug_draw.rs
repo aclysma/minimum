@@ -33,9 +33,9 @@ struct UniformArgs {
 }
 
 impl UniformArgs {
-    fn new(renderer_state: &resources::RenderState) -> UniformArgs {
+    fn new(camera_state: &crate::framework::resources::CameraState) -> UniformArgs {
         UniformArgs {
-            mvp: renderer_state.world_space_matrix().clone(),
+            mvp: camera_state.world_space_matrix().clone(),
         }
     }
 }
@@ -238,8 +238,8 @@ where
         // Used for the view/projection
         //let frame_size = glm::Vec2::new(800.0, 600.0);
         //let window_info = aux.fetch::<crate::gfx::WindowInfo>();
-        let renderer_state = aux.fetch::<resources::RenderState>();
-        let uniform_args = UniformArgs::new(&renderer_state);
+        let camera_state = aux.fetch::<crate::framework::resources::CameraState>();
+        let uniform_args = UniformArgs::new(&camera_state);
 
         unsafe {
             factory

@@ -12,3 +12,6 @@ pub use update_entity_set::UpdateEntitySetTask;
 
 mod debug_draw_components;
 pub use debug_draw_components::DebugDrawComponentsTask;
+
+mod update_time_state;
+pub use update_time_state::UpdateTimeStateTask;

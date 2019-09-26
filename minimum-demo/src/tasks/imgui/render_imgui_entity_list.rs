@@ -2,12 +2,13 @@ use crate::base::resource::{DataRequirement, Read, Write};
 use crate::base::{
     ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent,
 };
-use rendy::wsi::winit;
 
-use crate::resources::{ImguiManager, InputManager};
+use crate::framework::resources::InputManager;
+use crate::resources::ImguiManager;
 #[cfg(feature = "editor")]
 use crate::framework::resources::editor::{EditorActionQueue, EditorUiState};
 use crate::framework::resources::TimeState;
+use crate::framework::resources::FrameworkOptions;
 
 #[cfg(feature = "editor")]
 use crate::framework::components::editor::EditorSelectedComponent;
@@ -23,6 +24,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
         WriteComponent<EditorSelectedComponent>,
         Read<InputManager>,
         Write<EditorActionQueue>,
+        Read<FrameworkOptions>
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -42,6 +44,7 @@ impl ResourceTaskImpl for RenderImguiEntityList {
             mut editor_selected_components,
             input_manager,
             mut editor_action_queue,
+            framework_options
         ) = data;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
@@ -87,8 +90,9 @@ impl ResourceTaskImpl for RenderImguiEntityList {
                                     imgui::Selectable::new(&s).selected(is_selected).build(ui);
 
                                 if clicked {
-                                    let is_control_held = input_manager
-                                        .is_key_down(winit::event::VirtualKeyCode::LControl);
+                                    let is_control_held =
+                                        input_manager.is_key_down(framework_options.keybinds.modify_imgui_entity_list_modify_selection_add1) ||
+                                        input_manager.is_key_down(framework_options.keybinds.modify_imgui_entity_list_modify_selection_add2);
                                     if is_control_held {
                                         if !editor_selected_components.exists(&entity.handle()) {
                                             editor_selected_components.allocate(

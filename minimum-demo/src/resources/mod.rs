@@ -1,13 +1,8 @@
 
-mod editor_draw;
-mod input_manager;
 mod physics_manager;
 mod render_state;
 mod window_interface;
 
-pub use editor_draw::EditorDraw;
-pub use input_manager::InputManager;
-pub use input_manager::MouseButtons;
 pub use physics_manager::PhysicsManager;
 pub use render_state::RenderState;
 pub use window_interface::WindowInterface;

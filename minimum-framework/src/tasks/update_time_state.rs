@@ -1,10 +1,9 @@
-use rendy::wsi::winit;
-
 use crate::base::resource::{DataRequirement, Read, Write};
 use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::InputManager;
-use crate::framework::resources::{FrameworkActionQueue, TimeState};
+use crate::resources::FrameworkOptions;
+use crate::resources::{FrameworkActionQueue, TimeState};
 
 pub struct UpdateTimeState;
 pub type UpdateTimeStateTask = crate::base::ResourceTask<UpdateTimeState>;
@@ -13,6 +12,7 @@ impl ResourceTaskImpl for UpdateTimeState {
         Write<TimeState>,
         Read<InputManager>,
         Write<FrameworkActionQueue>,
+        Read<FrameworkOptions>
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -23,12 +23,12 @@ impl ResourceTaskImpl for UpdateTimeState {
         context_flags: &TaskContextFlags,
         data: <Self::RequiredResources as DataRequirement>::Borrow,
     ) {
-        use crate::framework::PlayMode;
-        let (mut time_state, input_manager, mut game_control) = data;
+        use crate::PlayMode;
+        let (mut time_state, input_manager, mut game_control, framework_options) = data;
 
-        let play_mode = if context_flags.flags() & crate::framework::context_flags::PLAYMODE_PLAYING != 0 {
+        let play_mode = if context_flags.flags() & crate::context_flags::PLAYMODE_PLAYING != 0 {
             PlayMode::Playing
-        } else if context_flags.flags() & crate::framework::context_flags::PLAYMODE_PAUSED != 0 {
+        } else if context_flags.flags() & crate::context_flags::PLAYMODE_PAUSED != 0 {
             PlayMode::Paused
         } else {
             PlayMode::System
@@ -36,8 +36,7 @@ impl ResourceTaskImpl for UpdateTimeState {
 
         time_state.update(play_mode);
 
-        use winit::event::VirtualKeyCode;
-        if input_manager.is_key_just_down(VirtualKeyCode::Space) {
+        if input_manager.is_key_just_down(framework_options.keybinds.edit_play_toggle) {
             let new_play_mode = match play_mode {
                 PlayMode::System => PlayMode::Playing,
                 PlayMode::Paused => PlayMode::Playing,

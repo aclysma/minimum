@@ -127,7 +127,10 @@ impl Renderer {
 
         let swapchain_backbuffer_count = present_builder.image_count();
         resource_map.fetch_mut::<resources::RenderState>().init(
-            swapchain_backbuffer_count,
+            swapchain_backbuffer_count
+        );
+
+        resource_map.fetch_mut::<crate::framework::resources::CameraState>().init(
             Renderer::calculate_ui_space_matrix(window),
             Renderer::calculate_screen_space_matrix(window),
             Renderer::calculate_screen_space_dimensions(window),
@@ -164,13 +167,13 @@ impl Renderer {
             // Zoom in/out
             self.camera_zoom = 1.0;
 
-            let mut renderer_state = resource_map.fetch_mut::<resources::RenderState>();
-            renderer_state.set_ui_space_view(Renderer::calculate_ui_space_matrix(window));
-            renderer_state.set_screen_space_view(
+            let mut camera_state = resource_map.fetch_mut::<crate::framework::resources::CameraState>();
+            camera_state.set_ui_space_view(Renderer::calculate_ui_space_matrix(window));
+            camera_state.set_screen_space_view(
                 Renderer::calculate_screen_space_matrix(window),
                 Renderer::calculate_screen_space_dimensions(window),
             );
-            renderer_state.set_world_space_view(
+            camera_state.set_world_space_view(
                 self.camera_position,
                 Renderer::calculate_world_space_matrix(
                     window,

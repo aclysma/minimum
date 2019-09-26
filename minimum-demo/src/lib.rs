@@ -11,11 +11,11 @@ extern crate imgui_inspect_derive;
 #[macro_use]
 extern crate serde_derive;
 
-#[macro_use]
-extern crate num_derive;
-
-#[macro_use]
-extern crate strum_macros;
+//#[macro_use]
+//extern crate num_derive;
+//
+//#[macro_use]
+//extern crate strum_macros;
 
 #[cfg(feature = "dim2")]
 extern crate ncollide2d as ncollide;
@@ -61,15 +61,34 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
         .with_inner_size(winit::dpi::LogicalSize::new(1300.0, 900.0))
         .build(&event_loop)?;
 
+    use crate::framework::resources::KeyboardButton;
+    use rendy::wsi::winit::event::VirtualKeyCode;
+    let keybinds = crate::framework::resources::FrameworkKeybinds {
+        edit_play_toggle: KeyboardButton::new(VirtualKeyCode::Space as u32),
+        translate_tool: KeyboardButton::new(VirtualKeyCode::Key1 as u32),
+        scale_tool: KeyboardButton::new(VirtualKeyCode::Key2 as u32),
+        rotate_tool: KeyboardButton::new(VirtualKeyCode::Key3 as u32),
+        quit: KeyboardButton::new(VirtualKeyCode::Escape as u32),
+        modify_selection_add1: KeyboardButton::new(VirtualKeyCode::LShift as u32),
+        modify_selection_add2: KeyboardButton::new(VirtualKeyCode::RShift as u32),
+        modify_selection_subtract1: KeyboardButton::new(VirtualKeyCode::LControl as u32),
+        modify_selection_subtract2: KeyboardButton::new(VirtualKeyCode::RControl as u32),
+        modify_imgui_entity_list_modify_selection_add1: KeyboardButton::new(VirtualKeyCode::LControl as u32),
+        modify_imgui_entity_list_modify_selection_add2: KeyboardButton::new(VirtualKeyCode::RControl as u32),
+        clear_selection: KeyboardButton::new(VirtualKeyCode::Escape as u32),
+
+    };
+
     let mut world_builder = crate::base::WorldBuilder::new()
         .with_resource(crate::framework::resources::FrameworkActionQueue::new())
         .with_resource(crate::framework::resources::DebugDraw::new())
-        .with_resource(resources::InputManager::new())
+        .with_resource(crate::framework::resources::InputManager::new())
         .with_resource(crate::framework::resources::TimeState::new())
         .with_resource(resources::PhysicsManager::new())
         .with_resource(window)
         .with_resource(resources::RenderState::empty())
-        .with_resource(crate::framework::resources::FrameworkOptions::new())
+        .with_resource(crate::framework::resources::CameraState::empty())
+        .with_resource(crate::framework::resources::FrameworkOptions::new(keybinds))
         .with_component(<crate::framework::components::TransformComponent as Component>::Storage::new())
         .with_component(<crate::framework::components::VelocityComponent as Component>::Storage::new())
         .with_component(<crate::framework::components::DebugDrawCircleComponent as Component>::Storage::new())
@@ -107,7 +126,7 @@ pub fn run_the_game() -> Result<(), Box<dyn std::error::Error>> {
                 .with_resource(crate::framework::resources::editor::EditorCollisionWorld::new())
                 .with_resource(crate::framework::resources::editor::EditorUiState::new())
                 .with_resource(crate::framework::resources::editor::EditorActionQueue::new())
-                .with_resource(resources::EditorDraw::new())
+                .with_resource(crate::framework::resources::editor::EditorDraw::new())
                 .with_component_and_free_handler::<_, _, crate::framework::components::editor::EditorShapeComponentFreeHandler>(
                     <crate::framework::components::editor::EditorShapeComponent as Component>::Storage::new(),
                 )
@@ -257,7 +276,7 @@ fn register_tasks(world_builder: &mut WorldBuilder) {
 
     // Frame Begin
     world_builder.add_task::<crate::framework::tasks::ClearDebugDrawTask>();
-    world_builder.add_task::<tasks::UpdateTimeStateTask>();
+    world_builder.add_task::<crate::framework::tasks::UpdateTimeStateTask>();
 
     // Gather Input
     world_builder.add_task::<tasks::GatherInputTask>();

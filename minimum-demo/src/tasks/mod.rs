@@ -17,9 +17,6 @@ pub use update_position_with_velocity::UpdatePositionWithVelocityTask;
 mod update_renderer;
 pub use update_renderer::UpdateRendererTask;
 
-mod update_time_state;
-pub use update_time_state::UpdateTimeStateTask;
-
 #[cfg(feature = "editor")]
 pub mod imgui;
 

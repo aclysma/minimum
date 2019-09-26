@@ -3,7 +3,11 @@ use crate::base::ComponentStorage;
 use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, Component, EntitySet};
 
 use crate::framework::resources::DebugDraw;
-use crate::resources::{InputManager, MouseButtons, RenderState, EditorDraw};
+use crate::framework::resources::InputManager;
+use crate::framework::resources::MouseButton;
+use crate::framework::resources::FrameworkOptions;
+use crate::framework::resources::editor::EditorDraw;
+use crate::framework::resources::CameraState;
 use crate::framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
 use crate::framework::components::PersistentEntityComponent;
 
@@ -14,16 +18,13 @@ use ncollide::world::CollisionGroups;
 use crate::framework::components::TransformComponent;
 use crate::framework::components::TransformComponentPrototype;
 
-use rendy::wsi::winit;
-use winit::event::VirtualKeyCode;
-
 pub struct EditorHandleInput;
 pub type EditorHandleInputTask = crate::base::ResourceTask<EditorHandleInput>;
 impl ResourceTaskImpl for EditorHandleInput {
     type RequiredResources = (
         Read<crate::base::EntitySet>,
         Read<InputManager>,
-        Read<RenderState>,
+        Read<CameraState>,
         Read<EditorCollisionWorld>,
         WriteComponent<EditorSelectedComponent>,
         Write<DebugDraw>,
@@ -31,7 +32,8 @@ impl ResourceTaskImpl for EditorHandleInput {
         Write<EditorDraw>,
         WriteComponent<TransformComponent>,
         WriteComponent<PersistentEntityComponent>,
-        WriteComponent<EditorModifiedComponent>
+        WriteComponent<EditorModifiedComponent>,
+        Read<FrameworkOptions>
     );
 
     fn configure(config: &mut TaskConfig) {
@@ -47,7 +49,7 @@ impl ResourceTaskImpl for EditorHandleInput {
         let (
             entity_set,
             input_manager,
-            render_state,
+            camera_state,
             editor_collision_world,
             mut editor_selected_components,
             mut debug_draw,
@@ -55,18 +57,19 @@ impl ResourceTaskImpl for EditorHandleInput {
             mut editor_draw,
             mut transform_components,
             mut persistent_entity_components,
-            mut editor_modified_components
+            mut editor_modified_components,
+            framework_options
         ) = data;
 
-        if input_manager.is_key_just_down(VirtualKeyCode::Key1) {
+        if input_manager.is_key_just_down(framework_options.keybinds.translate_tool) {
             editor_ui_state.active_editor_tool = EditorTool::Translate;
         }
 
-        if input_manager.is_key_just_down(VirtualKeyCode::Key2) {
+        if input_manager.is_key_just_down(framework_options.keybinds.scale_tool) {
             editor_ui_state.active_editor_tool = EditorTool::Scale;
         }
 
-        if input_manager.is_key_just_down(VirtualKeyCode::Key3) {
+        if input_manager.is_key_just_down(framework_options.keybinds.rotate_tool) {
             editor_ui_state.active_editor_tool = EditorTool::Rotate;
         }
 
@@ -79,21 +82,21 @@ impl ResourceTaskImpl for EditorHandleInput {
         }
 
         // Escape cancels the selection
-        if input_manager.is_key_just_down(VirtualKeyCode::Escape) {
+        if input_manager.is_key_just_down(framework_options.keybinds.clear_selection) {
             editor_selected_components.free_all();
         }
 
-        editor_draw.update(&*input_manager, &*render_state);
+        editor_draw.update(&*input_manager, &*camera_state);
 
 
         handle_translate_gizmo_input(&*entity_set,  &mut* editor_selected_components,  &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
         handle_scale_gizmo_input(&*entity_set, &mut* editor_selected_components, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
         handle_rotate_gizmo_input(&*entity_set,  &mut* editor_selected_components, &mut *editor_draw, &mut *transform_components, &mut *persistent_entity_components, &mut *editor_modified_components);
 
-        handle_select_input( &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw);
+        handle_select_input( &*input_manager, &* camera_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* framework_options);
 
         match editor_ui_state.active_editor_tool {
-            //EditorTool::Select => handle_select_tool_input(&*entity_set, &*input_manager, &* render_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state),
+            //EditorTool::Select => handle_select_tool_input(&*entity_set, &*input_manager, &* camera_state, &* editor_collision_world, &mut* editor_selected_components, &mut*debug_draw, &editor_ui_state),
             EditorTool::Translate => draw_translate_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components),
             EditorTool::Scale => draw_scale_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components),
             EditorTool::Rotate => draw_rotate_gizmo(&*entity_set, &mut* editor_selected_components, &mut*debug_draw, &mut *editor_draw, &* transform_components)
@@ -110,7 +113,7 @@ fn handle_translate_gizmo_input(
     editor_modified_components: &mut <EditorModifiedComponent as Component>::Storage
 
 ) {
-    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButtons::Left) {
+    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButton::Left) {
         // See what if any axis we will operate on
         let mut translate_x = false;
         let mut translate_y = false;
@@ -147,7 +150,7 @@ fn handle_translate_gizmo_input(
             // update that and recreate the object. In which case, we can skip updating the transform
             // component itself.
             let mut update_transform_component = true;
-            if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
+            if editor_draw.is_shape_drag_just_finished(MouseButton::Left) {
                 // update the prototype and invalidate the object
                 if let Some(persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
                     let mut entity_prototype = persistent_entity_component.entity_prototype_mut().lock();
@@ -302,7 +305,7 @@ fn handle_scale_gizmo_input(
     editor_modified_components: &mut <EditorModifiedComponent as Component>::Storage
 
 ) {
-    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButtons::Left) {
+    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButton::Left) {
         // See what if any axis we will operate on
         let mut translate_x = false;
         let mut translate_y = false;
@@ -348,7 +351,7 @@ fn handle_scale_gizmo_input(
             // update that and recreate the object. In which case, we can skip updating the transform
             // component itself.
             let mut update_transform_component = true;
-            if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
+            if editor_draw.is_shape_drag_just_finished(MouseButton::Left) {
                 // update the prototype and invalidate the object
                 if let Some(persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
                     let mut entity_prototype = persistent_entity_component.entity_prototype_mut().lock();
@@ -470,7 +473,7 @@ fn handle_rotate_gizmo_input(
     editor_modified_components: &mut <EditorModifiedComponent as Component>::Storage
 
 ) {
-    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButtons::Left) {
+    if let Some(drag_in_progress) = editor_draw.shape_drag_in_progress_or_just_finished(MouseButton::Left) {
         // See what if any axis we will operate on
         let mut rotate_z = false;
         if drag_in_progress.shape_id == "z_axis_rotate" {
@@ -492,7 +495,7 @@ fn handle_rotate_gizmo_input(
             // update that and recreate the object. In which case, we can skip updating the transform
             // component itself.
             let mut update_transform_component = true;
-            if editor_draw.is_shape_drag_just_finished(MouseButtons::Left) {
+            if editor_draw.is_shape_drag_just_finished(MouseButton::Left) {
                 // update the prototype and invalidate the object
                 if let Some(persistent_entity_component) = persistent_entity_components.get_mut(&entity_handle) {
                     let mut entity_prototype = persistent_entity_component.entity_prototype_mut().lock();
@@ -582,11 +585,12 @@ fn draw_rotate_gizmo(
 
 fn handle_select_input(
     input_manager: &InputManager,
-    render_state: &RenderState,
+    camera_state: &CameraState,
     editor_collision_world: &EditorCollisionWorld,
     editor_selected_components: &mut <EditorSelectedComponent as Component>::Storage,
     debug_draw: &mut DebugDraw,
     editor_draw: &mut EditorDraw,
+    framework_options: &FrameworkOptions
 ) {
     // This will contain the entities to operate on, or None if we haven't issues a select operation
     let mut new_selection: Option<Vec<_>> = None;
@@ -595,12 +599,12 @@ fn handle_select_input(
 
     if editor_draw.is_interacting_with_anything() {
         // drop input, the clicking/dragging is happening on editor shapes
-    } else if let Some(drag_complete) = input_manager.mouse_drag_just_finished(MouseButtons::Left) {
+    } else if let Some(drag_complete) = input_manager.mouse_drag_just_finished(MouseButton::Left) {
         // Drag complete, check AABB
-        let target_position0: glm::Vec2 = render_state
+        let target_position0: glm::Vec2 = camera_state
             .ui_space_to_world_space(drag_complete.begin_position)
             .into();
-        let target_position1: glm::Vec2 = render_state
+        let target_position1: glm::Vec2 = camera_state
             .ui_space_to_world_space(drag_complete.end_position)
             .into();
 
@@ -629,9 +633,9 @@ fn handle_select_input(
             .interferences_with_aabb(&aabb, &selection_collision_group);
 
         new_selection = Some(results.map(|x| x.data()).collect());
-    } else if let Some(clicked) = input_manager.mouse_button_just_clicked_position(MouseButtons::Left) {
+    } else if let Some(clicked) = input_manager.mouse_button_just_clicked_position(MouseButton::Left) {
         // Clicked, do a raycast
-        let target_position = render_state.ui_space_to_world_space(clicked);
+        let target_position = camera_state.ui_space_to_world_space(clicked);
         #[cfg(feature = "dim3")]
         let target_position = glm::vec2_to_vec3(&target_position);
         let target_position = ncollide::math::Point::from(target_position);
@@ -641,20 +645,20 @@ fn handle_select_input(
             .interferences_with_point(&target_position, &selection_collision_group);
 
         new_selection = Some(results.map(|x| x.data()).collect());
-    } else if let Some(drag_in_progress) = input_manager.mouse_drag_in_progress(MouseButtons::Left) {
+    } else if let Some(drag_in_progress) = input_manager.mouse_drag_in_progress(MouseButton::Left) {
         // Dragging, draw a rectangle
         debug_draw.add_rect(
-            render_state.ui_space_to_world_space(drag_in_progress.begin_position),
-            render_state.ui_space_to_world_space(drag_in_progress.end_position),
+            camera_state.ui_space_to_world_space(drag_in_progress.begin_position),
+            camera_state.ui_space_to_world_space(drag_in_progress.end_position),
             glm::vec4(1.0, 1.0, 0.0, 1.0),
         );
     }
 
     if let Some(entities) = new_selection {
-        let add_to_selection = input_manager.is_key_down(VirtualKeyCode::LShift)
-            || input_manager.is_key_down(VirtualKeyCode::RShift);
-        let subtract_from_selection = input_manager.is_key_down(VirtualKeyCode::LAlt)
-            || input_manager.is_key_down(VirtualKeyCode::RAlt);
+        let add_to_selection = input_manager.is_key_down(framework_options.keybinds.modify_selection_add1)
+            || input_manager.is_key_down(framework_options.keybinds.modify_selection_add2);
+        let subtract_from_selection = input_manager.is_key_down(framework_options.keybinds.modify_selection_subtract1)
+            || input_manager.is_key_down(framework_options.keybinds.modify_selection_subtract2);
 
         // default selecting behavior is to drop the old selection
         if !add_to_selection && !subtract_from_selection {

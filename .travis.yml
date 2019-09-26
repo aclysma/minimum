@@ -58,25 +58,25 @@ matrix:
     - name: "OSX Base"
       rust: beta
       os: osx
-      env: PACKAGE="minimum" FEATURES="std"
+      env: PACKAGE="minimum-base" FEATURES="std"
     - name: "Linux Base"
       rust: beta
       os: linux
-      env: PACKAGE="minimum" FEATURES="std"
+      env: PACKAGE="minimum-base" FEATURES="std"
     - name: "Windows Base"
       rust: beta
       os: windows
-      env: PACKAGE="minimum" FEATURES="std"
+      env: PACKAGE="minimum-base" FEATURES="std"
     - name: "OSX Base no_std"
       rust: beta
       os: osx
-      env: PACKAGE="minimum" FEATURES=""
+      env: PACKAGE="minimum-base" FEATURES=""
     - name: "Linux Base no_std"
       rust: beta
       os: linux
-      env: PACKAGE="minimum" FEATURES=""
+      env: PACKAGE="minimum-base" FEATURES=""
     - name: "Windows Base no_std"
       rust: beta
       os: windows
-      env: PACKAGE="minimum" FEATURES=""
+      env: PACKAGE="minimum-base" FEATURES=""
   fast_finish: true

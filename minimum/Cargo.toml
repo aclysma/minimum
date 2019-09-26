@@ -9,6 +9,7 @@ default = []
 editor = ["minimum-framework", "minimum-framework/editor"]
 dim2 = ["minimum-framework", "minimum-framework/dim2"]
 dim3 = ["minimum-framework", "minimum-framework/dim3"]
+std = ["minimum-base/std"]
 
 [dependencies]
 minimum-base = { path = "../minimum-base" }

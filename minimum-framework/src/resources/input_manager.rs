@@ -1,16 +1,41 @@
-use rendy::wsi::winit;
-use winit::event::KeyboardInput;
+//use rendy::wsi::winit;
+//use winit::event::KeyboardInput;
+
+//TODO: Rename to input_state
+#[derive(Copy, Clone)]
+pub struct KeyboardButton {
+    index: u32
+}
+
+impl KeyboardButton {
+    pub fn new(index: u32) -> Self {
+        KeyboardButton {
+            index
+        }
+    }
+}
+
+#[derive(PartialEq)]
+pub enum KeyboardButtonEvent {
+    Pressed,
+    Released
+}
+
+pub enum MouseButtonEvent {
+    Pressed,
+    Released
+}
 
 #[derive(EnumCount, FromPrimitive, Copy, Clone)]
-pub enum MouseButtons {
+pub enum MouseButton {
     Left = 0,
-    Middle = 1,
-    Right = 2,
+    Right = 1,
+    Middle = 2,
 }
 
 impl InputManager {
     pub const KEYBOARD_BUTTON_COUNT: usize = 255;
-    pub const MOUSE_BUTTON_COUNT: usize = MOUSEBUTTONS_COUNT;
+    pub const MOUSE_BUTTON_COUNT: usize = MOUSEBUTTON_COUNT;
     const MIN_DRAG_DISTANCE : f32 = 2.0;
 }
 
@@ -59,74 +84,74 @@ impl InputManager {
         };
     }
 
-    pub fn is_key_down(&self, key: winit::event::VirtualKeyCode) -> bool {
-        return self.key_is_down[key as usize];
+    pub fn is_key_down(&self, key: KeyboardButton) -> bool {
+        return self.key_is_down[key.index as usize];
     }
 
-    pub fn is_key_just_down(&self, key: winit::event::VirtualKeyCode) -> bool {
-        return self.key_just_down[key as usize];
+    pub fn is_key_just_down(&self, key: KeyboardButton) -> bool {
+        return self.key_just_down[key.index as usize];
     }
 
-    pub fn is_key_just_up(&self, key: winit::event::VirtualKeyCode) -> bool {
-        return self.key_just_up[key as usize];
+    pub fn is_key_just_up(&self, key: KeyboardButton) -> bool {
+        return self.key_just_up[key.index as usize];
     }
 
     pub fn mouse_position(&self) -> glm::Vec2 {
         return self.mouse_position;
     }
 
-    pub fn is_mouse_down(&self, mouse_button: MouseButtons) -> bool {
+    pub fn is_mouse_down(&self, mouse_button: MouseButton) -> bool {
         return self.mouse_button_is_down[mouse_button as usize];
     }
 
-    pub fn is_mouse_just_down(&self, mouse_button: MouseButtons) -> bool {
+    pub fn is_mouse_just_down(&self, mouse_button: MouseButton) -> bool {
         return self.mouse_button_just_down[mouse_button as usize].is_some();
     }
 
-    pub fn mouse_just_down_position(&self, mouse_button: MouseButtons) -> Option<glm::Vec2> {
+    pub fn mouse_just_down_position(&self, mouse_button: MouseButton) -> Option<glm::Vec2> {
         return self.mouse_button_just_down[mouse_button as usize];
     }
 
-    pub fn is_mouse_just_up(&self, mouse_button: MouseButtons) -> bool {
+    pub fn is_mouse_just_up(&self, mouse_button: MouseButton) -> bool {
         return self.mouse_button_just_up[mouse_button as usize].is_some();
     }
 
-    pub fn mouse_just_up_position(&self, mouse_button: MouseButtons) -> Option<glm::Vec2> {
+    pub fn mouse_just_up_position(&self, mouse_button: MouseButton) -> Option<glm::Vec2> {
         return self.mouse_button_just_up[mouse_button as usize];
     }
 
-    pub fn is_mouse_button_just_clicked(&self, mouse_button: MouseButtons) -> bool {
+    pub fn is_mouse_button_just_clicked(&self, mouse_button: MouseButton) -> bool {
         return self.mouse_button_just_clicked[mouse_button as usize].is_some();
     }
 
     pub fn mouse_button_just_clicked_position(
         &self,
-        mouse_button: MouseButtons,
+        mouse_button: MouseButton,
     ) -> Option<glm::Vec2> {
         return self.mouse_button_just_clicked[mouse_button as usize];
     }
 
-    pub fn mouse_button_went_down_position(&self, mouse_button: MouseButtons) -> Option<glm::Vec2> {
+    pub fn mouse_button_went_down_position(&self, mouse_button: MouseButton) -> Option<glm::Vec2> {
         return self.mouse_button_went_down_position[mouse_button as usize];
     }
 
-    pub fn mouse_button_went_up_position(&self, mouse_button: MouseButtons) -> Option<glm::Vec2> {
+    pub fn mouse_button_went_up_position(&self, mouse_button: MouseButton) -> Option<glm::Vec2> {
         return self.mouse_button_went_up_position[mouse_button as usize];
     }
 
-    pub fn is_mouse_drag_in_progress(&self, mouse_button: MouseButtons) -> bool {
+    pub fn is_mouse_drag_in_progress(&self, mouse_button: MouseButton) -> bool {
         return self.mouse_drag_in_progress[mouse_button as usize].is_some();
     }
 
-    pub fn mouse_drag_in_progress(&self, mouse_button: MouseButtons) -> Option<MouseDragState> {
+    pub fn mouse_drag_in_progress(&self, mouse_button: MouseButton) -> Option<MouseDragState> {
         return self.mouse_drag_in_progress[mouse_button as usize];
     }
 
-    pub fn is_mouse_drag_just_finished(&self, mouse_button: MouseButtons) -> bool {
+    pub fn is_mouse_drag_just_finished(&self, mouse_button: MouseButton) -> bool {
         return self.mouse_drag_just_finished[mouse_button as usize].is_some();
     }
 
-    pub fn mouse_drag_just_finished(&self, mouse_button: MouseButtons) -> Option<MouseDragState> {
+    pub fn mouse_drag_just_finished(&self, mouse_button: MouseButton) -> Option<MouseDragState> {
         return self.mouse_drag_just_finished[mouse_button as usize];
     }
 }
@@ -164,53 +189,43 @@ impl InputManager {
         }
     }
 
-    pub fn handle_keyboard_event(&mut self, event: &KeyboardInput) {
+    pub fn handle_keyboard_event(
+        &mut self,
+        keyboard_button: KeyboardButton,
+        button_state: KeyboardButtonEvent
+    ) {
         //TODO: Find a safer way to change enum back/forth with int
         // Assign true if key is down, or false if key is up
-        if let Some(kc) = event.virtual_keycode {
-            if kc as usize > Self::KEYBOARD_BUTTON_COUNT {
-                error!("kc {} out of expected range", kc as u32);
-            }
+        let kc = keyboard_button.index;
+        if kc as usize > Self::KEYBOARD_BUTTON_COUNT {
+            error!("kc {} out of expected range", kc as u32);
+        }
 
-            //TODO: Handle repeating keys (blocked by https://github.com/rust-windowing/winit/issues/753)
-            match event {
-                KeyboardInput {
-                    state: winit::event::ElementState::Pressed,
-                    ..
-                } => {
-                    if !self.key_is_down[kc as usize] {
-                        self.key_just_down[kc as usize] = true;
-                    }
-                    self.key_is_down[kc as usize] = true
-                }
-                KeyboardInput {
-                    state: winit::event::ElementState::Released,
-                    ..
-                } => {
-                    if self.key_is_down[kc as usize] {
-                        self.key_just_up[kc as usize] = true;
-                    }
-                    self.key_is_down[kc as usize] = false
-                }
+        if button_state == KeyboardButtonEvent::Pressed {
+            if !self.key_is_down[kc as usize] {
+                self.key_just_down[kc as usize] = true;
             }
+            self.key_is_down[kc as usize] = true
+        } else {
+
+            if self.key_is_down[kc as usize] {
+                self.key_just_up[kc as usize] = true;
+            }
+            self.key_is_down[kc as usize] = false
         }
     }
 
     pub fn handle_mouse_button_event(
         &mut self,
-        state: winit::event::ElementState,
-        button: winit::event::MouseButton,
-        _modifiers: winit::event::ModifiersState,
+        //state: winit::event::ElementState,
+        button: MouseButton,
+        button_event: MouseButtonEvent
+        //_modifiers: winit::event::ModifiersState,
     ) {
-        use winit::event::ElementState;
-        use winit::event::MouseButton;
+        //use winit::event::ElementState;
+        //use winit::event::MouseButton;
 
-        let button_index: i32 = match button {
-            MouseButton::Left => 0,
-            MouseButton::Middle => 1,
-            MouseButton::Right => 2,
-            _ => -1,
-        };
+        let button_index = button as i32;
 
         if button_index < 0 {
             return;
@@ -219,14 +234,14 @@ impl InputManager {
         let button_index = button_index as usize;
 
         // Update is down/up, just down/up
-        match state {
-            ElementState::Pressed => {
+        match button_event {
+            MouseButtonEvent::Pressed => {
                 self.mouse_button_just_down[button_index] = Some(self.mouse_position);
                 self.mouse_button_is_down[button_index] = true;
 
                 self.mouse_button_went_down_position[button_index] = Some(self.mouse_position);
             }
-            ElementState::Released => {
+            MouseButtonEvent::Released => {
                 self.mouse_button_just_up[button_index] = Some(self.mouse_position);
                 self.mouse_button_is_down[button_index] = false;
 
@@ -253,7 +268,7 @@ impl InputManager {
         }
     }
 
-    pub fn handle_mouse_move_event(&mut self, position: winit::dpi::LogicalPosition) {
+    pub fn handle_mouse_move_event(&mut self, position: glm::Vec2) {
         //let old_mouse_position = self.mouse_position;
 
         // Update mouse position

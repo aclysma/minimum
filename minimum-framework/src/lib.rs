@@ -9,6 +9,12 @@ extern crate mopa;
 #[macro_use]
 extern crate serde_derive;
 
+#[macro_use]
+extern crate num_derive;
+
+#[macro_use]
+extern crate strum_macros;
+
 #[cfg(feature = "dim2")]
 extern crate ncollide2d as ncollide;
 #[cfg(feature = "dim3")]

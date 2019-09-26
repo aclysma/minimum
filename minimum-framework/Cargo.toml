@@ -34,6 +34,8 @@ strum = "0.15"
 strum_macros = "0.15"
 mopa = "0.2"
 hashbrown = "0.5"
+num-traits = "0.2"
+num-derive = "0.2"
 
 #imgui-inspect = { path = "../../imgui-inspect/imgui-inspect", optional = true }
 #imgui-inspect-derive = { path = "../../imgui-inspect/imgui-inspect-derive", default-features = false }

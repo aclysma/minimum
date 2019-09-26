@@ -35,9 +35,9 @@ struct UniformArgs {
 }
 
 impl UniformArgs {
-    fn new(renderer_state: &crate::resources::RenderState) -> UniformArgs {
+    fn new(camera_state: &crate::framework::resources::CameraState) -> UniformArgs {
         UniformArgs {
-            mvp: renderer_state.ui_space_matrix().clone(),
+            mvp: camera_state.ui_space_matrix().clone(),
         }
     }
 }
@@ -338,7 +338,7 @@ where
         draw_list_vbufs.clear();
         draw_list_ibufs.clear();
 
-        let render_state = aux.fetch::<crate::resources::RenderState>();
+        let camera_state = aux.fetch::<crate::framework::resources::CameraState>();
 
         unsafe {
             let mut imgui_manager = aux.fetch_mut::<resources::ImguiManager>();
@@ -346,7 +346,7 @@ where
             if imgui_manager.is_frame_started() {
                 imgui_manager.render(&window);
 
-                let uniform_args = UniformArgs::new(&render_state);
+                let uniform_args = UniformArgs::new(&camera_state);
 
                 factory
                     .upload_visible_buffer(uniform_buffers, 0, &[uniform_args])
