@@ -21,6 +21,8 @@ use crate::framework::FrameworkEntityPrototypeInner;
 use crate::framework::select::SelectableComponentPrototype;
 
 use crate::framework::components::TransformComponentPrototype;
+#[cfg(feature = "dim3")]
+use nalgebra::UnitQuaternion;
 
 #[derive(Debug, Inspect)]
 pub struct PhysicsBodyComponent {
@@ -151,6 +153,7 @@ impl FrameworkComponentPrototypeDyn for PhysicsBodyComponentPrototypeCustom {
 }
 
 type RectSize = crate::framework::components::transform::Scale;
+#[cfg(feature = "editor")]
 type ImRectSize = crate::framework::components::transform::ImScale;
 
 //

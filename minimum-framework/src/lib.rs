@@ -7,6 +7,9 @@ extern crate log;
 extern crate mopa;
 
 #[macro_use]
+extern crate imgui_inspect_derive;
+
+#[macro_use]
 extern crate serde_derive;
 
 #[macro_use]

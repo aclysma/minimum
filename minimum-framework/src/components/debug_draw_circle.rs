@@ -3,7 +3,7 @@ use crate::inspect::common_types::*;
 
 #[cfg(feature = "editor")]
 use crate::select::SelectableComponentPrototype;
-#[cfg(feature = "editor")]
+
 use imgui_inspect_derive::Inspect;
 use base::component::SlabComponentStorage;
 use crate::FrameworkEntityPrototypeInner;

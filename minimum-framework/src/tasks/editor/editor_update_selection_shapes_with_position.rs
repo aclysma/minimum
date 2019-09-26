@@ -5,6 +5,8 @@ use crate::resources::editor::EditorCollisionWorld;
 
 use crate::base::component::ReadComponent;
 use crate::base::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags};
+#[cfg(feature = "dim3")]
+use nalgebra::UnitQuaternion;
 
 pub struct EditorUpdateSelectionShapesWithPosition;
 pub type EditorUpdateSelectionShapesWithPositionTask =

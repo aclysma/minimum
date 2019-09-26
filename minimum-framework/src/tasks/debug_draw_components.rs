@@ -2,6 +2,8 @@ use base::resource::{DataRequirement, Read, Write};
 use base::{ComponentStorage, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
 use crate::resources::DebugDraw;
+#[cfg(feature = "dim3")]
+use nalgebra::UnitQuaternion;
 
 pub struct DebugDrawComponents;
 pub type DebugDrawComponentsTask = base::ResourceTask<DebugDrawComponents>;

@@ -12,6 +12,7 @@ use crate::components::transform;
 use crate::components::TransformComponentPrototype;
 
 type RectSize = transform::Scale;
+#[cfg(feature = "editor")]
 type ImRectSize = transform::ImScale;
 
 
