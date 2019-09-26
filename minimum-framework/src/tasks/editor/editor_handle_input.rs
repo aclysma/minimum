@@ -2,21 +2,21 @@ use crate::base::resource::{DataRequirement, Read, Write};
 use crate::base::ComponentStorage;
 use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags, WriteComponent, Component, EntitySet};
 
-use crate::framework::resources::DebugDraw;
-use crate::framework::resources::InputState;
-use crate::framework::resources::MouseButton;
-use crate::framework::resources::FrameworkOptions;
-use crate::framework::resources::editor::EditorDraw;
-use crate::framework::resources::CameraState;
-use crate::framework::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
-use crate::framework::components::PersistentEntityComponent;
+use crate::resources::DebugDraw;
+use crate::resources::InputState;
+use crate::resources::MouseButton;
+use crate::resources::FrameworkOptions;
+use crate::resources::editor::EditorDraw;
+use crate::resources::CameraState;
+use crate::resources::editor::{EditorCollisionWorld, EditorTool, EditorUiState};
+use crate::components::PersistentEntityComponent;
 
-use crate::framework::components::editor::EditorSelectedComponent;
-use crate::framework::components::editor::EditorModifiedComponent;
+use crate::components::editor::EditorSelectedComponent;
+use crate::components::editor::EditorModifiedComponent;
 
 use ncollide::world::CollisionGroups;
-use crate::framework::components::TransformComponent;
-use crate::framework::components::TransformComponentPrototype;
+use crate::components::TransformComponent;
+use crate::components::TransformComponentPrototype;
 
 pub struct EditorHandleInput;
 pub type EditorHandleInputTask = crate::base::ResourceTask<EditorHandleInput>;
@@ -39,7 +39,7 @@ impl ResourceTaskImpl for EditorHandleInput {
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
         config.this_uses_data_from::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
-        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
+        config.run_only_if(crate::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(
@@ -74,8 +74,8 @@ impl ResourceTaskImpl for EditorHandleInput {
         }
 
         if context_flags.flags()
-            & (crate::framework::context_flags::PLAYMODE_PAUSED
-                | crate::framework::context_flags::PLAYMODE_PLAYING)
+            & (crate::context_flags::PLAYMODE_PAUSED
+                | crate::context_flags::PLAYMODE_PLAYING)
             != 0
         {
             return;

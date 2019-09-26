@@ -1,7 +1,7 @@
 use crate::base::resource::{DataRequirement, Write};
 
 #[cfg(feature = "editor")]
-use crate::framework::resources::editor::EditorCollisionWorld;
+use crate::resources::editor::EditorCollisionWorld;
 
 use crate::base::{ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
@@ -12,7 +12,7 @@ impl ResourceTaskImpl for EditorUpdateSelectionWorld {
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
-        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
+        config.run_only_if(crate::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(

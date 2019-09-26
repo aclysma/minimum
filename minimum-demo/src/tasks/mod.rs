@@ -20,5 +20,3 @@ pub use update_renderer::UpdateRendererTask;
 #[cfg(feature = "editor")]
 pub mod imgui;
 
-#[cfg(feature = "editor")]
-pub mod editor;

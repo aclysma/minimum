@@ -1,7 +1,7 @@
 use crate::base::resource::{DataRequirement, Read, Write};
 
 #[cfg(feature = "editor")]
-use crate::framework::resources::editor::EditorCollisionWorld;
+use crate::resources::editor::EditorCollisionWorld;
 
 use crate::base::component::ReadComponent;
 use crate::base::{ComponentStorage, EntitySet, ResourceTaskImpl, TaskConfig, TaskContextFlags};
@@ -13,14 +13,14 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
     type RequiredResources = (
         Read<EntitySet>,
         Write<EditorCollisionWorld>,
-        ReadComponent<crate::framework::components::editor::EditorShapeComponent>,
-        ReadComponent<crate::framework::components::TransformComponent>,
+        ReadComponent<crate::components::editor::EditorShapeComponent>,
+        ReadComponent<crate::components::TransformComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
         config.this_provides_data_to::<crate::tasks::editor::EditorUpdateSelectionWorldTask>();
-        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
+        config.run_only_if(crate::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(

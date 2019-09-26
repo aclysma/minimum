@@ -2,11 +2,11 @@ use crate::base::component::ComponentStorage;
 use crate::base::resource::{DataRequirement, Read, Write};
 use crate::base::{EntityHandle, ReadComponent, ResourceTaskImpl, TaskConfig, TaskContextFlags};
 
-use crate::framework::resources::DebugDraw;
+use crate::resources::DebugDraw;
 #[cfg(feature = "editor")]
-use crate::framework::resources::editor::EditorCollisionWorld;
+use crate::resources::editor::EditorCollisionWorld;
 use ncollide::shape::ShapeHandle;
-use nphysics::object::ColliderHandle;
+use ncollide::world::CollisionObjectHandle;
 
 pub struct EditorDrawSelectionShapes;
 pub type EditorDrawSelectionShapesTask = crate::base::ResourceTask<EditorDrawSelectionShapes>;
@@ -14,15 +14,15 @@ impl ResourceTaskImpl for EditorDrawSelectionShapes {
     type RequiredResources = (
         Write<DebugDraw>,
         Read<EditorCollisionWorld>,
-        ReadComponent<crate::framework::components::editor::EditorShapeComponent>,
-        ReadComponent<crate::framework::components::editor::EditorSelectedComponent>,
+        ReadComponent<crate::components::editor::EditorShapeComponent>,
+        ReadComponent<crate::components::editor::EditorSelectedComponent>,
     );
 
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<crate::base::task::PhasePreRender>();
         config.this_uses_data_from::<crate::tasks::editor::EditorHandleInputTask>();
-        config.run_only_if(crate::framework::context_flags::AUTHORITY_CLIENT);
-        config.run_only_if(crate::framework::context_flags::PLAYMODE_SYSTEM);
+        config.run_only_if(crate::context_flags::AUTHORITY_CLIENT);
+        config.run_only_if(crate::context_flags::PLAYMODE_SYSTEM);
     }
 
     fn run(
@@ -33,7 +33,7 @@ impl ResourceTaskImpl for EditorDrawSelectionShapes {
             data;
 
         for component in editor_shape_components.iter_values() {
-            let _collider_handle: &ColliderHandle = component.collider_handle();
+            let _collider_handle: &CollisionObjectHandle = component.collider_handle();
             let _shape_handle: &ShapeHandle<f32> = component.shape_handle();
 
             //TODO: Draw actual shapes instead of just aabb

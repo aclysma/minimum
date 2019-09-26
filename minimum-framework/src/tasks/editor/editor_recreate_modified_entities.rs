@@ -4,14 +4,14 @@ use crate::base::task::TaskConfig;
 use crate::base::ResourceMap;
 use crate::base::TaskContextFlags;
 
-use crate::framework::components::editor::EditorSelectedComponent;
+use crate::components::editor::EditorSelectedComponent;
 
 pub struct EditorRecreateModifiedEntities;
 pub type EditorRecreateModifiedEntitiesTask = crate::base::WriteAllTask<EditorRecreateModifiedEntities>;
 impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
     fn configure(config: &mut TaskConfig) {
         config.this_runs_during_phase::<crate::base::task::PhaseEndFrame>();
-        config.this_uses_data_from::<crate::framework::tasks::FrameworkUpdateActionQueueTask>();
+        config.this_uses_data_from::<crate::tasks::FrameworkUpdateActionQueueTask>();
     }
 
     fn run(_context_flags: &TaskContextFlags, resource_map: &mut ResourceMap) {
@@ -23,9 +23,9 @@ impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
         // Find all the modified persistent entities. Return a tuple of (prototypes, is_selected), and mark them for deletion
         // (the scoping here is intentional, we want to avoid having any active fetch when we call flush_free)
         let prototypes = {
-            let persistent_entity_components = resource_map.fetch::<<crate::framework::components::PersistentEntityComponent as Component>::Storage>();
-            let editor_modified_components = resource_map.fetch::<<crate::framework::components::editor::EditorModifiedComponent as Component>::Storage>();
-            let editor_selected_components = resource_map.fetch::<<crate::framework::components::editor::EditorSelectedComponent as Component>::Storage>();
+            let persistent_entity_components = resource_map.fetch::<<crate::components::PersistentEntityComponent as Component>::Storage>();
+            let editor_modified_components = resource_map.fetch::<<crate::components::editor::EditorModifiedComponent as Component>::Storage>();
+            let editor_selected_components = resource_map.fetch::<<crate::components::editor::EditorSelectedComponent as Component>::Storage>();
             let mut pending_delete_components =
                 resource_map.fetch_mut::<<crate::base::PendingDeleteComponent as Component>::Storage>();
 
@@ -60,7 +60,7 @@ impl WriteAllTaskImpl for EditorRecreateModifiedEntities {
 
         // Recreate the entities (the scoping here is intentional, we want to avoid having any active fetch when we call flush_creates)
         {
-            let mut editor_selected_components = resource_map.fetch_mut::<<crate::framework::components::editor::EditorSelectedComponent as Component>::Storage>();
+            let mut editor_selected_components = resource_map.fetch_mut::<<crate::components::editor::EditorSelectedComponent as Component>::Storage>();
             for (prototype, is_selected) in prototypes {
                 use crate::base::EntityPrototype;
                 let entity = entity_set.allocate_get();

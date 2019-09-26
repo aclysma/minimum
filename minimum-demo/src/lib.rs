@@ -263,15 +263,15 @@ fn register_tasks(world_builder: &mut WorldBuilder) {
         // This get run during pre-render
         world_builder.add_task::<tasks::imgui::RenderImguiMainMenuTask>();
         world_builder.add_task::<tasks::imgui::RenderImguiEntityListTask>();
-        world_builder.add_task::<tasks::editor::EditorUpdateSelectionShapesWithPositionTask>();
-        world_builder.add_task::<tasks::editor::EditorUpdateSelectionWorldTask>();
-        world_builder.add_task::<tasks::editor::EditorHandleInputTask>();
-        world_builder.add_task::<tasks::editor::EditorDrawSelectionShapesTask>();
+        world_builder.add_task::<crate::framework::tasks::editor::EditorUpdateSelectionShapesWithPositionTask>();
+        world_builder.add_task::<crate::framework::tasks::editor::EditorUpdateSelectionWorldTask>();
+        world_builder.add_task::<crate::framework::tasks::editor::EditorHandleInputTask>();
+        world_builder.add_task::<crate::framework::tasks::editor::EditorDrawSelectionShapesTask>();
         world_builder.add_task::<tasks::imgui::RenderImguiInspectorTask>();
 
         // This get run at end of frame
-        world_builder.add_task::<tasks::editor::EditorUpdateActionQueueTask>();
-        world_builder.add_task::<tasks::editor::EditorRecreateModifiedEntitiesTask>();
+        world_builder.add_task::<crate::framework::tasks::editor::EditorUpdateActionQueueTask>();
+        world_builder.add_task::<crate::framework::tasks::editor::EditorRecreateModifiedEntitiesTask>();
     }
 
     // Frame Begin
