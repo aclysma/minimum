@@ -8,75 +8,85 @@ before_script: cd $PACKAGE
 matrix:
   include:
     - name: "OSX Game dim2"
-      rust: beta
+      rust: stable
       os: osx
       env: PACKAGE="minimum-demo" FEATURES="metal dim2"
     - name: "Linux Game dim2"
-      rust: beta
+      rust: stable
       os: linux
       env: PACKAGE="minimum-demo" FEATURES="vulkan dim2"
     - name: "Windows Game dim2"
-      rust: beta
+      rust: stable
       os: windows
       env: PACKAGE="minimum-demo" FEATURES="dx12 dim2"
     - name: "OSX Editor dim2"
-      rust: beta
+      rust: stable
       os: osx
       env: PACKAGE="minimum-demo" FEATURES="metal editor dim2"
     - name: "Linux Editor dim2"
-      rust: beta
+      rust: stable
       os: linux
       env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim2"
     - name: "Windows Editor dim2"
-      rust: beta
+      rust: stable
       os: windows
       env: PACKAGE="minimum-demo" FEATURES="dx12 editor dim2"
     - name: "OSX Game dim3"
-      rust: beta
+      rust: stable
       os: osx
       env: PACKAGE="minimum-demo" FEATURES="metal dim3"
     - name: "Linux Game dim3"
-      rust: beta
+      rust: stable
       os: linux
       env: PACKAGE="minimum-demo" FEATURES="vulkan dim3"
     - name: "Windows Game dim3"
-      rust: beta
+      rust: stable
       os: windows
       env: PACKAGE="minimum-demo" FEATURES="dx12 dim3"
     - name: "OSX Editor dim3"
-      rust: beta
+      rust: stable
       os: osx
       env: PACKAGE="minimum-demo" FEATURES="metal editor dim3"
     - name: "Linux Editor dim3"
-      rust: beta
+      rust: stable
       os: linux
       env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim3"
     - name: "Windows Editor dim3"
-      rust: beta
+      rust: stable
       os: windows
       env: PACKAGE="minimum-demo" FEATURES="dx12 editor dim3"
     - name: "OSX Base"
-      rust: beta
+      rust: stable
       os: osx
       env: PACKAGE="minimum-base" FEATURES="std"
     - name: "Linux Base"
-      rust: beta
+      rust: stable
       os: linux
       env: PACKAGE="minimum-base" FEATURES="std"
     - name: "Windows Base"
-      rust: beta
+      rust: stable
       os: windows
       env: PACKAGE="minimum-base" FEATURES="std"
     - name: "OSX Base no_std"
-      rust: beta
+      rust: stable
       os: osx
       env: PACKAGE="minimum-base" FEATURES=""
     - name: "Linux Base no_std"
-      rust: beta
+      rust: stable
       os: linux
       env: PACKAGE="minimum-base" FEATURES=""
     - name: "Windows Base no_std"
-      rust: beta
+      rust: stable
       os: windows
       env: PACKAGE="minimum-base" FEATURES=""
+    - name: "BETA Linux Editor dim2"
+      rust: beta
+      os: linux
+      env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim2"
+      allow_failures: true
+    - name: "NIGHTLY Linux Editor dim2"
+      rust: nightly
+      os: linux
+      env: PACKAGE="minimum-demo" FEATURES="vulkan editor dim2"
+      allow_failures: true
   fast_finish: true
