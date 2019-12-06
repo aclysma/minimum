@@ -157,7 +157,6 @@ fn handle_translate_gizmo_input(
                     if let Some(transform_component_prototype) = entity_prototype.find_component_prototype_mut::<TransformComponentPrototype>() {
 
                         // Edit the prototype
-                        #[cfg(feature = "dim3")]
                         let world_space_accumulated_delta = glm::vec2_to_vec3(&world_space_accumulated_delta);
                         *transform_component_prototype.data_mut().position_mut() += world_space_accumulated_delta;
 
@@ -177,7 +176,6 @@ fn handle_translate_gizmo_input(
                     // Edit the component - recompute a new position. This is done using original values
                     // to avoid fp innacuracy. This is just a preview. We don't commit the change until the
                     // drag is complete.
-                    #[cfg(feature = "dim3")]
                     let world_space_previous_frame_delta = glm::vec2_to_vec3(&world_space_previous_frame_delta);
                     *transform_component.position_mut() += world_space_previous_frame_delta;
                     transform_component.requires_sync_to_physics();

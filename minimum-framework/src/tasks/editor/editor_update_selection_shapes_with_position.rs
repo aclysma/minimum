@@ -35,7 +35,7 @@ impl ResourceTaskImpl for EditorUpdateSelectionShapesWithPosition {
             if let Some(transform_component) = transform_components.get(&entity) {
 
                 #[cfg(feature = "dim2")]
-                let isometry = ncollide::math::Isometry::new(transform_component.position(), transform_component.rotation());
+                let isometry = ncollide::math::Isometry::new(transform_component.position().xy(), transform_component.rotation());
 
                 #[cfg(feature = "dim3")]
                 let isometry = ncollide::math::Isometry::from_parts(transform_component.position().into(), UnitQuaternion::from_quaternion(transform_component.rotation()));

@@ -449,7 +449,7 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                             ));
 
                         #[cfg(feature = "dim2")]
-                        let isometry = ncollide::math::Isometry::new(center, rotation);
+                        let isometry = ncollide::math::Isometry::new(center.xy(), rotation);
 
                         #[cfg(feature = "dim3")]
                         let isometry = ncollide::math::Isometry::from_parts(center.into(), UnitQuaternion::from_quaternion(rotation));
@@ -492,7 +492,7 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
                             ));
 
                         #[cfg(feature = "dim2")]
-                        let isometry = ncollide::math::Isometry::new(center, rotation);
+                        let isometry = ncollide::math::Isometry::new(center.xy(), rotation);
 
                         #[cfg(feature = "dim3")]
                         let isometry = ncollide::math::Isometry::from_parts(center.into(), UnitQuaternion::from_quaternion(rotation));
@@ -515,7 +515,7 @@ impl ComponentCreateQueueFlushListener for PhysicsBodyComponentFactory {
 
                     QueuedPhysicsBodyPrototypes::Custom(data) => {
                         #[cfg(feature = "dim2")]
-                        let isometry = ncollide::math::Isometry::new(center, rotation);
+                        let isometry = ncollide::math::Isometry::new(center.xy(), rotation);
 
                         #[cfg(feature = "dim3")]
                         let isometry = ncollide::math::Isometry::from_parts(center.into(), UnitQuaternion::from_quaternion(rotation));

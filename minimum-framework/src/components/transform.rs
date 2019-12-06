@@ -7,14 +7,14 @@ use base::component::VecComponentStorage;
 use crate::CloneComponentPrototype;
 
 #[cfg(feature = "dim2")]
-pub type Position = glm::Vec2;
+pub type Position = glm::Vec3;
 #[cfg(feature = "dim2")]
 pub type Scale = glm::Vec2;
 #[cfg(feature = "dim2")]
 pub type Rotation = f32;
 
 #[cfg(all(feature = "dim2", feature = "editor"))]
-pub type ImPosition = ImGlmVec2;
+pub type ImPosition = ImGlmVec3;
 #[cfg(all(feature = "dim2", feature = "editor"))]
 pub type ImScale = ImGlmVec2;
 #[cfg(all(feature = "dim2", feature = "editor"))]

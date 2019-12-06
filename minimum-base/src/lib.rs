@@ -19,6 +19,17 @@ pub mod task;
 pub mod util;
 pub mod world;
 
+pub use slab::Generation;
+pub use slab::GenerationIndex;
+pub use slab::RawSlab;
+pub use slab::RawSlabKey;
+pub use slab::GenSlab;
+pub use slab::GenSlabKey;
+pub use slab::RcSlab;
+pub use slab::RcSlabEntry;
+pub use slab::WeakSlabEntry;
+pub use slab::KeyedRcSlab;
+
 pub use entity::BasicEntityPrototype;
 pub use entity::Entity;
 pub use entity::EntityFactory;
@@ -37,6 +48,8 @@ pub use component::ComponentFactory;
 pub use component::ComponentPrototype;
 pub use component::ComponentStorage;
 pub use component::{ReadComponent, ReadComponentOption, WriteComponent, WriteComponentOption};
+pub use component::SlabComponentStorage;
+pub use component::VecComponentStorage;
 
 pub use resource::DataRequirement;
 pub use resource::Read;

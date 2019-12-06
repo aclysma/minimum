@@ -45,8 +45,13 @@ impl ResourceTaskImpl for PhysicsSyncPre {
 
             if let Some(pos_component) = pos_components.get_mut(&entity) {
                 if pos_component.requires_sync_to_physics() {
+
+                    let position = pos_component.position();
+                    #[cfg(feature = "dim2")]
+                    let position = position.xy();
+
                     body.set_position(nphysics::math::Isometry::from_parts(
-                        nphysics::math::Translation::from(pos_component.position()),
+                        nphysics::math::Translation::from(position),
                         body.position().rotation,
                     ));
 
@@ -56,7 +61,12 @@ impl ResourceTaskImpl for PhysicsSyncPre {
 
             if let Some(vel_component) = vel_components.get_mut(&entity) {
                 if vel_component.requires_sync_to_physics() {
-                    body.set_linear_velocity(vel_component.velocity());
+
+                    let velocity = vel_component.velocity();
+                    #[cfg(feature = "dim2")]
+                    let velocity = velocity.xy();
+
+                    body.set_linear_velocity(velocity);
                     vel_component.clear_requires_sync_to_physics();
                 }
             }

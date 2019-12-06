@@ -28,7 +28,6 @@ pub fn create_wall(
     size: glm::Vec2,
     entity_factory: &mut crate::base::EntityFactory,
 ) {
-    #[cfg(feature = "dim3")]
     let center = glm::vec2_to_vec3(&center);
     #[cfg(feature = "dim3")]
     let size = glm::vec2_to_vec3(&size);
@@ -97,9 +96,7 @@ pub fn create_bullet(
     time_state: &crate::framework::resources::TimeState,
     entity_factory: &mut crate::base::EntityFactory,
 ) {
-    #[cfg(feature = "dim3")]
     let position = glm::vec2_to_vec3(&position);
-    #[cfg(feature = "dim3")]
     let velocity = glm::vec2_to_vec3(&velocity);
 
     let radius = 5.0;
@@ -125,9 +122,17 @@ pub fn create_bullet(
             )
             .name("bullet".to_string());
 
+        let physics_position = position;
+        #[cfg(feature = "dim2")]
+        let physics_position = physics_position.xy();
+
+        let physics_velocity = velocity;
+        #[cfg(feature = "dim2")]
+        let physics_velocity = physics_velocity.xy();
+
         let body_desc = RigidBodyDesc::new()
-            .translation(position)
-            .velocity(nphysics::math::Velocity::<f32>::new(velocity, glm::zero()))
+            .translation(physics_position)
+            .velocity(nphysics::math::Velocity::<f32>::new(physics_velocity, glm::zero()))
             .mass(1000.0)
             .name("bullet".to_string());
 

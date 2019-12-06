@@ -44,12 +44,21 @@ impl ResourceTaskImpl for PhysicsSyncPost {
                 .unwrap();
 
             if let Some(pos_component) = pos_components.get_mut(&entity) {
+
                 let position = body.position().translation.vector;
+                #[cfg(feature = "dim2")]
+                let position = glm::vec2_to_vec3(&position);
+
                 *pos_component.position_mut() = position;
             }
 
             if let Some(vel_component) = vel_components.get_mut(&entity) {
-                *vel_component.velocity_mut() = body.velocity().linear;
+
+                let velocity = body.velocity().linear;
+                #[cfg(feature = "dim2")]
+                let velocity = glm::vec2_to_vec3(&velocity);
+
+                *vel_component.velocity_mut() = velocity;
             }
         }
     }
