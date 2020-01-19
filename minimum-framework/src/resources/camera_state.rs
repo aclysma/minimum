@@ -112,5 +112,4 @@ impl CameraState {
         let world_space_zero = self.ui_space_to_world_space(glm::zero());
         self.ui_space_to_world_space(ui_space_delta) - world_space_zero
     }
-
 }

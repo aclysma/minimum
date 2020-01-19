@@ -6,19 +6,16 @@ extension points for integrating custom and 3rd-party libraries with your game l
 This library is best suited for use by those who want to start with something thin and bring their own tech to put on
 top of it. It's your very own build-a-game-engine toolkit.
 
-Currently requires Rust Beta channel. Stable will be supported in 1.38, schedule for release on 2019-09-26.
-
 [![Build Status](https://travis-ci.org/aclysma/minimum.svg?branch=master)](https://travis-ci.org/aclysma/minimum)
 
-## Platform Support
- * The base/ECS is very portable. It's pure rust and has few upstream dependencies. `no_std` (for this 
-   portion of the library only) builds but is not yet tested. To use `no_std`, disable default features and 
-   don't use feature `std` 
- * The demo builds for Windows/MacOS/Linux. Only being tested on MacOS for now. Outside testing and pull requests to
-   improve support for other platforms very welcome!
+## Status
 
-The no-editor build of this library could realistically support embedded (`no_std`), mobile, PC, and web platforms 
-because this avoids coupling to a renderer/windowing system. For the time being, the focus is on PC.
+This framework is a proof-of-concept. Some major changes I'd like to make:
+ * Replace much of the base/ECS layer with `legion`. (Legion was missing Read/Write awareness for multi-threading purposes.)
+ * Use `atelier` for asset loading/processing.
+ 
+Some work towards both changes can be found [here](https://github.com/aclysma/atelier-legion-demo). I'm hoping to bring
+these changes into minimum, but it could be a while.
 
 ## Features
 
@@ -33,11 +30,22 @@ Youtube Video:
 
 [![IMAGE ALT TEXT](http://img.youtube.com/vi/BON_RvVFiWY/0.jpg)](https://www.youtube.com/watch?v=BON_RvVFiWY "Video of Editor in Use")
 
+## Platform Support
+ * The base/ECS is very portable. It's pure rust and has few upstream dependencies. `no_std` (for this 
+   portion of the library only) builds but is not yet tested. To use `no_std`, disable default features and 
+   don't use feature `std` 
+ * The demo builds for Windows/MacOS/Linux. Only being tested on MacOS for now. Pull requests to
+   improve support for other platforms very welcome!
+
+The no-editor build of this library could realistically support embedded (`no_std`), mobile, PC, and web platforms 
+because this avoids coupling to a renderer/windowing system. For the time being, the focus is on PC.
+
 ## Alternatives
  * For a mature ecs, I suggest looking at `shred` or `specs`. (In fact some of this library is quite similar to shred!)
+   `legion` is also a great choice and is improving rapidly 
  * For more batteries-included solutions in rust, I would look at `amethyst`, `coffee`, or `ggez`.
-     * I expect a typical usecase would be to combine this framework with another "engine" that is focused more on
-       functionality that tooling/workflow.
+     * I expect a typical use-case one day would be to combine this framework with another "engine" that is focused more
+       on functionality than tooling/workflow.
 
 ## Directory map
 
@@ -59,8 +67,9 @@ Over time, the functionality that isn't coupled to these libraries will move to 
 To run the demo:
  * Working directory must be `/minimum-demo`
  * The `editor` feature (will likely rename to tools later...) enables an editor. It is ON by default since this is a demo!
+ * Use feature `dim2` or `dim3` depending on if you want to use 2d or 3d physics
  * Use `metal`, `dx12`, or `vulkan` feature when using cargo commands
-     * Example: `cargo run --features="metal editor"`
+     * Example: `cargo run --features="metal editor dim2"`
 
 ## Roadmap
 
