@@ -10,10 +10,10 @@ use ncollide2d::pipeline::{CollisionGroups, GeometricQueryType};
 use ncollide2d::shape::{Ball, Cuboid};
 use ncollide2d::shape::ShapeHandle;
 use crate::components::{
-    Position2DComponent, UniformScale2DComponent, NonUniformScale2DComponent, Rotation2DComponent,
+    PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use imgui_inspect_derive;
-use crate::math::Vec2;
+use crate::math::Vec3;
 use crate::math::Vec4;
 use imgui_inspect_derive::Inspect;
 use legion::prelude::*;
@@ -70,14 +70,14 @@ impl From<PaintDef> for Paint {
 #[uuid = "c05e5c27-58ca-4d68-b825-b20f67fdaf37"]
 pub struct DrawSkiaBoxComponentDef {
     #[serde_diff(opaque)]
-    pub half_extents: Vec2,
+    pub half_extents: Vec3,
     pub paint: PaintDef,
 }
 
 legion_prefab::register_component_type!(DrawSkiaBoxComponentDef);
 
 pub struct DrawSkiaBoxComponent {
-    pub half_extents: Vec2,
+    pub half_extents: Vec3,
     pub paint: Paint,
 }
 
@@ -99,15 +99,15 @@ impl crate::selection::EditorSelectable for DrawSkiaBoxComponent {
         world: &World,
         entity: Entity,
     ) {
-        if let Some(position) = world.get_component::<Position2DComponent>(entity) {
+        if let Some(position) = world.get_component::<PositionComponent>(entity) {
             let mut half_extents = *self.half_extents;
 
-            if let Some(uniform_scale) = world.get_component::<UniformScale2DComponent>(entity) {
+            if let Some(uniform_scale) = world.get_component::<UniformScaleComponent>(entity) {
                 half_extents *= uniform_scale.uniform_scale;
             }
 
             if let Some(non_uniform_scale) =
-                world.get_component::<NonUniformScale2DComponent>(entity)
+                world.get_component::<NonUniformScaleComponent>(entity)
             {
                 half_extents *= *non_uniform_scale.non_uniform_scale;
             }
@@ -118,10 +118,10 @@ impl crate::selection::EditorSelectable for DrawSkiaBoxComponent {
             }
 
             let shape_handle =
-                ShapeHandle::new(Cuboid::new(crate::math::vec2_glam_to_glm(half_extents)));
+                ShapeHandle::new(Cuboid::new(glm::Vec2::new(half_extents.x(), half_extents.y())));
 
             collision_world.add(
-                ncollide2d::math::Isometry::new(position.position.into(), rotation),
+                ncollide2d::math::Isometry::new(position.position.xy().into(), rotation),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),
@@ -179,17 +179,17 @@ impl crate::selection::EditorSelectable for DrawSkiaCircleComponent {
         world: &World,
         entity: Entity,
     ) {
-        if let Some(position) = world.get_component::<Position2DComponent>(entity) {
+        if let Some(position) = world.get_component::<PositionComponent>(entity) {
             let mut radius = self.radius;
 
-            if let Some(uniform_scale) = world.get_component::<UniformScale2DComponent>(entity) {
+            if let Some(uniform_scale) = world.get_component::<UniformScaleComponent>(entity) {
                 radius *= uniform_scale.uniform_scale;
             }
 
             //TODO: Warn if radius is 0
             let shape_handle = ShapeHandle::new(Ball::new(radius.max(0.01)));
             collision_world.add(
-                ncollide2d::math::Isometry::new(position.position.into(), 0.0),
+                ncollide2d::math::Isometry::new(position.position.xy().into(), 0.0),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),

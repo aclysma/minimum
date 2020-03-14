@@ -148,6 +148,12 @@ impl Vec3 {
             value: glam::Vec3::zero(),
         }
     }
+
+    pub fn xy(&self) -> Vec2 {
+        Vec2 {
+            value: self.value.truncate()
+        }
+    }
 }
 
 impl From<glam::Vec3> for Vec3 {

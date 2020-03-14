@@ -2,7 +2,7 @@ use legion::prelude::*;
 
 use crate::resources::{PhysicsResource, TimeResource};
 
-use crate::components::Position2DComponent;
+use crate::components::PositionComponent;
 use crate::components::RigidBodyComponent;
 
 pub fn update_physics() -> Box<dyn Schedulable> {
@@ -22,11 +22,13 @@ pub fn update_physics() -> Box<dyn Schedulable> {
 pub fn read_from_physics() -> Box<dyn Schedulable> {
     SystemBuilder::new("read physics data")
         .read_resource::<PhysicsResource>()
-        .with_query(<(Write<Position2DComponent>, Read<RigidBodyComponent>)>::query())
+        .with_query(<(Write<PositionComponent>, Read<RigidBodyComponent>)>::query())
         .build(|_, mut world, physics, query| {
             for (mut pos, body) in query.iter_mut(&mut world) {
                 if let Some(rigid_body) = physics.bodies.rigid_body(body.handle) {
-                    pos.position = rigid_body.position().translation.vector.into()
+                    let position = rigid_body.position().translation.vector;
+                    pos.position.set_x(position.x);
+                    pos.position.set_y(position.y);
                 }
             }
         })

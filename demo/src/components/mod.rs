@@ -10,9 +10,9 @@ pub use physics::RigidBodyBoxComponentDef;
 pub use physics::RigidBodyBallComponentDef;
 
 mod transform;
-pub use transform::Position2DComponent;
-pub use transform::UniformScale2DComponent;
-pub use transform::NonUniformScale2DComponent;
+pub use transform::PositionComponent;
+pub use transform::UniformScaleComponent;
+pub use transform::NonUniformScaleComponent;
 pub use transform::Rotation2DComponent;
 
 mod draw;

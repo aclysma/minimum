@@ -1,14 +1,15 @@
 use std::collections::{HashSet, HashMap, VecDeque};
 use legion::prelude::*;
 use legion::storage::ComponentTypeId;
-use crate::resources::{TimeResource, AssetResource, UniverseResource, EditorSelectionResource};
+use minimum2::resources::AssetResource;
+use crate::resources::{TimeResource, UniverseResource, EditorSelectionResource};
 use crate::resources::SimulationTimePauseReason;
 use atelier_assets::core::AssetUuid;
 use legion_prefab::{CookedPrefab, ComponentRegistration, Prefab};
 use std::sync::Arc;
 use crate::resources::time::TimeState;
 use atelier_assets::loader::handle::{TypedAssetStorage, AssetHandle};
-use crate::pipeline::PrefabAsset;
+use minimum2::pipeline::PrefabAsset;
 use legion_transaction::{ComponentDiff, apply_diff_to_prefab, WorldDiff};
 use prefab_format::{ComponentTypeUuid, EntityUuid};
 use itertools::Itertools;
@@ -326,7 +327,7 @@ impl EditorStateResource {
             use atelier_assets::loader::handle::AssetHandle;
 
             let load_handle = asset_resource.loader().add_ref(prefab_uuid);
-            let handle = atelier_loader::handle::Handle::<crate::pipeline::PrefabAsset>::new(
+            let handle = atelier_loader::handle::Handle::<minimum2::pipeline::PrefabAsset>::new(
                 asset_resource.tx().clone(),
                 load_handle,
             );
@@ -348,7 +349,7 @@ impl EditorStateResource {
             // Load the uncooked prefab from disk and cook it. (Eventually this will be handled
             // during atelier's build step
             let mut universe = resources.get_mut::<UniverseResource>().unwrap();
-            let cooked_prefab = Arc::new(crate::prefab_cooking::cook_prefab(
+            let cooked_prefab = Arc::new(minimum2::prefab_cooking::cook_prefab(
                 &*universe,
                 &mut *asset_resource,
                 &editor_state.component_registry,

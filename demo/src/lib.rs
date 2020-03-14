@@ -12,8 +12,6 @@ use legion_prefab::ComponentRegistration;
 use prefab_format::ComponentTypeUuid;
 use atelier_assets::core::asset_uuid;
 
-mod asset_storage;
-
 mod components;
 use components::*;
 
@@ -37,10 +35,6 @@ use std::sync::mpsc::RecvTimeoutError::Timeout;
 use std::borrow::BorrowMut;
 use nphysics2d::object::RigidBodyDesc;
 
-pub mod daemon;
-
-mod prefab_cooking;
-
 pub mod app;
 
 mod imgui_support;
@@ -50,13 +44,15 @@ use legion_transaction::SpawnCloneImpl;
 
 use atelier_assets::core as atelier_core;
 
+use minimum2::resources::AssetResource;
+
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
 
 /// Create the asset manager that has all the required types registered
 pub fn create_asset_manager() -> AssetResource {
     let mut asset_manager = AssetResource::default();
-    asset_manager.add_storage::<PrefabAsset>();
+    asset_manager.add_storage::<minimum2::pipeline::PrefabAsset>();
     asset_manager
 }
 
@@ -108,9 +104,9 @@ pub fn create_editor_inspector_registry() -> EditorInspectRegistry {
     let mut registry = EditorInspectRegistry::default();
     registry.register::<DrawSkiaCircleComponentDef>();
     registry.register::<DrawSkiaBoxComponentDef>();
-    registry.register::<Position2DComponent>();
-    registry.register::<UniformScale2DComponent>();
-    registry.register::<NonUniformScale2DComponent>();
+    registry.register::<PositionComponent>();
+    registry.register::<UniformScaleComponent>();
+    registry.register::<NonUniformScaleComponent>();
     registry.register::<Rotation2DComponent>();
     registry.register::<RigidBodyBallComponentDef>();
     registry.register::<RigidBodyBoxComponentDef>();

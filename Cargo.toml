@@ -12,6 +12,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
 #skulpin = { version = "0.8", default-features = false, features = ["skia_complete", "skulpin_winit"] }
 #skulpin-plugin-imgui = "0.2"
 #
@@ -21,8 +22,7 @@ edition = "2018"
 #imgui = "0.3"
 #imgui-winit-support = "0.3"
 
-# A couple PRs are
-legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="clone_move_rebased" }
+#crossbeam-channel = "0.3"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
@@ -30,22 +30,32 @@ legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
 legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
 prefab-format = { git = "https://github.com/kabergstrom/prefab" }
 
+legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
+
+glam = { version = "0.8.5", features = ["serde"] }
+
+#nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
+#nalgebra-glm = "0.4"
+#ncollide2d = "0.20"
+#nphysics2d = "0.12"
+
+structopt = "0.3"
+serde = "1"
+uuid = "0.8"
+type-uuid = "0.1"
+image2 = { version = "0.11", features = [ "ser" ] }
+inventory = "0.1"
+
 # We need this PR (https://github.com/servo/bincode/pull/288) but it's not published yet
 #bincode = "1.2"
 bincode = { git = "https://github.com/servo/bincode.git", rev="e30e91e3a" }
-
-ncollide2d = "0.20"
-
-uuid = "0.8"
-type-uuid = "0.1"
 mopa = "0.2"
-structopt = "0.3"
-serde = "1"
-log="0.4"
-inventory = "0.1"
+itertools = "0.8"
+
+serde-diff = "0.3"
+
 ron = "0.5"
 erased-serde = "0.3"
 
-itertools = "0.8"
-
-#[dev-dependencies]
+log="0.4"
+env_logger = "0.6"

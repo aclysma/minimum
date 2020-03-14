@@ -6,8 +6,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.12796938, 2.868164),
+                    data: PositionComponent(
+                        position: Vec3(-0.12796938, 2.868164, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -34,8 +34,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.72929704, 2.1600783),
+                    data: PositionComponent(
+                        position: Vec3(0.72929704, 2.1600783, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -62,8 +62,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-1.0500001, 3.63),
+                    data: PositionComponent(
+                        position: Vec3(-1.0500001, 3.63, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -90,8 +90,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.21000004, 3.63),
+                    data: PositionComponent(
+                        position: Vec3(-0.21000004, 3.63, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -118,8 +118,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.63, 4.8900003),
+                    data: PositionComponent(
+                        position: Vec3(0.63, 4.8900003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -146,8 +146,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.63, 4.4700003),
+                    data: PositionComponent(
+                        position: Vec3(0.63, 4.4700003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -174,8 +174,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.63000005, 4.8900003),
+                    data: PositionComponent(
+                        position: Vec3(-0.63000005, 4.8900003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -202,8 +202,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.63, 3.63),
+                    data: PositionComponent(
+                        position: Vec3(0.63, 3.63, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -230,8 +230,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.20999992, 4.05),
+                    data: PositionComponent(
+                        position: Vec3(0.20999992, 4.05, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -258,8 +258,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.20999992, 4.4700003),
+                    data: PositionComponent(
+                        position: Vec3(0.20999992, 4.4700003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -286,8 +286,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.42656243, 2.0075002),
+                    data: PositionComponent(
+                        position: Vec3(-0.42656243, 2.0075002, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -314,8 +314,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.20999992, 4.8900003),
+                    data: PositionComponent(
+                        position: Vec3(0.20999992, 4.8900003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -342,8 +342,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.63000005, 4.05),
+                    data: PositionComponent(
+                        position: Vec3(-0.63000005, 4.05, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -370,8 +370,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-1.0500001, 4.4700003),
+                    data: PositionComponent(
+                        position: Vec3(-1.0500001, 4.4700003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -398,8 +398,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.21000004, 4.8900003),
+                    data: PositionComponent(
+                        position: Vec3(-0.21000004, 4.8900003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -426,8 +426,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-1.0500001, 4.8900003),
+                    data: PositionComponent(
+                        position: Vec3(-1.0500001, 4.8900003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -454,14 +454,14 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0, -0.2),
+                    data: PositionComponent(
+                        position: Vec3(0, -0.2, 0.0),
                     ),
                 ),
                 EntityComponent(
                     type: "c05e5c27-58ca-4d68-b825-b20f67fdaf37",
                     data: DrawSkiaBoxComponentDef(
-                        half_extents: Vec2(3, 0.2),
+                        half_extents: Vec3(3, 0.2, 0.0),
                         paint: PaintDef(
                             color: Vec4(0, 1, 0, 1),
                             stroke_width: 0.02,
@@ -471,7 +471,7 @@ Prefab(
                 EntityComponent(
                     type: "36df3006-a5ad-4997-9ccc-0860f49195ad",
                     data: RigidBodyBoxComponentDef(
-                        half_extents: Vec2(3, 0.2),
+                        half_extents: Vec3(3, 0.2, 0.0),
                         is_static: true,
                     ),
                 ),
@@ -482,8 +482,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.63000005, 4.4700003),
+                    data: PositionComponent(
+                        position: Vec3(-0.63000005, 4.4700003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -510,8 +510,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.21000004, 4.4700003),
+                    data: PositionComponent(
+                        position: Vec3(-0.21000004, 4.4700003, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -538,8 +538,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.63, 4.05),
+                    data: PositionComponent(
+                        position: Vec3(0.63, 4.05, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -566,8 +566,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.7608597, 2.9337497),
+                    data: PositionComponent(
+                        position: Vec3(0.7608597, 2.9337497, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -594,8 +594,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.21000004, 4.05),
+                    data: PositionComponent(
+                        position: Vec3(-0.21000004, 4.05, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -622,8 +622,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(0.20999992, 3.63),
+                    data: PositionComponent(
+                        position: Vec3(0.20999992, 3.63, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -650,8 +650,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.950703, 2.1600783),
+                    data: PositionComponent(
+                        position: Vec3(-0.950703, 2.1600783, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -678,8 +678,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-0.63000005, 3.63),
+                    data: PositionComponent(
+                        position: Vec3(-0.63000005, 3.63, 0.0),
                     ),
                 ),
                 EntityComponent(
@@ -706,8 +706,8 @@ Prefab(
             components: [
                 EntityComponent(
                     type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: Position2DComponent(
-                        position: Vec2(-1.0500001, 4.05),
+                    data: PositionComponent(
+                        position: Vec3(-1.0500001, 4.05, 0.0),
                     ),
                 ),
                 EntityComponent(

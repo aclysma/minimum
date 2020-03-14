@@ -3,8 +3,7 @@ use skulpin::app::LogicalSize;
 use std::ffi::CString;
 
 use demo::DemoApp;
-use demo::daemon;
-//use minimum2::game;
+use minimum2::daemon;
 
 fn main() {
     // Setup logging

@@ -24,14 +24,14 @@ use imgui_inspect_derive::Inspect;
 
 use crate::math::winit_position_to_glam;
 use imgui_inspect::InspectRenderDefault;
-use crate::pipeline::PrefabAsset;
+use minimum2::pipeline::PrefabAsset;
 use prefab_format::{EntityUuid, ComponentTypeUuid};
 use legion_prefab::CookedPrefab;
 use legion_transaction::ComponentDiff;
 use std::sync::Arc;
-use crate::components::{Position2DComponent, Rotation2DComponent};
-use crate::components::UniformScale2DComponent;
-use crate::components::NonUniformScale2DComponent;
+use crate::components::{PositionComponent, Rotation2DComponent};
+use crate::components::UniformScaleComponent;
+use crate::components::NonUniformScaleComponent;
 use atelier_assets::core::asset_uuid;
 
 use legion::filter::EntityFilterTuple;
@@ -52,13 +52,13 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
         .write_resource::<DebugDrawResource>()
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
-        .with_query(<(Read<Position2DComponent>)>::query())
+        .with_query(<(Read<PositionComponent>)>::query())
         .with_query(<(
-            Read<Position2DComponent>,
-            TryRead<UniformScale2DComponent>,
-            TryRead<NonUniformScale2DComponent>,
+            Read<PositionComponent>,
+            TryRead<UniformScaleComponent>,
+            TryRead<NonUniformScaleComponent>,
         )>::query())
-        .with_query(<(Read<Position2DComponent>, Read<Rotation2DComponent>)>::query())
+        .with_query(<(Read<PositionComponent>, Read<Rotation2DComponent>)>::query())
         .build(
             |command_buffer,
              subworld,
@@ -175,12 +175,12 @@ fn handle_translate_gizmo_input(
             world_space_previous_frame_delta.set_y(0.0);
         }
 
-        let query = <(Write<Position2DComponent>)>::query();
+        let query = <(Write<PositionComponent>)>::query();
 
         for (entity_handle, mut position) in query.iter_entities_mut(tx.world_mut()) {
             // Can use editor_draw.is_shape_drag_just_finished(MouseButton::Left) to see if this is the final drag,
             // in which case we might want to save an undo step
-            *position.position += world_space_previous_frame_delta;
+            *position.position += glam::Vec3::new(world_space_previous_frame_delta.x(), world_space_previous_frame_delta.y(), 0.0);
         }
 
         if editor_draw.is_shape_drag_just_finished(MouseButton::Left) {
@@ -199,8 +199,8 @@ fn draw_translate_gizmo(
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
     translate_query: &mut legion::systems::SystemQuery<
-        Read<Position2DComponent>,
-        EntityFilterTuple<ComponentFilter<Position2DComponent>, Passthrough, Passthrough>,
+        Read<PositionComponent>,
+        EntityFilterTuple<ComponentFilter<PositionComponent>, Passthrough, Passthrough>,
     >,
 ) {
     for (entity, position) in translate_query.iter_entities(subworld) {
@@ -353,16 +353,16 @@ fn handle_scale_gizmo_input(
         }
 
         if scale_uniform {
-            let query = <(Write<UniformScale2DComponent>)>::query();
+            let query = <(Write<UniformScaleComponent>)>::query();
 
             for (entity_handle, mut uniform_scale) in query.iter_entities_mut(tx.world_mut()) {
                 uniform_scale.uniform_scale += ui_space_previous_frame_delta.x()
             }
         } else {
-            let query = <(Write<NonUniformScale2DComponent>)>::query();
+            let query = <(Write<NonUniformScaleComponent>)>::query();
 
             for (entity_handle, mut non_uniform_scale) in query.iter_entities_mut(tx.world_mut()) {
-                *non_uniform_scale.non_uniform_scale += ui_space_previous_frame_delta
+                *non_uniform_scale.non_uniform_scale += glam::Vec3::new(ui_space_previous_frame_delta.x(), ui_space_previous_frame_delta.y(), 0.0);
             }
         }
 
@@ -383,13 +383,13 @@ fn draw_scale_gizmo(
     subworld: &SubWorld,
     scale_query: &mut legion::systems::SystemQuery<
         (
-            Read<Position2DComponent>,
-            TryRead<UniformScale2DComponent>,
-            TryRead<NonUniformScale2DComponent>,
+            Read<PositionComponent>,
+            TryRead<UniformScaleComponent>,
+            TryRead<NonUniformScaleComponent>,
         ),
         EntityFilterTuple<
             And<(
-                ComponentFilter<Position2DComponent>,
+                ComponentFilter<PositionComponent>,
                 Passthrough,
                 Passthrough,
             )>,
@@ -405,7 +405,7 @@ fn draw_scale_gizmo(
             continue;
         }
 
-        let position = *position.position;
+        let position = *position.position.xy();
 
         let x_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
         let y_color = glam::Vec4::new(1.0, 0.6, 0.0, 1.0);
@@ -523,10 +523,10 @@ fn draw_rotate_gizmo(
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
     scale_query: &mut legion::systems::SystemQuery<
-        (Read<Position2DComponent>, Read<Rotation2DComponent>),
+        (Read<PositionComponent>, Read<Rotation2DComponent>),
         EntityFilterTuple<
             And<(
-                ComponentFilter<Position2DComponent>,
+                ComponentFilter<PositionComponent>,
                 ComponentFilter<Rotation2DComponent>,
             )>,
             And<(Passthrough, Passthrough)>,
@@ -539,7 +539,7 @@ fn draw_rotate_gizmo(
             continue;
         }
 
-        let position = *position.position;
+        let position = position.position.xy();
 
         let z_axis_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
 
@@ -549,14 +549,14 @@ fn draw_rotate_gizmo(
         editor_draw.add_circle_outline(
             "z_axis_rotate",
             debug_draw,
-            position,
+            *position,
             50.0 * ui_multiplier,
             z_axis_color,
         );
         editor_draw.add_circle_outline(
             "z_axis_rotate",
             debug_draw,
-            position,
+            *position,
             52.0 * ui_multiplier,
             z_axis_color,
         );

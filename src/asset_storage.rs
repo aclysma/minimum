@@ -76,6 +76,20 @@ impl<A: TypeUuid + for<'a> serde::Deserialize<'a> + 'static + Send> TypedAssetSt
         &self,
         handle: &T,
     ) -> Option<&A> {
+
+        println!("type is {}", core::any::type_name::<A>());
+
+        {
+            let x = self.storage
+                .lock()
+                .unwrap()
+                .get(&AssetTypeId(A::UUID))
+                .expect("unknown asset type")
+                .as_ref()
+                .type_name();
+            println!("storage is {}", x);
+        }
+
         // This transmute can probably be unsound, but I don't have the energy to fix it right now
         unsafe {
             std::mem::transmute(
@@ -143,6 +157,8 @@ pub trait TypedStorage: Any + Send {
         &mut self,
         handle: LoadHandle,
     );
+
+    fn type_name(&self) -> &'static str;
 }
 mopafy!(TypedStorage);
 impl<A: for<'a> serde::Deserialize<'a> + 'static + TypeUuid + Send> TypedStorage for Storage<A> {
@@ -191,6 +207,10 @@ impl<A: for<'a> serde::Deserialize<'a> + 'static + TypeUuid + Send> TypedStorage
     ) {
         self.assets.remove(&load_handle);
         log::info!("Free {:?}", load_handle);
+    }
+
+    fn type_name(&self) -> &'static str {
+        core::any::type_name::<Self>()
     }
 }
 

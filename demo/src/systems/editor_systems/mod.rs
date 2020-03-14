@@ -24,12 +24,12 @@ use imgui_inspect_derive::Inspect;
 
 use crate::math::winit_position_to_glam;
 use imgui_inspect::InspectRenderDefault;
-use crate::pipeline::PrefabAsset;
+use minimum2::pipeline::PrefabAsset;
 use prefab_format::{EntityUuid, ComponentTypeUuid};
 use legion_prefab::CookedPrefab;
 use legion_transaction::ComponentDiff;
 use std::sync::Arc;
-use crate::components::Position2DComponent;
+use crate::components::PositionComponent;
 use atelier_assets::core::asset_uuid;
 
 mod main_menu;
@@ -102,7 +102,7 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
         .write_resource::<DebugDrawResource>()
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
-        .with_query(<(Read<Position2DComponent>)>::query())
+        .with_query(<(Read<PositionComponent>)>::query())
         .build(
             |command_buffer,
              subworld,
@@ -171,7 +171,7 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
         .write_resource::<DebugDrawResource>()
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
-        .with_query(<(Read<Position2DComponent>)>::query())
+        .with_query(<(Read<PositionComponent>)>::query())
         .build(
             |command_buffer,
              subworld,

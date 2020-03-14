@@ -4,7 +4,7 @@ use imgui;
 use skulpin::skia_safe;
 
 use crate::components::{
-    Position2DComponent, UniformScale2DComponent, NonUniformScale2DComponent, Rotation2DComponent,
+    PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use crate::components::DrawSkiaBoxComponent;
 use crate::components::DrawSkiaCircleComponent;
@@ -28,16 +28,16 @@ pub fn draw() -> Box<dyn Schedulable> {
         .read_resource::<InputResource>()
         .write_resource::<DebugDrawResource>()
         .with_query(<(
-            Read<Position2DComponent>,
+            Read<PositionComponent>,
             Read<DrawSkiaBoxComponent>,
-            TryRead<UniformScale2DComponent>,
-            TryRead<NonUniformScale2DComponent>,
+            TryRead<UniformScaleComponent>,
+            TryRead<NonUniformScaleComponent>,
             TryRead<Rotation2DComponent>,
         )>::query())
         .with_query(<(
-            Read<Position2DComponent>,
+            Read<PositionComponent>,
             Read<DrawSkiaCircleComponent>,
-            TryRead<UniformScale2DComponent>,
+            TryRead<UniformScaleComponent>,
             TryRead<Rotation2DComponent>,
         )>::query())
         .build(
