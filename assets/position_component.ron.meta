@@ -1,0 +1,29 @@
+(
+    version: 1,
+    import_hash: Some(16320362116738475357),
+    importer_version: 1,
+    importer_type: "162ede20-6fdd-44c1-8387-8f93983c067c",
+    importer_options: (),
+    importer_state: (
+        id: Some("df3a8294-ffce-4ecc-81ad-a96867aa3f8a"),
+    ),
+    assets: [
+        (
+            id: "df3a8294-ffce-4ecc-81ad-a96867aa3f8a",
+            search_tags: [
+                ("file_name", Some("position_component.ron")),
+            ],
+            build_pipeline: None,
+            artifact: Some((
+                hash: 1697879319542527220,
+                id: "df3a8294-ffce-4ecc-81ad-a96867aa3f8a",
+                build_deps: [],
+                load_deps: [],
+                compression: None,
+                compressed_size: Some(8),
+                uncompressed_size: Some(8),
+                type_id: "f5780013-bae4-49f0-ac0e-a108ff52fec0",
+            )),
+        ),
+    ],
+)
