@@ -3,7 +3,7 @@ use legion::prelude::*;
 use imgui;
 use skulpin::skia_safe;
 
-use crate::components::{
+use minimum2::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use crate::components::DrawSkiaBoxComponent;

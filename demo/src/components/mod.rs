@@ -9,12 +9,6 @@ pub use physics::RigidBodyComponent;
 pub use physics::RigidBodyBoxComponentDef;
 pub use physics::RigidBodyBallComponentDef;
 
-mod transform;
-pub use transform::PositionComponent;
-pub use transform::UniformScaleComponent;
-pub use transform::NonUniformScaleComponent;
-pub use transform::Rotation2DComponent;
-
 mod draw;
 pub use draw::DrawSkiaCircleComponent;
 pub use draw::DrawSkiaCircleComponentDef;

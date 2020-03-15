@@ -4,7 +4,7 @@ use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use nphysics2d::object::DefaultBodyHandle;
 use legion_transaction::SpawnFrom;
-use crate::math::Vec3;
+use minimum2::math::Vec3;
 use crate::resources::{PhysicsResource, OpenedPrefabState};
 use legion::prelude::*;
 use std::ops::Range;
@@ -17,12 +17,13 @@ use ncollide2d::pipeline::{CollisionGroups, GeometricQueryType};
 use legion::index::ComponentIndex;
 use legion_transaction::iter_components_in_storage;
 
-use crate::components::{
+use minimum2::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use ncollide2d::world::CollisionWorld;
 
 use atelier_assets::importer as atelier_importer;
+use crate::math_conversions::vec2_glam_to_glm;
 
 //
 // Add a ball rigid body
@@ -100,7 +101,7 @@ fn transform_shape_to_rigid_body(
     } else {
         physics.bodies.insert(
             nphysics2d::object::RigidBodyDesc::new()
-                .translation(position.xy().into())
+                .translation(vec2_glam_to_glm(position.xy().into()))
                 .build(),
         )
     };
@@ -108,7 +109,7 @@ fn transform_shape_to_rigid_body(
     // Build the collider.
     let collider = nphysics2d::object::ColliderDesc::new(shape_handle.clone())
         .density(1.0)
-        .translation(collider_offset.xy().into())
+        .translation(vec2_glam_to_glm(*collider_offset.xy()))
         .build(nphysics2d::object::BodyPartHandle(rigid_body_handle, 0));
 
     // Insert the collider to the body set.
@@ -201,7 +202,7 @@ impl crate::selection::EditorSelectableTransformed<RigidBodyComponent>
             let shape_handle = ShapeHandle::new(Ball::new(radius.max(0.01)));
 
             collision_world.add(
-                ncollide2d::math::Isometry::new(position.position.xy().into(), 0.0),
+                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), 0.0),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),
@@ -318,7 +319,7 @@ impl crate::selection::EditorSelectableTransformed<RigidBodyComponent>
                 ShapeHandle::new(Cuboid::new(glm::Vec2::new(half_extents.x(), half_extents.y())));
 
             collision_world.add(
-                ncollide2d::math::Isometry::new(position.position.xy().into(), rotation),
+                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), rotation),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),

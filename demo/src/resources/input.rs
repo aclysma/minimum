@@ -2,7 +2,7 @@ use std::ops::{Deref, DerefMut};
 use skulpin::app::InputState;
 use skulpin::app::PhysicalSize;
 use crate::resources::ViewportResource;
-use crate::math::winit_position_to_glam;
+use crate::math_conversions::winit_position_to_glam;
 use skulpin::app::VirtualKeyCode;
 use skulpin::app::MouseButton;
 use skulpin::app::MouseScrollDelta;

@@ -21,14 +21,14 @@ use ncollide2d::world::CollisionWorld;
 
 use imgui_inspect_derive::Inspect;
 
-use crate::math::winit_position_to_glam;
+use crate::math_conversions::winit_position_to_glam;
 use imgui_inspect::InspectRenderDefault;
 use minimum2::pipeline::PrefabAsset;
 use prefab_format::{EntityUuid, ComponentTypeUuid};
 use legion_prefab::CookedPrefab;
 use legion_transaction::ComponentDiff;
 use std::sync::Arc;
-use crate::components::PositionComponent;
+use minimum2::components::PositionComponent;
 use atelier_assets::core::asset_uuid;
 
 fn handle_selection(
@@ -53,7 +53,7 @@ fn handle_selection(
         //
 
         // Determine where in world space to do the raycast
-        let world_space = ncollide2d::math::Point::from(crate::math::vec2_glam_to_glm(
+        let world_space = ncollide2d::math::Point::from(crate::math_conversions::vec2_glam_to_glm(
             viewport.ui_space_to_world_space(position),
         ));
 
@@ -95,8 +95,8 @@ fn handle_selection(
 
         // Build an AABB to use in the collision intersection test
         let aabb = ncollide2d::bounding_volume::AABB::new(
-            nalgebra::Point::from(crate::math::vec2_glam_to_glm(mins)),
-            nalgebra::Point::from(crate::math::vec2_glam_to_glm(maxs)),
+            nalgebra::Point::from(crate::math_conversions::vec2_glam_to_glm(mins)),
+            nalgebra::Point::from(crate::math_conversions::vec2_glam_to_glm(maxs)),
         );
 
         // Do the intersection test

@@ -22,14 +22,14 @@ use ncollide2d::world::CollisionWorld;
 
 use imgui_inspect_derive::Inspect;
 
-use crate::math::winit_position_to_glam;
+use crate::math_conversions::winit_position_to_glam;
 use imgui_inspect::InspectRenderDefault;
 use minimum2::pipeline::PrefabAsset;
 use prefab_format::{EntityUuid, ComponentTypeUuid};
 use legion_prefab::CookedPrefab;
 use legion_transaction::ComponentDiff;
 use std::sync::Arc;
-use crate::components::PositionComponent;
+use minimum2::components::PositionComponent;
 use atelier_assets::core::asset_uuid;
 
 pub fn editor_entity_list_window() -> Box<dyn Schedulable> {

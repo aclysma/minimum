@@ -9,17 +9,18 @@ use legion::world::World;
 use ncollide2d::pipeline::{CollisionGroups, GeometricQueryType};
 use ncollide2d::shape::{Ball, Cuboid};
 use ncollide2d::shape::ShapeHandle;
-use crate::components::{
+use minimum2::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use imgui_inspect_derive;
-use crate::math::Vec3;
-use crate::math::Vec4;
+use minimum2::math::Vec3;
+use minimum2::math::Vec4;
 use imgui_inspect_derive::Inspect;
 use legion::prelude::*;
 use crate::resources::OpenedPrefabState;
 
 use atelier_assets::importer as atelier_importer;
+use crate::math_conversions::vec2_glam_to_glm;
 
 // A utility struct to describe color for a skia shape
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, SerdeDiff, PartialEq, Inspect, Default)]
@@ -120,7 +121,7 @@ impl crate::selection::EditorSelectable for DrawSkiaBoxComponent {
                 ShapeHandle::new(Cuboid::new(glm::Vec2::new(half_extents.x(), half_extents.y())));
 
             collision_world.add(
-                ncollide2d::math::Isometry::new(position.position.xy().into(), rotation),
+                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), rotation),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),
@@ -187,7 +188,7 @@ impl crate::selection::EditorSelectable for DrawSkiaCircleComponent {
             //TODO: Warn if radius is 0
             let shape_handle = ShapeHandle::new(Ball::new(radius.max(0.01)));
             collision_world.add(
-                ncollide2d::math::Isometry::new(position.position.xy().into(), 0.0),
+                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), 0.0),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),

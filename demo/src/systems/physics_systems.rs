@@ -2,7 +2,7 @@ use legion::prelude::*;
 
 use crate::resources::{PhysicsResource, TimeResource};
 
-use crate::components::PositionComponent;
+use minimum2::components::PositionComponent;
 use crate::components::RigidBodyComponent;
 
 pub fn update_physics() -> Box<dyn Schedulable> {

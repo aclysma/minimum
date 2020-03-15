@@ -12,6 +12,8 @@ use legion_prefab::ComponentRegistration;
 use prefab_format::ComponentTypeUuid;
 use atelier_assets::core::asset_uuid;
 
+use minimum2::components::*;
+
 mod components;
 use components::*;
 
@@ -24,7 +26,7 @@ use systems::*;
 mod selection;
 use selection::EditorSelectableRegistry;
 
-pub mod math;
+pub mod math_conversions;
 
 mod pipeline;
 use pipeline::*;

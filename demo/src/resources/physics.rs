@@ -21,7 +21,7 @@ pub struct PhysicsResource {
 impl PhysicsResource {
     pub fn new(gravity: Vec2) -> Self {
         let geometrical_world = DefaultGeometricalWorld::<f32>::new();
-        let mechanical_world = DefaultMechanicalWorld::new(crate::math::vec2_glam_to_glm(gravity));
+        let mechanical_world = DefaultMechanicalWorld::new(crate::math_conversions::vec2_glam_to_glm(gravity));
 
         let bodies = DefaultBodySet::<f32>::new();
         let colliders = DefaultColliderSet::new();

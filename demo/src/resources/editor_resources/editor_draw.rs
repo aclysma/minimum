@@ -3,7 +3,7 @@ use crate::resources::InputResource;
 use skulpin::app::InputState;
 use skulpin::LogicalSize;
 use skulpin::app::MouseButton;
-use crate::math::winit_position_to_glam;
+use crate::math_conversions::winit_position_to_glam;
 
 fn distance_to_segment_sq(
     test_point: glam::Vec2,
