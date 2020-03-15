@@ -1,5 +1,5 @@
 use legion::prelude::*;
-use minimum2::resources::AssetResource;
+use crate::resources::AssetResource;
 
 pub fn update_asset_manager() -> Box<dyn Schedulable> {
     SystemBuilder::new("update asset manager")

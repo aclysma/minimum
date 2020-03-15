@@ -5,9 +5,6 @@ mod physics_systems;
 pub use physics_systems::update_physics;
 pub use physics_systems::read_from_physics;
 
-mod asset_manager_systems;
-pub use asset_manager_systems::update_asset_manager;
-
 mod app_control_systems;
 pub use app_control_systems::quit_if_escape_pressed;
 
@@ -35,6 +32,8 @@ pub use editor_systems::editor_process_selection_ops;
 pub use editor_systems::editor_inspector_window;
 pub use editor_systems::reload_editor_state_if_file_changed;
 pub use editor_systems::editor_process_edit_diffs;
+
+use minimum2::systems::*;
 
 use legion::prelude::*;
 use legion::systems::schedule::Builder;
