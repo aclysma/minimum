@@ -12,7 +12,7 @@ use atelier_assets::importer as atelier_importer;
 // 2D Position
 //
 #[derive(
-    TypeUuid, Clone, Serialize, Deserialize, SerdeImportable, SerdeDiff, Debug, Inspect, Default,
+    TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect, Default,
 )]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107194cf0"]
 pub struct PositionComponent {
@@ -25,7 +25,7 @@ legion_prefab::register_component_type!(PositionComponent);
 //
 // Uniform 2D Scale
 //
-#[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeImportable, SerdeDiff, Debug, Inspect)]
+#[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect)]
 #[uuid = "ea1118ac-ebbe-433b-8532-e8938cd3a2dc"]
 pub struct UniformScaleComponent {
     pub uniform_scale: f32,
@@ -42,7 +42,7 @@ legion_prefab::register_component_type!(UniformScaleComponent);
 //
 // Non-uniform 2D Scale
 //
-#[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeImportable, SerdeDiff, Debug, Inspect)]
+#[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect)]
 #[uuid = "3318484f-d816-4f8e-b6d2-accd66e49276"]
 pub struct NonUniformScaleComponent {
     #[serde_diff(opaque)]
@@ -63,7 +63,7 @@ legion_prefab::register_component_type!(NonUniformScaleComponent);
 // 2D Rotation
 //
 #[derive(
-    TypeUuid, Clone, Serialize, Deserialize, SerdeImportable, SerdeDiff, Debug, Inspect, Default,
+    TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect, Default,
 )]
 #[uuid = "6841f13d-fe38-4320-a8f8-1a6133f45e33"]
 pub struct Rotation2DComponent {

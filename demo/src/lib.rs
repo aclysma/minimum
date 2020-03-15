@@ -24,9 +24,6 @@ use systems::*;
 mod selection;
 use selection::EditorSelectableRegistry;
 
-mod inspect;
-use inspect::EditorInspectRegistry;
-
 pub mod math;
 
 mod pipeline;
@@ -45,6 +42,7 @@ use legion_transaction::SpawnCloneImpl;
 use atelier_assets::core as atelier_core;
 
 use minimum2::resources::AssetResource;
+use minimum2::EditorInspectRegistry;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
