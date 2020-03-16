@@ -9,15 +9,15 @@ use legion::world::World;
 use ncollide2d::pipeline::{CollisionGroups, GeometricQueryType};
 use ncollide2d::shape::{Ball, Cuboid};
 use ncollide2d::shape::ShapeHandle;
-use minimum2::components::{
+use minimum::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use imgui_inspect_derive;
-use minimum2::math::Vec3;
-use minimum2::math::Vec4;
+use minimum::math::Vec3;
+use minimum::math::Vec4;
 use imgui_inspect_derive::Inspect;
 use legion::prelude::*;
-use crate::resources::OpenedPrefabState;
+use minimum::resources::editor::OpenedPrefabState;
 
 use atelier_assets::importer as atelier_importer;
 use crate::math_conversions::vec2_glam_to_glm;
@@ -90,7 +90,7 @@ impl From<DrawSkiaBoxComponentDef> for DrawSkiaBoxComponent {
     }
 }
 
-impl crate::selection::EditorSelectable for DrawSkiaBoxComponent {
+impl minimum::editor::EditorSelectable for DrawSkiaBoxComponent {
     fn create_editor_selection_world(
         &self,
         collision_world: &mut CollisionWorld<f32, Entity>,
@@ -169,7 +169,7 @@ impl From<DrawSkiaCircleComponentDef> for DrawSkiaCircleComponent {
     }
 }
 
-impl crate::selection::EditorSelectable for DrawSkiaCircleComponent {
+impl minimum::editor::EditorSelectable for DrawSkiaCircleComponent {
     fn create_editor_selection_world(
         &self,
         collision_world: &mut CollisionWorld<f32, Entity>,

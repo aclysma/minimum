@@ -1,10 +1,14 @@
 [workspace]
 members = [
-    "demo"
+    "demo",
+    "minimum-kernel",
+    "minimum-transform",
+    "minimum-math",
+    "minimum-editor"
 ]
 
 [package]
-name = "minimum2"
+name = "minimum"
 version = "0.1.0"
 authors = ["Philip Degarmo <aclysma@gmail.com>"]
 edition = "2018"
@@ -12,6 +16,12 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+minimum-kernel = { path = "minimum-kernel" }
+minimum-math = { path = "minimum-math" }
+minimum-transform = { path = "minimum-transform" }
+minimum-editor = { path = "minimum-editor" }
+minimum-game = { path = "minimum-game" }
 
 #skulpin = { version = "0.8", default-features = false, features = ["skia_complete", "skulpin_winit"] }
 #skulpin-plugin-imgui = "0.2"
@@ -26,9 +36,13 @@ imgui = "0.3"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
-legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
-legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
-prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+#legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
+#legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
+#prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+
+legion-transaction = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-transaction" }
+legion-prefab = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-prefab" }
+prefab-format = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/prefab-format" }
 
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
 

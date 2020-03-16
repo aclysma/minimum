@@ -1,7 +1,7 @@
 use legion::prelude::*;
 
 use crate::resources::FpsTextResource;
-use crate::resources::TimeResource;
+use minimum::resources::TimeResource;
 
 pub fn update_fps_text() -> Box<dyn Schedulable> {
     SystemBuilder::new("update fps text")

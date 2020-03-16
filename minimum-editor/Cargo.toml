@@ -1,0 +1,47 @@
+[package]
+name = "minimum-editor"
+version = "0.1.0"
+authors = ["Philip Degarmo <aclysma@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+minimum-game = { path = "../minimum-game" }
+minimum-transform = { path = "../minimum-transform" }
+minimum-kernel = { path = "../minimum-kernel" }
+
+imgui-inspect-derive = "0.4"
+imgui-inspect = "0.4"
+
+imgui = "0.3"
+
+atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
+
+#legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
+#legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
+#prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+
+legion-transaction = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-transaction" }
+legion-prefab = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-prefab" }
+prefab-format = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/prefab-format" }
+
+glam = { version = "0.8.5", features = ["serde"] }
+
+structopt = "0.3"
+serde = "1"
+uuid = "0.8"
+type-uuid = "0.1"
+image2 = { version = "0.11", features = [ "ser" ] }
+inventory = "0.1"
+
+# For selection logic
+nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
+nalgebra-glm = "0.4"
+ncollide2d = "0.20"
+
+ron = "0.5"
+
+log="0.4"

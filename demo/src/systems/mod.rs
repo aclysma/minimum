@@ -11,46 +11,28 @@ pub use app_control_systems::quit_if_escape_pressed;
 mod draw_systems;
 pub use draw_systems::draw;
 
-mod time_systems;
-pub use time_systems::advance_time;
-
 mod input_systems;
 pub use input_systems::update_input_resource;
 pub use input_systems::input_reset_for_next_frame;
 
-mod editor_systems;
-pub use editor_systems::editor_imgui_menu;
-pub use editor_systems::editor_keybinds;
-pub use editor_systems::editor_mouse_input;
-pub use editor_systems::editor_update_editor_draw;
-pub use editor_systems::editor_gizmos;
-pub use editor_systems::editor_handle_selection;
-pub use editor_systems::draw_selection_shapes;
-pub use editor_systems::editor_refresh_selection_world;
-pub use editor_systems::editor_entity_list_window;
-pub use editor_systems::editor_process_selection_ops;
-pub use editor_systems::editor_inspector_window;
-pub use editor_systems::reload_editor_state_if_file_changed;
-pub use editor_systems::editor_process_edit_diffs;
-
-use minimum2::systems::*;
+use minimum::systems::*;
 
 use legion::prelude::*;
 use legion::systems::schedule::Builder;
-use crate::resources::EditorMode;
 use std::marker::PhantomData;
-use crate::systems::editor_systems::editor_process_editor_ops;
+use minimum::editor::systems::editor_process_editor_ops;
+use minimum::editor::resources::EditorMode;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ScheduleCriteria {
     is_simulation_paused: bool,
-    editor_mode: crate::resources::EditorMode,
+    editor_mode: EditorMode,
 }
 
 impl ScheduleCriteria {
     pub fn new(
         is_simulation_paused: bool,
-        editor_mode: crate::resources::EditorMode,
+        editor_mode: EditorMode,
     ) -> Self {
         ScheduleCriteria {
             is_simulation_paused,
@@ -130,6 +112,8 @@ impl<'a> ScheduleBuilder<'a> {
 }
 
 pub fn create_update_schedule(criteria: &ScheduleCriteria) -> Schedule {
+    use minimum::editor::systems::*;
+
     ScheduleBuilder::new(criteria)
         .always(update_input_resource)
         .always(advance_time)

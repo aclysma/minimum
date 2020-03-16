@@ -4,8 +4,9 @@ use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use nphysics2d::object::DefaultBodyHandle;
 use legion_transaction::SpawnFrom;
-use minimum2::math::Vec3;
-use crate::resources::{PhysicsResource, OpenedPrefabState};
+use minimum::math::Vec3;
+use crate::resources::PhysicsResource;
+use minimum::resources::editor::OpenedPrefabState;
 use legion::prelude::*;
 use std::ops::Range;
 use legion::storage::ComponentStorage;
@@ -17,7 +18,7 @@ use ncollide2d::pipeline::{CollisionGroups, GeometricQueryType};
 use legion::index::ComponentIndex;
 use legion_transaction::iter_components_in_storage;
 
-use minimum2::components::{
+use minimum::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use ncollide2d::world::CollisionWorld;
@@ -176,7 +177,7 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
     }
 }
 
-impl crate::selection::EditorSelectableTransformed<RigidBodyComponent>
+impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
     for RigidBodyBallComponentDef
 {
     fn create_editor_selection_world(
@@ -279,7 +280,7 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
     }
 }
 
-impl crate::selection::EditorSelectableTransformed<RigidBodyComponent>
+impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
     for RigidBodyBoxComponentDef
 {
     fn create_editor_selection_world(

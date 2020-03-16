@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-minimum2 = { path = ".." }
+minimum = { path = ".." }
 
 skulpin = { version = "0.8", default-features = false, features = ["skia_complete", "skulpin_winit"] }
 skulpin-plugin-imgui = "0.2"
@@ -22,9 +22,13 @@ crossbeam-channel = "0.3"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
-legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
-legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
-prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+#legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
+#legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
+#prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+
+legion-transaction = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-transaction" }
+legion-prefab = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-prefab" }
+prefab-format = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/prefab-format" }
 
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
 

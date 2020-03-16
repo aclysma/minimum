@@ -1,2 +1,2 @@
-mod prefab;
-pub use prefab::PrefabAsset;
+
+pub use minimum_kernel::pipeline::*;

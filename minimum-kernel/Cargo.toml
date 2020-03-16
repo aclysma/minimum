@@ -1,0 +1,40 @@
+[package]
+name = "minimum-kernel"
+version = "0.1.0"
+authors = ["Philip Degarmo <aclysma@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
+
+#legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
+#legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
+#prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+
+legion-transaction = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-transaction" }
+legion-prefab = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-prefab" }
+prefab-format = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/prefab-format" }
+
+structopt = "0.3"
+serde = "1"
+uuid = "0.8"
+type-uuid = "0.1"
+image2 = { version = "0.11", features = [ "ser" ] }
+inventory = "0.1"
+
+# We need this PR (https://github.com/servo/bincode/pull/288) but it's not published yet
+#bincode = "1.2"
+bincode = { git = "https://github.com/servo/bincode.git", rev="e30e91e3a" }
+mopa = "0.2"
+itertools = "0.8"
+
+serde-diff = "0.3"
+
+ron = "0.5"
+erased-serde = "0.3"
+
+log="0.4"

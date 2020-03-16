@@ -3,16 +3,17 @@ use legion::prelude::*;
 use imgui;
 use skulpin::skia_safe;
 
-use minimum2::components::{
+use minimum::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
 use crate::components::DrawSkiaBoxComponent;
 use crate::components::DrawSkiaCircleComponent;
 
-use crate::resources::{
-    CanvasDrawResource, CameraResource, InputResource, ViewportResource, DebugDrawResource,
+use crate::resources::CanvasDrawResource;
+use minimum::resources::{
+    CameraResource, InputResource, ViewportResource, DebugDrawResource,
 };
-use crate::resources::ImguiResource;
+use minimum::resources::ImguiResource;
 use crate::resources::FpsTextResource;
 
 use skulpin::winit;

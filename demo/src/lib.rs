@@ -12,7 +12,7 @@ use legion_prefab::ComponentRegistration;
 use prefab_format::ComponentTypeUuid;
 use atelier_assets::core::asset_uuid;
 
-use minimum2::components::*;
+use minimum::components::*;
 
 mod components;
 use components::*;
@@ -22,9 +22,6 @@ use resources::*;
 
 mod systems;
 use systems::*;
-
-mod selection;
-use selection::EditorSelectableRegistry;
 
 pub mod math_conversions;
 
@@ -43,8 +40,13 @@ use legion_transaction::SpawnCloneImpl;
 
 use atelier_assets::core as atelier_core;
 
-use minimum2::resources::AssetResource;
-use minimum2::EditorInspectRegistry;
+use minimum::resources::{AssetResource, CameraResource, InputResource, ViewportResource, DebugDrawResource, TimeResource};
+use minimum::editor::EditorInspectRegistry;
+use minimum::editor::EditorSelectableRegistry;
+use minimum::editor::resources::EditorMode;
+use minimum::editor::resources::EditorStateResource;
+use minimum::editor::resources::EditorDrawResource;
+use minimum::editor::resources::EditorSelectionResource;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
@@ -52,44 +54,44 @@ pub const GRAVITY: f32 = -9.81;
 /// Create the asset manager that has all the required types registered
 pub fn create_asset_manager() -> AssetResource {
     let mut asset_manager = AssetResource::default();
-    asset_manager.add_storage::<minimum2::pipeline::PrefabAsset>();
+    asset_manager.add_storage::<minimum::pipeline::PrefabAsset>();
     asset_manager
 }
-
-pub fn create_component_registry() -> HashMap<ComponentTypeId, ComponentRegistration> {
-    let comp_registrations = legion_prefab::iter_component_registrations();
-    use std::iter::FromIterator;
-    let component_types: HashMap<ComponentTypeId, ComponentRegistration> = HashMap::from_iter(
-        comp_registrations.map(|reg| (ComponentTypeId(reg.ty().clone(), #[cfg(feature = "ffi")] 0), reg.clone())),
-    );
-
-    component_types
-}
-
-pub fn create_component_registry_by_uuid() -> HashMap<ComponentTypeUuid, ComponentRegistration> {
-    let comp_registrations = legion_prefab::iter_component_registrations();
-    use std::iter::FromIterator;
-    let component_types: HashMap<ComponentTypeUuid, ComponentRegistration> =
-        HashMap::from_iter(comp_registrations.map(|reg| (reg.uuid().clone(), reg.clone())));
-
-    component_types
-}
-
-pub fn create_copy_clone_impl() -> CopyCloneImpl {
-    let component_registry = create_component_registry();
-    let mut clone_merge_impl = CopyCloneImpl::new(component_registry);
-    clone_merge_impl
-}
-
-pub fn create_spawn_clone_impl<'a>(resources: &'a Resources) -> SpawnCloneImpl<'a> {
-    let component_registry = create_component_registry();
-    let mut clone_merge_impl = SpawnCloneImpl::new(component_registry, resources);
-    clone_merge_impl.add_mapping_into::<DrawSkiaCircleComponentDef, DrawSkiaCircleComponent>();
-    clone_merge_impl.add_mapping_into::<DrawSkiaBoxComponentDef, DrawSkiaBoxComponent>();
-    clone_merge_impl.add_mapping::<RigidBodyBallComponentDef, RigidBodyComponent>();
-    clone_merge_impl.add_mapping::<RigidBodyBoxComponentDef, RigidBodyComponent>();
-    clone_merge_impl
-}
+//
+//pub fn create_component_registry() -> HashMap<ComponentTypeId, ComponentRegistration> {
+//    let comp_registrations = legion_prefab::iter_component_registrations();
+//    use std::iter::FromIterator;
+//    let component_types: HashMap<ComponentTypeId, ComponentRegistration> = HashMap::from_iter(
+//        comp_registrations.map(|reg| (ComponentTypeId(reg.ty().clone(), #[cfg(feature = "ffi")] 0), reg.clone())),
+//    );
+//
+//    component_types
+//}
+//
+//pub fn create_component_registry_by_uuid() -> HashMap<ComponentTypeUuid, ComponentRegistration> {
+//    let comp_registrations = legion_prefab::iter_component_registrations();
+//    use std::iter::FromIterator;
+//    let component_types: HashMap<ComponentTypeUuid, ComponentRegistration> =
+//        HashMap::from_iter(comp_registrations.map(|reg| (reg.uuid().clone(), reg.clone())));
+//
+//    component_types
+//}
+//
+//pub fn create_copy_clone_impl() -> CopyCloneImpl {
+//    let component_registry = create_component_registry();
+//    let mut clone_merge_impl = CopyCloneImpl::new(component_registry);
+//    clone_merge_impl
+//}
+//
+//pub fn create_spawn_clone_impl<'a>(resources: &'a Resources) -> SpawnCloneImpl<'a> {
+//    let component_registry = create_component_registry();
+//    let mut clone_merge_impl = SpawnCloneImpl::new(component_registry, resources);
+//    clone_merge_impl.add_mapping_into::<DrawSkiaCircleComponentDef, DrawSkiaCircleComponent>();
+//    clone_merge_impl.add_mapping_into::<DrawSkiaBoxComponentDef, DrawSkiaBoxComponent>();
+//    clone_merge_impl.add_mapping::<RigidBodyBallComponentDef, RigidBodyComponent>();
+//    clone_merge_impl.add_mapping::<RigidBodyBoxComponentDef, RigidBodyComponent>();
+//    clone_merge_impl
+//}
 
 pub fn create_editor_selection_registry() -> EditorSelectableRegistry {
     let mut registry = EditorSelectableRegistry::default();

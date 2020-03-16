@@ -1,8 +1,9 @@
 use legion::prelude::*;
 
-use crate::resources::{PhysicsResource, TimeResource};
+use minimum::resources::TimeResource;
+use crate::resources::PhysicsResource;
 
-use minimum2::components::PositionComponent;
+use minimum::components::PositionComponent;
 use crate::components::RigidBodyComponent;
 
 pub fn update_physics() -> Box<dyn Schedulable> {

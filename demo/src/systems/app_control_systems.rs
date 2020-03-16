@@ -1,7 +1,7 @@
 use legion::prelude::*;
 use skulpin::winit::event::VirtualKeyCode;
-use crate::resources::InputResource;
-use crate::resources::AppControlResource;
+use minimum::resources::InputResource;
+use minimum::resources::AppControlResource;
 
 pub fn quit_if_escape_pressed() -> Box<dyn Schedulable> {
     SystemBuilder::new("quit_if_escape_pressed")

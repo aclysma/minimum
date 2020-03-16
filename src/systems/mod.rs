@@ -1,3 +1,6 @@
+pub use minimum_kernel::systems::*;
+pub use minimum_game::systems::*;
 
-mod asset_manager_systems;
-pub use asset_manager_systems::update_asset_manager;
+mod editor {
+    pub use minimum_editor::systems::*;
+}

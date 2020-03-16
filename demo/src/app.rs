@@ -5,13 +5,14 @@ use skulpin::ash;
 use skulpin::winit;
 use skulpin::app::AppControl;
 use skulpin::app::InputState;
-use crate::imgui_support::ImguiManager;
+use crate::imgui_support::ImguiPlatformManager;
 use imgui_winit_support::WinitPlatform;
 
 use crate::resources::*;
 
 use legion::prelude::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
+use minimum::resources::{ImguiResource, AppControlResource, TimeResource, InputResource, UniverseResource};
 
 /// Represents an error from creating the renderer
 #[derive(Debug)]
@@ -350,7 +351,7 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     return imgui;
 }
 
-pub fn init_imgui_manager(window: &winit::window::Window) -> ImguiManager {
+pub fn init_imgui_manager(window: &winit::window::Window) -> ImguiPlatformManager {
     let mut imgui_context = init_imgui(&window);
     let mut imgui_platform = imgui_winit_support::WinitPlatform::init(&mut imgui_context);
 
@@ -360,5 +361,5 @@ pub fn init_imgui_manager(window: &winit::window::Window) -> ImguiManager {
         imgui_winit_support::HiDpiMode::Locked(window.scale_factor()),
     );
 
-    ImguiManager::new(imgui_context, imgui_platform)
+    ImguiPlatformManager::new(imgui_context, imgui_platform)
 }

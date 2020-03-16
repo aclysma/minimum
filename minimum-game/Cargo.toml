@@ -1,0 +1,19 @@
+[package]
+name = "minimum-game"
+version = "0.1.0"
+authors = ["Philip Degarmo <aclysma@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+minimum-kernel = { path = "../minimum-kernel" }
+minimum-math = { path = "../minimum-math" }
+
+imgui = "0.3"
+
+legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
+
+glam = { version = "0.8.5", features = ["serde"] }
+
+log="0.4"
