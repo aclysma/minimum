@@ -110,7 +110,7 @@ impl App {
 
         // Create a single window
         let window_result = winit::window::WindowBuilder::new()
-            .with_title("Skulpin")
+            .with_title("Minimum Winit Example")
             .with_inner_size(logical_size)
             .build(&event_loop);
 

@@ -22,7 +22,7 @@ fn main() {
     // Build the app and run it
     let example_app = DemoApp::new();
     let renderer_builder = skulpin::RendererBuilder::new()
-        .app_name(CString::new("Skulpin Example App").unwrap())
+        .app_name(CString::new("Minimum Winit Example").unwrap())
         .use_vulkan_debug_layer(true);
 
     App::run(example_app, LogicalSize::new(900, 600), renderer_builder);
