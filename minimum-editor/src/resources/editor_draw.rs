@@ -132,8 +132,10 @@ pub struct EditorDrawResource {
     shapes: Vec<ShapeWithId>,
     shape_just_clicked: [Option<EditorShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
     shape_drag_in_progress: [Option<EditorShapeDragState>; InputState::MOUSE_BUTTON_COUNT as usize],
-    shape_drag_just_finished: [Option<EditorShapeDragState>; InputState::MOUSE_BUTTON_COUNT as usize],
-    mouse_is_down_on_shape: [Option<EditorShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
+    shape_drag_just_finished:
+        [Option<EditorShapeDragState>; InputState::MOUSE_BUTTON_COUNT as usize],
+    mouse_is_down_on_shape:
+        [Option<EditorShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
     shape_last_interacted: String,
     closest_shape_to_mouse: ClosestShapeIdDistance,
 }
@@ -254,8 +256,7 @@ impl EditorDrawResource {
 
         // Get mouse UI-space position
         let mouse_position = input_state.mouse_position();
-        let closest_shape =
-            self.get_closest_shape(mouse_position, viewport);
+        let closest_shape = self.get_closest_shape(mouse_position, viewport);
 
         if let Some(closest_shape) = closest_shape {
             self.closest_shape_to_mouse.id = self.shapes[closest_shape.index].id.clone();
@@ -301,26 +302,18 @@ impl EditorDrawResource {
                     // update shape drag state
                     self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
 
-                    let world_space_end_position = viewport.ui_space_to_world_space(
-                        input_state_drag_in_progress.end_position,
-                    );
+                    let world_space_end_position =
+                        viewport.ui_space_to_world_space(input_state_drag_in_progress.end_position);
                     let delta = world_space_end_position
                         - (current_drag_in_progress.world_space_begin_position
                             + current_drag_in_progress.world_space_accumulated_frame_delta);
 
                     self.shape_drag_in_progress[mouse_button_index] = Some(EditorShapeDragState {
-                        begin_position:
-                            input_state_drag_in_progress.begin_position
-                        ,
-                        end_position:
-                            input_state_drag_in_progress.end_position
-                        ,
-                        previous_frame_delta:
-                            input_state_drag_in_progress.previous_frame_delta
-                        ,
-                        accumulated_frame_delta:
-                            input_state_drag_in_progress.accumulated_frame_delta
-                        ,
+                        begin_position: input_state_drag_in_progress.begin_position,
+                        end_position: input_state_drag_in_progress.end_position,
+                        previous_frame_delta: input_state_drag_in_progress.previous_frame_delta,
+                        accumulated_frame_delta: input_state_drag_in_progress
+                            .accumulated_frame_delta,
                         world_space_begin_position: current_drag_in_progress
                             .world_space_begin_position,
                         world_space_end_position,
@@ -335,9 +328,8 @@ impl EditorDrawResource {
                 {
                     // update mouse drag
 
-                    let world_space_end_position = viewport.ui_space_to_world_space(
-                        input_state_drag_just_finished.end_position,
-                    );
+                    let world_space_end_position = viewport
+                        .ui_space_to_world_space(input_state_drag_just_finished.end_position);
                     let delta = world_space_end_position
                         - (current_drag_in_progress.world_space_begin_position
                             + current_drag_in_progress.world_space_accumulated_frame_delta);
@@ -345,18 +337,12 @@ impl EditorDrawResource {
                     self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
                     self.shape_drag_just_finished[mouse_button_index] =
                         Some(EditorShapeDragState {
-                            begin_position:
-                                input_state_drag_just_finished.begin_position
-                            ,
-                            end_position:
-                                input_state_drag_just_finished.end_position
-                            ,
-                            previous_frame_delta:
-                                input_state_drag_just_finished.previous_frame_delta
-                            ,
-                            accumulated_frame_delta:
-                                input_state_drag_just_finished.accumulated_frame_delta
-                            ,
+                            begin_position: input_state_drag_just_finished.begin_position,
+                            end_position: input_state_drag_just_finished.end_position,
+                            previous_frame_delta: input_state_drag_just_finished
+                                .previous_frame_delta,
+                            accumulated_frame_delta: input_state_drag_just_finished
+                                .accumulated_frame_delta,
                             world_space_begin_position: current_drag_in_progress
                                 .world_space_begin_position,
                             world_space_end_position,
@@ -388,10 +374,9 @@ impl EditorDrawResource {
                         if let Some(down_on_shape) =
                             &self.mouse_is_down_on_shape[mouse_button_index]
                         {
-                            if let Some(closest_shape) = self.get_closest_shape(
-                                mouse_drag_in_progress.begin_position,
-                                viewport,
-                            ) {
+                            if let Some(closest_shape) = self
+                                .get_closest_shape(mouse_drag_in_progress.begin_position, viewport)
+                            {
                                 let shape = &self.shapes[closest_shape.index];
                                 if closest_shape.distance_sq
                                     < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ
@@ -412,18 +397,12 @@ impl EditorDrawResource {
                                         self.closest_shape_to_mouse.id.clone();
                                     self.shape_drag_in_progress[mouse_button_index] =
                                         Some(EditorShapeDragState {
-                                            begin_position:
-                                                mouse_drag_in_progress.begin_position
-                                            ,
-                                            end_position:
-                                                mouse_drag_in_progress.end_position
-                                            ,
-                                            previous_frame_delta:
-                                                mouse_drag_in_progress.previous_frame_delta
-                                            ,
-                                            accumulated_frame_delta:
-                                                mouse_drag_in_progress.accumulated_frame_delta
-                                            ,
+                                            begin_position: mouse_drag_in_progress.begin_position,
+                                            end_position: mouse_drag_in_progress.end_position,
+                                            previous_frame_delta: mouse_drag_in_progress
+                                                .previous_frame_delta,
+                                            accumulated_frame_delta: mouse_drag_in_progress
+                                                .accumulated_frame_delta,
                                             world_space_begin_position,
                                             world_space_end_position,
                                             world_space_previous_frame_delta,

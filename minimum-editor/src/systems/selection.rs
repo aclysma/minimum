@@ -1,12 +1,11 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource,
-    DebugDrawResource, UniverseResource, ImguiResource
+    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
+    ImguiResource,
 };
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource,
-    EditorDrawResource, EditorTransaction,
+    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
 };
 use crate::resources::EditorTool;
 use legion_transaction::{TransactionBuilder, Transaction};
@@ -123,12 +122,12 @@ fn handle_selection(
 
     if let Some(intersecting_entities) = intersecting_entities {
         //TODO: Keyboard shortcuts
-//        let add_to_selection = input_state.is_key_down(VirtualKeyCode::LShift)
-//            || input_state.is_key_down(VirtualKeyCode::RShift);
-//        let subtract_from_selection = input_state.is_key_down(VirtualKeyCode::LAlt)
-//            || input_state.is_key_down(VirtualKeyCode::RAlt);
-//        let toggle_selection = input_state.is_key_down(VirtualKeyCode::LControl)
-//            || input_state.is_key_down(VirtualKeyCode::RControl);
+        //        let add_to_selection = input_state.is_key_down(VirtualKeyCode::LShift)
+        //            || input_state.is_key_down(VirtualKeyCode::RShift);
+        //        let subtract_from_selection = input_state.is_key_down(VirtualKeyCode::LAlt)
+        //            || input_state.is_key_down(VirtualKeyCode::RAlt);
+        //        let toggle_selection = input_state.is_key_down(VirtualKeyCode::LControl)
+        //            || input_state.is_key_down(VirtualKeyCode::RControl);
         let add_to_selection = false;
         let subtract_from_selection = false;
         let toggle_selection = false;

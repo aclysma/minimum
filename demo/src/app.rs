@@ -11,7 +11,10 @@ use crate::resources::*;
 
 use legion::prelude::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
-use minimum::resources::{ImguiResource, AppControlResource, TimeResource, InputResource, UniverseResource, ViewportResource};
+use minimum::resources::{
+    ImguiResource, AppControlResource, TimeResource, InputResource, UniverseResource,
+    ViewportResource,
+};
 use crate::resources::WinitImguiManagerResource;
 
 /// Represents an error from creating the renderer
@@ -69,7 +72,7 @@ pub trait AppHandler {
         &mut self,
         world: &mut World,
         resources: &mut Resources,
-        window: &Window
+        window: &Window,
     );
 
     /// Called frequently, this is the intended place to put non-rendering logic
@@ -208,18 +211,15 @@ impl App {
                 let mut input_state = resources.get_mut::<InputResource>().unwrap();
                 let mut app_control = resources.get_mut::<AppControlResource>().unwrap();
                 let mut viewport = resources.get::<ViewportResource>().unwrap();
-                crate::winit_input::handle_winit_event(
-                    &event,
-                    &mut *input_state,
-                    &*viewport,
-                );
+                crate::winit_input::handle_winit_event(&event, &mut *input_state, &*viewport);
             }
 
             // Handle general update/redraw events
             match event {
                 winit::event::Event::MainEventsCleared => {
                     {
-                        let imgui_manager = resources.get_mut::<WinitImguiManagerResource>().unwrap();
+                        let imgui_manager =
+                            resources.get_mut::<WinitImguiManagerResource>().unwrap();
                         winit_imgui_manager.begin_frame(&winit_window);
                     }
                     app_handler.update(&mut world, &mut resources);
@@ -228,16 +228,19 @@ impl App {
                     winit_window.request_redraw();
 
                     {
-                        let imgui_manager = resources.get_mut::<WinitImguiManagerResource>().unwrap();
+                        let imgui_manager =
+                            resources.get_mut::<WinitImguiManagerResource>().unwrap();
                         imgui_manager.render(&winit_window);
                     }
                 }
                 winit::event::Event::RedrawRequested(_window_id) => {
-                    let imgui_manager = resources.get::<WinitImguiManagerResource>().unwrap().clone();
+                    let imgui_manager = resources
+                        .get::<WinitImguiManagerResource>()
+                        .unwrap()
+                        .clone();
                     let skulpin_window = skulpin::WinitWindow::new(&winit_window);
-                    if let Err(e) = renderer.draw(
-                        &skulpin_window,
-                        |canvas, coordinate_system_helper| {
+                    if let Err(e) =
+                        renderer.draw(&skulpin_window, |canvas, coordinate_system_helper| {
                             resources
                                 .get_mut::<CanvasDrawResource>()
                                 .unwrap()
@@ -247,8 +250,8 @@ impl App {
                                 .get_mut::<CanvasDrawResource>()
                                 .unwrap()
                                 .end_draw_context();
-                        },
-                    ) {
+                        })
+                    {
                         log::warn!("Passing Renderer::draw() error to app {}", e);
                         app_handler.fatal_error(&e.into());
                         {

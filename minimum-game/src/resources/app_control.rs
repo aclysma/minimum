@@ -23,6 +23,8 @@ impl AppControlResource {
 
 impl Default for AppControlResource {
     fn default() -> Self {
-        AppControlResource { should_terminate_process: false }
+        AppControlResource {
+            should_terminate_process: false,
+        }
     }
 }

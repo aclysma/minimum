@@ -1,5 +1,3 @@
-
-
 mod time;
 pub use time::TimeResource;
 pub use time::SimulationTimePauseReason;

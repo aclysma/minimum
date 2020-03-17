@@ -157,11 +157,10 @@ impl EditorInspectRegistryBuilder {
 
     pub fn build(self) -> EditorInspectRegistry {
         EditorInspectRegistry {
-            registered: self.registered
+            registered: self.registered,
         }
     }
 }
-
 
 #[derive(Default)]
 pub struct EditorInspectRegistry {

@@ -1,5 +1,3 @@
-
-
 use minimum::input::KeyboardKey;
 use minimum::input::ButtonState;
 
@@ -12,14 +10,12 @@ use minimum::resources::ViewportResource;
 
 #[derive(Copy, Clone)]
 pub struct WinitKeyboardKey {
-    keycode: VirtualKeyCode
+    keycode: VirtualKeyCode,
 }
 
 impl WinitKeyboardKey {
     pub fn new(keycode: VirtualKeyCode) -> Self {
-        WinitKeyboardKey {
-            keycode
-        }
+        WinitKeyboardKey { keycode }
     }
 }
 
@@ -31,14 +27,12 @@ impl Into<KeyboardKey> for WinitKeyboardKey {
 
 #[derive(Copy, Clone)]
 pub struct WinitElementState {
-    element_state: ElementState
+    element_state: ElementState,
 }
 
 impl WinitElementState {
     pub fn new(element_state: ElementState) -> Self {
-        WinitElementState {
-            element_state
-        }
+        WinitElementState { element_state }
     }
 }
 
@@ -46,21 +40,19 @@ impl Into<ButtonState> for WinitElementState {
     fn into(self) -> ButtonState {
         match self.element_state {
             ElementState::Pressed => ButtonState::Pressed,
-            ElementState::Released => ButtonState::Released
+            ElementState::Released => ButtonState::Released,
         }
     }
 }
 
 #[derive(Copy, Clone)]
 pub struct WinitMouseButton {
-    mouse_button: MouseButton
+    mouse_button: MouseButton,
 }
 
 impl WinitMouseButton {
     pub fn new(mouse_button: MouseButton) -> Self {
-        WinitMouseButton {
-            mouse_button
-        }
+        WinitMouseButton { mouse_button }
     }
 }
 
@@ -70,7 +62,7 @@ impl Into<minimum::input::MouseButton> for WinitMouseButton {
             MouseButton::Left => 0,
             MouseButton::Right => 1,
             MouseButton::Middle => 2,
-            MouseButton::Other(x) => x + 3
+            MouseButton::Other(x) => x + 3,
         };
 
         minimum::input::MouseButton(button_index)
@@ -79,26 +71,20 @@ impl Into<minimum::input::MouseButton> for WinitMouseButton {
 
 #[derive(Copy, Clone)]
 pub struct WinitMouseScrollDelta {
-    mouse_scroll_delta: MouseScrollDelta
+    mouse_scroll_delta: MouseScrollDelta,
 }
 
 impl WinitMouseScrollDelta {
     pub fn new(mouse_scroll_delta: MouseScrollDelta) -> Self {
-        WinitMouseScrollDelta {
-            mouse_scroll_delta
-        }
+        WinitMouseScrollDelta { mouse_scroll_delta }
     }
 }
 
 impl Into<minimum::input::MouseScrollDelta> for WinitMouseScrollDelta {
     fn into(self) -> minimum::input::MouseScrollDelta {
         let delta = match self.mouse_scroll_delta {
-            MouseScrollDelta::LineDelta(x, y) => {
-                (x, y)
-            },
-            MouseScrollDelta::PixelDelta(delta) => {
-                (delta.x as f32, delta.y as f32)
-            }
+            MouseScrollDelta::LineDelta(x, y) => (x, y),
+            MouseScrollDelta::PixelDelta(delta) => (delta.x as f32, delta.y as f32),
         };
 
         minimum::input::MouseScrollDelta {
@@ -112,7 +98,7 @@ impl Into<minimum::input::MouseScrollDelta> for WinitMouseScrollDelta {
 pub fn handle_winit_event<T>(
     event: &winit::event::Event<T>,
     input_state: &mut minimum::input::InputState,
-    viewport: &ViewportResource
+    viewport: &ViewportResource,
 ) {
     use winit::event::Event;
     use winit::event::WindowEvent;
@@ -127,18 +113,21 @@ pub fn handle_winit_event<T>(
         } => {
             trace!("keyboard input {:?}", input);
             if let Some(vk) = input.virtual_keycode {
-                input_state.handle_keyboard_event(WinitKeyboardKey::new(vk).into(), WinitElementState::new(input.state).into());
+                input_state.handle_keyboard_event(
+                    WinitKeyboardKey::new(vk).into(),
+                    WinitElementState::new(input.state).into(),
+                );
             }
         }
 
         Event::WindowEvent {
             event:
-            WindowEvent::MouseInput {
-                device_id,
-                state,
-                button,
-                ..
-            },
+                WindowEvent::MouseInput {
+                    device_id,
+                    state,
+                    button,
+                    ..
+                },
             ..
         } => {
             trace!(
@@ -148,25 +137,31 @@ pub fn handle_winit_event<T>(
                 button,
             );
 
-            input_state.handle_mouse_button_event(WinitMouseButton::new(*button).into(), WinitElementState::new(*state).into(), viewport);
+            input_state.handle_mouse_button_event(
+                WinitMouseButton::new(*button).into(),
+                WinitElementState::new(*state).into(),
+                viewport,
+            );
         }
 
         Event::WindowEvent {
             event:
-            WindowEvent::CursorMoved {
-                device_id,
-                position,
-                ..
-            },
+                WindowEvent::CursorMoved {
+                    device_id,
+                    position,
+                    ..
+                },
             ..
         } => {
             trace!("mouse move input {:?} {:?}", device_id, position,);
-            input_state.handle_mouse_move_event(glam::Vec2::new(position.x as f32, position.y as f32), viewport);
+            input_state.handle_mouse_move_event(
+                glam::Vec2::new(position.x as f32, position.y as f32),
+                viewport,
+            );
         }
 
         Event::WindowEvent {
-            event:
-            WindowEvent::MouseWheel {
+            event: WindowEvent::MouseWheel {
                 device_id, delta, ..
             },
             ..

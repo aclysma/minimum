@@ -354,7 +354,7 @@ impl EditorStateResource {
                 &universe.universe,
                 &noop_diff,
                 component_registry.components_by_uuid(),
-                &component_registry.copy_clone_impl()
+                &component_registry.copy_clone_impl(),
             ));
 
             // Store the cooked prefab and relevant metadata in an Arc on the EditorStateResource.
@@ -404,7 +404,7 @@ impl EditorStateResource {
                 &opened_prefab.cooked_prefab.world,
                 &component_registry.copy_clone_impl(),
                 &mut legion::world::HashMapCloneImplResult(&mut prefab_to_world_mappings),
-                &legion::world::HashMapEntityReplacePolicy(&opened_prefab.prefab_to_world_mappings)
+                &legion::world::HashMapEntityReplacePolicy(&opened_prefab.prefab_to_world_mappings),
             );
 
             let mut world_to_prefab_mappings =
@@ -853,21 +853,20 @@ impl EditorStateResource {
 
                 // Apply the diffs to the cooked data
                 let mut universe = resources.get_mut::<UniverseResource>().unwrap();
-                let new_cooked_prefab =
-                    Arc::new(legion_transaction::apply_diff_to_cooked_prefab(
-                        &opened_prefab.cooked_prefab,
-                        &universe.universe,
-                        &diffs,
-                        component_registry.components_by_uuid(),
-                        &component_registry.copy_clone_impl()
-                    ));
+                let new_cooked_prefab = Arc::new(legion_transaction::apply_diff_to_cooked_prefab(
+                    &opened_prefab.cooked_prefab,
+                    &universe.universe,
+                    &diffs,
+                    component_registry.components_by_uuid(),
+                    &component_registry.copy_clone_impl(),
+                ));
 
                 let new_uncooked_prefab = Arc::new(legion_transaction::apply_diff_to_prefab(
                     &opened_prefab.uncooked_prefab,
                     &universe.universe,
                     &diffs,
                     &component_registry.components_by_uuid(),
-                    &component_registry.copy_clone_impl()
+                    &component_registry.copy_clone_impl(),
                 ));
 
                 // Update the opened prefab state
@@ -920,7 +919,10 @@ impl EditorStateResource {
         }
     }
 
-    fn save(&mut self, component_registry: &ComponentRegistry) {
+    fn save(
+        &mut self,
+        component_registry: &ComponentRegistry,
+    ) {
         //
         // Check that a prefab is opened
         //
@@ -969,7 +971,7 @@ impl EditorStateResource {
                 tx_builder,
                 &universe_resource.universe,
                 &opened_prefab.cooked_prefab().world,
-                component_registry
+                component_registry,
             ))
         } else {
             None
@@ -1013,7 +1015,7 @@ impl EditorStateResource {
                 tx_builder,
                 &universe_resource.universe,
                 &opened_prefab.cooked_prefab().world,
-                component_registry
+                component_registry,
             ))
         } else {
             None
@@ -1037,7 +1039,7 @@ impl EditorTransaction {
         builder: TransactionBuilder,
         universe: &Universe,
         world: &World,
-        component_registry: &ComponentRegistry
+        component_registry: &ComponentRegistry,
     ) -> EditorTransaction {
         let id = EditorTransactionId(uuid::Uuid::new_v4());
         let transaction = builder.begin(universe, world, &component_registry.copy_clone_impl());
@@ -1059,14 +1061,14 @@ impl EditorTransaction {
         &mut self,
         editor_state: &mut EditorStateResource,
         post_commit_selection: PostCommitSelection,
-        component_registry: &ComponentRegistry
+        component_registry: &ComponentRegistry,
     ) {
         log::info!("update transaction");
         self.do_update(
             editor_state,
             false,
             PostCommitSelection::KeepCurrentSelection,
-            component_registry
+            component_registry,
         );
     }
 
@@ -1075,10 +1077,15 @@ impl EditorTransaction {
         mut self,
         editor_state: &mut EditorStateResource,
         post_commit_selection: PostCommitSelection,
-        component_registry: &ComponentRegistry
+        component_registry: &ComponentRegistry,
     ) {
         log::info!("commit transaction");
-        self.do_update(editor_state, true, post_commit_selection, component_registry);
+        self.do_update(
+            editor_state,
+            true,
+            post_commit_selection,
+            component_registry,
+        );
     }
 
     /// Reverts the changes that were made in this transaction without writing undo information
@@ -1106,7 +1113,7 @@ impl EditorTransaction {
         editor_state: &mut EditorStateResource,
         commit_changes: bool,
         post_commit_selection: PostCommitSelection,
-        component_registry: &ComponentRegistry
+        component_registry: &ComponentRegistry,
     ) {
         // If there is another transaction in progress, commit the old one.
         let commit_current_tx = match &editor_state.current_transaction_info {

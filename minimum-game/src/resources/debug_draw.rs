@@ -1,5 +1,3 @@
-
-
 pub struct LineList {
     pub points: Vec<glam::Vec2>,
     pub color: glam::Vec4,

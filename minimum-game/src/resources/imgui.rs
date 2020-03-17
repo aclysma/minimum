@@ -2,14 +2,12 @@ use crate::ImguiManager;
 use std::ops::{Deref, DerefMut};
 
 pub struct ImguiResource {
-    manager: ImguiManager
+    manager: ImguiManager,
 }
 
 impl ImguiResource {
     pub fn new(manager: ImguiManager) -> Self {
-        ImguiResource {
-            manager
-        }
+        ImguiResource { manager }
     }
 }
 

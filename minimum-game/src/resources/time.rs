@@ -1,4 +1,3 @@
-
 use legion::prelude::*;
 
 use minimum_kernel::util::PeriodicEvent;
@@ -103,9 +102,6 @@ impl TimeResource {
         }
     }
 }
-
-
-
 
 use std::time;
 

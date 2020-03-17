@@ -10,7 +10,9 @@ use crate::components::DrawSkiaBoxComponent;
 use crate::components::DrawSkiaCircleComponent;
 
 use crate::resources::CanvasDrawResource;
-use minimum::resources::{CameraResource, InputResource, ViewportResource, DebugDrawResource, ViewportSize};
+use minimum::resources::{
+    CameraResource, InputResource, ViewportResource, DebugDrawResource, ViewportSize,
+};
 use minimum::resources::ImguiResource;
 use crate::resources::FpsTextResource;
 use crate::resources::WinitWindowResource;
@@ -43,7 +45,14 @@ pub fn draw() -> Box<dyn Schedulable> {
         .build(
             |_,
              world,
-             (draw_context, fps_text, camera_state, viewport_state, debug_draw, winit_window_resource),
+             (
+                draw_context,
+                fps_text,
+                camera_state,
+                viewport_state,
+                debug_draw,
+                winit_window_resource,
+            ),
              (draw_boxes_query, draw_circles_query)| {
                 draw_context.with_canvas(|canvas, coordinate_system_helper| {
                     let inner_size = winit_window_resource.inner_size();

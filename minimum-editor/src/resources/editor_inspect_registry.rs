@@ -8,9 +8,7 @@ pub struct EditorInspectRegistryResource {
 
 impl EditorInspectRegistryResource {
     pub fn new(registry: EditorInspectRegistry) -> Self {
-        EditorInspectRegistryResource {
-            registry,
-        }
+        EditorInspectRegistryResource { registry }
     }
 
     pub fn registry(&self) -> &EditorInspectRegistry {
@@ -25,4 +23,3 @@ impl Deref for EditorInspectRegistryResource {
         self.registry()
     }
 }
-

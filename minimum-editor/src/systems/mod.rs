@@ -1,11 +1,11 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource, CameraResource
+    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
+    CameraResource,
 };
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource,
-    EditorDrawResource, EditorTransaction,
+    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
 };
 use crate::resources::EditorTool;
 
@@ -105,21 +105,21 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
             ),
              (position_query)| {
                 //TODO: Get key codes
-//                if input_state.is_key_just_down(VirtualKeyCode::Key1) {
-//                    editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
-//                }
-//
-//                if input_state.is_key_just_down(VirtualKeyCode::Key2) {
-//                    editor_state.enqueue_set_active_editor_tool(EditorTool::Scale);
-//                }
-//
-//                if input_state.is_key_just_down(VirtualKeyCode::Key3) {
-//                    editor_state.enqueue_set_active_editor_tool(EditorTool::Rotate);
-//                }
-//
-//                if input_state.is_key_just_down(VirtualKeyCode::Space) {
-//                    editor_state.enqueue_toggle_pause();
-//                }
+                //                if input_state.is_key_just_down(VirtualKeyCode::Key1) {
+                //                    editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
+                //                }
+                //
+                //                if input_state.is_key_just_down(VirtualKeyCode::Key2) {
+                //                    editor_state.enqueue_set_active_editor_tool(EditorTool::Scale);
+                //                }
+                //
+                //                if input_state.is_key_just_down(VirtualKeyCode::Key3) {
+                //                    editor_state.enqueue_set_active_editor_tool(EditorTool::Rotate);
+                //                }
+                //
+                //                if input_state.is_key_just_down(VirtualKeyCode::Space) {
+                //                    editor_state.enqueue_toggle_pause();
+                //                }
             },
         )
 }

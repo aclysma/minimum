@@ -10,7 +10,9 @@ impl WinitImguiManagerResource {
     /// Create a new TimeState. Default is not allowed because the current time affects the object
     #[allow(clippy::new_without_default)]
     pub fn new(imgui_platform_manager: WinitImguiManager) -> Self {
-        WinitImguiManagerResource { winit_imgui_manager: imgui_platform_manager }
+        WinitImguiManagerResource {
+            winit_imgui_manager: imgui_platform_manager,
+        }
     }
 }
 

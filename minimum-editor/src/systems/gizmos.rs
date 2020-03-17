@@ -1,12 +1,11 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource,
-    DebugDrawResource, UniverseResource, ImguiResource
+    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
+    ImguiResource,
 };
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource,
-    EditorDrawResource, EditorTransaction,
+    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
     PostCommitSelection,
 };
 use crate::resources::EditorTool;
@@ -28,7 +27,9 @@ use prefab_format::{EntityUuid, ComponentTypeUuid};
 use legion_prefab::CookedPrefab;
 use legion_transaction::ComponentDiff;
 use std::sync::Arc;
-use minimum_transform::components::{PositionComponent, Rotation2DComponent, UniformScaleComponent, NonUniformScaleComponent};
+use minimum_transform::components::{
+    PositionComponent, Rotation2DComponent, UniformScaleComponent, NonUniformScaleComponent,
+};
 use atelier_assets::core::asset_uuid;
 
 use legion::filter::EntityFilterTuple;
@@ -70,15 +71,18 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                 debug_draw,
                 editor_draw,
                 universe_resource,
-                component_registry
+                component_registry,
             ),
              (translate_query, scale_query, rotate_query)| {
                 let mut gizmo_tx = None;
                 std::mem::swap(&mut gizmo_tx, editor_state.gizmo_transaction_mut());
 
                 if gizmo_tx.is_none() {
-                    gizmo_tx = editor_state
-                        .create_transaction_from_selected(&*editor_selection, &*universe_resource, &*component_registry);
+                    gizmo_tx = editor_state.create_transaction_from_selected(
+                        &*editor_selection,
+                        &*universe_resource,
+                        &*component_registry,
+                    );
                 }
 
                 if let Some(mut gizmo_tx) = gizmo_tx {
@@ -94,13 +98,19 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                     match result {
                         GizmoResult::NoChange => {}
                         GizmoResult::Update => {
-                            gizmo_tx
-                                .update(editor_state, PostCommitSelection::KeepCurrentSelection, &*component_registry);
+                            gizmo_tx.update(
+                                editor_state,
+                                PostCommitSelection::KeepCurrentSelection,
+                                &*component_registry,
+                            );
                             *editor_state.gizmo_transaction_mut() = Some(gizmo_tx);
                         }
                         GizmoResult::Commit => {
-                            gizmo_tx
-                                .commit(editor_state, PostCommitSelection::KeepCurrentSelection, &*component_registry);
+                            gizmo_tx.commit(
+                                editor_state,
+                                PostCommitSelection::KeepCurrentSelection,
+                                &*component_registry,
+                            );
                         }
                     }
                 }
@@ -181,7 +191,11 @@ fn handle_translate_gizmo_input(
         for (entity_handle, mut position) in query.iter_entities_mut(tx.world_mut()) {
             // Can use editor_draw.is_shape_drag_just_finished(MouseButton::LEFT) to see if this is the final drag,
             // in which case we might want to save an undo step
-            *position.position += glam::Vec3::new(world_space_previous_frame_delta.x(), world_space_previous_frame_delta.y(), 0.0);
+            *position.position += glam::Vec3::new(
+                world_space_previous_frame_delta.x(),
+                world_space_previous_frame_delta.y(),
+                0.0,
+            );
         }
 
         if editor_draw.is_shape_drag_just_finished(MouseButton::LEFT) {
@@ -363,7 +377,11 @@ fn handle_scale_gizmo_input(
             let query = <(Write<NonUniformScaleComponent>)>::query();
 
             for (entity_handle, mut non_uniform_scale) in query.iter_entities_mut(tx.world_mut()) {
-                *non_uniform_scale.non_uniform_scale += glam::Vec3::new(ui_space_previous_frame_delta.x(), ui_space_previous_frame_delta.y(), 0.0);
+                *non_uniform_scale.non_uniform_scale += glam::Vec3::new(
+                    ui_space_previous_frame_delta.x(),
+                    ui_space_previous_frame_delta.y(),
+                    0.0,
+                );
             }
         }
 
@@ -389,11 +407,7 @@ fn draw_scale_gizmo(
             TryRead<NonUniformScaleComponent>,
         ),
         EntityFilterTuple<
-            And<(
-                ComponentFilter<PositionComponent>,
-                Passthrough,
-                Passthrough,
-            )>,
+            And<(ComponentFilter<PositionComponent>, Passthrough, Passthrough)>,
             And<(Passthrough, Passthrough, Passthrough)>,
             And<(Passthrough, Passthrough, Passthrough)>,
         >,

@@ -45,7 +45,10 @@ use legion_transaction::SpawnCloneImpl;
 
 use atelier_assets::core as atelier_core;
 
-use minimum::resources::{AssetResource, CameraResource, InputResource, ViewportResource, DebugDrawResource, TimeResource, ComponentRegistryResource};
+use minimum::resources::{
+    AssetResource, CameraResource, InputResource, ViewportResource, DebugDrawResource,
+    TimeResource, ComponentRegistryResource,
+};
 use minimum::editor::EditorInspectRegistry;
 use minimum::editor::EditorInspectRegistryBuilder;
 use minimum::editor::EditorSelectableRegistry;
@@ -151,7 +154,7 @@ impl app::AppHandler for DemoApp {
         &mut self,
         world: &mut World,
         resources: &mut Resources,
-        window: &Window
+        window: &Window,
     ) {
         let asset_manager = create_asset_manager();
         let physics = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
@@ -165,7 +168,9 @@ impl app::AppHandler for DemoApp {
         );
         let viewport = ViewportResource::new(viewport_size, camera.position, camera.x_half_extents);
 
-        resources.insert(EditorInspectRegistryResource::new(create_editor_inspector_registry()));
+        resources.insert(EditorInspectRegistryResource::new(
+            create_editor_inspector_registry(),
+        ));
         resources.insert(ComponentRegistryResource::new(create_component_registry()));
         resources.insert(physics);
         resources.insert(FpsTextResource::new());

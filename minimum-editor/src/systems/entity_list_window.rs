@@ -1,12 +1,10 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource,
-    DebugDrawResource, UniverseResource,
+    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
 };
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource,
-    EditorDrawResource, EditorTransaction,
+    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
     PostCommitSelection,
 };
 use minimum_game::resources::ImguiResource;
@@ -45,7 +43,14 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
         .build(
             |_,
              world,
-             (imgui_manager, editor_ui_state, editor_selection, input, universe_resource, component_registry),
+             (
+                imgui_manager,
+                editor_ui_state,
+                editor_selection,
+                input,
+                universe_resource,
+                component_registry,
+            ),
              all_query| {
                 imgui_manager.with_ui(|ui: &mut imgui::Ui| {
                     use imgui::im_str;
@@ -64,14 +69,15 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
 
                                 if add_entity {
                                     //TODO: Update selection
-                                    if let Some(mut tx) = editor_ui_state
-                                        .create_empty_transaction(&*universe_resource, &*component_registry)
-                                    {
+                                    if let Some(mut tx) = editor_ui_state.create_empty_transaction(
+                                        &*universe_resource,
+                                        &*component_registry,
+                                    ) {
                                         tx.world_mut().insert((), vec![()]);
                                         tx.commit(
                                             &mut *editor_ui_state,
                                             PostCommitSelection::SelectAllInTransaction,
-                                            &*component_registry
+                                            &*component_registry,
                                         );
                                     }
                                 }
@@ -81,14 +87,14 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                         .create_transaction_from_selected(
                                             &*editor_selection,
                                             &*universe_resource,
-                                            &*component_registry
+                                            &*component_registry,
                                         )
                                     {
                                         tx.world_mut().delete_all();
                                         tx.commit(
                                             &mut *editor_ui_state,
                                             PostCommitSelection::KeepCurrentSelection,
-                                            &*component_registry
+                                            &*component_registry,
                                         );
                                     }
                                 }
@@ -110,9 +116,9 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
 
                                         if clicked {
                                             //TODO: Hook up keyboard controls
-//                                            let is_control_held = input
-//                                                .is_key_down(VirtualKeyCode::LControl)
-//                                                || input.is_key_down(VirtualKeyCode::RControl);
+                                            //                                            let is_control_held = input
+                                            //                                                .is_key_down(VirtualKeyCode::LControl)
+                                            //                                                || input.is_key_down(VirtualKeyCode::RControl);
                                             let is_control_held = false;
                                             if is_control_held {
                                                 if !is_selected {

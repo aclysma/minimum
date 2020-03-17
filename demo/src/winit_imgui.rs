@@ -52,9 +52,7 @@ impl WinitImguiManager {
 
         WinitImguiManager {
             imgui_manager,
-            inner: Arc::new(Mutex::new(WinitImguiManagerInner {
-                platform
-            }))
+            inner: Arc::new(Mutex::new(WinitImguiManagerInner { platform })),
         }
     }
 

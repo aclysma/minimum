@@ -1,4 +1,3 @@
-
 #[derive(Copy, Clone)]
 pub struct ViewportSize {
     pub width: u32,
@@ -6,11 +5,11 @@ pub struct ViewportSize {
 }
 
 impl ViewportSize {
-    pub fn new(width: u32, height: u32) -> Self{
-        ViewportSize {
-            width,
-            height
-        }
+    pub fn new(
+        width: u32,
+        height: u32,
+    ) -> Self {
+        ViewportSize { width, height }
     }
 }
 

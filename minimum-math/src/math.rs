@@ -108,7 +108,7 @@ impl Vec3 {
 
     pub fn xy(&self) -> Vec2 {
         Vec2 {
-            value: self.value.truncate()
+            value: self.value.truncate(),
         }
     }
 }

@@ -1,10 +1,13 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource,
-    DebugDrawResource, UniverseResource, ImguiResource
+    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
+    ImguiResource,
 };
-use crate::resources::{EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction, PostCommitSelection, EditorInspectRegistryResource};
+use crate::resources::{
+    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
+    PostCommitSelection, EditorInspectRegistryResource,
+};
 use crate::resources::EditorTool;
 use legion_transaction::{TransactionBuilder, Transaction};
 
@@ -66,11 +69,12 @@ pub fn editor_inspector_window(
                     .position([0.0, 300.0], imgui::Condition::Once)
                     .size([350.0, 300.0], imgui::Condition::Once)
                     .build(ui, || {
-                        let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
+                        let component_registry =
+                            resources.get::<ComponentRegistryResource>().unwrap();
                         let mut tx = editor_ui_state.create_transaction_from_selected(
                             &*selection_world,
                             &*universe_resource,
-                            &*component_registry
+                            &*component_registry,
                         );
 
                         if let Some(mut tx) = tx {
@@ -99,7 +103,7 @@ pub fn editor_inspector_window(
                                     .to_lowercase();
 
                                 // Get a list of all component types that match the filter (or don't filter if the string is empty)
-                                let mut component_types : Vec<_> = component_registry
+                                let mut component_types: Vec<_> = component_registry
                                     .components()
                                     .iter()
                                     .filter(|(_, t)| {
@@ -168,7 +172,8 @@ pub fn editor_inspector_window(
                             //
                             // Draw inspect widgets
                             //
-                            let inspect_registry = resources.get::<EditorInspectRegistryResource>().unwrap();
+                            let inspect_registry =
+                                resources.get::<EditorInspectRegistryResource>().unwrap();
                             commit_required |= inspect_registry.render_mut(
                                 tx.world_mut(),
                                 &all_entities,
@@ -180,7 +185,7 @@ pub fn editor_inspector_window(
                                 tx.commit(
                                     &mut editor_ui_state,
                                     PostCommitSelection::KeepCurrentSelection,
-                                    &*component_registry
+                                    &*component_registry,
                                 );
                             }
                         }

@@ -1,4 +1,3 @@
-
 use std::sync::Arc;
 use std::sync::Mutex;
 use imgui::sys as imgui_sys;
@@ -50,9 +49,7 @@ pub struct ImguiManager {
 // Wraps imgui (and winit integration logic)
 impl ImguiManager {
     // imgui and winit platform are expected to be pre-configured
-    pub fn new(
-        mut imgui_context: imgui::Context,
-    ) -> Self {
+    pub fn new(mut imgui_context: imgui::Context) -> Self {
         // Ensure font atlas is built and cache a pointer to it
         let font_atlas_texture = {
             let mut fonts = imgui_context.fonts();
@@ -82,9 +79,7 @@ impl ImguiManager {
     }
 
     // Start a new frame
-    pub fn begin_frame(
-        &self
-    ) {
+    pub fn begin_frame(&self) {
         let mut inner_mutex_guard = self.inner.lock().unwrap();
         let mut inner = &mut *inner_mutex_guard;
 

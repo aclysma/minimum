@@ -56,17 +56,7 @@ impl From<PaintDef> for Paint {
 // Draw a box at the component's current location. Will be affected by scale, if the scale component
 // exists
 //
-#[derive(
-    TypeUuid,
-    Serialize,
-    Deserialize,
-    SerdeDiff,
-    Debug,
-    PartialEq,
-    Clone,
-    Inspect,
-    Default,
-)]
+#[derive(TypeUuid, Serialize, Deserialize, SerdeDiff, Debug, PartialEq, Clone, Inspect, Default)]
 #[uuid = "c05e5c27-58ca-4d68-b825-b20f67fdaf37"]
 pub struct DrawSkiaBoxComponentDef {
     #[serde_diff(opaque)]
@@ -106,8 +96,7 @@ impl minimum::editor::EditorSelectable for DrawSkiaBoxComponent {
                 half_extents *= uniform_scale.uniform_scale;
             }
 
-            if let Some(non_uniform_scale) =
-                world.get_component::<NonUniformScaleComponent>(entity)
+            if let Some(non_uniform_scale) = world.get_component::<NonUniformScaleComponent>(entity)
             {
                 half_extents *= *non_uniform_scale.non_uniform_scale;
             }
@@ -117,11 +106,16 @@ impl minimum::editor::EditorSelectable for DrawSkiaBoxComponent {
                 rotation = rotation_component.rotation;
             }
 
-            let shape_handle =
-                ShapeHandle::new(Cuboid::new(glm::Vec2::new(half_extents.x(), half_extents.y())));
+            let shape_handle = ShapeHandle::new(Cuboid::new(glm::Vec2::new(
+                half_extents.x(),
+                half_extents.y(),
+            )));
 
             collision_world.add(
-                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), rotation),
+                ncollide2d::math::Isometry::new(
+                    vec2_glam_to_glm(*position.position.xy()),
+                    rotation,
+                ),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),
@@ -135,17 +129,7 @@ impl minimum::editor::EditorSelectable for DrawSkiaBoxComponent {
 // Draw a circle at the component's current location. Will be affected by scale, if the scale
 // component exists
 //
-#[derive(
-    TypeUuid,
-    Serialize,
-    Deserialize,
-    SerdeDiff,
-    Debug,
-    PartialEq,
-    Clone,
-    Inspect,
-    Default,
-)]
+#[derive(TypeUuid, Serialize, Deserialize, SerdeDiff, Debug, PartialEq, Clone, Inspect, Default)]
 #[uuid = "e47f9943-d5bf-4e1b-9601-13e47d7b737c"]
 pub struct DrawSkiaCircleComponentDef {
     pub radius: f32,

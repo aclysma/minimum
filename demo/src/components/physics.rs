@@ -29,17 +29,7 @@ use crate::math_conversions::vec2_glam_to_glm;
 //
 // Add a ball rigid body
 //
-#[derive(
-    TypeUuid,
-    Serialize,
-    Deserialize,
-    SerdeDiff,
-    Debug,
-    PartialEq,
-    Clone,
-    Inspect,
-    Default,
-)]
+#[derive(TypeUuid, Serialize, Deserialize, SerdeDiff, Debug, PartialEq, Clone, Inspect, Default)]
 #[uuid = "fa518c0a-a65a-44c8-9d35-3f4f336b4de4"]
 pub struct RigidBodyBallComponentDef {
     pub radius: f32,
@@ -48,17 +38,7 @@ pub struct RigidBodyBallComponentDef {
 
 legion_prefab::register_component_type!(RigidBodyBallComponentDef);
 
-#[derive(
-    TypeUuid,
-    Serialize,
-    Deserialize,
-    SerdeDiff,
-    Debug,
-    PartialEq,
-    Clone,
-    Inspect,
-    Default,
-)]
+#[derive(TypeUuid, Serialize, Deserialize, SerdeDiff, Debug, PartialEq, Clone, Inspect, Default)]
 #[uuid = "36df3006-a5ad-4997-9ccc-0860f49195ad"]
 pub struct RigidBodyBoxComponentDef {
     #[serde_diff(opaque)]
@@ -135,21 +115,20 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
 
-        let position_components = iter_components_in_storage::<
-            PositionComponent,
-        >(
-            src_component_storage, src_component_storage_indexes.clone()
+        let position_components = iter_components_in_storage::<PositionComponent>(
+            src_component_storage,
+            src_component_storage_indexes.clone(),
         );
 
-        let uniform_scale_components =
-            iter_components_in_storage::<UniformScaleComponent>(
-                src_component_storage,
-                src_component_storage_indexes.clone(),
-            );
+        let uniform_scale_components = iter_components_in_storage::<UniformScaleComponent>(
+            src_component_storage,
+            src_component_storage_indexes.clone(),
+        );
 
-        let rotation_components = iter_components_in_storage::<
-            Rotation2DComponent,
-        >(src_component_storage, src_component_storage_indexes);
+        let rotation_components = iter_components_in_storage::<Rotation2DComponent>(
+            src_component_storage,
+            src_component_storage_indexes,
+        );
 
         for (src_position, src_uniform_scale, src_rotation, from, into) in izip!(
             position_components,
@@ -226,27 +205,25 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
 
-        let position_components = iter_components_in_storage::<
-            PositionComponent,
-        >(
-            src_component_storage, src_component_storage_indexes.clone()
+        let position_components = iter_components_in_storage::<PositionComponent>(
+            src_component_storage,
+            src_component_storage_indexes.clone(),
         );
 
-        let uniform_scale_components =
-            iter_components_in_storage::<UniformScaleComponent>(
-                src_component_storage,
-                src_component_storage_indexes.clone(),
-            );
+        let uniform_scale_components = iter_components_in_storage::<UniformScaleComponent>(
+            src_component_storage,
+            src_component_storage_indexes.clone(),
+        );
 
-        let non_uniform_scale_components =
-            iter_components_in_storage::<NonUniformScaleComponent>(
-                src_component_storage,
-                src_component_storage_indexes.clone(),
-            );
+        let non_uniform_scale_components = iter_components_in_storage::<NonUniformScaleComponent>(
+            src_component_storage,
+            src_component_storage_indexes.clone(),
+        );
 
-        let rotation_components = iter_components_in_storage::<
-            Rotation2DComponent,
-        >(src_component_storage, src_component_storage_indexes);
+        let rotation_components = iter_components_in_storage::<Rotation2DComponent>(
+            src_component_storage,
+            src_component_storage_indexes,
+        );
 
         for (src_position, src_uniform_scale, src_non_uniform_scale, src_rotation, from, into) in izip!(
             position_components,
@@ -266,8 +243,10 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
                 half_extents *= *src_non_uniform_scale.non_uniform_scale;
             }
 
-            let shape_handle =
-                ShapeHandle::new(Cuboid::new(glm::Vec2::new(half_extents.x(), half_extents.y())));
+            let shape_handle = ShapeHandle::new(Cuboid::new(glm::Vec2::new(
+                half_extents.x(),
+                half_extents.y(),
+            )));
             transform_shape_to_rigid_body(
                 &mut physics,
                 into,
@@ -280,9 +259,7 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
     }
 }
 
-impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
-    for RigidBodyBoxComponentDef
-{
+impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent> for RigidBodyBoxComponentDef {
     fn create_editor_selection_world(
         &self,
         collision_world: &mut CollisionWorld<f32, Entity>,
@@ -316,11 +293,16 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
                 rotation = rotation_component.rotation;
             }
 
-            let shape_handle =
-                ShapeHandle::new(Cuboid::new(glm::Vec2::new(half_extents.x(), half_extents.y())));
+            let shape_handle = ShapeHandle::new(Cuboid::new(glm::Vec2::new(
+                half_extents.x(),
+                half_extents.y(),
+            )));
 
             collision_world.add(
-                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), rotation),
+                ncollide2d::math::Isometry::new(
+                    vec2_glam_to_glm(*position.position.xy()),
+                    rotation,
+                ),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),

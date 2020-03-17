@@ -24,9 +24,5 @@ fn main() {
         .app_name(CString::new("Skulpin Example App").unwrap())
         .use_vulkan_debug_layer(true);
 
-    demo::app::App::run(
-        example_app,
-        LogicalSize::new(900, 600),
-        renderer_builder,
-    );
+    demo::app::App::run(example_app, LogicalSize::new(900, 600), renderer_builder);
 }

@@ -11,9 +11,7 @@ use atelier_assets::importer as atelier_importer;
 //
 // 2D Position
 //
-#[derive(
-    TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect, Default,
-)]
+#[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107194cf0"]
 pub struct PositionComponent {
     #[serde_diff(opaque)]
@@ -62,9 +60,7 @@ legion_prefab::register_component_type!(NonUniformScaleComponent);
 //
 // 2D Rotation
 //
-#[derive(
-    TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect, Default,
-)]
+#[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Inspect, Default)]
 #[uuid = "6841f13d-fe38-4320-a8f8-1a6133f45e33"]
 pub struct Rotation2DComponent {
     pub rotation: f32,
