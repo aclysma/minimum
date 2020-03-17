@@ -9,7 +9,8 @@ extern crate nalgebra as na;
 extern crate nalgebra_glm as glm;
 
 mod select;
-pub use select::EditorSelectableRegistry;
+pub use select::EditorSelectRegistryBuilder;
+pub use select::EditorSelectRegistry;
 pub use select::EditorSelectable;
 pub use select::EditorSelectableTransformed;
 

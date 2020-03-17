@@ -51,7 +51,7 @@ use minimum::resources::{
 };
 use minimum::editor::EditorInspectRegistry;
 use minimum::editor::EditorInspectRegistryBuilder;
-use minimum::editor::EditorSelectableRegistry;
+use minimum::editor::EditorSelectRegistry;
 use minimum::editor::resources::EditorMode;
 use minimum::editor::resources::EditorStateResource;
 use minimum::editor::resources::EditorDrawResource;
@@ -60,6 +60,7 @@ use minimum::resources::ViewportSize;
 use skulpin::Window;
 use minimum::ComponentRegistry;
 use minimum::resources::editor::EditorInspectRegistryResource;
+use minimum::editor::EditorSelectRegistryBuilder;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
@@ -81,13 +82,13 @@ pub fn create_component_registry() -> ComponentRegistry {
         .build()
 }
 
-pub fn create_editor_selection_registry() -> EditorSelectableRegistry {
-    let mut registry = EditorSelectableRegistry::default();
-    registry.register::<DrawSkiaBoxComponent>();
-    registry.register::<DrawSkiaCircleComponent>();
-    registry.register_transformed::<RigidBodyBoxComponentDef, RigidBodyComponent>();
-    registry.register_transformed::<RigidBodyBallComponentDef, RigidBodyComponent>();
-    registry
+pub fn create_editor_selection_registry() -> EditorSelectRegistry {
+    EditorSelectRegistryBuilder::new()
+        .register::<DrawSkiaBoxComponent>()
+        .register::<DrawSkiaCircleComponent>()
+        .register_transformed::<RigidBodyBoxComponentDef, RigidBodyComponent>()
+        .register_transformed::<RigidBodyBallComponentDef, RigidBodyComponent>()
+        .build()
 }
 
 pub fn create_editor_inspector_registry() -> EditorInspectRegistry {
@@ -171,6 +172,9 @@ impl app::AppHandler for DemoApp {
         resources.insert(EditorInspectRegistryResource::new(
             create_editor_inspector_registry(),
         ));
+        resources.insert(EditorSelectionResource::new(
+            create_editor_selection_registry(),
+        ));
         resources.insert(ComponentRegistryResource::new(create_component_registry()));
         resources.insert(physics);
         resources.insert(FpsTextResource::new());
@@ -180,11 +184,6 @@ impl app::AppHandler for DemoApp {
         resources.insert(viewport);
         resources.insert(DebugDrawResource::new());
         resources.insert(EditorDrawResource::new());
-
-        let selection_resource =
-            EditorSelectionResource::new(create_editor_selection_registry(), resources, world);
-
-        resources.insert(selection_resource);
 
         // Start the application
         EditorStateResource::open_prefab(

@@ -76,8 +76,6 @@ impl<A: TypeUuid + for<'a> serde::Deserialize<'a> + 'static + Send> TypedAssetSt
         &self,
         handle: &T,
     ) -> Option<&A> {
-        println!("type is {}", core::any::type_name::<A>());
-
         {
             let x = self
                 .storage
@@ -87,7 +85,6 @@ impl<A: TypeUuid + for<'a> serde::Deserialize<'a> + 'static + Send> TypedAssetSt
                 .expect("unknown asset type")
                 .as_ref()
                 .type_name();
-            println!("storage is {}", x);
         }
 
         // This transmute can probably be unsound, but I don't have the energy to fix it right now

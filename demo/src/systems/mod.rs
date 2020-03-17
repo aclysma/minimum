@@ -11,10 +11,6 @@ pub use app_control_systems::quit_if_escape_pressed;
 mod draw_systems;
 pub use draw_systems::draw;
 
-mod input_systems;
-pub use input_systems::update_input_resource;
-pub use input_systems::input_reset_for_next_frame;
-
 use minimum::systems::*;
 
 use legion::prelude::*;

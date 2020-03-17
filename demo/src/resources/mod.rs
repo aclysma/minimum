@@ -10,5 +10,5 @@ pub use physics::PhysicsResource;
 mod winit_imgui;
 pub use self::winit_imgui::WinitImguiManagerResource;
 
-mod window;
-pub use window::WinitWindowResource;
+mod winit_window;
+pub use winit_window::WinitWindowResource;

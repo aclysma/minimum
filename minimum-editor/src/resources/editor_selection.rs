@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use crate::resources::EditorStateResource;
 use minimum_game::resources::UniverseResource;
-use crate::EditorSelectableRegistry;
+use crate::EditorSelectRegistry;
 
 enum SelectionOp {
     Add(Vec<Entity>),
@@ -18,7 +18,7 @@ enum SelectionOp {
 }
 
 pub struct EditorSelectionResource {
-    registry: Arc<EditorSelectableRegistry>,
+    registry: Arc<EditorSelectRegistry>,
     editor_selection_world: CollisionWorld<f32, Entity>,
 
     // These are entities in the world
@@ -28,12 +28,8 @@ pub struct EditorSelectionResource {
 }
 
 impl EditorSelectionResource {
-    pub fn new(
-        registry: EditorSelectableRegistry,
-        resources: &Resources,
-        world: &World,
-    ) -> Self {
-        let editor_selection_world = registry.create_editor_selection_world(resources, world);
+    pub fn new(registry: EditorSelectRegistry) -> Self {
+        let editor_selection_world = registry.create_empty_editor_selection_world();
 
         EditorSelectionResource {
             registry: Arc::new(registry),

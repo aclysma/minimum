@@ -402,7 +402,7 @@ impl EditorStateResource {
             let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
             world.clone_from(
                 &opened_prefab.cooked_prefab.world,
-                &component_registry.copy_clone_impl(),
+                &component_registry.spawn_clone_impl(resources),
                 &mut legion::world::HashMapCloneImplResult(&mut prefab_to_world_mappings),
                 &legion::world::HashMapEntityReplacePolicy(&opened_prefab.prefab_to_world_mappings),
             );

@@ -145,22 +145,44 @@ where
 }
 
 #[derive(Default)]
-pub struct EditorSelectableRegistry {
+pub struct EditorSelectRegistryBuilder {
     registered: Vec<Box<dyn RegisteredEditorSelectableT>>,
 }
 
-impl EditorSelectableRegistry {
-    /// Adds a type to the registry, which allows components of these types to receive a callback
-    /// to insert shapes into the collision world used for selection
-    pub fn register<T: EditorSelectable>(&mut self) {
-        self.registered
-            .push(Box::new(RegisteredEditorSelectable::<T>::new()));
+impl EditorSelectRegistryBuilder {
+    pub fn new() -> EditorSelectRegistryBuilder {
+        Self::default()
     }
 
-    pub fn register_transformed<T: EditorSelectableTransformed<U>, U: Component>(&mut self) {
+    /// Adds a type to the registry, which allows components of these types to receive a callback
+    /// to insert shapes into the collision world used for selection
+    pub fn register<T: EditorSelectable>(mut self) -> Self {
+        self.registered
+            .push(Box::new(RegisteredEditorSelectable::<T>::new()));
+        self
+    }
+
+    pub fn register_transformed<T: EditorSelectableTransformed<U>, U: Component>(mut self) -> Self {
         self.registered.push(Box::new(
             RegisteredEditorSelectableTransformed::<T, U>::new(),
         ));
+        self
+    }
+
+    pub fn build(self) -> EditorSelectRegistry {
+        EditorSelectRegistry {
+            registered: self.registered,
+        }
+    }
+}
+
+pub struct EditorSelectRegistry {
+    registered: Vec<Box<dyn RegisteredEditorSelectableT>>,
+}
+
+impl EditorSelectRegistry {
+    pub fn create_empty_editor_selection_world(&self) -> CollisionWorld<f32, Entity> {
+        CollisionWorld::<f32, Entity>::new(EDITOR_SELECTION_WORLD_MARGIN)
     }
 
     /// Produces a collision world that includes shapes associated with entities
@@ -169,7 +191,7 @@ impl EditorSelectableRegistry {
         resources: &Resources,
         world: &World,
     ) -> CollisionWorld<f32, Entity> {
-        let mut collision_world = CollisionWorld::<f32, Entity>::new(EDITOR_SELECTION_WORLD_MARGIN);
+        let mut collision_world = self.create_empty_editor_selection_world();
 
         if let Some(opened_prefab) = resources
             .get::<EditorStateResource>()

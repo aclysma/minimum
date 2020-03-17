@@ -43,13 +43,11 @@ fn handle_selection(
     let mut intersecting_entities = None;
 
     if editor_draw.is_interacting_with_anything() {
-        println!("is interacting");
-    //
-    // If the user is doing something with the editor draw API, disable the selection logic
-    //
+        //
+        // If the user is doing something with the editor draw API, disable the selection logic
+        //
     } else if let Some(position) = input_state.mouse_button_just_clicked_position(MouseButton::LEFT)
     {
-        println!("just clicked");
         //
         // Handle a single click. Do a raycast to find find anything under the mouse position
         //
@@ -69,7 +67,6 @@ fn handle_selection(
         let results: Vec<Entity> = results.map(|(_, x)| *x.data()).collect();
         intersecting_entities = Some(results);
     } else if let Some(drag_complete) = input_state.mouse_drag_just_finished(MouseButton::LEFT) {
-        print!("DRAG COMPLETE");
         //
         // Handle user finishing dragging a box around entities. Create a shape that matches the
         // drag location in the world and project it into space to find intersecting entities
@@ -143,11 +140,6 @@ fn handle_selection(
         let is_drag = input_state
             .mouse_drag_just_finished(MouseButton::LEFT)
             .is_some();
-
-        println!(
-            "DRAG STATE {} {} {}",
-            add_to_selection, subtract_from_selection, toggle_selection
-        );
 
         if toggle_selection {
             // Only do toggling behavior for clicks. Box-dragging should only be additive
