@@ -36,13 +36,9 @@ imgui = "0.3"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
-#legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
-#legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
-#prefab-format = { git = "https://github.com/kabergstrom/prefab" }
-
-legion-transaction = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-transaction" }
-legion-prefab = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/legion-prefab" }
-prefab-format = { path = "/Users/pmd/dev/rust/atelier-legion-demo/prefab/prefab-format" }
+legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
+legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
+prefab-format = { git = "https://github.com/kabergstrom/prefab" }
 
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
 
