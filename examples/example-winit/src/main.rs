@@ -2,7 +2,8 @@ use skulpin::app::LogicalSize;
 
 use std::ffi::CString;
 
-use demo::DemoApp;
+use example_winit::app::App;
+use example_winit::DemoApp;
 use minimum::daemon;
 
 fn main() {
@@ -24,5 +25,5 @@ fn main() {
         .app_name(CString::new("Skulpin Example App").unwrap())
         .use_vulkan_debug_layer(true);
 
-    demo::app::App::run(example_app, LogicalSize::new(900, 600), renderer_builder);
+    App::run(example_app, LogicalSize::new(900, 600), renderer_builder);
 }
