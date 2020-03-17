@@ -17,6 +17,7 @@ pub use debug_draw::LineList;
 
 mod viewport;
 pub use viewport::ViewportResource;
+pub use viewport::ViewportSize;
 
 mod input;
 pub use input::InputResource;

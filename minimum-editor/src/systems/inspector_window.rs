@@ -4,11 +4,7 @@ use minimum_game::resources::{
     InputResource, TimeResource, ViewportResource,
     DebugDrawResource, UniverseResource, ImguiResource
 };
-use crate::resources::{
-    EditorStateResource, EditorSelectionResource,
-    EditorDrawResource, EditorTransaction,
-    PostCommitSelection,
-};
+use crate::resources::{EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction, PostCommitSelection, EditorInspectRegistryResource};
 use crate::resources::EditorTool;
 use legion_transaction::{TransactionBuilder, Transaction};
 
@@ -172,20 +168,21 @@ pub fn editor_inspector_window(
                             //
                             // Draw inspect widgets
                             //
-//                            let registry = crate::create_editor_inspector_registry();
-//                            commit_required |= registry.render_mut(
-//                                tx.world_mut(),
-//                                &all_entities,
-//                                ui,
-//                                &Default::default(),
-//                            );
-//
-//                            if commit_required {
-//                                tx.commit(
-//                                    &mut editor_ui_state,
-//                                    PostCommitSelection::KeepCurrentSelection,
-//                                );
-//                            }
+                            let inspect_registry = resources.get::<EditorInspectRegistryResource>().unwrap();
+                            commit_required |= inspect_registry.render_mut(
+                                tx.world_mut(),
+                                &all_entities,
+                                ui,
+                                &Default::default(),
+                            );
+
+                            if commit_required {
+                                tx.commit(
+                                    &mut editor_ui_state,
+                                    PostCommitSelection::KeepCurrentSelection,
+                                    &*component_registry
+                                );
+                            }
                         }
                     });
             }

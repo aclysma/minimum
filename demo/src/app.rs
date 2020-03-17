@@ -1,18 +1,18 @@
-use skulpin::RendererBuilder;
+use skulpin::{RendererBuilder, Window};
 use skulpin::LogicalSize;
 use skulpin::CreateRendererError;
 use skulpin::ash;
 use skulpin::winit;
 use skulpin::app::AppControl;
-use skulpin::app::InputState;
-use crate::imgui_support::ImguiPlatformManager;
+use crate::winit_imgui::WinitImguiManager;
 use imgui_winit_support::WinitPlatform;
 
 use crate::resources::*;
 
 use legion::prelude::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
-use minimum::resources::{ImguiResource, AppControlResource, TimeResource, InputResource, UniverseResource};
+use minimum::resources::{ImguiResource, AppControlResource, TimeResource, InputResource, UniverseResource, ViewportResource};
+use crate::resources::WinitImguiManagerResource;
 
 /// Represents an error from creating the renderer
 #[derive(Debug)]
@@ -69,6 +69,7 @@ pub trait AppHandler {
         &mut self,
         world: &mut World,
         resources: &mut Resources,
+        window: &Window
     );
 
     /// Called frequently, this is the intended place to put non-rendering logic
@@ -125,11 +126,11 @@ impl App {
         };
 
         // Initialize imgui
-        let imgui_manager = init_imgui_manager(&winit_window);
+        let winit_imgui_manager = init_winit_imgui_manager(&winit_window);
 
         // Initialize an interface for skulpin to interact with imgui
         let mut imgui_plugin: Option<Box<dyn skulpin::RendererPlugin>> = None;
-        imgui_manager.with_context(|context| {
+        winit_imgui_manager.with_context(|context| {
             imgui_plugin = Some(Box::new(ImguiRendererPlugin::new(context)));
         });
 
@@ -157,25 +158,27 @@ impl App {
         let mut world = universe.create_world();
         let mut resources = legion::systems::resource::Resources::default();
 
-        resources.insert(ImguiResource::new(imgui_manager));
-        resources.insert(AppControlResource::new(AppControl::default()));
+        resources.insert(WinitImguiManagerResource::new(winit_imgui_manager.clone()));
+        resources.insert(ImguiResource::new(winit_imgui_manager.imgui_manager()));
+        resources.insert(AppControlResource::new());
         resources.insert(TimeResource::new());
-        resources.insert(InputResource::new(InputState::new(&winit_window)));
+        resources.insert(InputResource::new());
         resources.insert(CanvasDrawResource::default());
         resources.insert(UniverseResource::new(universe));
+        resources.insert(WinitWindowResource::new(&winit_window));
 
-        app_handler.init(&mut world, &mut resources);
+        app_handler.init(&mut world, &mut resources, &skulpin_window);
 
         // Pass control of this thread to winit until the app terminates. If this app wants to quit,
         // the update loop should send the appropriate event via the channel
         event_loop.run(move |event, window_target, control_flow| {
             // Let imgui have the event first
             let input_captured = {
-                let imgui_manager = resources.get_mut::<ImguiResource>().unwrap();
-                imgui_manager.handle_event(&winit_window, &event);
+                let winit_imgui_manager = resources.get_mut::<WinitImguiManagerResource>().unwrap();
+                winit_imgui_manager.handle_event(&winit_window, &event);
 
                 let mut input_captured = false;
-                input_captured |= imgui_manager.want_capture_keyboard()
+                input_captured |= winit_imgui_manager.want_capture_keyboard()
                     && match event {
                         winit::event::Event::WindowEvent {
                             event: winit::event::WindowEvent::KeyboardInput { .. },
@@ -184,7 +187,7 @@ impl App {
                         _ => false,
                     };
 
-                input_captured |= imgui_manager.want_capture_mouse()
+                input_captured |= winit_imgui_manager.want_capture_mouse()
                     && match event {
                         winit::event::Event::WindowEvent {
                             event: winit::event::WindowEvent::MouseInput { .. },
@@ -204,10 +207,11 @@ impl App {
             if !input_captured {
                 let mut input_state = resources.get_mut::<InputResource>().unwrap();
                 let mut app_control = resources.get_mut::<AppControlResource>().unwrap();
-                input_state.input_state_mut().handle_winit_event(
-                    &mut app_control,
+                let mut viewport = resources.get::<ViewportResource>().unwrap();
+                crate::winit_input::handle_winit_event(
                     &event,
-                    window_target,
+                    &mut *input_state,
+                    &*viewport,
                 );
             }
 
@@ -215,8 +219,8 @@ impl App {
             match event {
                 winit::event::Event::MainEventsCleared => {
                     {
-                        let imgui_manager = resources.get_mut::<ImguiResource>().unwrap();
-                        imgui_manager.begin_frame(&winit_window);
+                        let imgui_manager = resources.get_mut::<WinitImguiManagerResource>().unwrap();
+                        winit_imgui_manager.begin_frame(&winit_window);
                     }
                     app_handler.update(&mut world, &mut resources);
 
@@ -224,12 +228,12 @@ impl App {
                     winit_window.request_redraw();
 
                     {
-                        let imgui_manager = resources.get_mut::<ImguiResource>().unwrap();
+                        let imgui_manager = resources.get_mut::<WinitImguiManagerResource>().unwrap();
                         imgui_manager.render(&winit_window);
                     }
                 }
                 winit::event::Event::RedrawRequested(_window_id) => {
-                    let imgui_manager = resources.get::<ImguiResource>().unwrap().clone();
+                    let imgui_manager = resources.get::<WinitImguiManagerResource>().unwrap().clone();
                     let skulpin_window = skulpin::WinitWindow::new(&winit_window);
                     if let Err(e) = renderer.draw(
                         &skulpin_window,
@@ -351,7 +355,7 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     return imgui;
 }
 
-pub fn init_imgui_manager(window: &winit::window::Window) -> ImguiPlatformManager {
+pub fn init_winit_imgui_manager(window: &winit::window::Window) -> WinitImguiManager {
     let mut imgui_context = init_imgui(&window);
     let mut imgui_platform = imgui_winit_support::WinitPlatform::init(&mut imgui_context);
 
@@ -361,5 +365,5 @@ pub fn init_imgui_manager(window: &winit::window::Window) -> ImguiPlatformManage
         imgui_winit_support::HiDpiMode::Locked(window.scale_factor()),
     );
 
-    ImguiPlatformManager::new(imgui_context, imgui_platform)
+    WinitImguiManager::new(imgui_context, imgui_platform)
 }

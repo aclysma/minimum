@@ -7,9 +7,8 @@ use minimum::resources::ViewportResource;
 pub fn update_input_resource() -> Box<dyn Schedulable> {
     SystemBuilder::new("input end frame")
         .write_resource::<InputResource>()
-        .read_resource::<ViewportResource>()
-        .build(|_, _, (input, viewport), _| {
-            input.update(&*viewport);
+        .build(|_, _, (input), _| {
+            input.end_frame();
         })
 }
 

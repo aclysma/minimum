@@ -14,3 +14,6 @@ mod editor_draw;
 pub use editor_draw::EditorDrawResource;
 pub use editor_draw::EditorShapeClickedState;
 pub use editor_draw::EditorShapeDragState;
+
+mod editor_inspect_registry;
+pub use editor_inspect_registry::EditorInspectRegistryResource;

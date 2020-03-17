@@ -1,7 +1,7 @@
 use legion::prelude::*;
 
 use imgui;
-use skulpin::skia_safe;
+use skulpin::{skia_safe, WinitWindow};
 
 use minimum::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
@@ -10,11 +10,10 @@ use crate::components::DrawSkiaBoxComponent;
 use crate::components::DrawSkiaCircleComponent;
 
 use crate::resources::CanvasDrawResource;
-use minimum::resources::{
-    CameraResource, InputResource, ViewportResource, DebugDrawResource,
-};
+use minimum::resources::{CameraResource, InputResource, ViewportResource, DebugDrawResource, ViewportSize};
 use minimum::resources::ImguiResource;
 use crate::resources::FpsTextResource;
+use crate::resources::WinitWindowResource;
 
 use skulpin::winit;
 use skulpin::LogicalSize;
@@ -26,8 +25,8 @@ pub fn draw() -> Box<dyn Schedulable> {
         .read_resource::<FpsTextResource>()
         .write_resource::<CameraResource>()
         .write_resource::<ViewportResource>()
-        .read_resource::<InputResource>()
         .write_resource::<DebugDrawResource>()
+        .read_resource::<WinitWindowResource>()
         .with_query(<(
             Read<PositionComponent>,
             Read<DrawSkiaBoxComponent>,
@@ -44,13 +43,16 @@ pub fn draw() -> Box<dyn Schedulable> {
         .build(
             |_,
              world,
-             (draw_context, fps_text, camera_state, viewport_state, input_resource, debug_draw),
+             (draw_context, fps_text, camera_state, viewport_state, debug_draw, winit_window_resource),
              (draw_boxes_query, draw_circles_query)| {
                 draw_context.with_canvas(|canvas, coordinate_system_helper| {
-                    let window_size = input_resource.window_size();
+                    let inner_size = winit_window_resource.inner_size();
                     let camera_position = camera_state.position;
+
+                    let viewport_size = ViewportSize::new(inner_size.width, inner_size.height);
+
                     viewport_state.update(
-                        window_size,
+                        viewport_size,
                         camera_position,
                         camera_state.x_half_extents,
                     );

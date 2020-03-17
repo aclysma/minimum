@@ -8,9 +8,9 @@ pub struct InputResource {
 }
 
 impl InputResource {
-    pub fn new(input_state: InputState) -> Self {
+    pub fn new() -> Self {
         InputResource {
-            input_state,
+            input_state: InputState::new(),
         }
     }
 

@@ -12,26 +12,6 @@ use legion::prelude::*;
 use std::ops::Range;
 use std::mem::MaybeUninit;
 
-//trait ComponentRegistryProvider {
-//    fn register_components(&self, registry: &mut HashMap<ComponentTypeId, ComponentRegistration>);
-//    fn register_components_by_uuid(&self, registry: &mut HashMap<ComponentTypeUuid, ComponentRegistration>);
-//}
-//
-//trait AssetManagerProvider {
-//    fn register_asset_storage(&self, asset_storage: &mut GenericAssetStorage);
-//}
-//
-//trait CloneImplProvider {
-//    fn create_copy_clone_impl(&self) -> CopyCloneImpl;
-//    fn create_spawn_clone_impl<'a>(&self, resources: &'a Resources) -> SpawnCloneImpl<'a>;
-//}
-//
-//trait EditorProvider {
-//    fn create_editor_selection_registry(registry: &mut EditorInspectRegistry);
-//    fn create_editor_inspector_registry(registry: &mut EditorSelectableRegistry);
-//}
-
-
 pub struct ComponentRegistryBuilder {
     components: HashMap<ComponentTypeId, ComponentRegistration>,
     components_by_uuid: HashMap<ComponentTypeUuid, ComponentRegistration>,
@@ -47,26 +27,31 @@ impl ComponentRegistryBuilder {
         }
     }
 
-    pub fn auto_register_components(&mut self) {
+    pub fn auto_register_components(mut self) -> Self{
         let comp_registrations = legion_prefab::iter_component_registrations();
         use std::iter::FromIterator;
 
         for registration in comp_registrations {
-            self.register_component(registration);
+            self = self.register_component(registration);
         }
+
+        self
     }
 
-    pub fn register_component(&mut self, registration: &ComponentRegistration) {
+    pub fn register_component(mut self, registration: &ComponentRegistration) -> Self {
         self.components.insert(registration.component_type_id(), registration.clone());
         self.components_by_uuid.insert(*registration.uuid(), registration.clone());
+        self
     }
 
-    pub fn add_spawn_mapping_into<FromT: Component + Clone + Into<IntoT>, IntoT: Component>(&mut self) {
+    pub fn add_spawn_mapping_into<FromT: Component + Clone + Into<IntoT>, IntoT: Component>(mut self) -> Self {
         self.spawn_handler_set.add_mapping_into::<FromT, IntoT>();
+        self
     }
 
-    pub fn add_spawn_mapping<FromT: Component + Clone + SpawnInto<IntoT>, IntoT: Component>(&mut self) {
+    pub fn add_spawn_mapping<FromT: Component + Clone + SpawnInto<IntoT>, IntoT: Component>(mut self) -> Self {
         self.spawn_handler_set.add_mapping::<FromT, IntoT>();
+        self
     }
 
     pub fn add_spawn_mapping_closure<FromT, IntoT, F>(

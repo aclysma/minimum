@@ -14,6 +14,7 @@ pub use select::EditorSelectable;
 pub use select::EditorSelectableTransformed;
 
 mod inspect;
+pub use inspect::EditorInspectRegistryBuilder;
 pub use inspect::EditorInspectRegistry;
 
 pub mod resources;

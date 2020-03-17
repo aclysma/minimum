@@ -142,18 +142,33 @@ where
 }
 
 #[derive(Default)]
+pub struct EditorInspectRegistryBuilder {
+    registered: Vec<Box<dyn RegisteredEditorInspectorT>>,
+}
+
+impl EditorInspectRegistryBuilder {
+    /// Adds a type to the registry, which allows components of these types to receive a callback
+    /// to insert shapes into the collision world used for selection
+    pub fn register<T: InspectRenderStruct<T> + legion::storage::Component>(mut self) -> Self {
+        self.registered
+            .push(Box::new(RegisteredEditorInspector::<T>::new()));
+        self
+    }
+
+    pub fn build(self) -> EditorInspectRegistry {
+        EditorInspectRegistry {
+            registered: self.registered
+        }
+    }
+}
+
+
+#[derive(Default)]
 pub struct EditorInspectRegistry {
     registered: Vec<Box<dyn RegisteredEditorInspectorT>>,
 }
 
 impl EditorInspectRegistry {
-    /// Adds a type to the registry, which allows components of these types to receive a callback
-    /// to insert shapes into the collision world used for selection
-    pub fn register<T: InspectRenderStruct<T> + legion::storage::Component>(&mut self) {
-        self.registered
-            .push(Box::new(RegisteredEditorInspector::<T>::new()));
-    }
-
     pub fn render(
         &self,
         world: &World,

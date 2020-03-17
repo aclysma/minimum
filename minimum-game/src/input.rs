@@ -16,12 +16,12 @@ impl MouseButton {
 
 #[derive(Copy, Clone)]
 pub struct MouseScrollDelta {
-    pub x: u32,
-    pub y: u32
+    pub x: f32,
+    pub y: f32
 }
 
 #[derive(Copy, Clone, PartialEq)]
-pub enum KeyState {
+pub enum ButtonState {
     Released,
     Pressed
 }
@@ -83,7 +83,7 @@ impl InputState {
             key_just_down: [false; Self::KEYBOARD_BUTTON_COUNT],
             key_just_up: [false; Self::KEYBOARD_BUTTON_COUNT],
             mouse_position: glam::Vec2::zero(),
-            mouse_wheel_delta: MouseScrollDelta { x: 0, y: 0 },
+            mouse_wheel_delta: MouseScrollDelta { x: 0.0, y: 0.0 },
             mouse_button_is_down: [false; Self::MOUSE_BUTTON_COUNT as usize],
             mouse_button_just_down: [None; Self::MOUSE_BUTTON_COUNT as usize],
             mouse_button_just_up: [None; Self::MOUSE_BUTTON_COUNT as usize],
@@ -307,7 +307,7 @@ impl InputState {
 
     /// Call at the end of every frame. This clears events that were "just" completed.
     pub fn end_frame(&mut self) {
-        self.mouse_wheel_delta = MouseScrollDelta { x: 0, y: 0};
+        self.mouse_wheel_delta = MouseScrollDelta { x: 0.0, y: 0.0 };
 
         for value in self.key_just_down.iter_mut() {
             *value = false;
@@ -345,11 +345,11 @@ impl InputState {
     pub fn handle_keyboard_event(
         &mut self,
         keyboard_button: KeyboardKey,
-        button_state: KeyState,
+        button_state: ButtonState,
     ) {
         if let Some(kc) = Self::keyboard_button_to_index(keyboard_button) {
             // Assign true if key is down, or false if key is up
-            if button_state == KeyState::Pressed {
+            if button_state == ButtonState::Pressed {
                 if !self.key_is_down[kc] {
                     self.key_just_down[kc] = true;
                 }
@@ -367,7 +367,7 @@ impl InputState {
     pub fn handle_mouse_button_event(
         &mut self,
         button: MouseButton,
-        button_event: KeyState,
+        button_event: ButtonState,
         viewport: &ViewportResource
     ) {
         if let Some(button_index) = Self::mouse_button_to_index(button) {
@@ -375,13 +375,13 @@ impl InputState {
 
             // Update is down/up, just down/up
             match button_event {
-                KeyState::Pressed => {
+                ButtonState::Pressed => {
                     self.mouse_button_just_down[button_index] = Some(self.mouse_position);
                     self.mouse_button_is_down[button_index] = true;
 
                     self.mouse_button_went_down_position[button_index] = Some(self.mouse_position);
                 }
-                KeyState::Released => {
+                ButtonState::Released => {
                     self.mouse_button_just_up[button_index] = Some(self.mouse_position);
                     self.mouse_button_is_down[button_index] = false;
 

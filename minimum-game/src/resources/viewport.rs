@@ -1,14 +1,23 @@
 
 #[derive(Copy, Clone)]
-pub struct PhysicalSize {
+pub struct ViewportSize {
     pub width: u32,
-    pub height: u32
+    pub height: u32,
+}
+
+impl ViewportSize {
+    pub fn new(width: u32, height: u32) -> Self{
+        ViewportSize {
+            width,
+            height
+        }
+    }
 }
 
 // this is based on window size (i.e. pixels)
 // bottom-left: (0, 0)
 // top-right: (window_width_in_pixels, window_height_in_pixels)
-fn calculate_ui_space_matrix(physical_size: PhysicalSize) -> glam::Mat4 {
+fn calculate_ui_space_matrix(viewport_size: ViewportSize) -> glam::Mat4 {
     let view = glam::Mat4::look_at_rh(
         glam::Vec3::from([0.0, 0.0, 5.0]),
         glam::Vec3::from([0.0, 0.0, 0.0]),
@@ -17,9 +26,9 @@ fn calculate_ui_space_matrix(physical_size: PhysicalSize) -> glam::Mat4 {
 
     let projection = glam::Mat4::orthographic_rh(
         0.0,
-        physical_size.width as f32,
+        viewport_size.width as f32,
         0.0,
-        physical_size.height as f32,
+        viewport_size.height as f32,
         -100.0,
         100.0,
     );
@@ -31,7 +40,7 @@ fn calculate_ui_space_matrix(physical_size: PhysicalSize) -> glam::Mat4 {
 // top-left: (0, 0)
 // bottom-right: (600 * aspect_ratio, 600) where aspect_ratio is window_width / window_height
 fn calculate_screen_space_matrix(
-    physical_size: PhysicalSize,
+    viewport_size: ViewportSize,
     view_half_extents: glam::Vec2,
 ) -> glam::Mat4 {
     let view = glam::Mat4::look_at_rh(
@@ -57,7 +66,7 @@ fn calculate_screen_space_matrix(
 // top-left: (-w/2, -h/2)
 // bottom-right: (w/2, h/2)
 fn calculate_world_space_matrix(
-    physical_size: PhysicalSize,
+    viewport_size: ViewportSize,
     position: glam::Vec3,
     view_half_extents: glam::Vec2,
 ) -> glam::Mat4 {
@@ -105,35 +114,35 @@ impl ViewportResource {
     }
 
     pub fn new(
-        window_size: PhysicalSize,
+        viewport_size: ViewportSize,
         camera_position: glam::Vec2,
         x_half_extents: f32,
     ) -> Self {
         let mut value = Self::empty();
-        value.update(window_size, camera_position, x_half_extents);
+        value.update(viewport_size, camera_position, x_half_extents);
         value
     }
 
     pub fn update(
         &mut self,
-        window_size: PhysicalSize,
+        viewport_size: ViewportSize,
         camera_position: glam::Vec2,
         x_half_extents: f32,
     ) {
         let y_half_extents =
-            x_half_extents / (window_size.width as f32 / window_size.height as f32);
+            x_half_extents / (viewport_size.width as f32 / viewport_size.height as f32);
 
         self.view_half_extents = glam::Vec2::new(x_half_extents, y_half_extents);
 
         let camera_position = glam::Vec3::new(camera_position.x(), camera_position.y(), 0.0);
-        self.set_ui_space_view(calculate_ui_space_matrix(window_size));
+        self.set_ui_space_view(calculate_ui_space_matrix(viewport_size));
         self.set_screen_space_view(
-            calculate_screen_space_matrix(window_size, self.view_half_extents),
+            calculate_screen_space_matrix(viewport_size, self.view_half_extents),
             self.view_half_extents,
         );
         self.set_world_space_view(
             camera_position,
-            calculate_world_space_matrix(window_size, camera_position, self.view_half_extents),
+            calculate_world_space_matrix(viewport_size, camera_position, self.view_half_extents),
         );
     }
 

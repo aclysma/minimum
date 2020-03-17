@@ -7,5 +7,8 @@ pub use canvas_draw::CanvasDrawResource;
 mod physics;
 pub use physics::PhysicsResource;
 
-mod imgui;
-pub use self::imgui::ImguiPlatformResource;
+mod winit_imgui;
+pub use self::winit_imgui::WinitImguiManagerResource;
+
+mod window;
+pub use window::WinitWindowResource;

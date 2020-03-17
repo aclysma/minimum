@@ -81,6 +81,60 @@ impl ImguiManager {
         }
     }
 
+    // Start a new frame
+    pub fn begin_frame(
+        &self
+    ) {
+        let mut inner_mutex_guard = self.inner.lock().unwrap();
+        let mut inner = &mut *inner_mutex_guard;
+
+        // Drop the old Ui if it exists
+        if inner.ui.is_some() {
+            log::warn!("a frame is already in progress, starting a new one");
+            Self::take_ui(&mut *inner);
+        }
+
+        let ui = Box::new(inner.context.frame());
+        inner.want_capture_keyboard = ui.io().want_capture_keyboard;
+        inner.want_capture_mouse = ui.io().want_capture_mouse;
+        inner.want_set_mouse_pos = ui.io().want_set_mouse_pos;
+        inner.want_text_input = ui.io().want_text_input;
+
+        // Remove the lifetime of the Ui
+        let ui_ptr: *mut imgui::Ui = Box::into_raw(ui);
+        let ui_ptr: *mut imgui::Ui<'static> = unsafe { std::mem::transmute(ui_ptr) };
+
+        // Store it as a raw pointer
+        inner.ui = Some(ui_ptr);
+    }
+
+    fn take_ui(inner: &mut ImguiManagerInner) -> Option<Box<imgui::Ui<'static>>> {
+        let mut ui = None;
+        std::mem::swap(&mut inner.ui, &mut ui);
+
+        if let Some(ui) = ui {
+            return Some(unsafe { Box::from_raw(ui) });
+        }
+
+        None
+    }
+
+    pub fn render(&self) {
+        let mut inner = self.inner.lock().unwrap();
+
+        if inner.ui.is_none() {
+            log::warn!("render() was called but a frame was not started");
+            return;
+        }
+
+        let ui = ImguiManager::take_ui(&mut inner);
+        if let Some(ui) = ui {
+            ui.render();
+        } else {
+            log::warn!("ui did not exist");
+        }
+    }
+
     // Allows access to the context without caller needing to be aware of locking
     #[allow(dead_code)]
     pub fn with_context<F>(

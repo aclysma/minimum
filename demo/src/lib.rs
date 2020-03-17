@@ -1,4 +1,7 @@
 #[macro_use]
+extern crate log;
+
+#[macro_use]
 extern crate itertools;
 
 extern crate nalgebra as na;
@@ -23,6 +26,8 @@ use resources::*;
 mod systems;
 use systems::*;
 
+mod winit_input;
+
 pub mod math_conversions;
 
 mod pipeline;
@@ -33,20 +38,25 @@ use nphysics2d::object::RigidBodyDesc;
 
 pub mod app;
 
-mod imgui_support;
+mod winit_imgui;
 
 use legion_transaction::CopyCloneImpl;
 use legion_transaction::SpawnCloneImpl;
 
 use atelier_assets::core as atelier_core;
 
-use minimum::resources::{AssetResource, CameraResource, InputResource, ViewportResource, DebugDrawResource, TimeResource};
+use minimum::resources::{AssetResource, CameraResource, InputResource, ViewportResource, DebugDrawResource, TimeResource, ComponentRegistryResource};
 use minimum::editor::EditorInspectRegistry;
+use minimum::editor::EditorInspectRegistryBuilder;
 use minimum::editor::EditorSelectableRegistry;
 use minimum::editor::resources::EditorMode;
 use minimum::editor::resources::EditorStateResource;
 use minimum::editor::resources::EditorDrawResource;
 use minimum::editor::resources::EditorSelectionResource;
+use minimum::resources::ViewportSize;
+use skulpin::Window;
+use minimum::ComponentRegistry;
+use minimum::resources::editor::EditorInspectRegistryResource;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
@@ -57,41 +67,16 @@ pub fn create_asset_manager() -> AssetResource {
     asset_manager.add_storage::<minimum::pipeline::PrefabAsset>();
     asset_manager
 }
-//
-//pub fn create_component_registry() -> HashMap<ComponentTypeId, ComponentRegistration> {
-//    let comp_registrations = legion_prefab::iter_component_registrations();
-//    use std::iter::FromIterator;
-//    let component_types: HashMap<ComponentTypeId, ComponentRegistration> = HashMap::from_iter(
-//        comp_registrations.map(|reg| (ComponentTypeId(reg.ty().clone(), #[cfg(feature = "ffi")] 0), reg.clone())),
-//    );
-//
-//    component_types
-//}
-//
-//pub fn create_component_registry_by_uuid() -> HashMap<ComponentTypeUuid, ComponentRegistration> {
-//    let comp_registrations = legion_prefab::iter_component_registrations();
-//    use std::iter::FromIterator;
-//    let component_types: HashMap<ComponentTypeUuid, ComponentRegistration> =
-//        HashMap::from_iter(comp_registrations.map(|reg| (reg.uuid().clone(), reg.clone())));
-//
-//    component_types
-//}
-//
-//pub fn create_copy_clone_impl() -> CopyCloneImpl {
-//    let component_registry = create_component_registry();
-//    let mut clone_merge_impl = CopyCloneImpl::new(component_registry);
-//    clone_merge_impl
-//}
-//
-//pub fn create_spawn_clone_impl<'a>(resources: &'a Resources) -> SpawnCloneImpl<'a> {
-//    let component_registry = create_component_registry();
-//    let mut clone_merge_impl = SpawnCloneImpl::new(component_registry, resources);
-//    clone_merge_impl.add_mapping_into::<DrawSkiaCircleComponentDef, DrawSkiaCircleComponent>();
-//    clone_merge_impl.add_mapping_into::<DrawSkiaBoxComponentDef, DrawSkiaBoxComponent>();
-//    clone_merge_impl.add_mapping::<RigidBodyBallComponentDef, RigidBodyComponent>();
-//    clone_merge_impl.add_mapping::<RigidBodyBoxComponentDef, RigidBodyComponent>();
-//    clone_merge_impl
-//}
+
+pub fn create_component_registry() -> ComponentRegistry {
+    minimum::ComponentRegistryBuilder::new()
+        .auto_register_components()
+        .add_spawn_mapping_into::<DrawSkiaCircleComponentDef, DrawSkiaCircleComponent>()
+        .add_spawn_mapping_into::<DrawSkiaBoxComponentDef, DrawSkiaBoxComponent>()
+        .add_spawn_mapping::<RigidBodyBallComponentDef, RigidBodyComponent>()
+        .add_spawn_mapping::<RigidBodyBoxComponentDef, RigidBodyComponent>()
+        .build()
+}
 
 pub fn create_editor_selection_registry() -> EditorSelectableRegistry {
     let mut registry = EditorSelectableRegistry::default();
@@ -103,16 +88,16 @@ pub fn create_editor_selection_registry() -> EditorSelectableRegistry {
 }
 
 pub fn create_editor_inspector_registry() -> EditorInspectRegistry {
-    let mut registry = EditorInspectRegistry::default();
-    registry.register::<DrawSkiaCircleComponentDef>();
-    registry.register::<DrawSkiaBoxComponentDef>();
-    registry.register::<PositionComponent>();
-    registry.register::<UniformScaleComponent>();
-    registry.register::<NonUniformScaleComponent>();
-    registry.register::<Rotation2DComponent>();
-    registry.register::<RigidBodyBallComponentDef>();
-    registry.register::<RigidBodyBoxComponentDef>();
-    registry
+    EditorInspectRegistryBuilder::default()
+        .register::<DrawSkiaCircleComponentDef>()
+        .register::<DrawSkiaBoxComponentDef>()
+        .register::<PositionComponent>()
+        .register::<UniformScaleComponent>()
+        .register::<NonUniformScaleComponent>()
+        .register::<Rotation2DComponent>()
+        .register::<RigidBodyBallComponentDef>()
+        .register::<RigidBodyBoxComponentDef>()
+        .build()
 }
 
 pub struct DemoApp {
@@ -166,18 +151,22 @@ impl app::AppHandler for DemoApp {
         &mut self,
         world: &mut World,
         resources: &mut Resources,
+        window: &Window
     ) {
         let asset_manager = create_asset_manager();
         let physics = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
 
-        let window_size = resources.get::<InputResource>().unwrap().window_size();
+        let window_size = window.physical_size();
+        let viewport_size = ViewportSize::new(window_size.width, window_size.height);
 
         let mut camera = CameraResource::new(
             glam::Vec2::new(0.0, 1.0),
             crate::GROUND_HALF_EXTENTS_WIDTH * 1.5,
         );
-        let viewport = ViewportResource::new(window_size, camera.position, camera.x_half_extents);
+        let viewport = ViewportResource::new(viewport_size, camera.position, camera.x_half_extents);
 
+        resources.insert(EditorInspectRegistryResource::new(create_editor_inspector_registry()));
+        resources.insert(ComponentRegistryResource::new(create_component_registry()));
         resources.insert(physics);
         resources.insert(FpsTextResource::new());
         resources.insert(asset_manager);

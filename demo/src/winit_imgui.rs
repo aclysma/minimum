@@ -10,20 +10,24 @@ use minimum::ImguiManager;
 
 // Inner state for ImguiManager, which will be protected by a Mutex. Mutex protection required since
 // this object is Send but not Sync
-struct ImguiPlatformManagerInner {
+struct WinitImguiManagerInner {
     // Handles the integration between imgui and winit
     platform: imgui_winit_support::WinitPlatform,
 }
 
 //TODO: Investigate usage of channels/draw lists
 #[derive(Clone)]
-pub struct ImguiPlatformManager {
-    imgui: ImguiManager,
-    inner: Arc<Mutex<ImguiPlatformManagerInner>>,
+pub struct WinitImguiManager {
+    imgui_manager: ImguiManager,
+    inner: Arc<Mutex<WinitImguiManagerInner>>,
 }
 
 // Wraps imgui (and winit integration logic)
-impl ImguiPlatformManager {
+impl WinitImguiManager {
+    pub fn imgui_manager(&self) -> ImguiManager {
+        self.imgui_manager.clone()
+    }
+
     // imgui and winit platform are expected to be pre-configured
     pub fn new(
         mut imgui_context: imgui::Context,
@@ -44,11 +48,11 @@ impl ImguiPlatformManager {
             font_atlas_texture
         };
 
-        let imgui = ImguiManager::new(imgui_context);
+        let imgui_manager = ImguiManager::new(imgui_context);
 
-        ImguiPlatformManager {
-            imgui,
-            inner: Arc::new(Mutex::new(ImguiPlatformManagerInner {
+        WinitImguiManager {
+            imgui_manager,
+            inner: Arc::new(Mutex::new(WinitImguiManagerInner {
                 platform
             }))
         }
@@ -63,33 +67,23 @@ impl ImguiPlatformManager {
     ) {
         let mut inner = self.inner.lock().unwrap();
         let inner = &mut *inner;
-        let context = &mut inner.context;
         let platform = &mut inner.platform;
 
-        match event {
-            winit::event::Event::WindowEvent {
-                event: winit::event::WindowEvent::ReceivedCharacter(ch),
-                ..
-            } if *ch == '\u{7f}' => {
-                // Do not pass along a backspace character
-                // This hack can be removed when https://github.com/Gekkio/imgui-rs/pull/253 is
-                // implemented upstream and I switch to using it
+        self.imgui_manager.with_context(|context| {
+            match event {
+                winit::event::Event::WindowEvent {
+                    event: winit::event::WindowEvent::ReceivedCharacter(ch),
+                    ..
+                } if *ch == '\u{7f}' => {
+                    // Do not pass along a backspace character
+                    // This hack can be removed when https://github.com/Gekkio/imgui-rs/pull/253 is
+                    // implemented upstream and I switch to using it
+                }
+                _ => {
+                    platform.handle_event(context.io_mut(), &window, &event);
+                }
             }
-            _ => {
-                platform.handle_event(context.io_mut(), &window, &event);
-            }
-        }
-    }
-
-    fn take_ui(manager: &mut ImguiManager) -> Option<Box<imgui::Ui<'static>>> {
-        let mut ui = None;
-        std::mem::swap(&mut manager.inner.ui, &mut ui);
-
-        if let Some(ui) = ui {
-            return Some(unsafe { Box::from_raw(ui) });
-        }
-
-        None
+        })
     }
 
     // Start a new frame
@@ -97,32 +91,15 @@ impl ImguiPlatformManager {
         &self,
         window: &winit::window::Window,
     ) {
-        let mut imgui_inner_mutex_guard = self.imgui.inner.lock().unwrap();
-        let mut imgui_inner = &mut *imgui_inner_mutex_guard;
+        self.imgui_manager.with_context(|context| {
+            let inner = self.inner.lock().unwrap();
+            inner
+                .platform
+                .prepare_frame(context.io_mut(), window)
+                .unwrap();
+        });
 
-        // Drop the old Ui if it exists
-        if imgui_inner.ui.is_some() {
-            log::warn!("a frame is already in progress, starting a new one");
-            ImguiManager::take_ui(&mut imgui_inner);
-        }
-
-        imgui_inner
-            .platform
-            .prepare_frame(imgui_inner.context.io_mut(), window)
-            .unwrap();
-        let ui = Box::new(imgui_inner.context.frame());
-
-        imgui_inner.want_capture_keyboard = ui.io().want_capture_keyboard;
-        imgui_inner.want_capture_mouse = ui.io().want_capture_mouse;
-        imgui_inner.want_set_mouse_pos = ui.io().want_set_mouse_pos;
-        imgui_inner.want_text_input = ui.io().want_text_input;
-
-        // Remove the lifetime of the Ui
-        let ui_ptr: *mut imgui::Ui = Box::into_raw(ui);
-        let ui_ptr: *mut imgui::Ui<'static> = unsafe { std::mem::transmute(ui_ptr) };
-
-        // Store it as a raw pointer
-        imgui_inner.ui = Some(ui_ptr);
+        self.imgui_manager.begin_frame();
     }
 
     // Finishes the frame. Draw data becomes available via get_draw_data()
@@ -130,20 +107,12 @@ impl ImguiPlatformManager {
         &self,
         window: &winit::window::Window,
     ) {
-        let mut imgui_inner = self.inner.lock().unwrap();
+        self.imgui_manager.with_ui(|ui| {
+            let mut inner = self.inner.lock().unwrap();
+            inner.platform.prepare_render(&ui, window);
+        });
 
-        if imgui_inner.ui.is_none() {
-            log::warn!("render() was called but a frame was not started");
-            return;
-        }
-
-        let ui = ImguiManager::take_ui(&mut imgui_inner);
-        if let Some(ui) = ui {
-            imgui_inner.platform.prepare_render(&ui, window);
-            ui.render();
-        } else {
-            log::warn!("ui did not exist");
-        }
+        self.imgui_manager.render();
     }
 
     // Allows access to the context without caller needing to be aware of locking
@@ -154,7 +123,7 @@ impl ImguiPlatformManager {
     ) where
         F: FnOnce(&mut imgui::Context),
     {
-        self.imgui.with_context(f);
+        self.imgui_manager.with_context(f);
     }
 
     // Allows access to the ui without the caller needing to be aware of locking. A frame must be started
@@ -164,59 +133,41 @@ impl ImguiPlatformManager {
     ) where
         F: FnOnce(&mut imgui::Ui),
     {
-        self.imgui.with_ui(f);
+        self.imgui_manager.with_ui(f);
     }
 
     // Get reference to the underlying font atlas. The ref will be valid as long as this object
     // is not destroyed
     pub fn font_atlas_texture(&self) -> &imgui::FontAtlasTexture {
-        self.imgui.font_atlas_texture()
+        self.imgui_manager.font_atlas_texture()
     }
 
     // Returns true if a frame has been started (and not ended)
     pub fn is_frame_started(&self) -> bool {
-        self.imgui.is_frame_started()
+        self.imgui_manager.is_frame_started()
     }
 
     // Returns draw data (render must be called first to end the frame)
     pub fn draw_data(&self) -> Option<&imgui::DrawData> {
-        self.imgui.draw_data()
+        self.imgui_manager.draw_data()
     }
 
     pub fn want_capture_keyboard(&self) -> bool {
-        self.imgui.want_capture_keyboard()
+        self.imgui_manager.want_capture_keyboard()
     }
 
     pub fn want_capture_mouse(&self) -> bool {
-        self.imgui.want_capture_mouse()
+        self.imgui_manager.want_capture_mouse()
     }
 
     pub fn want_set_mouse_pos(&self) -> bool {
-        self.imgui.want_set_mouse_pos()
+        self.imgui_manager.want_set_mouse_pos()
     }
 
     pub fn want_text_input(&self) -> bool {
-        self.imgui.want_text_input()
+        self.imgui_manager.want_text_input()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     use imgui::Context;
@@ -255,7 +206,7 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
     imgui
 }
 
-pub fn init_imgui_manager(window: &winit::window::Window) -> ImguiPlatformManager {
+pub fn init_imgui_manager(window: &winit::window::Window) -> WinitImguiManager {
     let mut imgui_context = init_imgui(&window);
     let mut imgui_platform = imgui_winit_support::WinitPlatform::init(&mut imgui_context);
 
@@ -265,5 +216,5 @@ pub fn init_imgui_manager(window: &winit::window::Window) -> ImguiPlatformManage
         imgui_winit_support::HiDpiMode::Rounded,
     );
 
-    ImguiPlatformManager::new(imgui_context, imgui_platform)
+    WinitImguiManager::new(imgui_context, imgui_platform)
 }
