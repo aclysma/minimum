@@ -20,6 +20,15 @@ pub struct MouseScrollDelta {
     pub y: f32,
 }
 
+impl MouseScrollDelta {
+    pub fn new(x: f32, y: f32) -> Self {
+        MouseScrollDelta {
+            x,
+            y
+        }
+    }
+}
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum ButtonState {
     Released,
