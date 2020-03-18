@@ -6,8 +6,6 @@ use sdl2::event::Event;
 
 use minimum::resources::ViewportResource;
 use minimum::input::InputState;
-//use minimum::input::KeyboardKey;
-//use minimum::input::MouseButton;
 
 use minimum::input as minimum_input;
 
@@ -27,26 +25,6 @@ impl Into<minimum_input::KeyboardKey> for Sdl2KeyboardKey {
         minimum_input::KeyboardKey(self.keycode as u8)
     }
 }
-
-//#[derive(Copy, Clone)]
-//pub struct Sdl2ElementState {
-//    element_state: ElementState,
-//}
-//
-//impl WinitElementState {
-//    pub fn new(element_state: ElementState) -> Self {
-//        WinitElementState { element_state }
-//    }
-//}
-//
-//impl Into<ButtonState> for WinitElementState {
-//    fn into(self) -> ButtonState {
-//        match self.element_state {
-//            ElementState::Pressed => ButtonState::Pressed,
-//            ElementState::Released => ButtonState::Released,
-//        }
-//    }
-//}
 
 #[derive(Copy, Clone)]
 pub struct Sdl2MouseButton {
@@ -73,31 +51,6 @@ impl Into<minimum_input::MouseButton> for Sdl2MouseButton {
         minimum_input::MouseButton(button_index)
     }
 }
-
-//#[derive(Copy, Clone)]
-//pub struct WinitMouseScrollDelta {
-//    mouse_scroll_delta: MouseScrollDelta,
-//}
-//
-//impl WinitMouseScrollDelta {
-//    pub fn new(mouse_scroll_delta: MouseScrollDelta) -> Self {
-//        WinitMouseScrollDelta { mouse_scroll_delta }
-//    }
-//}
-//
-//impl Into<minimum::input::MouseScrollDelta> for WinitMouseScrollDelta {
-//    fn into(self) -> minimum::input::MouseScrollDelta {
-//        let delta = match self.mouse_scroll_delta {
-//            MouseScrollDelta::LineDelta(x, y) => (x, y),
-//            MouseScrollDelta::PixelDelta(delta) => (delta.x as f32, delta.y as f32),
-//        };
-//
-//        minimum::input::MouseScrollDelta {
-//            x: delta.0,
-//            y: delta.1,
-//        }
-//    }
-//}
 
 /// Call when winit sends an event
 pub fn handle_sdl2_event(

@@ -142,19 +142,6 @@ pub fn run() {
                     //
                     Event::Quit { .. } => break 'running,
 
-                    //
-                    // Close if the escape key is hit
-                    //
-                    Event::KeyDown {
-                        keycode: Some(keycode),
-                        keymod: modifiers,
-                        ..
-                    } => {
-                        if keycode == Keycode::Escape {
-                            break 'running;
-                        }
-                    }
-
                     _ => {}
                 }
             }
@@ -185,6 +172,14 @@ pub fn run() {
                 .unwrap()
                 .end_draw_context();
         });
+
+        if resources
+            .get::<AppControlResource>()
+            .unwrap()
+            .should_terminate_process()
+        {
+            break;
+        }
     }
 }
 
