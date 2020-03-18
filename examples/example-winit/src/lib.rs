@@ -30,8 +30,6 @@ mod winit_input;
 
 pub mod math_conversions;
 
-mod pipeline;
-use pipeline::*;
 use std::sync::mpsc::RecvTimeoutError::Timeout;
 use std::borrow::BorrowMut;
 use nphysics2d::object::RigidBodyDesc;

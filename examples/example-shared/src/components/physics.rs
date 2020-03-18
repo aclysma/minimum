@@ -10,7 +10,7 @@ use minimum::resources::editor::OpenedPrefabState;
 use legion::prelude::*;
 use std::ops::Range;
 use legion::storage::ComponentStorage;
-use skulpin_plugin_imgui::imgui;
+use imgui;
 use imgui_inspect_derive::Inspect;
 use ncollide2d::shape::ShapeHandle;
 use ncollide2d::shape::{Ball, Cuboid};

@@ -6,6 +6,7 @@ members = [
     "minimum-editor",
     "examples/example-winit",
     "examples/example-sdl2",
+    "examples/example-shared",
 ]
 
 [package]

@@ -1,7 +1,4 @@
-mod physics;
-pub use physics::RigidBodyComponent;
-pub use physics::RigidBodyBoxComponentDef;
-pub use physics::RigidBodyBallComponentDef;
+pub use example_shared::components::*;
 
 mod draw;
 pub use draw::DrawSkiaCircleComponent;

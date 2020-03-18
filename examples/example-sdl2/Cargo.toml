@@ -9,6 +9,8 @@ edition = "2018"
 [dependencies]
 minimum = { path = "../.." }
 
+example-shared = { path = "../example-shared" }
+
 sdl2 = { version = "0.33", features = ["bundled", "static-link"] }
 
 skulpin = { version = "0.8.1", default-features = false, features = ["skulpin_sdl2", "skia_complete"] }

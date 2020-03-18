@@ -26,8 +26,6 @@ use resources::*;
 
 mod systems;
 
-mod math_conversions;
-
 mod registration;
 
 mod sdl2_imgui;
@@ -151,11 +149,6 @@ pub fn run() {
         sdl2_imgui.begin_frame(&sdl2_window, &MouseState::new(&event_pump));
 
         update_schedule.execute(&mut world, &mut resources);
-
-        sdl2_imgui.with_ui(|ui| {
-            let mut show = true;
-            ui.show_demo_window(&mut show);
-        });
 
         sdl2_imgui.render(&sdl2_window);
 
