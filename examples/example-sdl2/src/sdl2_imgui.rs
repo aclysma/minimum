@@ -76,7 +76,7 @@ impl Sdl2ImguiManager {
 
     pub fn ignore_event(
         &self,
-        event: &sdl2::event::Event
+        event: &sdl2::event::Event,
     ) -> bool {
         let mut inner = self.inner.lock().unwrap();
         inner.imgui_sdl2.ignore_event(event)

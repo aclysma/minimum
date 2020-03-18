@@ -21,11 +21,11 @@ pub struct MouseScrollDelta {
 }
 
 impl MouseScrollDelta {
-    pub fn new(x: f32, y: f32) -> Self {
-        MouseScrollDelta {
-            x,
-            y
-        }
+    pub fn new(
+        x: f32,
+        y: f32,
+    ) -> Self {
+        MouseScrollDelta { x, y }
     }
 }
 

@@ -108,28 +108,31 @@ pub fn handle_sdl2_event(
     let mut is_close_requested = false;
 
     match event {
-        Event::KeyDown { keycode, repeat, .. } => {
-            handle_keyboard_event(input_state, keycode, minimum_input::ButtonState::Pressed)
-        },
-        Event::KeyUp { keycode, repeat, .. } => {
-            handle_keyboard_event(input_state, keycode, minimum_input::ButtonState::Released)
-        },
-        Event::MouseButtonDown { mouse_btn, .. } => {
-            handle_mouse_button_event(input_state, mouse_btn, viewport, minimum_input::ButtonState::Pressed)
-        }
-        Event::MouseButtonUp { mouse_btn, .. } => {
-            handle_mouse_button_event(input_state, mouse_btn, viewport, minimum_input::ButtonState::Released)
-        },
+        Event::KeyDown {
+            keycode, repeat, ..
+        } => handle_keyboard_event(input_state, keycode, minimum_input::ButtonState::Pressed),
+        Event::KeyUp {
+            keycode, repeat, ..
+        } => handle_keyboard_event(input_state, keycode, minimum_input::ButtonState::Released),
+        Event::MouseButtonDown { mouse_btn, .. } => handle_mouse_button_event(
+            input_state,
+            mouse_btn,
+            viewport,
+            minimum_input::ButtonState::Pressed,
+        ),
+        Event::MouseButtonUp { mouse_btn, .. } => handle_mouse_button_event(
+            input_state,
+            mouse_btn,
+            viewport,
+            minimum_input::ButtonState::Released,
+        ),
         Event::MouseMotion { x, y, .. } => {
-            input_state.handle_mouse_move_event(
-                glam::Vec2::new(*x as f32, *y as f32),
-                viewport
-            );
-        },
-        Event::MouseWheel { x, y, .. }=> {
-            input_state.handle_mouse_wheel_event(
-                minimum_input::MouseScrollDelta::new(*x as f32, *y as f32)
-            );
+            input_state.handle_mouse_move_event(glam::Vec2::new(*x as f32, *y as f32), viewport);
+        }
+        Event::MouseWheel { x, y, .. } => {
+            input_state.handle_mouse_wheel_event(minimum_input::MouseScrollDelta::new(
+                *x as f32, *y as f32,
+            ));
         }
 
         // Ignore any other events
@@ -137,19 +140,25 @@ pub fn handle_sdl2_event(
     }
 }
 
-fn handle_mouse_button_event(input_state: &mut InputState, mouse_btn: &MouseButton, viewport: &ViewportResource, button_state: minimum_input::ButtonState) -> () {
+fn handle_mouse_button_event(
+    input_state: &mut InputState,
+    mouse_btn: &MouseButton,
+    viewport: &ViewportResource,
+    button_state: minimum_input::ButtonState,
+) -> () {
     input_state.handle_mouse_button_event(
         Sdl2MouseButton::new(*mouse_btn).into(),
         button_state,
-        viewport
+        viewport,
     )
 }
 
-fn handle_keyboard_event(input_state: &mut InputState, keycode: &Option<Keycode>, button_state: minimum_input::ButtonState) -> () {
+fn handle_keyboard_event(
+    input_state: &mut InputState,
+    keycode: &Option<Keycode>,
+    button_state: minimum_input::ButtonState,
+) -> () {
     if let Some(kc) = keycode {
-        input_state.handle_keyboard_event(
-            Sdl2KeyboardKey::new(*kc).into(),
-            button_state
-        )
+        input_state.handle_keyboard_event(Sdl2KeyboardKey::new(*kc).into(), button_state)
     }
 }

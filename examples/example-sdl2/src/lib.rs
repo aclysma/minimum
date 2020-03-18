@@ -130,7 +130,11 @@ pub fn run() {
             if !sdl2_imgui.ignore_event(&event) {
                 let mut input_resource = resources.get_mut::<InputResource>().unwrap();
                 let viewport = resources.get_mut::<ViewportResource>().unwrap();
-                crate::sdl2_input::handle_sdl2_event(&event, input_resource.input_state_mut(), &*viewport);
+                crate::sdl2_input::handle_sdl2_event(
+                    &event,
+                    input_resource.input_state_mut(),
+                    &*viewport,
+                );
 
                 match event {
                     //
