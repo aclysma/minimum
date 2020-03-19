@@ -17,3 +17,7 @@ pub use editor_draw::EditorShapeDragState;
 
 mod editor_inspect_registry;
 pub use editor_inspect_registry::EditorInspectRegistryResource;
+
+mod editor_settings;
+pub use editor_settings::Keybinds;
+pub use editor_settings::EditorSettingsResource;

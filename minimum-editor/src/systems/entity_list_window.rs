@@ -5,7 +5,7 @@ use minimum_game::resources::{
 };
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
-    PostCommitSelection,
+    PostCommitSelection, EditorSettingsResource,
 };
 use minimum_game::resources::ImguiResource;
 use crate::resources::EditorTool;
@@ -39,6 +39,7 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
         .read_resource::<InputResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
+        .read_resource::<EditorSettingsResource>()
         .with_query(<(TryRead<()>)>::query())
         .build(
             |_,
@@ -50,6 +51,7 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                 input,
                 universe_resource,
                 component_registry,
+                editor_settings,
             ),
              all_query| {
                 imgui_manager.with_ui(|ui: &mut imgui::Ui| {
@@ -116,10 +118,9 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
 
                                         if clicked {
                                             //TODO: Hook up keyboard controls
-                                            //                                            let is_control_held = input
-                                            //                                                .is_key_down(VirtualKeyCode::LControl)
-                                            //                                                || input.is_key_down(VirtualKeyCode::RControl);
-                                            let is_control_held = false;
+                                            let is_control_held = input.is_key_down(
+                                                editor_settings.keybinds().selection_toggle,
+                                            );
                                             if is_control_held {
                                                 if !is_selected {
                                                     // Add this entity

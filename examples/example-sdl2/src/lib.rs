@@ -225,5 +225,22 @@ fn create_resources(
     resources.insert(UniverseResource::new(universe));
     resources.insert(Sdl2WindowResource::new(&sdl2_window));
     resources.insert(EditorStateResource::new());
+
+    use sdl2_input::Sdl2KeyboardKey;
+    use sdl2::keyboard::Keycode;
+    let keybinds = minimum::resources::editor::Keybinds {
+        selection_add: Sdl2KeyboardKey::new(Keycode::LShift).into(),
+        selection_subtract: Sdl2KeyboardKey::new(Keycode::LAlt).into(),
+        selection_toggle: Sdl2KeyboardKey::new(Keycode::LCtrl).into(),
+        tool_translate: Sdl2KeyboardKey::new(Keycode::Num1).into(),
+        tool_scale: Sdl2KeyboardKey::new(Keycode::Num2).into(),
+        tool_rotate: Sdl2KeyboardKey::new(Keycode::Num3).into(),
+        action_quit: Sdl2KeyboardKey::new(Keycode::Escape).into(),
+        action_toggle_editor_pause: Sdl2KeyboardKey::new(Keycode::Space).into(),
+    };
+
+    resources.insert(minimum::resources::editor::EditorSettingsResource::new(
+        keybinds,
+    ));
     resources
 }

@@ -202,11 +202,58 @@ fn init_imgui(window: &Window) -> imgui::Context {
     let scale_factor = f32::max(display_framebuffer_scale.0, display_framebuffer_scale.1).round();
     let font_size = (16.0 * scale_factor) as f32;
 
-    imgui.fonts().add_font(&[imgui::FontSource::TtfData {
-        data: include_bytes!("../../fonts/mplus-1p-regular.ttf"),
+    let font_1p = imgui::FontSource::TtfData {
+        data: include_bytes!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../fonts/mplus-1p-regular.ttf"
+        )),
         size_pixels: font_size,
         config: None,
-    }]);
+    };
+
+    // Feather icons
+    let font_feather = {
+        const ICON_GLYPH_RANGE_FEATHER: [u16; 3] = [0xe81b, 0xe92a, 0];
+        let mut font_config = imgui::FontConfig::default();
+        font_config.glyph_ranges = imgui::FontGlyphRanges::from_slice(&ICON_GLYPH_RANGE_FEATHER);
+
+        imgui::FontSource::TtfData {
+            data: include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../fonts/feather.ttf")),
+            size_pixels: font_size,
+            config: Some(font_config),
+        }
+    };
+
+    let font_material = {
+        // Material icons
+        const ICON_GLYPH_RANGE_MATERIAL: [u16; 13] = [
+            //0xfd24, 0xfd34, // transform/rotate icons
+            0xf3e4, 0xf3e4, // pause
+            0xf40a, 0xf40a, // play
+            0xf1b5, 0xf1b5, // select
+            0xfd25, 0xfd25, // translate
+            0xfd74, 0xfd74, // rotate
+            0xfa67, 0xfa67, // scale
+            0,
+        ];
+        let mut font_config = imgui::FontConfig::default();
+        font_config.glyph_ranges = imgui::FontGlyphRanges::from_slice(&ICON_GLYPH_RANGE_MATERIAL);
+        font_config.glyph_offset = [0.0, 6.0];
+        font_config.glyph_min_advance_x = 16.0;
+
+        imgui::FontSource::TtfData {
+            data: include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../fonts/materialdesignicons-webfont.ttf"
+            )),
+            size_pixels: font_size,
+            config: Some(font_config),
+        }
+    };
+
+    imgui
+        .fonts()
+        .add_font(&[font_1p, font_feather, font_material]);
 
     imgui.io_mut().font_global_scale = (1.0 / scale_factor) as f32;
 

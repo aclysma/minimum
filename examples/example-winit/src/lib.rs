@@ -59,6 +59,7 @@ use skulpin::Window;
 use minimum::ComponentRegistry;
 use minimum::resources::editor::EditorInspectRegistryResource;
 use minimum::editor::EditorSelectRegistryBuilder;
+use crate::winit_input::WinitKeyboardKey;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
@@ -182,6 +183,23 @@ impl app::AppHandler for DemoApp {
         resources.insert(viewport);
         resources.insert(DebugDrawResource::new());
         resources.insert(EditorDrawResource::new());
+
+        use winit_input::WinitKeyboardKey;
+        use skulpin::winit::event::VirtualKeyCode;
+        let keybinds = minimum::resources::editor::Keybinds {
+            selection_add: WinitKeyboardKey::new(VirtualKeyCode::LShift).into(),
+            selection_subtract: WinitKeyboardKey::new(VirtualKeyCode::LAlt).into(),
+            selection_toggle: WinitKeyboardKey::new(VirtualKeyCode::LControl).into(),
+            tool_translate: WinitKeyboardKey::new(VirtualKeyCode::Key1).into(),
+            tool_scale: WinitKeyboardKey::new(VirtualKeyCode::Key2).into(),
+            tool_rotate: WinitKeyboardKey::new(VirtualKeyCode::Key3).into(),
+            action_quit: WinitKeyboardKey::new(VirtualKeyCode::Escape).into(),
+            action_toggle_editor_pause: WinitKeyboardKey::new(VirtualKeyCode::Space).into(),
+        };
+
+        resources.insert(minimum::resources::editor::EditorSettingsResource::new(
+            keybinds,
+        ));
 
         // Start the application
         EditorStateResource::open_prefab(

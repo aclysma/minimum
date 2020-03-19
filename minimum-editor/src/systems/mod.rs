@@ -6,6 +6,7 @@ use minimum_game::resources::{
 };
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
+    EditorSettingsResource,
 };
 use crate::resources::EditorTool;
 
@@ -90,6 +91,7 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
         .write_resource::<DebugDrawResource>()
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
+        .read_resource::<EditorSettingsResource>()
         .with_query(<(Read<PositionComponent>)>::query())
         .build(
             |command_buffer,
@@ -102,24 +104,26 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
                 debug_draw,
                 editor_draw,
                 universe_resource,
+                editor_settings,
             ),
              (position_query)| {
-                //TODO: Get key codes
-                //                if input_state.is_key_just_down(VirtualKeyCode::Key1) {
-                //                    editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
-                //                }
-                //
-                //                if input_state.is_key_just_down(VirtualKeyCode::Key2) {
-                //                    editor_state.enqueue_set_active_editor_tool(EditorTool::Scale);
-                //                }
-                //
-                //                if input_state.is_key_just_down(VirtualKeyCode::Key3) {
-                //                    editor_state.enqueue_set_active_editor_tool(EditorTool::Rotate);
-                //                }
-                //
-                //                if input_state.is_key_just_down(VirtualKeyCode::Space) {
-                //                    editor_state.enqueue_toggle_pause();
-                //                }
+                if input_state.is_key_just_down(editor_settings.keybinds().tool_translate) {
+                    editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
+                }
+
+                if input_state.is_key_just_down(editor_settings.keybinds().tool_scale) {
+                    editor_state.enqueue_set_active_editor_tool(EditorTool::Scale);
+                }
+
+                if input_state.is_key_just_down(editor_settings.keybinds().tool_rotate) {
+                    editor_state.enqueue_set_active_editor_tool(EditorTool::Rotate);
+                }
+
+                if input_state
+                    .is_key_just_down(editor_settings.keybinds().action_toggle_editor_pause)
+                {
+                    editor_state.enqueue_toggle_pause();
+                }
             },
         )
 }

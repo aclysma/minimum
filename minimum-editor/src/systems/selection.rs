@@ -6,6 +6,7 @@ use minimum_game::resources::{
 };
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
+    EditorSettingsResource,
 };
 use crate::resources::EditorTool;
 use legion_transaction::{TransactionBuilder, Transaction};
@@ -39,6 +40,7 @@ fn handle_selection(
     viewport: &ViewportResource,
     editor_selection: &mut EditorSelectionResource,
     debug_draw: &mut DebugDrawResource,
+    editor_settings: &EditorSettingsResource,
 ) {
     let mut intersecting_entities = None;
 
@@ -118,16 +120,10 @@ fn handle_selection(
     }
 
     if let Some(intersecting_entities) = intersecting_entities {
-        //TODO: Keyboard shortcuts
-        //        let add_to_selection = input_state.is_key_down(VirtualKeyCode::LShift)
-        //            || input_state.is_key_down(VirtualKeyCode::RShift);
-        //        let subtract_from_selection = input_state.is_key_down(VirtualKeyCode::LAlt)
-        //            || input_state.is_key_down(VirtualKeyCode::RAlt);
-        //        let toggle_selection = input_state.is_key_down(VirtualKeyCode::LControl)
-        //            || input_state.is_key_down(VirtualKeyCode::RControl);
-        let add_to_selection = false;
-        let subtract_from_selection = false;
-        let toggle_selection = false;
+        let add_to_selection = input_state.is_key_down(editor_settings.keybinds().selection_add);
+        let subtract_from_selection =
+            input_state.is_key_down(editor_settings.keybinds().selection_subtract);
+        let toggle_selection = input_state.is_key_down(editor_settings.keybinds().selection_toggle);
 
         let mut any_not_selected = false;
         for e in &intersecting_entities {
@@ -167,6 +163,7 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
         .write_resource::<DebugDrawResource>()
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
+        .read_resource::<EditorSettingsResource>()
         .with_query(<(Read<PositionComponent>)>::query())
         .build(
             |command_buffer,
@@ -179,6 +176,7 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
                 debug_draw,
                 editor_draw,
                 universe_resource,
+                editor_settings,
             ),
              (position_query)| {
                 handle_selection(
@@ -187,6 +185,7 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
                     &*viewport,
                     &mut *editor_selection,
                     &mut *debug_draw,
+                    &*editor_settings,
                 );
             },
         )
