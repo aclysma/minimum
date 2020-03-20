@@ -3,7 +3,7 @@ use prefab_format::ComponentTypeUuid;
 use legion::storage::ComponentTypeId;
 use std::collections::HashMap;
 use crate::resources::AssetResource;
-use legion_transaction::{CopyCloneImpl, SpawnCloneImpl, SpawnCloneImplHandlerSet, SpawnInto};
+use legion_prefab::{CopyCloneImpl, SpawnCloneImpl, SpawnCloneImplHandlerSet, SpawnInto};
 use legion::prelude::Resources;
 use legion::storage::{Component, ComponentStorage};
 use legion::index::ComponentIndex;

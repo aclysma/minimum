@@ -14,7 +14,7 @@ use atelier_assets::loader::handle::{TypedAssetStorage, AssetHandle};
 use legion_transaction::{ComponentDiff, apply_diff_to_prefab, WorldDiff};
 use prefab_format::{ComponentTypeUuid, EntityUuid};
 use std::collections::vec_deque;
-use legion_transaction::CopyCloneImpl;
+use legion_prefab::CopyCloneImpl;
 use legion_transaction::{TransactionBuilder, TransactionDiffs, TransactionEntityInfo, Transaction};
 use imgui::ImString;
 
@@ -937,12 +937,12 @@ impl EditorStateResource {
         //
         let registered_components = component_registry.components_by_uuid();
         let prefab_serde_context = legion_prefab::PrefabSerdeContext {
-            registered_components: registered_components.clone(),
+            registered_components: &registered_components,
         };
 
         let mut ron_ser = ron::ser::Serializer::new(Some(ron::ser::PrettyConfig::default()), true);
         let prefab_ser = legion_prefab::PrefabFormatSerializer::new(
-            &prefab_serde_context,
+            prefab_serde_context,
             &opened_prefab.uncooked_prefab,
         );
         prefab_format::serialize(

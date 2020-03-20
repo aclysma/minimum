@@ -20,9 +20,9 @@ imgui = "0.3"
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
 
-legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
-legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
-prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
+legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
+prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
 
 glam = { version = "0.8.5", features = ["serde"] }
 

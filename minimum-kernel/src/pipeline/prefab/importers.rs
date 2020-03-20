@@ -73,10 +73,10 @@ impl Importer for PrefabImporter {
         };
 
         let prefab_serde_context = legion_prefab::PrefabSerdeContext {
-            registered_components,
+            registered_components: &registered_components,
         };
 
-        let prefab_deser = legion_prefab::PrefabFormatDeserializer::new(&prefab_serde_context);
+        let prefab_deser = legion_prefab::PrefabFormatDeserializer::new(prefab_serde_context);
         prefab_format::deserialize(&mut de, &prefab_deser)?;
         let prefab = prefab_deser.prefab();
 
@@ -98,7 +98,7 @@ impl Importer for PrefabImporter {
             let mut ron_ser =
                 ron::ser::Serializer::new(Some(ron::ser::PrettyConfig::default()), true);
             let prefab_ser = legion_prefab::PrefabFormatSerializer::new(
-                &prefab_serde_context,
+                prefab_serde_context,
                 &prefab_asset.prefab,
             );
             prefab_format::serialize(&mut ron_ser, &prefab_ser, prefab_asset.prefab.prefab_id())
