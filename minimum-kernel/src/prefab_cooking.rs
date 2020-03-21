@@ -51,7 +51,7 @@ pub fn cook_prefab(
         registered_components,
         registered_components_by_uuid,
         prefab_cook_order.as_slice(),
-        &prefab_lookup
+        &prefab_lookup,
     )
 }
 

@@ -41,9 +41,14 @@ authors.
 Since our goal is to empower you to choose whatever systems you want, our tutorial is a bit non-linear. Here's the
 outline:
 
- * Development Environment Setup
-   * How to init your own crate
-   * How to install dependencies
+ * Prefab System
+   * Dev Environment Setup
+   * Creating Prefabs
+   * Saving and Loading Prefabs
+   * Cooking Prefabs
+   * Spawning Prefabs
+   * Transactions
+   * Creating Prefab Overrides
  * Windowing
    * SDL2
    * winit

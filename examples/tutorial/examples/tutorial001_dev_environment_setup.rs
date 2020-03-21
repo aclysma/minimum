@@ -3,7 +3,6 @@ use glam::Vec2;
 
 struct PositionComponent(pub glam::Vec2);
 struct VelocityComponent(pub glam::Vec2);
-struct AccelerationComponent(pub glam::Vec2);
 struct Gravity(pub glam::Vec2);
 
 fn main() {
@@ -27,10 +26,18 @@ fn main() {
     resources.insert(Gravity(-9.8 * Vec2::unit_y()));
 
     // Insert an object with position and velocity
-    let entity = *world.insert(
-        (),
-        (0..1).map(|_| (PositionComponent(Vec2::new(0.0, 500.0)), VelocityComponent(Vec2::new(5.0, 0.0))))
-    ).first().unwrap();
+    let entity = *world
+        .insert(
+            (),
+            (0..1).map(|_| {
+                (
+                    PositionComponent(Vec2::new(0.0, 500.0)),
+                    VelocityComponent(Vec2::new(5.0, 0.0)),
+                )
+            }),
+        )
+        .first()
+        .unwrap();
 
     for _ in 0..10 {
         // Fetch gravity... and integrate it to velocity.

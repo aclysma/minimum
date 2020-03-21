@@ -1,4 +1,3 @@
-
 fn main() {
     // Setup logging
     env_logger::Builder::from_default_env()

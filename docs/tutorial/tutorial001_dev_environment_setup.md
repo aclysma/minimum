@@ -11,15 +11,15 @@ Next, we need to add some dependencies to the .toml
 
 ```toml
 # The minimum game engine kernel
-minimum = { path = "../.." }
+minimum = { git = "https://github.com/aclysma/minimum" }
 
 # Asset Pipeline
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
 # Prefab/Transactions
-legion-transaction = { git = "https://github.com/kabergstrom/prefab" }
-legion-prefab = { git = "https://github.com/kabergstrom/prefab" }
-prefab-format = { git = "https://github.com/kabergstrom/prefab" }
+legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
+legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
+prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
 
 # Legion ECS
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
@@ -29,6 +29,7 @@ serde = "1"
 uuid = "0.8"
 type-uuid = "0.1"
 itertools = "0.8"
+ron = "0.5"
 
 # Identifies diffs between two structs, used when creating transactions
 serde-diff = "0.3"
@@ -67,6 +68,11 @@ At this point you can start working with legion and many of the features we've b
 Normally, the next thing you'd do is create a window (with SDL2 or winit, for example) but for now lets just take a
 short tour of what we can do with legion.
 
+## A Quick Legion Tour
+
+(If you're familiar with legion already, you can skim this section. We're just going to demo the parts of legion
+required for the rest of this tutorial.)
+
 For a practical example, lets create some entities with position and velocity, and a resource that holds gravity.
 
 First lets add some types for the math
@@ -76,7 +82,6 @@ use glam::Vec2;
 
 struct Position(pub glam::Vec2);
 struct Velocity(pub glam::Vec2);
-struct Acceleration(pub glam::Vec2);
 struct Gravity(pub glam::Vec2);
 ```
 
@@ -99,7 +104,10 @@ What is this stuff?
  * Resources - A resource is a bit like a hash map of globals. Elements can be read and written by type. For example:
 
 ```rust
+// Read only access
 let gravity = resources.get::<Gravity>();
+
+// Mutable access
 let mut gravity = resources.get_mut::<Gravity>();
 ```
 
@@ -107,7 +115,8 @@ These calls return a Fetch<T> or FetchMut<T> of your type. These are a bit like 
 essentially overriding the borrow checker and moving the checking it would be doing to runtime.
 
 The standard borrowing rules apply, if they are violated you'll get a panic. There's also a bit of overhead induced
-to do the lookup. Legion has a solution for both issues, but we'll hold off on that for now.
+to do the lookup. Legion has a solution for both issues - but we won't cover it here just yet. Please see the legion
+documentation for more info on this.
 
 Now we can insert a gravity resource and create some entities:
 
@@ -116,14 +125,22 @@ Now we can insert a gravity resource and create some entities:
 resources.insert(Gravity(-9.8 * Vec2::unit_y()));
 
 // Insert an object with position and velocity
-let entity = *world.insert(
-    (),
-    (0..1).map(|_| (Position(Vec2::new(0.0, 500.0)), Velocity(Vec2::new(5.0, 0.0))))
-).first().unwrap();
+let entity = *world
+    .insert(
+        (),
+        (0..1).map(|_| {
+            (
+                PositionComponent(Vec2::new(0.0, 500.0)),
+                VelocityComponent(Vec2::new(5.0, 0.0)),
+            )
+        }),
+    )
+    .first()
+    .unwrap();
 ```
 
 The code for this is a bit busy, but realistically we'd be wanting to spawn this from prefabs defined by a file and
-created by an editor.
+created by an editor. (We'll get to that soon!)
 
 And now lets write some code to integrate acceleration from gravity into velocity, and velocity into position
 
@@ -131,13 +148,13 @@ And now lets write some code to integrate acceleration from gravity into velocit
 for _ in 0..10 {
     // Fetch gravity... and integrate it to velocity.
     let gravity = resources.get::<Gravity>().unwrap();
-    let query = <(Write<Velocity>)>::query();
+    let query = <(Write<VelocityComponent>)>::query();
     for mut vel in query.iter_mut(&mut world) {
         vel.0 += gravity.0;
     }
 
     // Iterate across all entities and integrate velocity to position
-    let query = <(Write<Position>, TryRead<Velocity>)>::query();
+    let query = <(Write<PositionComponent>, TryRead<VelocityComponent>)>::query();
     for (mut pos, vel) in query.iter_mut(&mut world) {
         if let Some(vel) = vel {
             pos.0 += vel.0;
@@ -146,7 +163,7 @@ for _ in 0..10 {
         pos.0 += gravity.0;
     }
 
-    let position = world.get_component::<Position>(entity).unwrap();
+    let position = world.get_component::<PositionComponent>(entity).unwrap();
     println!("Position is {}", position.0);
 }
 ```

@@ -7,11 +7,11 @@ use minimum_game::resources::{TimeResource, UniverseResource};
 use crate::resources::EditorSelectionResource;
 use minimum_game::resources::SimulationTimePauseReason;
 use atelier_assets::core::AssetUuid;
-use legion_prefab::{CookedPrefab, ComponentRegistration, Prefab};
+use legion_prefab::{CookedPrefab, ComponentRegistration, Prefab, PrefabBuilder};
 use std::sync::Arc;
 use minimum_game::resources::TimeState;
 use atelier_assets::loader::handle::{TypedAssetStorage, AssetHandle};
-use legion_transaction::{ComponentDiff, apply_diff_to_prefab, WorldDiff};
+use legion_transaction::{ComponentDiff, apply_diff_to_prefab, WorldDiff, ApplyDiffToPrefabError};
 use prefab_format::{ComponentTypeUuid, EntityUuid};
 use std::collections::vec_deque;
 use legion_prefab::CopyCloneImpl;
@@ -217,6 +217,12 @@ pub struct EditorStateResource {
     current_transaction_info: Option<CurrentTransactionInfo>,
 }
 
+#[derive(Debug)]
+pub enum OpenPrefabResult {
+    AssetNotFound,
+    PrefabHasOverrides
+}
+
 impl EditorStateResource {
     pub fn new() -> Self {
         EditorStateResource {
@@ -305,7 +311,7 @@ impl EditorStateResource {
         world: &mut World,
         resources: &Resources,
         prefab_uuid: AssetUuid,
-    ) {
+    ) -> Result<(), OpenPrefabResult> {
         {
             let mut asset_resource = resources.get_mut::<AssetResource>().unwrap();
 
@@ -346,34 +352,54 @@ impl EditorStateResource {
 
             let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
 
-            // Duplicate the prefab data so we can apply diffs to it. This is temporary and will eventually be
-            // done within the daemon. (This is kind of like a clone() on the uncooked prefab asset)
-            let noop_diff = WorldDiff::new(vec![], vec![]);
-            let uncooked_prefab = Arc::new(legion_transaction::apply_diff_to_prefab(
-                &handle.asset(asset_resource.storage()).unwrap().prefab,
-                &universe.universe,
-                &noop_diff,
-                component_registry.components_by_uuid(),
-                &component_registry.copy_clone_impl(),
-            ));
+            let prefab_asset = handle.asset(asset_resource.storage());
 
-            // Store the cooked prefab and relevant metadata in an Arc on the EditorStateResource.
-            // Eventually the cooked prefab data would be held by AssetStorage and we'd just hold
-            // a handle to it.
-            let opened_prefab = OpenedPrefabState {
-                uuid: prefab_uuid,
-                version,
-                prefab_handle: handle,
-                uncooked_prefab,
-                cooked_prefab,
-                prefab_to_world_mappings: Default::default(),
-                world_to_prefab_mappings: Default::default(),
-            };
+            match prefab_asset {
+                None => return Err(OpenPrefabResult::AssetNotFound),
+                Some(asset) => {
+                    // Duplicate the prefab data so we can apply diffs to it. This is temporary and will eventually be
+                    // done within the daemon. (This is kind of like a clone() on the uncooked prefab asset)
+                    let noop_diff = WorldDiff::new(vec![], vec![]);
+                    let uncooked_prefab = legion_transaction::apply_diff_to_prefab(
+                        &handle.asset(asset_resource.storage()).unwrap().prefab,
+                        &universe.universe,
+                        &noop_diff,
+                        component_registry.components_by_uuid(),
+                        &component_registry.copy_clone_impl(),
+                    );
 
-            editor_state.opened_prefab = Some(Arc::new(opened_prefab));
+                    match uncooked_prefab {
+                        Err(error) => {
+                            match error {
+                                ApplyDiffToPrefabError::PrefabHasOverrides => return Err(OpenPrefabResult::PrefabHasOverrides)
+                            }
+                        }
+                        Ok(uncooked_prefab) => {
+                            // Store the cooked prefab and relevant metadata in an Arc on the EditorStateResource.
+                            // Eventually the cooked prefab data would be held by AssetStorage and we'd just hold
+                            // a handle to it.
+                            let uncooked_prefab = Arc::new(uncooked_prefab);
+                            let opened_prefab = OpenedPrefabState {
+                                uuid: prefab_uuid,
+                                version,
+                                prefab_handle: handle,
+                                uncooked_prefab,
+                                cooked_prefab,
+                                prefab_to_world_mappings: Default::default(),
+                                world_to_prefab_mappings: Default::default(),
+                            };
+
+                            editor_state.opened_prefab = Some(Arc::new(opened_prefab));
+                        }
+                    }
+
+                }
+            }
         }
 
         Self::reset(world, resources);
+
+        Ok(())
     }
 
     fn reset(
@@ -518,7 +544,7 @@ impl EditorStateResource {
                         world
                     };
                     *world = new_world;
-                    Self::open_prefab(world, resources, asset_uuid)
+                    Self::open_prefab(world, resources, asset_uuid).unwrap_err();
                 }
                 EditorOp::SavePrefab => {
                     let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
@@ -861,27 +887,38 @@ impl EditorStateResource {
                     &component_registry.copy_clone_impl(),
                 ));
 
-                let new_uncooked_prefab = Arc::new(legion_transaction::apply_diff_to_prefab(
+                let uncooked_prefab = legion_transaction::apply_diff_to_prefab(
                     &opened_prefab.uncooked_prefab,
                     &universe.universe,
                     &diffs,
                     &component_registry.components_by_uuid(),
                     &component_registry.copy_clone_impl(),
-                ));
+                );
 
-                // Update the opened prefab state
-                let new_opened_prefab = OpenedPrefabState {
-                    uuid: opened_prefab.uuid,
-                    cooked_prefab: new_cooked_prefab,
-                    prefab_handle: opened_prefab.prefab_handle.clone(),
-                    uncooked_prefab: new_uncooked_prefab,
-                    version: opened_prefab.version,
-                    prefab_to_world_mappings: Default::default(), // These will get populated by reset()
-                    world_to_prefab_mappings: Default::default(), // These will get populated by reset()
-                };
+                match uncooked_prefab {
+                    Err(e) => {
+                        match e {
+                            ApplyDiffToPrefabError::PrefabHasOverrides => {
 
-                // Set opened_prefab (TODO: Probably better to pass new_opened_prefab in and let reset() assign to opened_prefab)
-                editor_state.opened_prefab = Some(Arc::new(new_opened_prefab));
+                            }
+                        }
+                    },
+                    Ok(uncooked_prefab) => {
+                        // Update the opened prefab state
+                        let new_opened_prefab = OpenedPrefabState {
+                            uuid: opened_prefab.uuid,
+                            cooked_prefab: new_cooked_prefab,
+                            prefab_handle: opened_prefab.prefab_handle.clone(),
+                            uncooked_prefab: Arc::new(uncooked_prefab),
+                            version: opened_prefab.version,
+                            prefab_to_world_mappings: Default::default(), // These will get populated by reset()
+                            world_to_prefab_mappings: Default::default(), // These will get populated by reset()
+                        };
+
+                        // Set opened_prefab (TODO: Probably better to pass new_opened_prefab in and let reset() assign to opened_prefab)
+                        editor_state.opened_prefab = Some(Arc::new(new_opened_prefab));
+                    }
+                }
             }
 
             selected_uuids
