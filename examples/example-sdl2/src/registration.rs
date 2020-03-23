@@ -8,7 +8,8 @@ use minimum::editor::EditorInspectRegistryBuilder;
 
 use minimum::ComponentRegistry;
 
-use crate::components::*;
+use minimum_skulpin::components::*;
+use minimum_nphysics2d::components::*;
 
 /// Create the asset manager that has all the required types registered
 pub fn create_asset_manager() -> AssetResource {

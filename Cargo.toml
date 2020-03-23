@@ -3,6 +3,7 @@ members = [
     "contrib/minimum-sdl2",
     "contrib/minimum-winit",
     "contrib/minimum-nphysics2d",
+    "contrib/minimum-skulpin",
     "examples/example-winit",
     "examples/example-sdl2",
     "examples/example-shared",

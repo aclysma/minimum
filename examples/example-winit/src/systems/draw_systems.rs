@@ -6,15 +6,15 @@ use skulpin::{skia_safe, WinitWindow};
 use minimum::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
 };
-use crate::components::DrawSkiaBoxComponent;
-use crate::components::DrawSkiaCircleComponent;
+use minimum_skulpin::components::DrawSkiaBoxComponent;
+use minimum_skulpin::components::DrawSkiaCircleComponent;
 
-use crate::resources::CanvasDrawResource;
+use minimum_skulpin::resources::CanvasDrawResource;
 use minimum::resources::{
     CameraResource, InputResource, ViewportResource, DebugDrawResource, ViewportSize,
 };
 use minimum::resources::ImguiResource;
-use crate::resources::FpsTextResource;
+use example_shared::resources::FpsTextResource;
 use minimum_winit::resources::WinitWindowResource;
 
 use skulpin::winit;

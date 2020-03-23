@@ -7,8 +7,6 @@ use skulpin::app::AppControl;
 use minimum_winit::imgui::WinitImguiManager;
 use imgui_winit_support::WinitPlatform;
 
-use crate::resources::*;
-
 use legion::prelude::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
 use minimum::resources::{
@@ -16,6 +14,7 @@ use minimum::resources::{
     ViewportResource,
 };
 use minimum_winit::resources::{WinitImguiManagerResource, WinitWindowResource};
+use minimum_skulpin::resources::CanvasDrawResource;
 
 /// Represents an error from creating the renderer
 #[derive(Debug)]

@@ -4,9 +4,6 @@ extern crate log;
 #[macro_use]
 extern crate itertools;
 
-extern crate nalgebra as na;
-extern crate nalgebra_glm as glm;
-
 use legion::prelude::*;
 
 use std::collections::HashMap;
@@ -17,18 +14,11 @@ use atelier_assets::core::asset_uuid;
 
 use minimum::components::*;
 
-mod components;
-use components::*;
-
-mod resources;
-use resources::*;
-
 mod systems;
 use systems::*;
 
 use std::sync::mpsc::RecvTimeoutError::Timeout;
 use std::borrow::BorrowMut;
-use nphysics2d::object::RigidBodyDesc;
 
 pub mod app;
 
@@ -56,6 +46,8 @@ use minimum::editor::EditorSelectRegistryBuilder;
 use minimum_winit::input::WinitKeyboardKey;
 use minimum_nphysics2d::resources::PhysicsResource;
 use minimum_nphysics2d::components::*;
+use example_shared::resources::FpsTextResource;
+use minimum_skulpin::components::*;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;

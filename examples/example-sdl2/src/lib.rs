@@ -19,11 +19,6 @@ use legion::prelude::*;
 
 use minimum::resources::*;
 
-mod components;
-
-mod resources;
-use resources::*;
-
 mod systems;
 
 mod registration;
@@ -34,6 +29,9 @@ use minimum::resources::editor::{
 };
 use minimum_sdl2::resources::{Sdl2WindowResource, Sdl2ImguiManagerResource};
 use minimum_sdl2::imgui::Sdl2ImguiManager;
+use minimum_skulpin::resources::CanvasDrawResource;
+use example_shared::resources::FpsTextResource;
+use minimum_nphysics2d::resources::PhysicsResource;
 
 pub const GRAVITY: f32 = -9.81;
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;

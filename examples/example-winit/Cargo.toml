@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 minimum = { path = "../.." }
 minimum-winit = { path = "../../contrib/minimum-winit" }
+minimum-skulpin = { path = "../../contrib/minimum-skulpin" }
 minimum-nphysics2d = { path = "../../contrib/minimum-nphysics2d" }
 
 example-shared = { path = "../example-shared" }
@@ -33,11 +34,11 @@ prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum_nex
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
 
 glam = { version = "0.8.5", features = ["serde"] }
-
-nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
-nalgebra-glm = "0.4"
-ncollide2d = "0.20"
-nphysics2d = "0.12"
+#
+#nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
+#nalgebra-glm = "0.4"
+#ncollide2d = "0.20"
+#nphysics2d = "0.12"
 
 structopt = "0.3"
 serde = "1"

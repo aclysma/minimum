@@ -18,9 +18,10 @@ use minimum::math::Vec4;
 use imgui_inspect_derive::Inspect;
 use legion::prelude::*;
 use minimum::resources::editor::OpenedPrefabState;
+use nalgebra_glm as glm;
 
 use atelier_assets::importer as atelier_importer;
-use minimum_nphysics2d::math_conversions::vec2_glam_to_glm;
+use crate::math_conversions::vec2_glam_to_glm;
 
 // A utility struct to describe color for a skia shape
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, SerdeDiff, PartialEq, Inspect, Default)]
