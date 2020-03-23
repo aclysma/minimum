@@ -72,13 +72,3 @@ erased-serde = "0.3"
 
 log="0.4"
 env_logger = "0.6"
-
-#[patch.crates-io]
-#prefab-format = { path = "/Users/pmd/dev/rust/prefab/prefab-format" }
-#legion-prefab = { path = "/Users/pmd/dev/rust/prefab/legion-prefab" }
-#legion-transaction = { path = "/Users/pmd/dev/rust/prefab/legion-transaction" }
-
-[patch."https://github.com/aclysma/prefab"]
-prefab-format = { path = "/Users/pmd/dev/rust/prefab/prefab-format" }
-legion-prefab = { path = "/Users/pmd/dev/rust/prefab/legion-prefab" }
-legion-transaction = { path = "/Users/pmd/dev/rust/prefab/legion-transaction" }

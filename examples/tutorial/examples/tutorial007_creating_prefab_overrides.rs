@@ -106,6 +106,9 @@ fn main() {
         &universe,
         &component_registry.copy_clone_impl(),
     );
+
+    // Here, we modify the world on the prefab builder.
+    // The changes here are scanned to produce the prefab.
     let prefab_builder_entity = prefab_builder.uuid_to_entity(entity_uuid).unwrap();
     prefab_builder
         .world_mut()
@@ -113,6 +116,7 @@ fn main() {
         .unwrap()
         .value = glam::Vec2::new(0.0, 1000.0);
 
+    // Produce the prefab that overrides the original prefab
     let prefab_with_override = prefab_builder
         .create_prefab(
             &universe,
