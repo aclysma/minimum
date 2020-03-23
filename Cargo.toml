@@ -1,13 +1,15 @@
 [workspace]
 members = [
-    "minimum-kernel",
-    "minimum-math",
-    "minimum-transform",
-    "minimum-editor",
+    "contrib/minimum-sdl2",
+    "contrib/minimum-winit",
     "examples/example-winit",
     "examples/example-sdl2",
     "examples/example-shared",
     "examples/tutorial",
+    "minimum-kernel",
+    "minimum-math",
+    "minimum-transform",
+    "minimum-editor",
 ]
 
 [package]

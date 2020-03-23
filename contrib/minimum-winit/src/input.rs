@@ -1,7 +1,6 @@
 use minimum::input::KeyboardKey;
 use minimum::input::ButtonState;
 
-use skulpin::winit;
 pub use winit::event::VirtualKeyCode;
 pub use winit::event::ElementState;
 pub use winit::event::MouseScrollDelta;

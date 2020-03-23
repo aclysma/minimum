@@ -1,6 +1,4 @@
 use sdl2::video::Window;
-use glam::Vec2;
-use crate::systems::draw;
 
 #[derive(Copy, Clone)]
 pub struct Sdl2WindowSize {

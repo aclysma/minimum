@@ -205,7 +205,7 @@ fn init_imgui(window: &Window) -> imgui::Context {
     let font_1p = imgui::FontSource::TtfData {
         data: include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../fonts/mplus-1p-regular.ttf"
+            "/fonts/mplus-1p-regular.ttf"
         )),
         size_pixels: font_size,
         config: None,
@@ -218,7 +218,7 @@ fn init_imgui(window: &Window) -> imgui::Context {
         font_config.glyph_ranges = imgui::FontGlyphRanges::from_slice(&ICON_GLYPH_RANGE_FEATHER);
 
         imgui::FontSource::TtfData {
-            data: include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../fonts/feather.ttf")),
+            data: include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/fonts/feather.ttf")),
             size_pixels: font_size,
             config: Some(font_config),
         }
@@ -244,7 +244,7 @@ fn init_imgui(window: &Window) -> imgui::Context {
         imgui::FontSource::TtfData {
             data: include_bytes!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/../fonts/materialdesignicons-webfont.ttf"
+                "/fonts/materialdesignicons-webfont.ttf"
             )),
             size_pixels: font_size,
             config: Some(font_config),

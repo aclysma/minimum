@@ -26,8 +26,6 @@ use resources::*;
 mod systems;
 use systems::*;
 
-mod winit_input;
-
 pub mod math_conversions;
 
 use std::sync::mpsc::RecvTimeoutError::Timeout;
@@ -36,10 +34,8 @@ use nphysics2d::object::RigidBodyDesc;
 
 pub mod app;
 
-mod winit_imgui;
-
-use legion_transaction::CopyCloneImpl;
-use legion_transaction::SpawnCloneImpl;
+use legion_prefab::CopyCloneImpl;
+use legion_prefab::SpawnCloneImpl;
 
 use atelier_assets::core as atelier_core;
 
@@ -59,7 +55,7 @@ use skulpin::Window;
 use minimum::ComponentRegistry;
 use minimum::resources::editor::EditorInspectRegistryResource;
 use minimum::editor::EditorSelectRegistryBuilder;
-use crate::winit_input::WinitKeyboardKey;
+use minimum_winit::input::WinitKeyboardKey;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
@@ -184,7 +180,7 @@ impl app::AppHandler for DemoApp {
         resources.insert(DebugDrawResource::new());
         resources.insert(EditorDrawResource::new());
 
-        use winit_input::WinitKeyboardKey;
+        use minimum_winit::input::WinitKeyboardKey;
         use skulpin::winit::event::VirtualKeyCode;
         let keybinds = minimum::resources::editor::Keybinds {
             selection_add: WinitKeyboardKey::new(VirtualKeyCode::LShift).into(),

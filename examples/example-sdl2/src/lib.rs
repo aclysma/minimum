@@ -28,14 +28,12 @@ mod systems;
 
 mod registration;
 
-mod sdl2_imgui;
-use sdl2_imgui::Sdl2ImguiManager;
 use minimum::resources::editor::{
     EditorMode, EditorSelectionResource, EditorInspectRegistryResource, EditorStateResource,
     EditorDrawResource,
 };
-
-mod sdl2_input;
+use minimum_sdl2::resources::{Sdl2WindowResource, Sdl2ImguiManagerResource};
+use minimum_sdl2::imgui::Sdl2ImguiManager;
 
 pub const GRAVITY: f32 = -9.81;
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
@@ -59,7 +57,7 @@ pub fn run() {
         .expect("Failed to create window");
 
     // Init imgui
-    let sdl2_imgui = sdl2_imgui::init_imgui_manager(&sdl2_window);
+    let sdl2_imgui = minimum_sdl2::imgui::init_imgui_manager(&sdl2_window);
 
     // Setup skulpin imgui plugin
     let mut imgui_plugin: Option<Box<dyn skulpin::RendererPlugin>> = None;
@@ -128,7 +126,7 @@ pub fn run() {
             if !sdl2_imgui.ignore_event(&event) {
                 let mut input_resource = resources.get_mut::<InputResource>().unwrap();
                 let viewport = resources.get_mut::<ViewportResource>().unwrap();
-                crate::sdl2_input::handle_sdl2_event(
+                minimum_sdl2::input::handle_sdl2_event(
                     &event,
                     input_resource.input_state_mut(),
                     &*viewport,
@@ -226,7 +224,7 @@ fn create_resources(
     resources.insert(Sdl2WindowResource::new(&sdl2_window));
     resources.insert(EditorStateResource::new());
 
-    use sdl2_input::Sdl2KeyboardKey;
+    use minimum_sdl2::input::Sdl2KeyboardKey;
     use sdl2::keyboard::Keycode;
     let keybinds = minimum::resources::editor::Keybinds {
         selection_add: Sdl2KeyboardKey::new(Keycode::LShift).into(),

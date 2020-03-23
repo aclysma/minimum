@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use nphysics2d::object::DefaultBodyHandle;
-use legion_transaction::SpawnFrom;
+use legion_prefab::SpawnFrom;
 use minimum::math::Vec3;
 use crate::resources::PhysicsResource;
 use minimum::resources::editor::OpenedPrefabState;

@@ -1,5 +1,5 @@
 use std::ops::{Deref, DerefMut};
-use crate::sdl2_imgui::Sdl2ImguiManager;
+use crate::imgui::Sdl2ImguiManager;
 
 // For now just wrap the input helper that skulpin provides
 pub struct Sdl2ImguiManagerResource {

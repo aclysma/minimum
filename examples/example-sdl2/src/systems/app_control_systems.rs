@@ -2,7 +2,7 @@ use legion::prelude::*;
 use sdl2::keyboard::Keycode;
 use minimum::resources::InputResource;
 use minimum::resources::AppControlResource;
-use crate::sdl2_input::Sdl2KeyboardKey;
+use minimum_sdl2::input::Sdl2KeyboardKey;
 
 pub fn quit_if_escape_pressed() -> Box<dyn Schedulable> {
     SystemBuilder::new("quit_if_escape_pressed")

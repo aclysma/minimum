@@ -15,7 +15,7 @@ use minimum::resources::{
 };
 use minimum::resources::ImguiResource;
 use crate::resources::FpsTextResource;
-use crate::resources::Sdl2WindowResource;
+use minimum_sdl2::resources::Sdl2WindowResource;
 
 pub fn draw() -> Box<dyn Schedulable> {
     // Copy the data from physics rigid bodies into position components

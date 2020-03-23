@@ -4,7 +4,7 @@ use skulpin::CreateRendererError;
 use skulpin::ash;
 use skulpin::winit;
 use skulpin::app::AppControl;
-use crate::winit_imgui::WinitImguiManager;
+use minimum_winit::imgui::WinitImguiManager;
 use imgui_winit_support::WinitPlatform;
 
 use crate::resources::*;
@@ -211,7 +211,7 @@ impl App {
                 let mut input_state = resources.get_mut::<InputResource>().unwrap();
                 let mut app_control = resources.get_mut::<AppControlResource>().unwrap();
                 let mut viewport = resources.get::<ViewportResource>().unwrap();
-                crate::winit_input::handle_winit_event(&event, &mut *input_state, &*viewport);
+                minimum_winit::input::handle_winit_event(&event, &mut *input_state, &*viewport);
             }
 
             // Handle general update/redraw events

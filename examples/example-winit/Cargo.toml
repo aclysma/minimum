@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 minimum = { path = "../.." }
+minimum-winit = { path = "../../contrib/minimum-winit" }
 
 example-shared = { path = "../example-shared" }
 

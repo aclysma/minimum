@@ -1,5 +1,5 @@
 use std::ops::{Deref, DerefMut};
-use minimum_winit::imgui::WinitImguiManager;
+use crate::imgui::WinitImguiManager;
 
 // For now just wrap the input helper that skulpin provides
 pub struct WinitImguiManagerResource {

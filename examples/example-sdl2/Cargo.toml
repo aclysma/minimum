@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 minimum = { path = "../.." }
+minimum-sdl2 = { path = "../../contrib/minimum-sdl2" }
 
 example-shared = { path = "../example-shared" }
 
