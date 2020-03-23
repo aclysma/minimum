@@ -20,7 +20,7 @@ use legion::prelude::*;
 use minimum::resources::editor::OpenedPrefabState;
 
 use atelier_assets::importer as atelier_importer;
-use crate::math_conversions::vec2_glam_to_glm;
+use minimum_nphysics2d::math_conversions::vec2_glam_to_glm;
 
 // A utility struct to describe color for a skia shape
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, SerdeDiff, PartialEq, Inspect, Default)]

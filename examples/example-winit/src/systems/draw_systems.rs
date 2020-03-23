@@ -15,7 +15,7 @@ use minimum::resources::{
 };
 use minimum::resources::ImguiResource;
 use crate::resources::FpsTextResource;
-use crate::resources::WinitWindowResource;
+use minimum_winit::resources::WinitWindowResource;
 
 use skulpin::winit;
 use skulpin::LogicalSize;

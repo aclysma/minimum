@@ -1,5 +1,3 @@
-pub use example_shared::components::*;
-
 mod draw;
 pub use draw::DrawSkiaCircleComponent;
 pub use draw::DrawSkiaCircleComponentDef;

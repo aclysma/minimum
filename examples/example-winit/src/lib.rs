@@ -26,8 +26,6 @@ use resources::*;
 mod systems;
 use systems::*;
 
-pub mod math_conversions;
-
 use std::sync::mpsc::RecvTimeoutError::Timeout;
 use std::borrow::BorrowMut;
 use nphysics2d::object::RigidBodyDesc;
@@ -56,6 +54,8 @@ use minimum::ComponentRegistry;
 use minimum::resources::editor::EditorInspectRegistryResource;
 use minimum::editor::EditorSelectRegistryBuilder;
 use minimum_winit::input::WinitKeyboardKey;
+use minimum_nphysics2d::resources::PhysicsResource;
+use minimum_nphysics2d::components::*;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;

@@ -15,7 +15,7 @@ use minimum::resources::{
     ImguiResource, AppControlResource, TimeResource, InputResource, UniverseResource,
     ViewportResource,
 };
-use crate::resources::WinitImguiManagerResource;
+use minimum_winit::resources::{WinitImguiManagerResource, WinitWindowResource};
 
 /// Represents an error from creating the renderer
 #[derive(Debug)]
