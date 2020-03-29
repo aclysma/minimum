@@ -16,8 +16,8 @@ example-shared = { path = "../example-shared" }
 
 sdl2 = { version = "0.33", features = ["bundled", "static-link"] }
 
-skulpin = { version = "0.8.1", default-features = false, features = ["skulpin_sdl2", "skia_complete"] }
-skulpin-plugin-imgui = "0.2.0"
+skulpin = { version = "0.9", default-features = false, features = ["skulpin_sdl2", "skia_complete"] }
+skulpin-plugin-imgui = "0.3"
 
 imgui-inspect-derive = "0.4"
 imgui-inspect = "0.4"

@@ -14,8 +14,8 @@ minimum-nphysics2d = { path = "../../contrib/minimum-nphysics2d" }
 
 example-shared = { path = "../example-shared" }
 
-skulpin = { version = "0.8", default-features = false, features = ["skia_complete", "skulpin_winit"] }
-skulpin-plugin-imgui = "0.2"
+skulpin = { version = "0.9", default-features = false, features = ["skia_complete", "skulpin_winit"] }
+skulpin-plugin-imgui = "0.3"
 
 imgui-inspect-derive = "0.4"
 imgui-inspect = "0.4"
@@ -34,11 +34,6 @@ prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum_nex
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
 
 glam = { version = "0.8.5", features = ["serde"] }
-#
-#nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
-#nalgebra-glm = "0.4"
-#ncollide2d = "0.20"
-#nphysics2d = "0.12"
 
 structopt = "0.3"
 serde = "1"

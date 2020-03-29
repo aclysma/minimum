@@ -16,7 +16,7 @@ members = [
 
 [package]
 name = "minimum"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Philip Degarmo <aclysma@gmail.com>"]
 edition = "2018"
 
@@ -30,16 +30,10 @@ minimum-transform = { path = "minimum-transform" }
 minimum-editor = { path = "minimum-editor" }
 minimum-game = { path = "minimum-game" }
 
-#skulpin = { version = "0.8", default-features = false, features = ["skia_complete", "skulpin_winit"] }
-#skulpin-plugin-imgui = "0.2"
-#
 imgui-inspect-derive = "0.4"
 imgui-inspect = "0.4"
-#
-imgui = "0.3"
-#imgui-winit-support = "0.3"
 
-#crossbeam-channel = "0.3"
+imgui = "0.3"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
@@ -50,11 +44,6 @@ prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum_nex
 legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
 
 glam = { version = "0.8.5", features = ["serde"] }
-
-#nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
-#nalgebra-glm = "0.4"
-#ncollide2d = "0.20"
-#nphysics2d = "0.12"
 
 structopt = "0.3"
 serde = "1"
