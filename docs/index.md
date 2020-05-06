@@ -1,6 +1,41 @@
 
 # Minimum Documentation
 
+## Tutorial
+
+Since our goal is to empower you to choose whatever systems you want, our tutorial is a bit non-linear. Here's the
+outline:
+
+ * Prefab System ([Complete code for each tutorial here!](../examples/tutorial))
+   * [Dev Environment Setup](tutorial/tutorial001_dev_environment_setup.md)
+   * [Creating Prefabs](tutorial/tutorial002_creating_prefabs.md)
+   * [Saving and Loading Prefabs](tutorial/tutorial003_save_and_load_prefabs.md)
+   * [Cooking Prefabs](tutorial/tutorial004_cooking_prefabs.md)
+   * [Spawning Prefabs](tutorial/tutorial005_spawning_prefabs.md)
+   * [Transactions](tutorial/tutorial006_transactions.md)
+   * [Creating Prefab Overrides](tutorial/tutorial007_creating_prefab_overrides.md)
+ * TODO: More tutorials.. in the meantime please see the examples!
+   * [Winit](..examples/example-winit)
+   * [SDL2](../examples/example-sdl2)
+
+### Running the Examples
+
+```
+# Fetch the repo
+git clone https://github.com/aclysma/minimum.git
+cd minimum
+
+# These are not technically examples so use run --package
+# Make sure the current directory is "examples" so assets can be found/loaded! 
+cd examples
+cargo run --package example-winit
+cargo run --package example-sdl2
+
+# These *are* examples - one per above tutorial
+cd tutorial
+cargo run --example tutorial001_dev_environment_setup
+```
+
 ## Philosophy
 
 Most game engines are a big wad of code that (hopefully) implements everything one would ever want for a game. For
@@ -35,52 +70,3 @@ the transform component.
 
 This avoids dependencies between the physics and rendering systems, allowing downstream crates to be owned by different
 authors.
-
-## Tutorial
-
-Since our goal is to empower you to choose whatever systems you want, our tutorial is a bit non-linear. Here's the
-outline:
-
- * Prefab System
-   * Dev Environment Setup
-   * Creating Prefabs
-   * Saving and Loading Prefabs
-   * Cooking Prefabs
-   * Spawning Prefabs
-   * Transactions
-   * Creating Prefab Overrides
- * Windowing
-   * SDL2
-   * winit
- * Rendering
-   * SDL2
-   * skia
- * Physics
-   * nphysics
-   * Box2d (Not yet implemented)
-
-## Crate Descriptions / Hierarchy
-
- * minimum-kernel
-   * Starting the asset daemon (see atelier-assets)
-   * Component Registration - Allows registering of component types - which in turns generates the necessary code for
-     working with components (i.e. creating, diffing, serializing, etc.)
-   * Prefabs (Importing/Cooking/Saving)
- * minimum-transform
-   * A general system for tracking position/rotation/scaling of entities
- * minimum-math
-   * Wrappers around glam math types that make them imgui-friendly      
- * minimum-game
-   * Protocols for basic game systems like:
-     * Input
-     * Time Keeping
-     * Camera/Viewport State
-     * Accessing the legion universe
-     * Acessing the ImGui Context/Ui
- * minimum-editor
-   * Inspect Registry (i.e. property editor compatibility)
-   * Selection Registry (i.e. detecting if an entity is clicked/dragged over)
-   * ImGui Windows
-   * "Editor Draw" - an immediate-mode world-space drawing system (for use by tools)
-   * Some basic editor-draw compatible gizmos for modifying entity transform state
-   * State about currently opened prefab, undo/redo queue, etc.
