@@ -6,11 +6,7 @@ extension points for integrating custom and 3rd-party libraries with your game l
 This library is best suited for use by those who want to start with something thin and bring their own tech to put on 
 top of it. It's your very own build-a-game-engine toolkit.
 
-## Status
-
-This project remains a proof-of-concept, although it has gone through a major rework to rely on legion for ECS and
-atelier for asset loading/processing. The goal remains to produce a lean "kernel" that allows many different upstream
-libraries to inter-operate.
+[![Build Status](https://travis-ci.org/aclysma/minimum.svg?branch=master)](https://travis-ci.org/aclysma/minimum)
 
 ## Features
 
@@ -18,9 +14,20 @@ Editing functionality is currently limited, but the core loop is implemented:
  * Entities with components can be loaded from file and saved to file
  * Entities can be selected and their components can be edited (at design-time and run-time)
  * Entities and components can be added or removed
- * Entities can be moved, scaled, and rotated
+ * Entities can be moved, scaled, and rotated with undo support
  * Can start/stop/reset the simulation
+
+Youtube Video:
+
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/9Vwi29RuQBE/0.jpg)](https://www.youtube.com/watch?v=9Vwi29RuQBE&feature=youtu.be "Video of Editor in Use")
  
+## Status
+
+This project was recently re-worked to adopt atelier-assets for the content pipeline and legion for the ECS. The two
+are tightly integrated to produce a prefab system and an easy-to-extend content-authoring workflow.
+
+There are a few examples and some documentation. The framework is - by design - a blank slate for end-users to extend.
+
 ## Philosophy
 
 Game engines are usually huge - and this poses difficulty for OSS projects. It's very difficult for a large OSS project
@@ -67,9 +74,11 @@ rendering so that end-users can pick a solution that fits their game best.
 ```
 git clone https://github.com/aclysma/minimum.git
 cd minimum
-cd demo
-cargo run --example example-sdl2
+cd examples
+cargo run --package example-winit
 ```
+
+Or alternatively `cargo run --package example-sdl2` if you'd like to run the same demo using SDL2. 
 
 ## Roadmap
 

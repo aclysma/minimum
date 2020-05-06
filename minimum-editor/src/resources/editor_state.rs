@@ -443,7 +443,7 @@ impl EditorStateResource {
                 &opened_prefab.cooked_prefab.entities
             {
                 let world_entity = prefab_to_world_mappings.get(cooked_prefab_entity);
-                log::info!(
+                log::trace!(
                     "Prefab entity {} {:?} spawned as world entity {:?}",
                     uuid::Uuid::from_bytes(*cooked_prefab_entity_uuid).to_string(),
                     cooked_prefab_entity,
