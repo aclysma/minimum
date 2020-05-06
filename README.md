@@ -34,7 +34,7 @@ can choose the work that fits their interest and skill set.
 
 To achieve interoperability, we will need a common protocol for these integrations to work well together. So we will
 standardize on a common base set of components, resources, and systems. For example, a common transform component, or
-a common way to represent input state (it would be up to the downstream user to pick an input/windowing implemnetation
+a common way to represent input state (it would be up to the downstream user to pick an input/windowing implementation
 that populates this.)
 
 ## Alternatives
@@ -43,12 +43,13 @@ For more batteries-included solutions in rust, I would look at amethyst, coffee,
 these libraries all tend to take over your game loop or assume you will use a particular windowing or rendering
 solution.
 
-minimum requires that you bring your own renderer (including support for imgui.) However, this also gives you the
-flexibility to choose your own solutions.
+minimum currently requires that you bring your own renderer (including support for imgui.) However, this also gives you 
+the flexibility to choose your own solutions. The hope going forward is that the "kernel" can remain decoupled from
+rendering so that end-users can pick a solution that fits their game best.
 
 ## Directory Map
 
-/contrib - Holds integrations for upstream libraries like nphysics, sdl2, and winit
+/contrib - Holds integrations for upstream libraries (such as nphysics, sdl2, and winit)
 /docs - Some concept-level documentation
 /examples
  * example-sdl2 - A working implementation using SDL2 for windowing

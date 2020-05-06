@@ -57,7 +57,7 @@ outline:
    * skia
  * Physics
    * nphysics
-   * Box2d
+   * Box2d (Not yet implemented)
 
 ## Crate Descriptions / Hierarchy
 
