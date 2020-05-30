@@ -1,4 +1,8 @@
 language: rust
+addons:
+  apt:
+    packages:
+      - libsndio-dev
 before_script:
   - if [ $SKIP_FORMAT_CHECK = 0 ]; then rustup component add rustfmt; fi
   - if [ $SKIP_CLIPPY = 0 ]; then rustup component add clippy; fi

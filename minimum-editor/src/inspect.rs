@@ -60,7 +60,8 @@ where
         ui: &Ui,
         args: &InspectArgsStruct,
     ) {
-        let values = world.get_all_components::<T>();
+        let query = Read::<T>::query();
+        let values = query.components(world);
         let slice = values.as_slice();
 
         if !slice.is_empty() {
@@ -76,7 +77,8 @@ where
         args: &InspectArgsStruct,
     ) -> InspectResult {
         let result = {
-            let mut values = world.get_all_components_mut::<T>();
+            let query = Write::<T>::query();
+            let mut values = query.components_mut(world);
             let mut slice = values.as_mut_slice();
 
             if !slice.is_empty() {

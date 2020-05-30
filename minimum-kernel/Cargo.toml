@@ -9,11 +9,11 @@ edition = "2018"
 [dependencies]
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
-legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
+legion = { git = "https://github.com/aclysma/legion", default-features = false, features = ["serialize"], branch="minimum" }
 
-legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
-legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
-prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
+legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum" }
+legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }
+prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 
 structopt = "0.3"
 serde = "1"

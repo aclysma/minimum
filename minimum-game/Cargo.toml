@@ -12,7 +12,7 @@ minimum-math = { path = "../minimum-math" }
 
 imgui = "0.3"
 
-legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
+legion = { git = "https://github.com/aclysma/legion", default-features = false, features = ["serialize"], branch="minimum" }
 
 glam = { version = "0.8.5", features = ["serde"] }
 

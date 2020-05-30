@@ -28,6 +28,9 @@ are tightly integrated to produce a prefab system and an easy-to-extend content-
 
 There are a few examples and some documentation. The framework is - by design - a blank slate for end-users to extend.
 
+I'm currently investigating rendering options in Rust so there will be a hiatus, similar to between 0.1 and 0.2. I
+intend to maintain CI support and answer issues/PRs.
+
 Please see the [docs](https://github.com/aclysma/minimum/blob/master/docs/index.md)!
 
 ## Philosophy
