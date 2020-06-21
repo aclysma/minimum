@@ -12,56 +12,5 @@ members = [
     "minimum-math",
     "minimum-transform",
     "minimum-editor",
+    "minimum"
 ]
-
-[package]
-name = "minimum"
-version = "0.2.0"
-authors = ["Philip Degarmo <aclysma@gmail.com>"]
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-
-minimum-kernel = { path = "minimum-kernel" }
-minimum-math = { path = "minimum-math" }
-minimum-transform = { path = "minimum-transform" }
-minimum-editor = { path = "minimum-editor" }
-minimum-game = { path = "minimum-game" }
-
-imgui-inspect-derive = "0.4"
-imgui-inspect = "0.4"
-
-imgui = "0.3"
-
-atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
-
-legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum" }
-legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }
-prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum" }
-
-legion = { git = "https://github.com/aclysma/legion", default-features = false, features = ["serialize"], branch="minimum" }
-
-glam = { version = "0.8.5", features = ["serde"] }
-
-structopt = "0.3"
-serde = "1"
-uuid = "0.8"
-type-uuid = "0.1"
-image2 = { version = "0.11", features = [ "ser" ] }
-inventory = "0.1"
-
-# We need this PR (https://github.com/servo/bincode/pull/288) but it's not published yet
-#bincode = "1.2"
-bincode = { git = "https://github.com/servo/bincode.git", rev="e30e91e3a" }
-mopa = "0.2"
-itertools = "0.8"
-
-serde-diff = "0.3"
-
-ron = "0.5"
-erased-serde = "0.3"
-
-log="0.4"
-env_logger = "0.6"
