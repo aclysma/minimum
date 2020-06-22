@@ -7,7 +7,7 @@ use minimum_game::resources::{TimeResource, UniverseResource};
 use crate::resources::EditorSelectionResource;
 use minimum_game::resources::SimulationTimePauseReason;
 use atelier_assets::core::AssetUuid;
-use legion_prefab::{CookedPrefab, ComponentRegistration, Prefab, PrefabBuilder};
+use legion_prefab::{CookedPrefab, ComponentRegistration, Prefab};
 use std::sync::Arc;
 use minimum_game::resources::TimeState;
 use atelier_assets::loader::handle::{TypedAssetStorage, AssetHandle};

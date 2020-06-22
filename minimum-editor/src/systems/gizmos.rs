@@ -36,8 +36,6 @@ use legion::filter::EntityFilterTuple;
 use legion::filter::And;
 use legion::filter::ComponentFilter;
 use legion::filter::Passthrough;
-use legion::systems::SystemQuery;
-use legion::systems::SubWorld;
 use minimum_kernel::ComponentRegistry;
 use minimum_kernel::resources::ComponentRegistryResource;
 
@@ -213,7 +211,7 @@ fn draw_translate_gizmo(
     editor_draw: &mut EditorDrawResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    translate_query: &mut legion::systems::SystemQuery<
+    translate_query: &mut Query<
         Read<PositionComponent>,
         EntityFilterTuple<ComponentFilter<PositionComponent>, Passthrough, Passthrough>,
     >,
@@ -400,7 +398,7 @@ fn draw_scale_gizmo(
     editor_draw: &mut EditorDrawResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    scale_query: &mut legion::systems::SystemQuery<
+    scale_query: &mut Query<
         (
             Read<PositionComponent>,
             TryRead<UniformScaleComponent>,
@@ -537,7 +535,7 @@ fn draw_rotate_gizmo(
     editor_draw: &mut EditorDrawResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    scale_query: &mut legion::systems::SystemQuery<
+    scale_query: &mut Query<
         (Read<PositionComponent>, Read<Rotation2DComponent>),
         EntityFilterTuple<
             And<(
