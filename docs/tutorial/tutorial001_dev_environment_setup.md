@@ -17,12 +17,12 @@ minimum = { git = "https://github.com/aclysma/minimum" }
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
 # Prefab/Transactions
-legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
-legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
-prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum_next" }
+legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum" }
+legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }
+prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 
 # Legion ECS
-legion = { git = "https://github.com/kabergstrom/legion", default-features = false, features = ["serialize"], branch="atelier-legion-demo" }
+legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
 
 # Required for serializing/desieralizing components
 serde = "1"

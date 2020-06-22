@@ -10,6 +10,8 @@ use legion::index::ComponentIndex;
 use legion::prelude::*;
 use std::ops::Range;
 use std::mem::MaybeUninit;
+use std::hash::BuildHasher;
+use std::collections::hash_map::RandomState;
 
 pub struct ComponentRegistryBuilder {
     components: HashMap<ComponentTypeId, ComponentRegistration>,
@@ -108,7 +110,7 @@ impl ComponentRegistry {
         &self.components_by_uuid
     }
 
-    pub fn copy_clone_impl<'a>(&'a self) -> CopyCloneImpl<'a> {
+    pub fn copy_clone_impl<'a>(&'a self) -> CopyCloneImpl<'a, RandomState> {
         CopyCloneImpl::new(&self.components)
     }
 
