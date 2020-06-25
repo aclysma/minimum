@@ -110,7 +110,7 @@ impl EditorSelectionResource {
         _editor_state: &mut EditorStateResource,
         _universe_resource: &UniverseResource,
         _world: &mut World,
-    ) {
+    ) -> bool {
         let ops: Vec<_> = self.pending_selection_ops.drain(..).collect();
 
         let mut changed = false;
@@ -146,6 +146,8 @@ impl EditorSelectionResource {
                 }
             }
         }
+
+        changed
     }
 
     // The main reason for having such a specific function here is that it's awkward for an external

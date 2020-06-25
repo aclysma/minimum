@@ -1,9 +1,6 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
-    ImguiResource,
-};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDrawResource, UniverseResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorSettingsResource,
 };

@@ -1,9 +1,6 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
-    ImguiResource,
-};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDrawResource, UniverseResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
     PostCommitSelection,
@@ -11,8 +8,6 @@ use crate::resources::{
 use crate::resources::EditorTool;
 
 use minimum_game::input::MouseButton;
-
-use ncollide2d::pipeline::{CollisionObjectRef};
 
 use minimum_transform::components::{
     PositionComponent, Rotation2DComponent, UniformScaleComponent, NonUniformScaleComponent,
@@ -121,7 +116,6 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                         subworld,
                         rotate_query,
                     ),
-                    _ => {}
                 }
             },
         )

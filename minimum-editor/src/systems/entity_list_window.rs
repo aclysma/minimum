@@ -9,7 +9,6 @@ use minimum_game::resources::ImguiResource;
 use imgui;
 
 use imgui::im_str;
-use ncollide2d::pipeline::{CollisionObjectRef};
 
 use minimum_kernel::resources::ComponentRegistryResource;
 
@@ -37,8 +36,6 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
             ),
              all_query| {
                 imgui_manager.with_ui(|ui: &mut imgui::Ui| {
-                    use imgui::im_str;
-
                     let window_options = editor_ui_state.window_options();
 
                     if window_options.show_entity_list {

@@ -1,8 +1,9 @@
+// There is "dead" example code in this crate
+#![allow(dead_code)]
+
+#[allow(unused_imports)]
 #[macro_use]
 extern crate log;
-
-#[macro_use]
-extern crate itertools;
 
 use sdl2::event::Event;
 
@@ -108,7 +109,8 @@ pub fn run() {
         &mut world,
         &resources,
         asset_uuid!("3991506e-ed7e-4bcb-8cfd-3366b31a6439"),
-    );
+    )
+    .unwrap();
 
     let schedule_criteria = systems::ScheduleCriteria::new(false, EditorMode::Active);
     let mut update_schedule = systems::create_update_schedule(&schedule_criteria);
@@ -148,19 +150,21 @@ pub fn run() {
 
         sdl2_imgui.render(&sdl2_window);
 
-        renderer.draw(&skulpin_window, |canvas, coordinate_system_helper| {
-            resources
-                .get_mut::<CanvasDrawResource>()
-                .unwrap()
-                .begin_draw_context(canvas, coordinate_system_helper);
+        renderer
+            .draw(&skulpin_window, |canvas, coordinate_system_helper| {
+                resources
+                    .get_mut::<CanvasDrawResource>()
+                    .unwrap()
+                    .begin_draw_context(canvas, coordinate_system_helper);
 
-            draw_schedule.execute(&mut world, &mut resources);
+                draw_schedule.execute(&mut world, &mut resources);
 
-            resources
-                .get_mut::<CanvasDrawResource>()
-                .unwrap()
-                .end_draw_context();
-        });
+                resources
+                    .get_mut::<CanvasDrawResource>()
+                    .unwrap()
+                    .end_draw_context();
+            })
+            .unwrap();
 
         if resources
             .get::<AppControlResource>()
@@ -170,6 +174,10 @@ pub fn run() {
             break;
         }
     }
+
+    // Drop world before resources as physics components may point back at resources
+    std::mem::drop(world);
+    std::mem::drop(resources);
 }
 
 fn create_resources(

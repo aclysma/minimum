@@ -54,7 +54,7 @@ pub struct RigidBodyComponent {
 
 impl Drop for RigidBodyComponent {
     fn drop(&mut self) {
-        self.delete_body_tx.send(self.handle);
+        self.delete_body_tx.send(self.handle).unwrap();
     }
 }
 

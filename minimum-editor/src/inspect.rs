@@ -135,7 +135,7 @@ where
 
         if result == InspectResult::Deleted {
             for e in entities {
-                world.remove_component::<T>(*e);
+                world.remove_component::<T>(*e).unwrap();
             }
         }
 

@@ -8,11 +8,9 @@ use crate::resources::{
 
 use imgui;
 use imgui::im_str;
-use ncollide2d::pipeline::{CollisionObjectRef};
 
 use std::collections::HashMap;
 
-use imgui_inspect::InspectRenderDefault;
 use prefab_format::{EntityUuid};
 
 use minimum_kernel::resources::ComponentRegistryResource;
@@ -48,8 +46,6 @@ pub fn editor_inspector_window(
         );
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
-            use imgui::im_str;
-
             let window_options = editor_ui_state.window_options();
 
             if window_options.show_inspector {

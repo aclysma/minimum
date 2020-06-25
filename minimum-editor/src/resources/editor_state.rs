@@ -10,7 +10,7 @@ use atelier_assets::core::AssetUuid;
 use legion_prefab::{CookedPrefab, Prefab};
 use std::sync::Arc;
 
-use atelier_assets::loader::handle::{TypedAssetStorage, AssetHandle};
+use atelier_assets::loader::handle::AssetHandle;
 use legion_transaction::{WorldDiff, ApplyDiffToPrefabError};
 use prefab_format::{EntityUuid};
 
@@ -315,7 +315,6 @@ impl EditorStateResource {
             let mut asset_resource = resources.get_mut::<AssetResource>().unwrap();
 
             use atelier_assets::loader::Loader;
-            use atelier_assets::loader::handle::AssetHandle;
 
             let load_handle = asset_resource.loader().add_ref(prefab_uuid);
             let handle = atelier_loader::handle::Handle::<PrefabAsset>::new(
@@ -683,7 +682,7 @@ impl EditorStateResource {
             }
 
             // re-cook and load the prefab
-            Self::open_prefab(world, resources, opened_prefab.uuid);
+            Self::open_prefab(world, resources, opened_prefab.uuid).unwrap();
 
             // Restore selection
             let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();

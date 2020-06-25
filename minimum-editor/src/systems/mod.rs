@@ -9,7 +9,6 @@ use crate::resources::{
 use crate::resources::EditorTool;
 
 use minimum_game::input::MouseButton;
-use ncollide2d::pipeline::{CollisionObjectRef};
 
 use minimum_transform::PositionComponent;
 

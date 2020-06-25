@@ -1,8 +1,9 @@
+// There is "dead" example code in this crate
+#![allow(dead_code)]
+
+#[allow(unused_imports)]
 #[macro_use]
 extern crate log;
-
-#[macro_use]
-extern crate itertools;
 
 use legion::prelude::*;
 
@@ -186,7 +187,8 @@ impl app::AppHandler for DemoApp {
             world,
             resources,
             asset_uuid!("3991506e-ed7e-4bcb-8cfd-3366b31a6439"),
-        );
+        )
+        .unwrap();
     }
 
     fn update(
