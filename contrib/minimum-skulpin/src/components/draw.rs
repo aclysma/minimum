@@ -1,4 +1,3 @@
-use atelier_assets::importer::{typetag, SerdeImportable};
 use serde::{Deserialize, Serialize};
 use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
@@ -20,7 +19,6 @@ use legion::prelude::*;
 use minimum::resources::editor::OpenedPrefabState;
 use nalgebra_glm as glm;
 
-use atelier_assets::importer as atelier_importer;
 use crate::math_conversions::vec2_glam_to_glm;
 
 // A utility struct to describe color for a skia shape
@@ -85,8 +83,8 @@ impl minimum::editor::EditorSelectable for DrawSkiaBoxComponent {
     fn create_editor_selection_world(
         &self,
         collision_world: &mut CollisionWorld<f32, Entity>,
-        resources: &Resources,
-        opened_prefab: &OpenedPrefabState,
+        _resources: &Resources,
+        _opened_prefab: &OpenedPrefabState,
         world: &World,
         entity: Entity,
     ) {
@@ -158,8 +156,8 @@ impl minimum::editor::EditorSelectable for DrawSkiaCircleComponent {
     fn create_editor_selection_world(
         &self,
         collision_world: &mut CollisionWorld<f32, Entity>,
-        resources: &Resources,
-        opened_prefab: &OpenedPrefabState,
+        _resources: &Resources,
+        _opened_prefab: &OpenedPrefabState,
         world: &World,
         entity: Entity,
     ) {

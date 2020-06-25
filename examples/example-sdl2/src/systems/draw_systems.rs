@@ -1,7 +1,6 @@
 use legion::prelude::*;
 
-use imgui;
-use skulpin::{skia_safe, Sdl2Window};
+use skulpin::{skia_safe};
 
 use minimum::components::{
     PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
@@ -10,10 +9,8 @@ use minimum_skulpin::components::DrawSkiaBoxComponent;
 use minimum_skulpin::components::DrawSkiaCircleComponent;
 
 use minimum_skulpin::resources::CanvasDrawResource;
-use minimum::resources::{
-    CameraResource, InputResource, ViewportResource, DebugDrawResource, ViewportSize,
-};
-use minimum::resources::ImguiResource;
+use minimum::resources::{CameraResource, ViewportResource, DebugDrawResource, ViewportSize};
+
 use example_shared::resources::FpsTextResource;
 use minimum_sdl2::resources::Sdl2WindowResource;
 
@@ -123,7 +120,7 @@ pub fn draw() -> Box<dyn Schedulable> {
                     }
 
                     // Draw all the circles
-                    for (pos, skia_circle, uniform_scale, rotation) in
+                    for (pos, skia_circle, uniform_scale, _rotation) in
                         draw_circles_query.iter(world)
                     {
                         let mut scale = 1.0;

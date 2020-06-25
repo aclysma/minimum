@@ -1,5 +1,5 @@
 use legion::prelude::*;
-use legion::world::{NoneCloneImplResult, NoneEntityReplacePolicy};
+
 use glam::Vec2;
 
 use type_uuid::TypeUuid;
@@ -7,11 +7,10 @@ use type_uuid::TypeUuid;
 use serde::Serialize;
 use serde::Deserialize;
 use serde_diff::SerdeDiff;
-use std::collections::HashMap;
+
 use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration};
-use uuid::adapter::compact::serialize;
+
 use minimum::ComponentRegistry;
-use prefab_format::EntityUuid;
 
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107190000"]
@@ -95,7 +94,7 @@ fn main() {
     // - Look at the original prefab to find the UUID of the entity
     // - Then use prefab_meta on the deserialized prefab to find the entity in the deserialized
     //   prefab's world
-    let mut deserialized_entity = deserialized_prefab.prefab_meta.entities[&entity_uuid];
+    let deserialized_entity = deserialized_prefab.prefab_meta.entities[&entity_uuid];
 
     // Now run some code to demonstrate that we found the same entity in the deserialized world and
     // that we get the same results as before

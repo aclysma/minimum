@@ -39,7 +39,7 @@ fn calculate_ui_space_matrix(viewport_size: ViewportSize) -> glam::Mat4 {
 // top-left: (0, 0)
 // bottom-right: (600 * aspect_ratio, 600) where aspect_ratio is window_width / window_height
 fn calculate_screen_space_matrix(
-    viewport_size: ViewportSize,
+    _viewport_size: ViewportSize,
     view_half_extents: glam::Vec2,
 ) -> glam::Mat4 {
     let view = glam::Mat4::look_at_rh(
@@ -65,7 +65,7 @@ fn calculate_screen_space_matrix(
 // top-left: (-w/2, -h/2)
 // bottom-right: (w/2, h/2)
 fn calculate_world_space_matrix(
-    viewport_size: ViewportSize,
+    _viewport_size: ViewportSize,
     position: glam::Vec3,
     view_half_extents: glam::Vec2,
 ) -> glam::Mat4 {

@@ -1,5 +1,3 @@
-use imgui::sys as imgui_sys;
-
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -31,7 +29,7 @@ impl WinitImguiManager {
         platform: imgui_winit_support::WinitPlatform,
     ) -> Self {
         // Ensure font atlas is built and cache a pointer to it
-        let font_atlas_texture = {
+        let _font_atlas_texture = {
             let mut fonts = imgui_context.fonts();
             let font_atlas_texture = Box::new(fonts.build_rgba32_texture());
             log::info!("Building ImGui font atlas");
@@ -103,7 +101,7 @@ impl WinitImguiManager {
         window: &winit::window::Window,
     ) {
         self.imgui_manager.with_ui(|ui| {
-            let mut inner = self.inner.lock().unwrap();
+            let inner = self.inner.lock().unwrap();
             inner.platform.prepare_render(&ui, window);
         });
 

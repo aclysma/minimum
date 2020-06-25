@@ -3,30 +3,13 @@ use legion::prelude::*;
 use minimum_game::resources::{
     InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
 };
-use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
-};
+use crate::resources::{EditorStateResource};
 use minimum_game::resources::ImguiResource;
 use crate::resources::EditorTool;
-use legion_transaction::{TransactionBuilder, Transaction};
 
 use imgui;
 use imgui::im_str;
-use ncollide2d::pipeline::{CollisionGroups, CollisionObjectRef};
 
-use std::collections::HashMap;
-use ncollide2d::bounding_volume::AABB;
-use ncollide2d::world::CollisionWorld;
-
-use imgui_inspect_derive::Inspect;
-
-use imgui_inspect::InspectRenderDefault;
-use minimum_kernel::pipeline::PrefabAsset;
-use prefab_format::{EntityUuid, ComponentTypeUuid};
-use legion_prefab::CookedPrefab;
-use legion_transaction::ComponentDiff;
-use std::sync::Arc;
-use minimum_transform::components::PositionComponent;
 use atelier_assets::core::asset_uuid;
 
 use atelier_assets::core as atelier_core;
@@ -57,7 +40,7 @@ pub fn editor_imgui_menu() -> Box<dyn Schedulable> {
         .write_resource::<ImguiResource>()
         .write_resource::<EditorStateResource>()
         .read_resource::<TimeResource>()
-        .build(|command_buffer, _, (imgui, editor_state, time_state), _| {
+        .build(|_command_buffer, _, (imgui, editor_state, time_state), _| {
             imgui.with_ui(|ui| {
                 {
                     let window_settings = editor_state.window_options_mut();

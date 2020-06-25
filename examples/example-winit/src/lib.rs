@@ -7,9 +7,7 @@ extern crate itertools;
 use legion::prelude::*;
 
 use std::collections::HashMap;
-use legion::storage::ComponentTypeId;
-use legion_prefab::ComponentRegistration;
-use prefab_format::ComponentTypeUuid;
+
 use atelier_assets::core::asset_uuid;
 
 use minimum::components::*;
@@ -17,19 +15,13 @@ use minimum::components::*;
 mod systems;
 use systems::*;
 
-use std::sync::mpsc::RecvTimeoutError::Timeout;
-use std::borrow::BorrowMut;
-
 pub mod app;
-
-use legion_prefab::CopyCloneImpl;
-use legion_prefab::SpawnCloneImpl;
 
 use atelier_assets::core as atelier_core;
 
 use minimum::resources::{
-    AssetResource, CameraResource, InputResource, ViewportResource, DebugDrawResource,
-    TimeResource, ComponentRegistryResource,
+    AssetResource, CameraResource, ViewportResource, DebugDrawResource, TimeResource,
+    ComponentRegistryResource,
 };
 use minimum::editor::EditorInspectRegistry;
 use minimum::editor::EditorInspectRegistryBuilder;
@@ -43,7 +35,7 @@ use skulpin::Window;
 use minimum::ComponentRegistry;
 use minimum::resources::editor::EditorInspectRegistryResource;
 use minimum::editor::EditorSelectRegistryBuilder;
-use minimum_winit::input::WinitKeyboardKey;
+
 use minimum_nphysics2d::resources::PhysicsResource;
 use minimum_nphysics2d::components::*;
 use example_shared::resources::FpsTextResource;
@@ -142,7 +134,7 @@ impl app::AppHandler for DemoApp {
         &mut self,
         world: &mut World,
         resources: &mut Resources,
-        window: &Window,
+        window: &dyn Window,
     ) {
         let asset_manager = create_asset_manager();
         let physics = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
@@ -150,7 +142,7 @@ impl app::AppHandler for DemoApp {
         let window_size = window.physical_size();
         let viewport_size = ViewportSize::new(window_size.width, window_size.height);
 
-        let mut camera = CameraResource::new(
+        let camera = CameraResource::new(
             glam::Vec2::new(0.0, 1.0),
             crate::GROUND_HALF_EXTENTS_WIDTH * 1.5,
         );
@@ -203,7 +195,7 @@ impl app::AppHandler for DemoApp {
         resources: &mut Resources,
     ) {
         let current_criteria = Self::get_current_schedule_criteria(resources);
-        let mut schedule = self.update_schedules.get_mut(&current_criteria).unwrap();
+        let schedule = self.update_schedules.get_mut(&current_criteria).unwrap();
         schedule.execute(world, resources);
     }
 
@@ -213,7 +205,7 @@ impl app::AppHandler for DemoApp {
         resources: &mut Resources,
     ) {
         let current_criteria = Self::get_current_schedule_criteria(resources);
-        let mut schedule = self.draw_schedules.get_mut(&current_criteria).unwrap();
+        let schedule = self.draw_schedules.get_mut(&current_criteria).unwrap();
         schedule.execute(world, resources);
     }
 

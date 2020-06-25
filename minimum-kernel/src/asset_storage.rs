@@ -6,7 +6,6 @@ use atelier_assets::loader::{
 use mopa::{mopafy, Any};
 use std::{sync::Mutex, collections::HashMap, error::Error, sync::Arc};
 
-use atelier_assets::importer as atelier_importer;
 use atelier_assets::loader as atelier_loader;
 
 pub struct GenericAssetStorage {
@@ -77,7 +76,7 @@ impl<A: TypeUuid + for<'a> serde::Deserialize<'a> + 'static + Send> TypedAssetSt
         handle: &T,
     ) -> Option<&A> {
         {
-            let x = self
+            let _x = self
                 .storage
                 .lock()
                 .unwrap()

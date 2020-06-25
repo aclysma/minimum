@@ -1,6 +1,6 @@
 use minimum_game::resources::DebugDrawResource;
 use minimum_game::resources::ViewportResource;
-use minimum_game::resources::InputResource;
+
 use minimum_game::input::InputState;
 use minimum_game::input::MouseButton;
 

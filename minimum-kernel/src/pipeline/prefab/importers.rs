@@ -6,7 +6,6 @@ use type_uuid::TypeUuid;
 
 use crate::pipeline::PrefabAsset;
 
-use legion::prelude::*;
 use legion_prefab::ComponentRegistration;
 use std::collections::HashMap;
 use prefab_format::ComponentTypeUuid;

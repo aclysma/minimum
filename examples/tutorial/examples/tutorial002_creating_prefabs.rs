@@ -1,5 +1,5 @@
 use legion::prelude::*;
-use legion::world::{NoneCloneImplResult, NoneEntityReplacePolicy};
+
 use glam::Vec2;
 
 use type_uuid::TypeUuid;
@@ -7,11 +7,8 @@ use type_uuid::TypeUuid;
 use serde::Serialize;
 use serde::Deserialize;
 use serde_diff::SerdeDiff;
-use std::collections::HashMap;
+
 use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration};
-use uuid::adapter::compact::serialize;
-use minimum::ComponentRegistry;
-use prefab_format::EntityUuid;
 
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107190000"]
@@ -44,7 +41,7 @@ fn main() {
     });
 
     // Register all components (based on legion_prefab::register_component_type! macro)
-    let component_registry = minimum::ComponentRegistryBuilder::new()
+    let _component_registry = minimum::ComponentRegistryBuilder::new()
         .auto_register_components()
         .build();
 

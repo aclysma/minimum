@@ -398,9 +398,9 @@ impl InputState {
 
                     match self.mouse_drag_in_progress[button_index] {
                         Some(in_progress) => {
-                            let delta = (self.mouse_position
+                            let delta = self.mouse_position
                                 - (in_progress.begin_position
-                                    + in_progress.accumulated_frame_delta));
+                                    + in_progress.accumulated_frame_delta);
 
                             // This is where the cursor is now
                             let world_space_end_position =
@@ -478,7 +478,7 @@ impl InputState {
                                         viewport.ui_space_to_world_space(self.mouse_position);
 
                                     let delta = self.mouse_position - went_down_position;
-                                    let world_space_delta =
+                                    let _world_space_delta =
                                         world_space_end_position - world_space_begin_position;
 
                                     // We dragged a non-trivial amount, start the drag

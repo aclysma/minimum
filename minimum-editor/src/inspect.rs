@@ -74,12 +74,12 @@ where
         world: &mut World,
         entities: &[Entity],
         ui: &Ui,
-        args: &InspectArgsStruct,
+        _args: &InspectArgsStruct,
     ) -> InspectResult {
         let result = {
             let query = Write::<T>::query();
             let mut values = query.components_mut(world);
-            let mut slice = values.as_mut_slice();
+            let slice = values.as_mut_slice();
 
             if !slice.is_empty() {
                 let header_text = &imgui::im_str!("{}", core::any::type_name::<T>());

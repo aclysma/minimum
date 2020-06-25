@@ -2,7 +2,7 @@ use legion_prefab::ComponentRegistration;
 use prefab_format::ComponentTypeUuid;
 use legion::storage::ComponentTypeId;
 use std::collections::HashMap;
-use crate::resources::AssetResource;
+
 use legion_prefab::{CopyCloneImpl, SpawnCloneImpl, SpawnCloneImplHandlerSet, SpawnInto};
 use legion::prelude::Resources;
 use legion::storage::{Component, ComponentStorage};
@@ -10,7 +10,7 @@ use legion::index::ComponentIndex;
 use legion::prelude::*;
 use std::ops::Range;
 use std::mem::MaybeUninit;
-use std::hash::BuildHasher;
+
 use std::collections::hash_map::RandomState;
 
 pub struct ComponentRegistryBuilder {
@@ -30,7 +30,6 @@ impl ComponentRegistryBuilder {
 
     pub fn auto_register_components(mut self) -> Self {
         let comp_registrations = legion_prefab::iter_component_registrations();
-        use std::iter::FromIterator;
 
         for registration in comp_registrations {
             self = self.register_component(registration);

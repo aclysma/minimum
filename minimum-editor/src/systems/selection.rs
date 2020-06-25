@@ -5,29 +5,13 @@ use minimum_game::resources::{
     ImguiResource,
 };
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
-    EditorSettingsResource,
+    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorSettingsResource,
 };
-use crate::resources::EditorTool;
-use legion_transaction::{TransactionBuilder, Transaction};
 
-use imgui;
-use minimum_game::input::KeyboardKey;
 use minimum_game::input::MouseButton;
-use imgui::im_str;
-use ncollide2d::pipeline::{CollisionGroups, CollisionObjectRef};
 
-use std::collections::HashMap;
-use ncollide2d::bounding_volume::AABB;
-use ncollide2d::world::CollisionWorld;
+use ncollide2d::pipeline::{CollisionGroups};
 
-use imgui_inspect_derive::Inspect;
-
-use imgui_inspect::InspectRenderDefault;
-use prefab_format::{EntityUuid, ComponentTypeUuid};
-use legion_prefab::CookedPrefab;
-use legion_transaction::ComponentDiff;
-use std::sync::Arc;
 use minimum_transform::components::PositionComponent;
 
 pub fn vec2_glam_to_glm(value: glam::Vec2) -> glm::Vec2 {
@@ -164,21 +148,21 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
-        .with_query(<(Read<PositionComponent>)>::query())
+        .with_query(<Read<PositionComponent>>::query())
         .build(
-            |command_buffer,
-             subworld,
+            |_command_buffer,
+             _subworld,
              (
-                editor_state,
+                _editor_state,
                 input_state,
                 viewport,
                 editor_selection,
                 debug_draw,
                 editor_draw,
-                universe_resource,
+                _universe_resource,
                 editor_settings,
             ),
-             (position_query)| {
+             _position_query| {
                 handle_selection(
                     &*editor_draw,
                     &*input_state,

@@ -6,4 +6,3 @@ extern crate itertools;
 
 pub mod resources;
 pub mod systems;
-

@@ -1,4 +1,3 @@
-use atelier_assets::importer::{typetag, SerdeImportable};
 use serde::{Deserialize, Serialize};
 use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
@@ -24,7 +23,6 @@ use minimum::components::{
 };
 use ncollide2d::world::CollisionWorld;
 
-use atelier_assets::importer as atelier_importer;
 use crate::math_conversions::vec2_glam_to_glm;
 
 //
@@ -64,7 +62,7 @@ fn transform_shape_to_rigid_body(
     physics: &mut PhysicsResource,
     into: &mut std::mem::MaybeUninit<RigidBodyComponent>,
     src_position: Option<&PositionComponent>,
-    src_rotation: Option<&Rotation2DComponent>,
+    _src_rotation: Option<&Rotation2DComponent>,
     shape_handle: ShapeHandle<f32>,
     is_static: bool,
 ) {
@@ -163,13 +161,13 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
     fn create_editor_selection_world(
         &self,
         collision_world: &mut CollisionWorld<f32, Entity>,
-        resources: &Resources,
-        opened_prefab: &OpenedPrefabState,
+        _resources: &Resources,
+        _opened_prefab: &OpenedPrefabState,
         prefab_world: &World,
         prefab_entity: Entity,
-        transformed_world: &World,
+        _transformed_world: &World,
         transformed_entity: Entity,
-        transformed_component: &RigidBodyComponent,
+        _transformed_component: &RigidBodyComponent,
     ) {
         if let Some(position) = prefab_world.get_component::<PositionComponent>(prefab_entity) {
             let mut radius = self.radius;
@@ -264,13 +262,13 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent> for RigidB
     fn create_editor_selection_world(
         &self,
         collision_world: &mut CollisionWorld<f32, Entity>,
-        resources: &Resources,
-        opened_prefab: &OpenedPrefabState,
+        _resources: &Resources,
+        _opened_prefab: &OpenedPrefabState,
         prefab_world: &World,
         prefab_entity: Entity,
-        transformed_world: &World,
+        _transformed_world: &World,
         transformed_entity: Entity,
-        transformed_component: &RigidBodyComponent,
+        _transformed_component: &RigidBodyComponent,
     ) {
         if let Some(position) = prefab_world.get_component::<PositionComponent>(prefab_entity) {
             let mut half_extents = *self.half_extents;

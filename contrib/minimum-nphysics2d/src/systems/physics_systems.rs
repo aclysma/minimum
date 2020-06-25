@@ -24,7 +24,7 @@ pub fn read_from_physics() -> Box<dyn Schedulable> {
     SystemBuilder::new("read physics data")
         .read_resource::<PhysicsResource>()
         .with_query(<(Write<PositionComponent>, Read<RigidBodyComponent>)>::query())
-        .build(|_, mut world, physics, query| {
+        .build(|_, world, physics, query| {
             for (mut pos, body) in query.iter_mut(world) {
                 if let Some(rigid_body) = physics.bodies.rigid_body(body.handle) {
                     let position = rigid_body.position().translation.vector;

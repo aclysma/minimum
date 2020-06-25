@@ -1,24 +1,16 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
-    CameraResource,
+    InputResource, ViewportResource, DebugDrawResource, UniverseResource, CameraResource,
 };
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
-    EditorSettingsResource,
+    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorSettingsResource,
 };
 use crate::resources::EditorTool;
 
-use minimum_game::input::MouseScrollDelta;
 use minimum_game::input::MouseButton;
-use ncollide2d::pipeline::{CollisionGroups, CollisionObjectRef};
+use ncollide2d::pipeline::{CollisionObjectRef};
 
-use std::collections::HashMap;
-use ncollide2d::bounding_volume::AABB;
-use ncollide2d::world::CollisionWorld;
-
-use std::sync::Arc;
 use minimum_transform::PositionComponent;
 
 mod main_menu;
@@ -92,21 +84,21 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
-        .with_query(<(Read<PositionComponent>)>::query())
+        .with_query(<Read<PositionComponent>>::query())
         .build(
-            |command_buffer,
-             subworld,
+            |_command_buffer,
+             _subworld,
              (
                 editor_state,
                 input_state,
-                viewport,
-                editor_selection,
-                debug_draw,
-                editor_draw,
-                universe_resource,
+                _viewport,
+                _editor_selection,
+                _debug_draw,
+                _editor_draw,
+                _universe_resource,
                 editor_settings,
             ),
-             (position_query)| {
+             _position_query| {
                 if input_state.is_key_just_down(editor_settings.keybinds().tool_translate) {
                     editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
                 }
@@ -134,7 +126,7 @@ pub fn editor_mouse_input() -> Box<dyn Schedulable> {
         .write_resource::<CameraResource>()
         .read_resource::<ViewportResource>()
         .build(
-            |command_buffer, subworld, (input_state, camera_resource, viewport_resource), _| {
+            |_command_buffer, _subworld, (input_state, camera_resource, _viewport_resource), _| {
                 // Right click drag pans the viewport
                 if let Some(mouse_drag) = input_state.mouse_drag_in_progress(MouseButton::RIGHT) {
                     let mut delta = mouse_drag.world_scale_previous_frame_delta;
@@ -144,7 +136,7 @@ pub fn editor_mouse_input() -> Box<dyn Schedulable> {
 
                 // Right click drag pans the viewport
                 let mouse_scroll = input_state.mouse_wheel_delta();
-                let mut delta = mouse_scroll.y as f32;
+                let delta = mouse_scroll.y as f32;
 
                 let delta = 1.05_f32.powf(-delta);
                 camera_resource.x_half_extents *= delta;
@@ -161,20 +153,20 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
         .write_resource::<DebugDrawResource>()
         .write_resource::<EditorDrawResource>()
         .read_resource::<UniverseResource>()
-        .with_query(<(Read<PositionComponent>)>::query())
+        .with_query(<Read<PositionComponent>>::query())
         .build(
-            |command_buffer,
-             subworld,
+            |_command_buffer,
+             _subworld,
              (
-                editor_state,
+                _editor_state,
                 input_state,
                 viewport,
-                editor_selection,
-                debug_draw,
+                _editor_selection,
+                _debug_draw,
                 editor_draw,
-                universe_resource,
+                _universe_resource,
             ),
-             (position_query)| {
+             _position_query| {
                 editor_draw.update(input_state.input_state(), &*viewport);
             },
         )

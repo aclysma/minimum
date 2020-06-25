@@ -2,7 +2,7 @@ use ncollide2d::world::CollisionWorld;
 use legion::prelude::*;
 use legion::storage::Component;
 use std::marker::PhantomData;
-use std::sync::Arc;
+
 use crate::resources::{OpenedPrefabState, EditorStateResource};
 
 const EDITOR_SELECTION_WORLD_MARGIN: f32 = 0.02;

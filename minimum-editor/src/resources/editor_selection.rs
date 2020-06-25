@@ -1,7 +1,7 @@
 use ncollide2d::world::CollisionWorld;
 use ncollide2d::bounding_volume::AABB;
 use legion::prelude::*;
-use std::marker::PhantomData;
+
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -107,9 +107,9 @@ impl EditorSelectionResource {
 
     pub fn process_selection_ops(
         &mut self,
-        editor_state: &mut EditorStateResource,
-        universe_resource: &UniverseResource,
-        world: &mut World,
+        _editor_state: &mut EditorStateResource,
+        _universe_resource: &UniverseResource,
+        _world: &mut World,
     ) {
         let ops: Vec<_> = self.pending_selection_ops.drain(..).collect();
 
@@ -160,7 +160,7 @@ impl EditorSelectionResource {
         }
 
         for (_, shape) in world.collision_objects() {
-            let entry =
+            let _entry =
                 entity_aabbs
                     .entry(*shape.data())
                     .and_modify(|aabb: &mut Option<AABB<f32>>| {

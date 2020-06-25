@@ -1,46 +1,34 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
-    ImguiResource,
-};
+use minimum_game::resources::{UniverseResource, ImguiResource};
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
-    PostCommitSelection, EditorInspectRegistryResource,
+    EditorStateResource, EditorSelectionResource, PostCommitSelection,
+    EditorInspectRegistryResource,
 };
-use crate::resources::EditorTool;
-use legion_transaction::{TransactionBuilder, Transaction};
 
 use imgui;
 use imgui::im_str;
-use ncollide2d::pipeline::{CollisionGroups, CollisionObjectRef};
+use ncollide2d::pipeline::{CollisionObjectRef};
 
 use std::collections::HashMap;
-use ncollide2d::bounding_volume::AABB;
-use ncollide2d::world::CollisionWorld;
-
-use imgui_inspect_derive::Inspect;
 
 use imgui_inspect::InspectRenderDefault;
-use prefab_format::{EntityUuid, ComponentTypeUuid};
-use legion_prefab::CookedPrefab;
-use legion_transaction::ComponentDiff;
-use std::sync::Arc;
-use minimum_kernel::ComponentRegistry;
+use prefab_format::{EntityUuid};
+
 use minimum_kernel::resources::ComponentRegistryResource;
 
 pub fn editor_inspector_window(
-    world: &mut World,
+    _world: &mut World,
     resources: &mut Resources,
 ) {
     {
-        let mut selection_world = resources.get::<EditorSelectionResource>().unwrap();
+        let selection_world = resources.get::<EditorSelectionResource>().unwrap();
 
-        let mut imgui_manager = resources.get::<ImguiResource>().unwrap();
+        let imgui_manager = resources.get::<ImguiResource>().unwrap();
 
         let mut editor_ui_state = resources.get_mut::<EditorStateResource>().unwrap();
 
-        let mut universe_resource = resources.get::<UniverseResource>().unwrap();
+        let universe_resource = resources.get::<UniverseResource>().unwrap();
 
         let opened_prefab = editor_ui_state.opened_prefab();
         if opened_prefab.is_none() {
@@ -51,7 +39,7 @@ pub fn editor_inspector_window(
 
         // Create a lookup from prefab entity to the entity UUID
         use std::iter::FromIterator;
-        let prefab_entity_to_uuid: HashMap<Entity, EntityUuid> = HashMap::from_iter(
+        let _prefab_entity_to_uuid: HashMap<Entity, EntityUuid> = HashMap::from_iter(
             opened_prefab
                 .cooked_prefab()
                 .entities
@@ -71,7 +59,7 @@ pub fn editor_inspector_window(
                     .build(ui, || {
                         let component_registry =
                             resources.get::<ComponentRegistryResource>().unwrap();
-                        let mut tx = editor_ui_state.create_transaction_from_selected(
+                        let tx = editor_ui_state.create_transaction_from_selected(
                             &*selection_world,
                             &*universe_resource,
                             &*component_registry,

@@ -8,9 +8,7 @@ use minimum::systems::*;
 use example_shared::systems::*;
 
 use legion::prelude::*;
-use legion::systems::schedule::Builder;
-use std::marker::PhantomData;
-use minimum::editor::systems::editor_process_editor_ops;
+
 use minimum::editor::resources::EditorMode;
 use minimum_nphysics2d::systems::{update_physics, read_from_physics};
 

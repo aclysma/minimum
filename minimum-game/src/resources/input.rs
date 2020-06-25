@@ -1,5 +1,5 @@
 use std::ops::{Deref, DerefMut};
-use crate::resources::ViewportResource;
+
 use crate::input::InputState;
 
 // For now just wrap the input helper that skulpin provides

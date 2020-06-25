@@ -1,5 +1,5 @@
 use legion::prelude::*;
-use legion::world::{NoneCloneImplResult, NoneEntityReplacePolicy};
+
 use glam::Vec2;
 
 use type_uuid::TypeUuid;
@@ -9,10 +9,10 @@ use serde::Deserialize;
 use serde_diff::SerdeDiff;
 use std::collections::HashMap;
 use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration, CookedPrefab};
-use uuid::adapter::compact::serialize;
+
 use minimum::ComponentRegistry;
 use prefab_format::EntityUuid;
-use legion_transaction::{WorldDiff, TransactionDiffs};
+use legion_transaction::{TransactionDiffs};
 
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107190000"]
@@ -90,7 +90,7 @@ fn main() {
     let mut prefab_lookup = HashMap::new();
     prefab_lookup.insert(prefab.prefab_id(), &prefab);
 
-    let mut cooked_prefab = legion_prefab::cook_prefab(
+    let cooked_prefab = legion_prefab::cook_prefab(
         &universe,
         component_registry.components(),
         component_registry.components_by_uuid(),

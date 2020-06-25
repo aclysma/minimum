@@ -1,5 +1,5 @@
 use legion::prelude::*;
-use legion::world::{NoneCloneImplResult, NoneEntityReplacePolicy};
+
 use glam::Vec2;
 
 use type_uuid::TypeUuid;
@@ -9,9 +9,6 @@ use serde::Deserialize;
 use serde_diff::SerdeDiff;
 use std::collections::HashMap;
 use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration};
-use uuid::adapter::compact::serialize;
-use minimum::ComponentRegistry;
-use prefab_format::EntityUuid;
 
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107190000"]
@@ -98,7 +95,7 @@ fn main() {
     );
 
     let mut world = universe.create_world();
-    let mut resources = Resources::default();
+    let resources = Resources::default();
 
     //
     // Spawn the prefab in a new world.

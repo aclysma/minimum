@@ -1,34 +1,16 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{
-    InputResource, TimeResource, ViewportResource, DebugDrawResource, UniverseResource,
-};
+use minimum_game::resources::{InputResource, UniverseResource};
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
-    PostCommitSelection, EditorSettingsResource,
+    EditorStateResource, EditorSelectionResource, PostCommitSelection, EditorSettingsResource,
 };
 use minimum_game::resources::ImguiResource;
-use crate::resources::EditorTool;
-use legion_transaction::{TransactionBuilder, Transaction};
 
 use imgui;
-use minimum_game::input::KeyboardKey;
-use minimum_game::input::MouseButton;
+
 use imgui::im_str;
-use ncollide2d::pipeline::{CollisionGroups, CollisionObjectRef};
+use ncollide2d::pipeline::{CollisionObjectRef};
 
-use std::collections::HashMap;
-use ncollide2d::bounding_volume::AABB;
-use ncollide2d::world::CollisionWorld;
-
-use imgui_inspect_derive::Inspect;
-
-use imgui_inspect::InspectRenderDefault;
-use prefab_format::{EntityUuid, ComponentTypeUuid};
-use legion_prefab::CookedPrefab;
-use legion_transaction::ComponentDiff;
-use std::sync::Arc;
-use minimum_kernel::ComponentRegistry;
 use minimum_kernel::resources::ComponentRegistryResource;
 
 pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
@@ -40,7 +22,7 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
         .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
         .read_resource::<EditorSettingsResource>()
-        .with_query(<(TryRead<()>)>::query())
+        .with_query(<TryRead<()>>::query())
         .build(
             |_,
              world,

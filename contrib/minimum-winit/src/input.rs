@@ -102,7 +102,7 @@ pub fn handle_winit_event<T>(
     use winit::event::Event;
     use winit::event::WindowEvent;
 
-    let mut is_close_requested = false;
+    let _is_close_requested = false;
 
     match event {
         //Process keyboard input

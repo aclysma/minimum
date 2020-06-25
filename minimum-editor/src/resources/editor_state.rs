@@ -1,21 +1,20 @@
 use std::collections::{HashSet, HashMap, VecDeque};
 use legion::prelude::*;
-use legion::storage::ComponentTypeId;
+
 use minimum_kernel::resources::{AssetResource, ComponentRegistryResource};
 use minimum_kernel::pipeline::PrefabAsset;
 use minimum_game::resources::{TimeResource, UniverseResource};
 use crate::resources::EditorSelectionResource;
 use minimum_game::resources::SimulationTimePauseReason;
 use atelier_assets::core::AssetUuid;
-use legion_prefab::{CookedPrefab, ComponentRegistration, Prefab};
+use legion_prefab::{CookedPrefab, Prefab};
 use std::sync::Arc;
-use minimum_game::resources::TimeState;
+
 use atelier_assets::loader::handle::{TypedAssetStorage, AssetHandle};
-use legion_transaction::{ComponentDiff, apply_diff_to_prefab, WorldDiff, ApplyDiffToPrefabError};
-use prefab_format::{ComponentTypeUuid, EntityUuid};
-use std::collections::vec_deque;
-use legion_prefab::CopyCloneImpl;
-use legion_transaction::{TransactionBuilder, TransactionDiffs, TransactionEntityInfo, Transaction};
+use legion_transaction::{WorldDiff, ApplyDiffToPrefabError};
+use prefab_format::{EntityUuid};
+
+use legion_transaction::{TransactionBuilder, TransactionDiffs};
 use imgui::ImString;
 
 use atelier_assets::loader as atelier_loader;
@@ -220,7 +219,7 @@ pub struct EditorStateResource {
 #[derive(Debug)]
 pub enum OpenPrefabResult {
     AssetNotFound,
-    PrefabHasOverrides
+    PrefabHasOverrides,
 }
 
 impl EditorStateResource {
@@ -340,7 +339,7 @@ impl EditorStateResource {
 
             // Load the uncooked prefab from disk and cook it. (Eventually this will be handled
             // during atelier's build step
-            let mut universe = resources.get_mut::<UniverseResource>().unwrap();
+            let universe = resources.get_mut::<UniverseResource>().unwrap();
             let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
             let cooked_prefab = Arc::new(minimum_kernel::prefab_cooking::cook_prefab(
                 &*universe,
@@ -356,7 +355,7 @@ impl EditorStateResource {
 
             match prefab_asset {
                 None => return Err(OpenPrefabResult::AssetNotFound),
-                Some(asset) => {
+                Some(_asset) => {
                     // Duplicate the prefab data so we can apply diffs to it. This is temporary and will eventually be
                     // done within the daemon. (This is kind of like a clone() on the uncooked prefab asset)
                     let noop_diff = WorldDiff::new(vec![], vec![]);
@@ -369,11 +368,11 @@ impl EditorStateResource {
                     );
 
                     match uncooked_prefab {
-                        Err(error) => {
-                            match error {
-                                ApplyDiffToPrefabError::PrefabHasOverrides => return Err(OpenPrefabResult::PrefabHasOverrides)
+                        Err(error) => match error {
+                            ApplyDiffToPrefabError::PrefabHasOverrides => {
+                                return Err(OpenPrefabResult::PrefabHasOverrides)
                             }
-                        }
+                        },
                         Ok(uncooked_prefab) => {
                             // Store the cooked prefab and relevant metadata in an Arc on the EditorStateResource.
                             // Eventually the cooked prefab data would be held by AssetStorage and we'd just hold
@@ -392,7 +391,6 @@ impl EditorStateResource {
                             editor_state.opened_prefab = Some(Arc::new(opened_prefab));
                         }
                     }
-
                 }
             }
         }
@@ -548,7 +546,7 @@ impl EditorStateResource {
                 }
                 EditorOp::SavePrefab => {
                     let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
-                    let mut component_registry = resources.get_mut::<ComponentRegistry>().unwrap();
+                    let component_registry = resources.get_mut::<ComponentRegistry>().unwrap();
                     editor_state.save(&*component_registry);
                 }
                 EditorOp::Play => {
@@ -584,7 +582,7 @@ impl EditorStateResource {
     fn get_selected_uuids(
         &mut self,
         selection_resource: &EditorSelectionResource,
-        world: &World,
+        _world: &World,
     ) -> HashSet<EntityUuid> {
         // Get the UUIDs of all selected entities
         let mut selected_uuids = HashSet::new();
@@ -630,7 +628,7 @@ impl EditorStateResource {
     fn restore_selected_uuids(
         &mut self,
         selection_resource: &mut EditorSelectionResource,
-        world: &World,
+        _world: &World,
         selected_uuids: &HashSet<EntityUuid>,
     ) {
         let mut selected_entities: HashSet<Entity> = HashSet::default();
@@ -657,7 +655,7 @@ impl EditorStateResource {
         {
             let editor_state = resources.get::<EditorStateResource>().unwrap();
             if let Some(opened_prefab) = &editor_state.opened_prefab {
-                let mut asset_resource = resources.get_mut::<AssetResource>().unwrap();
+                let asset_resource = resources.get_mut::<AssetResource>().unwrap();
                 let version = opened_prefab
                     .prefab_handle
                     .asset_version::<PrefabAsset, _>(asset_resource.storage())
@@ -858,7 +856,7 @@ impl EditorStateResource {
             let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
 
             // Clone the currently opened prefab Arc so we can refer back to it
-            let mut opened_prefab = {
+            let opened_prefab = {
                 if editor_state.opened_prefab.is_none() {
                     return;
                 }
@@ -878,7 +876,7 @@ impl EditorStateResource {
                 let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
 
                 // Apply the diffs to the cooked data
-                let mut universe = resources.get_mut::<UniverseResource>().unwrap();
+                let universe = resources.get_mut::<UniverseResource>().unwrap();
                 let new_cooked_prefab = Arc::new(legion_transaction::apply_diff_to_cooked_prefab(
                     &opened_prefab.cooked_prefab,
                     &universe.universe,
@@ -896,12 +894,8 @@ impl EditorStateResource {
                 );
 
                 match uncooked_prefab {
-                    Err(e) => {
-                        match e {
-                            ApplyDiffToPrefabError::PrefabHasOverrides => {
-
-                            }
-                        }
+                    Err(e) => match e {
+                        ApplyDiffToPrefabError::PrefabHasOverrides => {}
                     },
                     Ok(uncooked_prefab) => {
                         // Update the opened prefab state
@@ -1002,7 +996,7 @@ impl EditorStateResource {
         component_registry: &ComponentRegistry,
     ) -> Option<EditorTransaction> {
         if let Some(opened_prefab) = &self.opened_prefab {
-            let mut tx_builder = TransactionBuilder::new();
+            let tx_builder = TransactionBuilder::new();
 
             Some(EditorTransaction::new(
                 tx_builder,
@@ -1097,7 +1091,7 @@ impl EditorTransaction {
     pub fn update(
         &mut self,
         editor_state: &mut EditorStateResource,
-        post_commit_selection: PostCommitSelection,
+        _post_commit_selection: PostCommitSelection,
         component_registry: &ComponentRegistry,
     ) {
         log::info!("update transaction");

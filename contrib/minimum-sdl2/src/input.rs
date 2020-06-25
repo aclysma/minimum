@@ -1,6 +1,5 @@
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
-use sdl2::mouse::MouseWheelDirection;
 
 use sdl2::event::Event;
 
@@ -58,14 +57,14 @@ pub fn handle_sdl2_event(
     input_state: &mut InputState,
     viewport: &ViewportResource,
 ) {
-    let mut is_close_requested = false;
+    let _is_close_requested = false;
 
     match event {
         Event::KeyDown {
-            keycode, repeat, ..
+            keycode, repeat: _, ..
         } => handle_keyboard_event(input_state, keycode, minimum_input::ButtonState::Pressed),
         Event::KeyUp {
-            keycode, repeat, ..
+            keycode, repeat: _, ..
         } => handle_keyboard_event(input_state, keycode, minimum_input::ButtonState::Released),
         Event::MouseButtonDown { mouse_btn, .. } => handle_mouse_button_event(
             input_state,

@@ -1,12 +1,8 @@
-use atelier_assets::importer::{typetag, SerdeImportable};
-use atelier_assets::loader::handle::Handle;
 use serde::{Deserialize, Serialize};
 use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use imgui_inspect_derive::Inspect;
 use minimum_math::math::Vec3;
-
-use atelier_assets::importer as atelier_importer;
 
 //
 // 2D Position

@@ -1,5 +1,3 @@
-use legion::prelude::*;
-
 use minimum_kernel::util::PeriodicEvent;
 
 #[derive(Copy, Clone)]
@@ -50,7 +48,7 @@ impl TimeResource {
     ) {
         let before = self.is_simulation_paused();
         if paused {
-            self.simulation_pause_flags |= (reason as u8);
+            self.simulation_pause_flags |= reason as u8;
         } else {
             self.simulation_pause_flags &= !(reason as u8);
         }

@@ -42,7 +42,7 @@ fn main() {
     for _ in 0..10 {
         // Fetch gravity... and integrate it to velocity.
         let gravity = resources.get::<Gravity>().unwrap();
-        let query = <(Write<VelocityComponent>)>::query();
+        let query = <Write<VelocityComponent>>::query();
         for mut vel in query.iter_mut(&mut world) {
             vel.0 += gravity.0;
         }

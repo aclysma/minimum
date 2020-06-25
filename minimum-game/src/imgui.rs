@@ -81,7 +81,7 @@ impl ImguiManager {
     // Start a new frame
     pub fn begin_frame(&self) {
         let mut inner_mutex_guard = self.inner.lock().unwrap();
-        let mut inner = &mut *inner_mutex_guard;
+        let inner = &mut *inner_mutex_guard;
 
         // Drop the old Ui if it exists
         if inner.ui.is_some() {

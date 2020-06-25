@@ -1,11 +1,10 @@
 use skulpin::{RendererBuilder, Window};
-use skulpin::LogicalSize;
+
 use skulpin::CreateRendererError;
 use skulpin::ash;
 use skulpin::winit;
-use skulpin::app::AppControl;
+
 use minimum_winit::imgui::WinitImguiManager;
-use imgui_winit_support::WinitPlatform;
 
 use legion::prelude::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
@@ -71,7 +70,7 @@ pub trait AppHandler {
         &mut self,
         world: &mut World,
         resources: &mut Resources,
-        window: &Window,
+        window: &dyn Window,
     );
 
     /// Called frequently, this is the intended place to put non-rendering logic
@@ -173,7 +172,7 @@ impl App {
 
         // Pass control of this thread to winit until the app terminates. If this app wants to quit,
         // the update loop should send the appropriate event via the channel
-        event_loop.run(move |event, window_target, control_flow| {
+        event_loop.run(move |event, _window_target, control_flow| {
             // Let imgui have the event first
             let input_captured = {
                 let winit_imgui_manager = resources.get_mut::<WinitImguiManagerResource>().unwrap();
@@ -208,8 +207,8 @@ impl App {
             // if imgui didn't want the event, hand it off to the game
             if !input_captured {
                 let mut input_state = resources.get_mut::<InputResource>().unwrap();
-                let mut app_control = resources.get_mut::<AppControlResource>().unwrap();
-                let mut viewport = resources.get::<ViewportResource>().unwrap();
+                let _app_control = resources.get_mut::<AppControlResource>().unwrap();
+                let viewport = resources.get::<ViewportResource>().unwrap();
                 minimum_winit::input::handle_winit_event(&event, &mut *input_state, &*viewport);
             }
 
@@ -217,7 +216,7 @@ impl App {
             match event {
                 winit::event::Event::MainEventsCleared => {
                     {
-                        let imgui_manager =
+                        let _imgui_manager =
                             resources.get_mut::<WinitImguiManagerResource>().unwrap();
                         winit_imgui_manager.begin_frame(&winit_window);
                     }
@@ -233,7 +232,7 @@ impl App {
                     }
                 }
                 winit::event::Event::RedrawRequested(_window_id) => {
-                    let imgui_manager = resources
+                    let _imgui_manager = resources
                         .get::<WinitImguiManagerResource>()
                         .unwrap()
                         .clone();

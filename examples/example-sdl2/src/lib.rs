@@ -5,11 +5,11 @@ extern crate log;
 extern crate itertools;
 
 use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+
 use sdl2::mouse::MouseState;
 
-use skulpin::{Sdl2Window, RendererBuilder, CoordinateSystemHelper};
-use skulpin::skia_safe;
+use skulpin::{Sdl2Window, RendererBuilder};
+
 use skulpin_plugin_imgui::ImguiRendererPlugin;
 
 use atelier_assets::core::asset_uuid;
@@ -183,7 +183,7 @@ fn create_resources(
 
     let physics_resource = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
 
-    let mut camera_resource = CameraResource::new(
+    let camera_resource = CameraResource::new(
         glam::Vec2::new(0.0, 1.0),
         crate::GROUND_HALF_EXTENTS_WIDTH * 1.5,
     );

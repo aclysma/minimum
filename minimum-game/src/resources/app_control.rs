@@ -1,5 +1,3 @@
-use std::ops::{Deref, DerefMut};
-
 pub struct AppControlResource {
     /// If true, the application will quit when the next frame ends
     should_terminate_process: bool,

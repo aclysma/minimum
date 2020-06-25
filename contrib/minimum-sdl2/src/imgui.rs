@@ -1,7 +1,5 @@
 use sdl2;
 
-use imgui::sys as imgui_sys;
-
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -36,7 +34,7 @@ impl Sdl2ImguiManager {
         window: &Window,
     ) -> Self {
         // Ensure font atlas is built and cache a pointer to it
-        let font_atlas_texture = {
+        let _font_atlas_texture = {
             let mut fonts = imgui_context.fonts();
             let font_atlas_texture = Box::new(fonts.build_rgba32_texture());
             log::info!("Building ImGui font atlas");
@@ -78,7 +76,7 @@ impl Sdl2ImguiManager {
         &self,
         event: &sdl2::event::Event,
     ) -> bool {
-        let mut inner = self.inner.lock().unwrap();
+        let inner = self.inner.lock().unwrap();
         inner.imgui_sdl2.ignore_event(event)
     }
 
@@ -192,7 +190,7 @@ fn init_imgui(window: &Window) -> imgui::Context {
     let (win_w, win_h) = window.size();
     let (draw_w, draw_h) = window.drawable_size();
 
-    let display_size = [win_w as f32, win_h as f32];
+    let _display_size = [win_w as f32, win_h as f32];
     let display_framebuffer_scale = (
         (draw_w as f32) / (win_w as f32),
         (draw_h as f32) / (win_h as f32),
@@ -261,6 +259,6 @@ fn init_imgui(window: &Window) -> imgui::Context {
 }
 
 pub fn init_imgui_manager(window: &Window) -> Sdl2ImguiManager {
-    let mut imgui_context = init_imgui(&window);
+    let imgui_context = init_imgui(&window);
     Sdl2ImguiManager::new(imgui_context, window)
 }

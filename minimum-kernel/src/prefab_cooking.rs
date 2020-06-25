@@ -7,11 +7,10 @@ use atelier_assets::loader::{
 };
 use std::collections::HashMap;
 use legion::prelude::*;
-use legion_prefab::{SpawnCloneImpl, CopyCloneImpl};
 
 use legion::storage::ComponentTypeId;
 use prefab_format::{ComponentTypeUuid, PrefabUuid};
-use legion_prefab::{ComponentRegistration, CookedPrefab, Prefab};
+use legion_prefab::{ComponentRegistration, CookedPrefab};
 use crate::pipeline::PrefabAsset;
 use atelier_assets::core::AssetUuid;
 
@@ -41,7 +40,7 @@ pub fn cook_prefab(
     // This will allowus to look up prefab references by AssetUuid
     let mut prefab_lookup = HashMap::new();
 
-    for (uuid, prefab_handle) in &prefab_handle_lookup {
+    for (_uuid, prefab_handle) in &prefab_handle_lookup {
         let prefab_asset: &PrefabAsset = prefab_handle.asset(asset_manager.storage()).unwrap();
         prefab_lookup.insert(prefab_asset.prefab.prefab_meta.id, &prefab_asset.prefab);
     }

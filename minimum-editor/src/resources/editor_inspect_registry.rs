@@ -1,4 +1,4 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::{Deref};
 use crate::inspect::EditorInspectRegistry;
 
 // For now just wrap the input helper that skulpin provides

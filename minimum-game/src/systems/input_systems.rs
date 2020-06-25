@@ -1,13 +1,12 @@
 use legion::prelude::*;
 
 use crate::resources::InputResource;
-use crate::resources::ViewportResource;
 
 // Call this to process input state
 pub fn update_input_resource() -> Box<dyn Schedulable> {
     SystemBuilder::new("input end frame")
         .write_resource::<InputResource>()
-        .build(|_, _, (input), _| {
+        .build(|_, _, _input, _| {
             //input.end_frame();
         })
 }
