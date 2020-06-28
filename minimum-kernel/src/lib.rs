@@ -2,7 +2,7 @@
 extern crate log;
 
 mod asset_storage;
-pub use asset_storage::GenericAssetStorage;
+pub use asset_storage::AssetStorageSet;
 
 mod component_registry;
 pub use component_registry::ComponentRegistryBuilder;
