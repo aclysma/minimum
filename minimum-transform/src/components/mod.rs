@@ -1,5 +1,11 @@
 mod transform;
-pub use transform::PositionComponent;
-pub use transform::UniformScaleComponent;
-pub use transform::NonUniformScaleComponent;
-pub use transform::Rotation2DComponent;
+
+mod position;
+pub use position::PositionComponent;
+
+mod scale;
+pub use scale::UniformScaleComponent;
+pub use scale::NonUniformScaleComponent;
+
+mod rotation;
+pub use rotation::Rotation2DComponent;

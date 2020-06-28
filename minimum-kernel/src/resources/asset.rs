@@ -3,6 +3,7 @@ use atelier_assets::loader::{handle::RefOp, rpc_loader::RpcLoader, Loader};
 use std::sync::Arc;
 
 use crate::AssetStorageSet;
+use crate::DynAssetLoader;
 
 use type_uuid::TypeUuid;
 
@@ -35,6 +36,18 @@ impl Default for AssetResource {
 impl AssetResource {
     pub fn add_storage<T: TypeUuid + for<'a> serde::Deserialize<'a> + 'static + Send>(&mut self) {
         self.storage.add_storage::<T>();
+    }
+
+    pub fn add_storage_with_loader<AssetDataT, AssetT, LoaderT>(
+        &mut self,
+        loader: Box<LoaderT>,
+    ) where
+        AssetDataT: TypeUuid + for<'a> serde::Deserialize<'a> + 'static,
+        AssetT: TypeUuid + 'static + Send,
+        LoaderT: DynAssetLoader<AssetT> + 'static,
+    {
+        self.storage
+            .add_storage_with_loader::<AssetDataT, AssetT, LoaderT>(loader);
     }
 
     pub fn update(&mut self) {
