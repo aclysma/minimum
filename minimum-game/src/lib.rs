@@ -7,5 +7,5 @@ pub mod systems;
 
 pub mod input;
 
-mod imgui;
+pub mod imgui;
 pub use crate::imgui::ImguiManager;

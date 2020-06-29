@@ -132,7 +132,7 @@ impl WinitImguiManager {
     // Get reference to the underlying font atlas. The ref will be valid as long as this object
     // is not destroyed
     pub fn font_atlas_texture(&self) -> &imgui::FontAtlasTexture {
-        self.imgui_manager.font_atlas_texture()
+        unsafe { self.imgui_manager.sys_font_atlas_texture().unwrap() }
     }
 
     // Returns true if a frame has been started (and not ended)
@@ -142,7 +142,7 @@ impl WinitImguiManager {
 
     // Returns draw data (render must be called first to end the frame)
     pub fn draw_data(&self) -> Option<&imgui::DrawData> {
-        self.imgui_manager.draw_data()
+        unsafe { self.imgui_manager.sys_draw_data() }
     }
 
     pub fn want_capture_keyboard(&self) -> bool {

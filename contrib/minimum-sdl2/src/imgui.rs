@@ -3,7 +3,7 @@ use sdl2;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use minimum::ImguiManager;
+use minimum::game::imgui::*;
 use imgui_sdl2::ImguiSdl2;
 use sdl2::video::Window;
 use sdl2::mouse::MouseState;
@@ -33,20 +33,7 @@ impl Sdl2ImguiManager {
         mut imgui_context: imgui::Context,
         window: &Window,
     ) -> Self {
-        // Ensure font atlas is built and cache a pointer to it
-        let _font_atlas_texture = {
-            let mut fonts = imgui_context.fonts();
-            let font_atlas_texture = Box::new(fonts.build_rgba32_texture());
-            log::info!("Building ImGui font atlas");
-
-            // Remove the lifetime of the texture. (We're assuming we have ownership over it
-            // now since imgui_context is being passed to us)
-            let font_atlas_texture: *mut imgui::FontAtlasTexture =
-                Box::into_raw(font_atlas_texture);
-            let font_atlas_texture: *mut imgui::FontAtlasTexture<'static> =
-                unsafe { std::mem::transmute(font_atlas_texture) };
-            font_atlas_texture
-        };
+        imgui_context.fonts().build_rgba32_texture();
 
         let imgui_sdl2 = ImguiSdl2::new(&mut imgui_context, window);
         let imgui_manager = ImguiManager::new(imgui_context);
@@ -57,6 +44,27 @@ impl Sdl2ImguiManager {
             imgui_manager,
             inner: Arc::new(Mutex::new(inner)),
         }
+    }
+
+    pub fn build_font_atlas(&self) -> ImguiFontAtlas {
+        let mut font_atlas = None;
+        self.with_context(|context| {
+            let mut fonts = context.fonts();
+            let font_atlas_texture = fonts.build_rgba32_texture();
+            font_atlas = Some(ImguiFontAtlas::new(&font_atlas_texture))
+        });
+
+        font_atlas.unwrap()
+    }
+
+    // This is a full copy from ffi memory
+    pub fn copy_font_atlas(&self) -> Option<ImguiFontAtlas> {
+        self.imgui_manager.copy_font_atlas_texture()
+    }
+
+    // This is a reference to ffi memory
+    pub unsafe fn sys_font_atlas(&self) -> Option<&imgui::FontAtlasTexture> {
+        self.imgui_manager.sys_font_atlas_texture()
     }
 
     // Call when a winit event is received
@@ -112,7 +120,6 @@ impl Sdl2ImguiManager {
     }
 
     // Allows access to the context without caller needing to be aware of locking
-    #[allow(dead_code)]
     pub fn with_context<F>(
         &self,
         f: F,
@@ -132,20 +139,20 @@ impl Sdl2ImguiManager {
         self.imgui_manager.with_ui(f);
     }
 
-    // Get reference to the underlying font atlas. The ref will be valid as long as this object
-    // is not destroyed
-    pub fn font_atlas_texture(&self) -> &imgui::FontAtlasTexture {
-        self.imgui_manager.font_atlas_texture()
-    }
-
     // Returns true if a frame has been started (and not ended)
     pub fn is_frame_started(&self) -> bool {
         self.imgui_manager.is_frame_started()
     }
 
     // Returns draw data (render must be called first to end the frame)
-    pub fn draw_data(&self) -> Option<&imgui::DrawData> {
-        self.imgui_manager.draw_data()
+    // This is a ref to ffi memory
+    pub unsafe fn sys_draw_data(&self) -> Option<&imgui::DrawData> {
+        self.imgui_manager.sys_draw_data()
+    }
+
+    // This is a full copy from ffi memory
+    pub fn copy_draw_data(&self) -> Option<ImguiDrawData> {
+        self.imgui_manager.copy_draw_data()
     }
 
     pub fn want_capture_keyboard(&self) -> bool {
@@ -190,7 +197,6 @@ fn init_imgui(window: &Window) -> imgui::Context {
     let (win_w, win_h) = window.size();
     let (draw_w, draw_h) = window.drawable_size();
 
-    let _display_size = [win_w as f32, win_h as f32];
     let display_framebuffer_scale = (
         (draw_w as f32) / (win_w as f32),
         (draw_h as f32) / (win_h as f32),

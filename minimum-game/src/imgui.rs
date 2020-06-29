@@ -2,6 +2,105 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use imgui::sys as imgui_sys;
 
+pub use imgui;
+use imgui::{DrawCmdParams, DrawCmd};
+
+pub struct ImguiFontAtlas {
+    pub width: u32,
+    pub height: u32,
+    pub data: Vec<u8>,
+}
+
+impl ImguiFontAtlas {
+    pub fn new(texture: &imgui::FontAtlasTexture) -> Self {
+        ImguiFontAtlas {
+            width: texture.width,
+            height: texture.height,
+            data: texture.data.to_vec(),
+        }
+    }
+}
+
+pub enum ImguiDrawCmd {
+    Elements {
+        count: usize,
+        cmd_params: DrawCmdParams,
+    },
+    ResetRenderState,
+    //RawCallback is not supported
+}
+
+impl From<imgui::DrawCmd> for ImguiDrawCmd {
+    fn from(draw_cmd: DrawCmd) -> Self {
+        match draw_cmd {
+            imgui::DrawCmd::Elements { count, cmd_params } => {
+                ImguiDrawCmd::Elements { count, cmd_params }
+            }
+            imgui::DrawCmd::ResetRenderState => ImguiDrawCmd::ResetRenderState,
+            _ => unimplemented!(),
+        }
+    }
+}
+
+pub struct ImguiDrawList {
+    vertex_buffer: Vec<imgui::DrawVert>,
+    index_buffer: Vec<imgui::DrawIdx>,
+    command_buffer: Vec<ImguiDrawCmd>,
+}
+
+impl ImguiDrawList {
+    pub fn vertex_buffer(&self) -> &[imgui::DrawVert] {
+        &self.vertex_buffer
+    }
+    pub fn index_buffer(&self) -> &[imgui::DrawIdx] {
+        &self.index_buffer
+    }
+    pub fn commands(&self) -> &[ImguiDrawCmd] {
+        &self.command_buffer
+    }
+}
+
+pub struct ImguiDrawData {
+    draw_lists: Vec<ImguiDrawList>,
+    pub total_idx_count: i32,
+    pub total_vtx_count: i32,
+    pub display_pos: [f32; 2],
+    pub display_size: [f32; 2],
+    pub framebuffer_scale: [f32; 2],
+}
+
+impl ImguiDrawData {
+    pub fn new(draw_data: &imgui::DrawData) -> Self {
+        let draw_lists: Vec<_> = draw_data
+            .draw_lists()
+            .map(|draw_list| {
+                let vertex_buffer: Vec<_> = draw_list.vtx_buffer().iter().map(|x| *x).collect();
+                let index_buffer: Vec<_> = draw_list.idx_buffer().iter().map(|x| *x).collect();
+                let command_buffer: Vec<_> = draw_list.commands().map(|x| x.into()).collect();
+
+                ImguiDrawList {
+                    vertex_buffer,
+                    index_buffer,
+                    command_buffer,
+                }
+            })
+            .collect();
+
+        ImguiDrawData {
+            draw_lists,
+            total_idx_count: draw_data.total_idx_count,
+            total_vtx_count: draw_data.total_vtx_count,
+            display_pos: draw_data.display_pos.clone(),
+            display_size: draw_data.display_size.clone(),
+            framebuffer_scale: draw_data.framebuffer_scale.clone(),
+        }
+    }
+
+    pub fn draw_lists(&self) -> &[ImguiDrawList] {
+        &self.draw_lists
+    }
+}
+
 // Inner state for ImguiManager, which will be protected by a Mutex. Mutex protection required since
 // this object is Send but not Sync
 struct ImguiManagerInner {
@@ -131,7 +230,6 @@ impl ImguiManager {
     }
 
     // Allows access to the context without caller needing to be aware of locking
-    #[allow(dead_code)]
     pub fn with_context<F>(
         &self,
         f: F,
@@ -163,12 +261,27 @@ impl ImguiManager {
         }
     }
 
+    pub fn copy_font_atlas_texture(&self) -> Option<ImguiFontAtlas> {
+        let inner = self.inner.lock().unwrap();
+
+        if inner.font_atlas_texture.is_null() {
+            None
+        } else {
+            unsafe { Some(ImguiFontAtlas::new(&*inner.font_atlas_texture)) }
+        }
+    }
+
     // Get reference to the underlying font atlas. The ref will be valid as long as this object
     // is not destroyed
-    pub fn font_atlas_texture(&self) -> &imgui::FontAtlasTexture {
+    #[allow(unused_unsafe)]
+    pub unsafe fn sys_font_atlas_texture(&self) -> Option<&imgui::FontAtlasTexture> {
         let inner = self.inner.lock().unwrap();
-        assert!(!inner.font_atlas_texture.is_null());
-        unsafe { &*inner.font_atlas_texture }
+
+        if inner.font_atlas_texture.is_null() {
+            None
+        } else {
+            unsafe { Some(&*inner.font_atlas_texture) }
+        }
     }
 
     // Returns true if a frame has been started (and not ended)
@@ -177,8 +290,27 @@ impl ImguiManager {
         inner.ui.is_some()
     }
 
+    pub fn copy_draw_data(&self) -> Option<ImguiDrawData> {
+        let inner = self.inner.lock().unwrap();
+
+        if inner.ui.is_some() {
+            log::warn!("get_draw_data() was called but a frame is in progress");
+            return None;
+        }
+
+        let draw_data = unsafe { imgui_sys::igGetDrawData() };
+        if draw_data.is_null() {
+            log::warn!("no draw data available");
+            return None;
+        }
+
+        let draw_data = unsafe { &*(draw_data as *mut imgui::DrawData) };
+        Some(ImguiDrawData::new(draw_data))
+    }
+
     // Returns draw data (render must be called first to end the frame)
-    pub fn draw_data(&self) -> Option<&imgui::DrawData> {
+    #[allow(unused_unsafe)]
+    pub unsafe fn sys_draw_data(&self) -> Option<&imgui::DrawData> {
         let inner = self.inner.lock().unwrap();
 
         if inner.ui.is_some() {
