@@ -1,5 +1,5 @@
-use ncollide2d::world::CollisionWorld;
-use ncollide2d::bounding_volume::AABB;
+use ncollide3d::world::CollisionWorld;
+use ncollide3d::bounding_volume::AABB;
 use legion::prelude::*;
 
 use std::collections::HashSet;
@@ -168,7 +168,7 @@ impl EditorSelectionResource {
                     .and_modify(|aabb: &mut Option<AABB<f32>>| {
                         let mut new_aabb = shape.shape().aabb(shape.position());
                         if let Some(existing_aabb) = aabb {
-                            use ncollide2d::bounding_volume::BoundingVolume;
+                            use ncollide3d::bounding_volume::BoundingVolume;
                             new_aabb.merge(existing_aabb);
                         };
 

@@ -1,10 +1,10 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, ViewportResource, DebugDrawResource, UniverseResource, CameraResource,
+    InputResource, ViewportResource, DebugDraw3DResource, UniverseResource, CameraResource,
 };
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorSettingsResource,
+    EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
 use crate::resources::EditorTool;
 
@@ -25,8 +25,11 @@ mod selection;
 pub use selection::draw_selection_shapes;
 pub use selection::editor_handle_selection;
 
-mod gizmos;
-pub use gizmos::editor_gizmos;
+// mod gizmos_2d;
+// pub use gizmos_2d::editor_gizmos;
+
+mod gizmos_3d;
+pub use gizmos_3d::editor_gizmos;
 
 pub fn editor_refresh_selection_world(
     world: &mut World,
@@ -79,8 +82,8 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDrawResource>()
-        .write_resource::<EditorDrawResource>()
+        .write_resource::<DebugDraw3DResource>()
+        .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
         .with_query(<Read<PositionComponent>>::query())
@@ -127,11 +130,12 @@ pub fn editor_mouse_input() -> Box<dyn Schedulable> {
         .build(
             |_command_buffer, _subworld, (input_state, camera_resource, _viewport_resource), _| {
                 // Right click drag pans the viewport
-                if let Some(mouse_drag) = input_state.mouse_drag_in_progress(MouseButton::RIGHT) {
-                    let mut delta = mouse_drag.world_scale_previous_frame_delta;
-                    delta *= glam::Vec2::new(-1.0, -1.0);
-                    camera_resource.position += delta;
-                }
+                // if let Some(mouse_drag) = input_state.mouse_drag_in_progress(MouseButton::RIGHT) {
+                //     //let mut delta = mouse_drag.world_scale_previous_frame_delta;
+                //     let mut delta = mouse_drag.ui_
+                //     delta *= glam::Vec2::new(-1.0, -1.0);
+                //     camera_resource.position += delta;
+                // }
 
                 // Right click drag pans the viewport
                 let mouse_scroll = input_state.mouse_wheel_delta();
@@ -149,8 +153,8 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDrawResource>()
-        .write_resource::<EditorDrawResource>()
+        .write_resource::<DebugDraw3DResource>()
+        .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .with_query(<Read<PositionComponent>>::query())
         .build(

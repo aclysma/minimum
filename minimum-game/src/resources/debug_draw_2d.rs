@@ -1,24 +1,24 @@
-pub struct LineList {
+pub struct LineList2D {
     pub points: Vec<glam::Vec2>,
     pub color: glam::Vec4,
 }
 
-impl LineList {
+impl LineList2D {
     pub fn new(
         points: Vec<glam::Vec2>,
         color: glam::Vec4,
     ) -> Self {
-        LineList { points, color }
+        LineList2D { points, color }
     }
 }
 
-pub struct DebugDrawResource {
-    line_lists: Vec<LineList>,
+pub struct DebugDraw2DResource {
+    line_lists: Vec<LineList2D>,
 }
 
-impl DebugDrawResource {
+impl DebugDraw2DResource {
     pub fn new() -> Self {
-        DebugDrawResource { line_lists: vec![] }
+        DebugDraw2DResource { line_lists: vec![] }
     }
 
     // Adds a single polygon
@@ -30,7 +30,7 @@ impl DebugDrawResource {
         // Nothing will draw if we don't have at least 2 points
         if points.len() > 1 {
             points.push(points[0].clone());
-            self.line_lists.push(LineList::new(points, color));
+            self.line_lists.push(LineList2D::new(points, color));
         }
     }
 
@@ -93,7 +93,7 @@ impl DebugDrawResource {
     }
 
     // Returns the draw data, leaving this object in an empty state
-    pub fn take_line_lists(&mut self) -> Vec<LineList> {
+    pub fn take_line_lists(&mut self) -> Vec<LineList2D> {
         std::mem::replace(&mut self.line_lists, vec![])
     }
 

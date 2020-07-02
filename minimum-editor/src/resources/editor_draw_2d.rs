@@ -1,55 +1,8 @@
-use minimum_game::resources::DebugDrawResource;
+use minimum_game::resources::DebugDraw2DResource;
 use minimum_game::resources::ViewportResource;
 
 use minimum_game::input::InputState;
 use minimum_game::input::MouseButton;
-
-fn distance_to_segment_sq(
-    test_point: glam::Vec2,
-    p0: glam::Vec2,
-    p1: glam::Vec2,
-) -> f32 {
-    let p0_to_p1 = p1 - p0;
-
-    // Early out in case of extremely short segment, get distance to midpoint
-    if p0_to_p1.length_squared() < 0.01 {
-        let midpoint = p0 + (p0_to_p1 / 2.0);
-        return (test_point - midpoint).length_squared();
-    }
-
-    // Get "tangent" and "normal" of the segment
-    let tangent = p0_to_p1.normalize();
-    let normal = glam::Vec2::new(tangent.y(), -tangent.x());
-
-    // distance to the infinite line described by the points
-    let p0_to_test_point = test_point - p0;
-
-    // find closest point to the line
-    let distance_along_segment = glam::Vec2::dot(tangent, p0_to_test_point);
-    if distance_along_segment <= 0.0 {
-        // early out, test_point is closer to p0 than any other part of the line
-        return (test_point - p0).length_squared();
-    }
-
-    let fraction_along_segment =
-        (distance_along_segment * distance_along_segment) / p0_to_p1.length_squared();
-    if fraction_along_segment >= 1.0 {
-        // test_point is closer to p1 than any other part of the line
-        (test_point - p1).length_squared()
-    } else {
-        // the closest point on the segment to test_point is between p0 and p1
-        let distance_to_line = glam::Vec2::dot(normal, p0_to_test_point);
-        f32::abs(distance_to_line * distance_to_line)
-    }
-}
-
-fn distance_to_circle_outline_sq(
-    test_point: glam::Vec2,
-    center: glam::Vec2,
-    radius: f32,
-) -> f32 {
-    ((test_point - center).length_squared() - (radius * radius)).abs()
-}
 
 struct Line {
     p0: glam::Vec2,
@@ -106,13 +59,13 @@ struct ClosestShapeIndexDistance {
 }
 
 #[derive(Clone, Debug)]
-pub struct EditorShapeClickedState {
+pub struct EditorDraw2DShapeClickedState {
     pub click_position: glam::Vec2,
     pub shape_id: String,
 }
 
 #[derive(Clone, Debug)]
-pub struct EditorShapeDragState {
+pub struct EditorDraw2DShapeDragState {
     pub begin_position: glam::Vec2,
     pub end_position: glam::Vec2,
     pub previous_frame_delta: glam::Vec2,
@@ -128,21 +81,21 @@ const MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ: f32 = 30.0 * 30.0;
 
 //TODO: Rename to EditorShapeDrawResource.. or maybe gizmo?
 //TODO: How does this interact with the select/inspect registry?
-pub struct EditorDrawResource {
+pub struct EditorDraw2DResource {
     shapes: Vec<ShapeWithId>,
-    shape_just_clicked: [Option<EditorShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
-    shape_drag_in_progress: [Option<EditorShapeDragState>; InputState::MOUSE_BUTTON_COUNT as usize],
+    shape_just_clicked: [Option<EditorDraw2DShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
+    shape_drag_in_progress: [Option<EditorDraw2DShapeDragState>; InputState::MOUSE_BUTTON_COUNT as usize],
     shape_drag_just_finished:
-        [Option<EditorShapeDragState>; InputState::MOUSE_BUTTON_COUNT as usize],
+        [Option<EditorDraw2DShapeDragState>; InputState::MOUSE_BUTTON_COUNT as usize],
     mouse_is_down_on_shape:
-        [Option<EditorShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
+        [Option<EditorDraw2DShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
     shape_last_interacted: String,
     closest_shape_to_mouse: ClosestShapeIdDistance,
 }
 
-impl EditorDrawResource {
+impl EditorDraw2DResource {
     pub fn new() -> Self {
-        EditorDrawResource {
+        EditorDraw2DResource {
             shapes: vec![],
             shape_just_clicked: Default::default(),
             shape_drag_in_progress: Default::default(),
@@ -160,7 +113,7 @@ impl EditorDrawResource {
     pub fn add_line(
         &mut self,
         id: &str,
-        debug_draw: &mut DebugDrawResource,
+        debug_draw: &mut DebugDraw2DResource,
         p0: glam::Vec2,
         p1: glam::Vec2,
         mut color: glam::Vec4,
@@ -171,7 +124,7 @@ impl EditorDrawResource {
             color = glam::vec4(1.0, 0.0, 0.0, 1.0);
         }
 
-        debug_draw.add_line(p0, p1, color);
+        //debug_draw.add_line(p0, p1, color);
         self.shapes
             .push(ShapeWithId::new_line(id.to_string(), p0, p1));
     }
@@ -180,7 +133,7 @@ impl EditorDrawResource {
     pub fn add_circle_outline(
         &mut self,
         id: &str,
-        debug_draw: &mut DebugDrawResource,
+        debug_draw: &mut DebugDraw2DResource,
         center: glam::Vec2,
         radius: f32,
         mut color: glam::Vec4,
@@ -191,7 +144,7 @@ impl EditorDrawResource {
             color = glam::vec4(1.0, 0.0, 0.0, 1.0);
         }
 
-        debug_draw.add_circle(center, radius, color);
+        //debug_draw.add_circle(center, radius, color);
         self.shapes.push(ShapeWithId::new_circle_outline(
             id.to_string(),
             center,
@@ -214,7 +167,7 @@ impl EditorDrawResource {
             let shape = &self.shapes[i];
 
             let distance_sq = match &shape.shape {
-                Shape::Line(line) => distance_to_segment_sq(
+                Shape::Line(line) => minimum_math::functions::distance_to_2d_segment_sq(
                     test_position,
                     viewport.world_space_to_ui_space(line.p0),
                     viewport.world_space_to_ui_space(line.p1),
@@ -229,7 +182,7 @@ impl EditorDrawResource {
                     let scaled_radius =
                         f32::abs(scaled_position_on_outline.x() - scaled_center.x());
 
-                    distance_to_circle_outline_sq(test_position, scaled_center, scaled_radius)
+                    minimum_math::functions::distance_to_circle_sq(test_position, scaled_center, scaled_radius)
                 }
             };
 
@@ -280,7 +233,7 @@ impl EditorDrawResource {
                 if let Some(closest_shape) = self.get_closest_shape(down_position, viewport) {
                     if closest_shape.distance_sq < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ {
                         self.mouse_is_down_on_shape[mouse_button_index] =
-                            Some(EditorShapeClickedState {
+                            Some(EditorDraw2DShapeClickedState {
                                 click_position: down_position,
                                 shape_id: self.shapes[closest_shape.index].id.clone(),
                             });
@@ -308,7 +261,7 @@ impl EditorDrawResource {
                         - (current_drag_in_progress.world_space_begin_position
                             + current_drag_in_progress.world_space_accumulated_frame_delta);
 
-                    self.shape_drag_in_progress[mouse_button_index] = Some(EditorShapeDragState {
+                    self.shape_drag_in_progress[mouse_button_index] = Some(EditorDraw2DShapeDragState {
                         begin_position: input_state_drag_in_progress.begin_position,
                         end_position: input_state_drag_in_progress.end_position,
                         previous_frame_delta: input_state_drag_in_progress.previous_frame_delta,
@@ -336,7 +289,7 @@ impl EditorDrawResource {
 
                     self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
                     self.shape_drag_just_finished[mouse_button_index] =
-                        Some(EditorShapeDragState {
+                        Some(EditorDraw2DShapeDragState {
                             begin_position: input_state_drag_just_finished.begin_position,
                             end_position: input_state_drag_just_finished.end_position,
                             previous_frame_delta: input_state_drag_just_finished
@@ -396,7 +349,7 @@ impl EditorDrawResource {
                                     self.shape_last_interacted =
                                         self.closest_shape_to_mouse.id.clone();
                                     self.shape_drag_in_progress[mouse_button_index] =
-                                        Some(EditorShapeDragState {
+                                        Some(EditorDraw2DShapeDragState {
                                             begin_position: mouse_drag_in_progress.begin_position,
                                             end_position: mouse_drag_in_progress.end_position,
                                             previous_frame_delta: mouse_drag_in_progress
@@ -431,7 +384,7 @@ impl EditorDrawResource {
                                 {
                                     self.shape_last_interacted = shape.id.clone();
                                     self.shape_just_clicked[mouse_button_index] =
-                                        Some(EditorShapeClickedState {
+                                        Some(EditorDraw2DShapeClickedState {
                                             click_position: just_clicked_position,
                                             shape_id: shape.id.clone(),
                                         });
@@ -468,7 +421,7 @@ impl EditorDrawResource {
     pub fn shape_just_clicked(
         &self,
         mouse_button: MouseButton,
-    ) -> &Option<EditorShapeClickedState> {
+    ) -> &Option<EditorDraw2DShapeClickedState> {
         &self.shape_just_clicked[InputState::mouse_button_to_index(mouse_button).unwrap()]
     }
 
@@ -483,7 +436,7 @@ impl EditorDrawResource {
     pub fn shape_drag_in_progress(
         &self,
         mouse_button: MouseButton,
-    ) -> &Option<EditorShapeDragState> {
+    ) -> &Option<EditorDraw2DShapeDragState> {
         &self.shape_drag_in_progress[InputState::mouse_button_to_index(mouse_button).unwrap()]
     }
 
@@ -498,7 +451,7 @@ impl EditorDrawResource {
     pub fn shape_drag_just_finished(
         &self,
         mouse_button: MouseButton,
-    ) -> &Option<EditorShapeDragState> {
+    ) -> &Option<EditorDraw2DShapeDragState> {
         &self.shape_drag_just_finished[InputState::mouse_button_to_index(mouse_button).unwrap()]
     }
 
@@ -513,7 +466,7 @@ impl EditorDrawResource {
     pub fn shape_drag_in_progress_or_just_finished(
         &self,
         mouse_button: MouseButton,
-    ) -> &Option<EditorShapeDragState> {
+    ) -> &Option<EditorDraw2DShapeDragState> {
         if self.is_shape_drag_just_finished(mouse_button) {
             return self.shape_drag_just_finished(mouse_button);
         }

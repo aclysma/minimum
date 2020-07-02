@@ -1,26 +1,26 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{InputResource, ViewportResource, DebugDrawResource, UniverseResource};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource, UniverseResource};
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorSettingsResource,
+    EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
 
 use minimum_game::input::MouseButton;
 
-use ncollide2d::pipeline::{CollisionGroups};
+use ncollide3d::pipeline::{CollisionGroups};
 
 use minimum_transform::components::PositionComponent;
 
-pub fn vec2_glam_to_glm(value: glam::Vec2) -> glm::Vec2 {
-    glm::Vec2::new(value.x(), value.y())
+pub fn vec3_glam_to_glm(value: glam::Vec3) -> glm::Vec3 {
+    glm::Vec3::new(value.x(), value.y(), value.z())
 }
 
 fn handle_selection(
-    editor_draw: &EditorDrawResource,
+    editor_draw: &EditorDraw3DResource,
     input_state: &InputResource,
     viewport: &ViewportResource,
     editor_selection: &mut EditorSelectionResource,
-    debug_draw: &mut DebugDrawResource,
+    debug_draw: &mut DebugDraw3DResource,
     editor_settings: &EditorSettingsResource,
 ) {
     let mut intersecting_entities = None;
@@ -36,7 +36,7 @@ fn handle_selection(
         //
 
         // Determine where in world space to do the raycast
-        let world_space = ncollide2d::math::Point::from(vec2_glam_to_glm(
+        let world_space = ncollide3d::math::Point::from(vec3_glam_to_glm(
             viewport.ui_space_to_world_space(position),
         ));
 
@@ -50,6 +50,7 @@ fn handle_selection(
         let results: Vec<Entity> = results.map(|(_, x)| *x.data()).collect();
         intersecting_entities = Some(results);
     } else if let Some(drag_complete) = input_state.mouse_drag_just_finished(MouseButton::LEFT) {
+        /*
         //
         // Handle user finishing dragging a box around entities. Create a shape that matches the
         // drag location in the world and project it into space to find intersecting entities
@@ -76,9 +77,9 @@ fn handle_selection(
         );
 
         // Build an AABB to use in the collision intersection test
-        let aabb = ncollide2d::bounding_volume::AABB::new(
-            nalgebra::Point::from(vec2_glam_to_glm(mins)),
-            nalgebra::Point::from(vec2_glam_to_glm(maxs)),
+        let aabb = ncollide3d::bounding_volume::AABB::new(
+            nalgebra::Point::from(vec3_glam_to_glm(mins)),
+            nalgebra::Point::from(vec3_glam_to_glm(maxs)),
         );
 
         // Do the intersection test
@@ -89,15 +90,16 @@ fn handle_selection(
 
         let results: Vec<Entity> = results.map(|(_, x)| *x.data()).collect();
         intersecting_entities = Some(results);
+        */
     } else if let Some(drag_in_progress) = input_state.mouse_drag_in_progress(MouseButton::LEFT) {
         //
         // User is dragging a box around entities. Just draw the box.
         //
-        debug_draw.add_rect(
-            viewport.ui_space_to_world_space(drag_in_progress.begin_position),
-            viewport.ui_space_to_world_space(drag_in_progress.end_position),
-            glam::vec4(1.0, 1.0, 0.0, 1.0),
-        );
+        // debug_draw.add_rect(
+        //     viewport.ui_space_to_world_space(drag_in_progress.begin_position),
+        //     viewport.ui_space_to_world_space(drag_in_progress.end_position),
+        //     glam::vec4(1.0, 1.0, 0.0, 1.0),
+        // );
     }
 
     if let Some(intersecting_entities) = intersecting_entities {
@@ -141,8 +143,8 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDrawResource>()
-        .write_resource::<EditorDrawResource>()
+        .write_resource::<DebugDraw3DResource>()
+        .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
         .with_query(<Read<PositionComponent>>::query())
@@ -175,7 +177,7 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
 pub fn draw_selection_shapes() -> Box<dyn Schedulable> {
     SystemBuilder::new("draw_selection_shapes")
         .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDrawResource>()
+        .write_resource::<DebugDraw3DResource>()
         .build(|_, _, (editor_selection, debug_draw), _| {
             let aabbs = editor_selection.selected_entity_aabbs();
 
@@ -187,11 +189,11 @@ pub fn draw_selection_shapes() -> Box<dyn Schedulable> {
                     // Found in actual usage this ended up being annoying.
                     let expand = glam::vec2(0.0, 0.0);
 
-                    debug_draw.add_rect(
-                        glam::vec2(aabb.mins().x, aabb.mins().y) - expand,
-                        glam::vec2(aabb.maxs().x, aabb.maxs().y) + expand,
-                        color,
-                    );
+                    // debug_draw.add_rect(
+                    //     glam::vec2(aabb.mins().x, aabb.mins().y) - expand,
+                    //     glam::vec2(aabb.maxs().x, aabb.maxs().y) + expand,
+                    //     color,
+                    // );
                 }
             }
         })

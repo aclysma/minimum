@@ -1,8 +1,8 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{InputResource, ViewportResource, DebugDrawResource, UniverseResource};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource, UniverseResource};
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDrawResource, EditorTransaction,
+    EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorTransaction,
     PostCommitSelection,
 };
 use crate::resources::EditorTool;
@@ -28,8 +28,8 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDrawResource>()
-        .write_resource::<EditorDrawResource>()
+        .write_resource::<DebugDraw3DResource>()
+        .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
         .with_query(<Read<PositionComponent>>::query())
@@ -129,7 +129,7 @@ enum GizmoResult {
 }
 
 fn handle_translate_gizmo_input(
-    editor_draw: &mut EditorDrawResource,
+    editor_draw: &mut EditorDraw3DResource,
     tx: &mut EditorTransaction,
 ) -> GizmoResult {
     if let Some(drag_in_progress) =
@@ -187,8 +187,8 @@ fn handle_translate_gizmo_input(
 }
 
 fn draw_translate_gizmo(
-    debug_draw: &mut DebugDrawResource,
-    editor_draw: &mut EditorDrawResource,
+    debug_draw: &mut DebugDraw3DResource,
+    editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
     translate_query: &mut Query<
@@ -205,7 +205,7 @@ fn draw_translate_gizmo(
         let y_color = glam::vec4(1.0, 0.6, 0.0, 1.0);
         let xy_color = glam::vec4(1.0, 1.0, 0.0, 1.0);
 
-        let xy_position = glam::Vec2::new(position.position.x(), position.position.y());
+        let xy_position = position.position.into();
 
         //TODO: Make this resolution independent. Need a UI multiplier?
 
@@ -216,23 +216,23 @@ fn draw_translate_gizmo(
             "x_axis_translate",
             debug_draw,
             xy_position,
-            xy_position + (glam::vec2(100.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
         );
 
         editor_draw.add_line(
             "x_axis_translate",
             debug_draw,
-            xy_position + (glam::vec2(85.0, 15.0) * ui_multiplier),
-            xy_position + (glam::vec2(100.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(85.0, 15.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
         );
 
         editor_draw.add_line(
             "x_axis_translate",
             debug_draw,
-            xy_position + (glam::vec2(85.0, -15.0) * ui_multiplier),
-            xy_position + (glam::vec2(100.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(85.0, -15.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
         );
 
@@ -241,23 +241,23 @@ fn draw_translate_gizmo(
             "y_axis_translate",
             debug_draw,
             xy_position,
-            xy_position + (glam::vec2(0.0, 100.0) * ui_multiplier),
+            xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
         );
 
         editor_draw.add_line(
             "y_axis_translate",
             debug_draw,
-            xy_position + (glam::vec2(-15.0, 85.0) * ui_multiplier),
-            xy_position + (glam::vec2(0.0, 100.0) * ui_multiplier),
+            xy_position + (glam::vec3(-15.0, 85.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
         );
 
         editor_draw.add_line(
             "y_axis_translate",
             debug_draw,
-            xy_position + (glam::vec2(15.0, 85.0) * ui_multiplier),
-            xy_position + (glam::vec2(0.0, 100.0) * ui_multiplier),
+            xy_position + (glam::vec3(15.0, 85.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
         );
 
@@ -265,8 +265,8 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "xy_axis_translate",
             debug_draw,
-            xy_position + (glam::vec2(0.0, 25.0) * ui_multiplier),
-            xy_position + (glam::vec2(25.0, 25.0) * ui_multiplier),
+            xy_position + (glam::vec3(0.0, 25.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
             xy_color,
         );
 
@@ -274,8 +274,8 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "xy_axis_translate",
             debug_draw,
-            xy_position + (glam::vec2(25.0, 0.0) * ui_multiplier),
-            xy_position + (glam::vec2(25.0, 25.0) * ui_multiplier),
+            xy_position + (glam::vec3(25.0, 0.0, 0.0) * ui_multiplier),
+            xy_position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
             xy_color,
         );
     }
@@ -303,7 +303,7 @@ fn sign_aware_magnitude(v: glam::Vec2) -> f32 {
 }
 
 fn handle_scale_gizmo_input(
-    editor_draw: &mut EditorDrawResource,
+    editor_draw: &mut EditorDraw3DResource,
     tx: &mut EditorTransaction,
 ) -> GizmoResult {
     if let Some(drag_in_progress) =
@@ -329,7 +329,7 @@ fn handle_scale_gizmo_input(
         // Determine the drag distance in ui_space
         //TODO: I was intending this to use ui space but the values during drag are not lining up
         // with values on end drag. This is likely an fp precision issue.
-        let mut ui_space_previous_frame_delta = drag_in_progress.world_space_previous_frame_delta;
+        let mut ui_space_previous_frame_delta = drag_in_progress.previous_frame_delta;
 
         if !scale_x && !scale_uniform {
             ui_space_previous_frame_delta.set_x(0.0);
@@ -374,8 +374,8 @@ fn handle_scale_gizmo_input(
 }
 
 fn draw_scale_gizmo(
-    debug_draw: &mut DebugDrawResource,
-    editor_draw: &mut EditorDrawResource,
+    debug_draw: &mut DebugDraw3DResource,
+    editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
     scale_query: &mut Query<
@@ -398,7 +398,7 @@ fn draw_scale_gizmo(
             continue;
         }
 
-        let position = *position.position.xy();
+        let position = position.position.into();
 
         let x_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
         let y_color = glam::Vec4::new(1.0, 0.6, 0.0, 1.0);
@@ -414,7 +414,7 @@ fn draw_scale_gizmo(
                 "x_axis_scale",
                 debug_draw,
                 position,
-                position + (glam::vec2(100.0, 0.0) * ui_multiplier),
+                position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
                 x_color,
             );
 
@@ -422,8 +422,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "x_axis_scale",
                 debug_draw,
-                position + (glam::vec2(100.0, -20.0) * ui_multiplier),
-                position + (glam::vec2(100.0, 20.0) * ui_multiplier),
+                position + (glam::vec3(100.0, -20.0, 0.0) * ui_multiplier),
+                position + (glam::vec3(100.0, 20.0, 0.0) * ui_multiplier),
                 x_color,
             );
 
@@ -432,7 +432,7 @@ fn draw_scale_gizmo(
                 "y_axis_scale",
                 debug_draw,
                 position,
-                position + (glam::vec2(0.0, 100.0) * ui_multiplier),
+                position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
                 y_color,
             );
 
@@ -440,8 +440,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "y_axis_scale",
                 debug_draw,
-                position + (glam::Vec2::new(-20.0, 100.0) * ui_multiplier),
-                position + (glam::Vec2::new(20.0, 100.0) * ui_multiplier),
+                position + (glam::Vec3::new(-20.0, 100.0, 0.0) * ui_multiplier),
+                position + (glam::Vec3::new(20.0, 100.0, 0.0) * ui_multiplier),
                 y_color,
             );
         }
@@ -451,8 +451,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "uniform_scale",
                 debug_draw,
-                position + (glam::Vec2::new(0.0, 0.0) * ui_multiplier),
-                position + (glam::Vec2::new(50.0, 50.0) * ui_multiplier),
+                position + (glam::Vec3::new(0.0, 0.0, 0.0) * ui_multiplier),
+                position + (glam::Vec3::new(50.0, 50.0, 0.0) * ui_multiplier),
                 xy_color,
             );
 
@@ -460,8 +460,8 @@ fn draw_scale_gizmo(
             editor_draw.add_line(
                 "uniform_scale",
                 debug_draw,
-                position + (glam::Vec2::new(40.0, 60.0) * ui_multiplier),
-                position + (glam::Vec2::new(60.0, 40.0) * ui_multiplier),
+                position + (glam::Vec3::new(40.0, 60.0, 0.0) * ui_multiplier),
+                position + (glam::Vec3::new(60.0, 40.0, 0.0) * ui_multiplier),
                 xy_color,
             );
         }
@@ -469,7 +469,7 @@ fn draw_scale_gizmo(
 }
 
 fn handle_rotate_gizmo_input(
-    editor_draw: &mut EditorDrawResource,
+    editor_draw: &mut EditorDraw3DResource,
     tx: &mut EditorTransaction,
 ) -> GizmoResult {
     if let Some(drag_in_progress) =
@@ -493,7 +493,7 @@ fn handle_rotate_gizmo_input(
         //TODO: I was intending this to use ui space but the values during drag are not lining up
         // with values on end drag. This is likely an fp precision issue.
         let ui_space_previous_frame_delta =
-            sign_aware_magnitude(drag_in_progress.world_space_previous_frame_delta);
+            sign_aware_magnitude(drag_in_progress.previous_frame_delta);
 
         let query = <Write<Rotation2DComponent>>::query();
         for (_entity_handle, mut rotation) in query.iter_entities_mut(tx.world_mut()) {
@@ -511,8 +511,8 @@ fn handle_rotate_gizmo_input(
 }
 
 fn draw_rotate_gizmo(
-    debug_draw: &mut DebugDrawResource,
-    editor_draw: &mut EditorDrawResource,
+    debug_draw: &mut DebugDraw3DResource,
+    editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
     scale_query: &mut Query<
@@ -532,25 +532,27 @@ fn draw_rotate_gizmo(
             continue;
         }
 
-        let position = position.position.xy();
+        let position = position.position;
 
         let z_axis_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
 
         //TODO: Make this resolution independent. Need a UI multiplier?
         let ui_multiplier = 0.01;
 
-        editor_draw.add_circle_outline(
+        editor_draw.add_sphere(
             "z_axis_rotate",
             debug_draw,
             *position,
             50.0 * ui_multiplier,
+            12,
             z_axis_color,
         );
-        editor_draw.add_circle_outline(
+        editor_draw.add_sphere(
             "z_axis_rotate",
             debug_draw,
             *position,
             52.0 * ui_multiplier,
+            12,
             z_axis_color,
         );
     }

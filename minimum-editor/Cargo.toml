@@ -11,6 +11,7 @@ edition = "2018"
 minimum-game = { path = "../minimum-game" }
 minimum-transform = { path = "../minimum-transform" }
 minimum-kernel = { path = "../minimum-kernel" }
+minimum-math = { path = "../minimum-math" }
 
 imgui-inspect-derive = "0.4"
 imgui-inspect = "0.4"
@@ -36,7 +37,7 @@ inventory = "0.1"
 # For selection logic
 nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
 nalgebra-glm = "0.4"
-ncollide2d = "0.20"
+ncollide3d = "0.20"
 
 ron = "0.5"
 

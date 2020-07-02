@@ -1,4 +1,4 @@
-use ncollide2d::world::CollisionWorld;
+use ncollide3d::world::CollisionWorld;
 use legion::prelude::*;
 use legion::storage::Component;
 use std::marker::PhantomData;
