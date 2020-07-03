@@ -323,7 +323,7 @@ impl EditorStateResource {
             );
 
             let version = loop {
-                asset_resource.update();
+                asset_resource.update(resources);
                 if let atelier_loader::LoadStatus::Loaded = handle
                     .load_status::<atelier_loader::rpc_loader::RpcLoader>(
                     asset_resource.loader(),
@@ -333,8 +333,6 @@ impl EditorStateResource {
                         .unwrap();
                 }
             };
-
-            let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
 
             // Load the uncooked prefab from disk and cook it. (Eventually this will be handled
             // during atelier's build step
@@ -346,8 +344,11 @@ impl EditorStateResource {
                 component_registry.components(),
                 component_registry.components_by_uuid(),
                 prefab_uuid,
+                &|asset_resource| asset_resource.update(resources)
             ));
 
+
+            let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
             let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
 
             let prefab_asset = handle.asset(asset_resource.storage());

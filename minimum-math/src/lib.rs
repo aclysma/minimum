@@ -13,3 +13,7 @@ pub use math::Vec4;
 pub use matrix::Mat4;
 
 pub mod functions;
+
+pub mod bounds;
+pub use bounds::BoundingSphere;
+pub use bounds::BoundingAabb;

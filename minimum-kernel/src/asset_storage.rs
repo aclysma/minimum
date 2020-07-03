@@ -160,7 +160,7 @@ impl AssetStorage for AssetStorageSet {
 
 // Implement atelier's TypedAssetStorage - a typed trait that finds the asset_type's storage and
 // forwards the call
-impl<A: TypeUuid + for<'a> serde::Deserialize<'a> + 'static + Send> TypedAssetStorage<A>
+impl<A: TypeUuid + 'static + Send> TypedAssetStorage<A>
     for AssetStorageSet
 {
     fn get<T: AssetHandle>(

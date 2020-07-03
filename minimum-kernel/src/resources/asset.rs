@@ -8,12 +8,26 @@ use crate::DynAssetLoader;
 use type_uuid::TypeUuid;
 
 use atelier_assets::loader as atelier_loader;
+use legion::prelude::Resources;
+
+pub trait AssetResourceUpdateCallback : Send + Sync {
+    fn update(&self, resources: &Resources, asset_resource: &mut AssetResource);
+}
+
+pub struct DefaultAssetResourceUpdateCallback;
+
+impl AssetResourceUpdateCallback for DefaultAssetResourceUpdateCallback {
+    fn update(&self, resources: &Resources, asset_resource: &mut AssetResource) {
+        asset_resource.do_update();
+    }
+}
 
 pub struct AssetResource {
     loader: RpcLoader,
     storage: AssetStorageSet,
     tx: Arc<atelier_loader::crossbeam_channel::Sender<RefOp>>,
     rx: atelier_loader::crossbeam_channel::Receiver<RefOp>,
+    update_callback: Option<Box<AssetResourceUpdateCallback>>
 }
 
 impl Default for AssetResource {
@@ -29,6 +43,7 @@ impl Default for AssetResource {
             storage,
             tx,
             rx,
+            update_callback: Some(Box::new(DefaultAssetResourceUpdateCallback))
         }
     }
 }
@@ -50,11 +65,22 @@ impl AssetResource {
             .add_storage_with_loader::<AssetDataT, AssetT, LoaderT>(loader);
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, resources: &Resources) {
+        // This take allows us to pass mutable self to the update callback
+        let cb = self.update_callback.take().unwrap();
+        cb.update(resources, self);
+        self.update_callback = Some(cb);
+    }
+
+    pub fn do_update(&mut self) {
         atelier_loader::handle::process_ref_ops(&self.loader, &self.rx);
         self.loader
             .process(&self.storage)
             .expect("failed to process loader");
+    }
+
+    pub fn set_update_fn(&mut self, update_callback: Box<AssetResourceUpdateCallback>) {
+        self.update_callback = Some(update_callback);
     }
 
     pub fn loader(&self) -> &RpcLoader {

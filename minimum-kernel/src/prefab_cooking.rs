@@ -14,12 +14,13 @@ use legion_prefab::{ComponentRegistration, CookedPrefab};
 use crate::pipeline::PrefabAsset;
 use atelier_assets::core::AssetUuid;
 
-pub fn cook_prefab(
+pub fn cook_prefab<F: Fn(&mut AssetResource)>(
     universe: &Universe,
     asset_manager: &mut AssetResource,
     registered_components: &HashMap<ComponentTypeId, ComponentRegistration>,
     registered_components_by_uuid: &HashMap<ComponentTypeUuid, ComponentRegistration>,
     prefab_uuid: AssetUuid,
+    update_fn: &F
 ) -> CookedPrefab {
     // This will allow us to look up prefab handles by AssetUuid
     let mut prefab_handle_lookup = HashMap::new();
@@ -35,6 +36,7 @@ pub fn cook_prefab(
         prefab_uuid,
         &mut prefab_handle_lookup,
         &mut prefab_cook_order,
+        update_fn
     );
 
     // This will allowus to look up prefab references by AssetUuid
@@ -56,11 +58,12 @@ pub fn cook_prefab(
 
 // This function does a recursive blocking load on the provided prefab asset and all prefabs
 // that it references. As it does this, prefab_lookup and prefab_cook_order are populated
-fn request_prefab_dependencies(
+fn request_prefab_dependencies<F: Fn(&mut AssetResource)>(
     asset_manager: &mut AssetResource,
     id: AssetUuid,
     prefab_lookup: &mut HashMap<PrefabUuid, Handle<PrefabAsset>>,
     prefab_cook_order: &mut Vec<PrefabUuid>,
+    update_fn: &F
 ) {
     // Request the asset
     let load_handle = asset_manager.loader().add_ref(id);
@@ -68,7 +71,7 @@ fn request_prefab_dependencies(
 
     // Block until it loads
     loop {
-        asset_manager.update();
+        (update_fn)(asset_manager);
         if let LoadStatus::Loaded = handle.load_status::<RpcLoader>(asset_manager.loader()) {
             break;
         }
@@ -94,6 +97,7 @@ fn request_prefab_dependencies(
                 other_prefab_id,
                 prefab_lookup,
                 prefab_cook_order,
+                update_fn
             );
         }
     }
