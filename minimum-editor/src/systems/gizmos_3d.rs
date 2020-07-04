@@ -209,9 +209,12 @@ fn draw_translate_gizmo(
 
         let x_color = glam::vec4(1.0, 0.0, 0.0, 1.0);
         let y_color = glam::vec4(0.0, 1.0, 0.0, 1.0);
+        let z_color = glam::vec4(0.0, 0.0, 1.0, 1.0);
         let xy_color = glam::vec4(1.0, 1.0, 0.0, 1.0);
+        let xz_color = glam::vec4(1.0, 0.0, 1.0, 1.0);
+        let yz_color = glam::vec4(0.0, 1.0, 1.0, 1.0);
 
-        let xy_position = position.position.into();
+        let position = position.position.into();
 
         //TODO: Make this resolution independent. Need a UI multiplier?
 
@@ -221,8 +224,8 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "x_axis_translate",
             debug_draw,
-            xy_position,
-            xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+            position,
+            position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -230,8 +233,8 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "x_axis_translate",
             debug_draw,
-            xy_position + (glam::vec3(85.0, 15.0, 0.0) * ui_multiplier),
-            xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(85.0, 15.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -239,8 +242,8 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "x_axis_translate",
             debug_draw,
-            xy_position + (glam::vec3(85.0, -15.0, 0.0) * ui_multiplier),
-            xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(85.0, -15.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -249,8 +252,8 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "y_axis_translate",
             debug_draw,
-            xy_position,
-            xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+            position,
+            position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -258,8 +261,8 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "y_axis_translate",
             debug_draw,
-            xy_position + (glam::vec3(-15.0, 85.0, 0.0) * ui_multiplier),
-            xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(-15.0, 85.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -267,19 +270,37 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "y_axis_translate",
             debug_draw,
-            xy_position + (glam::vec3(15.0, 85.0, 0.0) * ui_multiplier),
-            xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(15.0, 85.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
-        // xy line
+        // z axis line
         editor_draw.add_line(
-            "xy_axis_translate",
+            "z_axis_translate",
             debug_draw,
-            xy_position + (glam::vec3(0.0, 25.0, 0.0) * ui_multiplier),
-            xy_position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
-            xy_color,
+            position,
+            position + (glam::vec3(0.0, 0.0, 100.0) * ui_multiplier),
+            z_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
+
+        editor_draw.add_line(
+            "z_axis_translate",
+            debug_draw,
+            position + (glam::vec3(0.0, -15.0, 85.0) * ui_multiplier),
+            position + (glam::vec3(0.0, 0.0, 100.0) * ui_multiplier),
+            z_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
+
+        editor_draw.add_line(
+            "z_axis_translate",
+            debug_draw,
+            position + (glam::vec3(0.0, 15.0, 85.0) * ui_multiplier),
+            position + (glam::vec3(0.0, 0.0, 100.0) * ui_multiplier),
+            z_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
@@ -287,9 +308,58 @@ fn draw_translate_gizmo(
         editor_draw.add_line(
             "xy_axis_translate",
             debug_draw,
-            xy_position + (glam::vec3(25.0, 0.0, 0.0) * ui_multiplier),
-            xy_position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(0.0, 25.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
             xy_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
+
+        editor_draw.add_line(
+            "xy_axis_translate",
+            debug_draw,
+            position + (glam::vec3(25.0, 0.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
+            xy_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
+
+
+        // xz line
+        editor_draw.add_line(
+            "xz_axis_translate",
+            debug_draw,
+            position + (glam::vec3(0.0, 0.0, 25.0) * ui_multiplier),
+            position + (glam::vec3(25.0, 0.0, 25.0) * ui_multiplier),
+            xz_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
+
+        editor_draw.add_line(
+            "xz_axis_translate",
+            debug_draw,
+            position + (glam::vec3(25.0, 0.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(25.0, 0.0, 25.0) * ui_multiplier),
+            xz_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
+
+
+        // yz line
+        editor_draw.add_line(
+            "yz_axis_translate",
+            debug_draw,
+            position + (glam::vec3(0.0, 0.0, 25.0) * ui_multiplier),
+            position + (glam::vec3(0.0, 25.0, 25.0) * ui_multiplier),
+            yz_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
+
+        editor_draw.add_line(
+            "yz_axis_translate",
+            debug_draw,
+            position + (glam::vec3(0.0, 25.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(0.0, 25.0, 25.0) * ui_multiplier),
+            yz_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
     }

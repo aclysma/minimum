@@ -73,7 +73,7 @@ pub fn editor_imgui_menu() -> Box<dyn Schedulable> {
                     ui.menu(imgui::im_str!("File"), true, || {
                         if imgui::MenuItem::new(imgui::im_str!("Open")).build(ui) {
                             editor_state.enqueue_open_prefab(asset_uuid!(
-                                "3991506e-ed7e-4bcb-8cfd-3366b31a6439"
+                                "2aad7b4c-a323-415a-bea6-ae0f945446b9"
                             ));
                         }
 

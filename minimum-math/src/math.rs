@@ -18,6 +18,12 @@ impl Vec2 {
     }
 }
 
+impl From<[f32;2]> for Vec2 {
+    fn from(value: [f32;2]) -> Self {
+        Vec2 { value: glam::Vec2::new(value[0], value[1] ) }
+    }
+}
+
 impl From<glam::Vec2> for Vec2 {
     fn from(value: glam::Vec2) -> Self {
         Vec2 { value }
@@ -113,6 +119,12 @@ impl Vec3 {
     }
 }
 
+impl From<[f32;3]> for Vec3 {
+    fn from(value: [f32;3]) -> Self {
+        Vec3 { value: glam::Vec3::new(value[0], value[1], value[2] ) }
+    }
+}
+
 impl From<glam::Vec3> for Vec3 {
     fn from(value: glam::Vec3) -> Self {
         Vec3 { value }
@@ -201,6 +213,12 @@ impl Vec4 {
         Vec4 {
             value: glam::Vec4::zero(),
         }
+    }
+}
+
+impl From<[f32;4]> for Vec4 {
+    fn from(value: [f32;4]) -> Self {
+        Vec4 { value: glam::Vec4::new(value[0], value[1], value[2], value[3] ) }
     }
 }
 
