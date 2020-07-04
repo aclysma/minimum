@@ -11,6 +11,7 @@ use imgui;
 use imgui::im_str;
 
 use minimum_kernel::resources::ComponentRegistryResource;
+use minimum_kernel::resources::AssetResource;
 
 pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
     SystemBuilder::new("editor_entity_list_window")
@@ -21,11 +22,12 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
         .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
         .read_resource::<EditorSettingsResource>()
+        .read_resource::<AssetResource>()
         .with_query(<TryRead<()>>::query())
         .build(
             |_,
-             world,
-             (
+            world,
+            (
                 imgui_manager,
                 editor_ui_state,
                 editor_selection,
@@ -33,8 +35,9 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                 universe_resource,
                 component_registry,
                 editor_settings,
+                asset_resource
             ),
-             all_query| {
+            all_query| {
                 imgui_manager.with_ui(|ui: &mut imgui::Ui| {
                     let window_options = editor_ui_state.window_options();
 
@@ -56,6 +59,7 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                     ) {
                                         tx.world_mut().insert((), vec![()]);
                                         tx.commit(
+                                            &* asset_resource,
                                             &mut *editor_ui_state,
                                             PostCommitSelection::SelectAllInTransaction,
                                             &*component_registry,
@@ -73,6 +77,7 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                     {
                                         tx.world_mut().delete_all();
                                         tx.commit(
+                                            &*asset_resource,
                                             &mut *editor_ui_state,
                                             PostCommitSelection::KeepCurrentSelection,
                                             &*component_registry,

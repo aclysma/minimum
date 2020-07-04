@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use prefab_format::{EntityUuid};
 
 use minimum_kernel::resources::ComponentRegistryResource;
+use minimum_kernel::resources::AssetResource;
 
 pub fn editor_inspector_window(
     _world: &mut World,
@@ -25,6 +26,7 @@ pub fn editor_inspector_window(
         let imgui_manager = resources.get::<ImguiResource>().unwrap();
 
         let mut editor_ui_state = resources.get_mut::<EditorStateResource>().unwrap();
+        let asset_resource = resources.get::<AssetResource>().unwrap();
 
         let universe_resource = resources.get::<UniverseResource>().unwrap();
 
@@ -167,6 +169,7 @@ pub fn editor_inspector_window(
 
                             if commit_required {
                                 tx.commit(
+                                    &*asset_resource,
                                     &mut editor_ui_state,
                                     PostCommitSelection::KeepCurrentSelection,
                                     &*component_registry,

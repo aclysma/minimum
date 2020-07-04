@@ -9,6 +9,7 @@ use type_uuid::TypeUuid;
 
 use atelier_assets::loader as atelier_loader;
 use legion::prelude::Resources;
+use crossbeam_channel::{Receiver, Sender};
 
 pub trait AssetResourceUpdateCallback : Send + Sync {
     fn update(&self, resources: &Resources, asset_resource: &mut AssetResource);
@@ -17,7 +18,7 @@ pub trait AssetResourceUpdateCallback : Send + Sync {
 pub struct DefaultAssetResourceUpdateCallback;
 
 impl AssetResourceUpdateCallback for DefaultAssetResourceUpdateCallback {
-    fn update(&self, resources: &Resources, asset_resource: &mut AssetResource) {
+    fn update(&self, _resources: &Resources, asset_resource: &mut AssetResource) {
         asset_resource.do_update();
     }
 }
@@ -25,9 +26,9 @@ impl AssetResourceUpdateCallback for DefaultAssetResourceUpdateCallback {
 pub struct AssetResource {
     loader: RpcLoader,
     storage: AssetStorageSet,
-    tx: Arc<atelier_loader::crossbeam_channel::Sender<RefOp>>,
-    rx: atelier_loader::crossbeam_channel::Receiver<RefOp>,
-    update_callback: Option<Box<AssetResourceUpdateCallback>>
+    tx: Arc<Sender<RefOp>>,
+    rx: Receiver<RefOp>,
+    update_callback: Option<Box<dyn AssetResourceUpdateCallback>>
 }
 
 impl Default for AssetResource {
@@ -79,7 +80,7 @@ impl AssetResource {
             .expect("failed to process loader");
     }
 
-    pub fn set_update_fn(&mut self, update_callback: Box<AssetResourceUpdateCallback>) {
+    pub fn set_update_fn(&mut self, update_callback: Box<dyn AssetResourceUpdateCallback>) {
         self.update_callback = Some(update_callback);
     }
 

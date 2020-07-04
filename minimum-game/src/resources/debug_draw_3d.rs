@@ -1,14 +1,23 @@
+
+#[derive(Copy, Clone, Debug)]
+pub enum DebugDraw3DDepthBehavior {
+    Normal,
+    NoDepthTest
+}
+
 pub struct LineList3D {
     pub points: Vec<glam::Vec3>,
     pub color: glam::Vec4,
+    pub depth_behavior: DebugDraw3DDepthBehavior
 }
 
 impl LineList3D {
     pub fn new(
         points: Vec<glam::Vec3>,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior
     ) -> Self {
-        LineList3D { points, color }
+        LineList3D { points, color, depth_behavior }
     }
 }
 
@@ -26,10 +35,11 @@ impl DebugDraw3DResource {
         &mut self,
         points: Vec<glam::Vec3>,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior
     ) {
         // Nothing will draw if we don't have at least 2 points
         if points.len() > 1 {
-            self.line_lists.push(LineList3D::new(points, color));
+            self.line_lists.push(LineList3D::new(points, color, depth_behavior));
         }
     }
 
@@ -38,11 +48,12 @@ impl DebugDraw3DResource {
         &mut self,
         mut points: Vec<glam::Vec3>,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior
     ) {
         // Nothing will draw if we don't have at least 2 points
         if points.len() > 1 {
             points.push(points[0].clone());
-            self.add_line_strip(points, color);
+            self.add_line_strip(points, color, depth_behavior);
         }
     }
 
@@ -51,9 +62,10 @@ impl DebugDraw3DResource {
         p0: glam::Vec3,
         p1: glam::Vec3,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior
     ) {
         let points = vec![p0, p1];
-        self.add_line_strip(points, color);
+        self.add_line_strip(points, color, depth_behavior);
     }
 
     // Takes an X/Y axis pair and center position
@@ -64,6 +76,7 @@ impl DebugDraw3DResource {
         y_dir: glam::Vec3,
         radius: f32,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
         segments: u32,
     ) {
         let x_dir = x_dir * radius;
@@ -78,7 +91,7 @@ impl DebugDraw3DResource {
             points.push(center + (fraction.cos() * x_dir) + (fraction.sin() * y_dir));
         }
 
-        self.add_line_loop(points, color);
+        self.add_line_loop(points, color, depth_behavior);
     }
 
     // Takes a normal and center position
@@ -88,10 +101,11 @@ impl DebugDraw3DResource {
         normal: glam::Vec3,
         radius: f32,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
         segments: u32,
     ) {
         let (x_dir, y_dir) = minimum_math::functions::normal_to_xy(normal);
-        self.add_circle_xy(center, x_dir, y_dir, radius, color, segments);
+        self.add_circle_xy(center, x_dir, y_dir, radius, color, depth_behavior, segments);
     }
 
     pub fn add_sphere(
@@ -99,6 +113,7 @@ impl DebugDraw3DResource {
         center: glam::Vec3,
         radius: f32,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
         segments: u32,
     ) {
         // Draw the vertical rings
@@ -108,7 +123,7 @@ impl DebugDraw3DResource {
             let x_dir = glam::Vec3::new(fraction.cos(), fraction.sin(), 0.0);
             let y_dir = glam::Vec3::unit_z();
 
-            self.add_circle_xy(center, x_dir, y_dir, radius, color, segments);
+            self.add_circle_xy(center, x_dir, y_dir, radius, color, depth_behavior, segments);
         }
 
         // Draw the center horizontal ring
@@ -118,6 +133,7 @@ impl DebugDraw3DResource {
             glam::Vec3::unit_y(),
             radius,
             color,
+            depth_behavior,
             segments,
         );
 
@@ -135,6 +151,7 @@ impl DebugDraw3DResource {
                 glam::Vec3::unit_y(),
                 r,
                 color,
+                depth_behavior,
                 segments,
             );
 
@@ -144,6 +161,7 @@ impl DebugDraw3DResource {
                 glam::Vec3::unit_y(),
                 r,
                 color,
+                depth_behavior,
                 segments,
             );
         }
@@ -155,6 +173,7 @@ impl DebugDraw3DResource {
         base_center: glam::Vec3, // (position of the center of the base of the cone)
         radius: f32,
         color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
         segments: u32,
     ) {
         let base_to_vertex = vertex - base_center;
@@ -170,6 +189,7 @@ impl DebugDraw3DResource {
                 y_dir,
                 radius * (1.0 - fraction),
                 color,
+                depth_behavior,
                 segments,
             );
         }
@@ -181,7 +201,7 @@ impl DebugDraw3DResource {
             let p0 = base_center + offset;
             let p1 = vertex;
             let p2 = base_center - offset;
-            self.add_line_strip(vec![p0, p1, p2], color);
+            self.add_line_strip(vec![p0, p1, p2], color, depth_behavior);
         }
     }
 

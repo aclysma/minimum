@@ -16,6 +16,7 @@ pub use universe::UniverseResource;
 mod debug_draw_3d;
 pub use debug_draw_3d::DebugDraw3DResource;
 pub use debug_draw_3d::LineList3D;
+pub use debug_draw_3d::DebugDraw3DDepthBehavior;
 
 mod viewport;
 pub use viewport::ViewportResource;

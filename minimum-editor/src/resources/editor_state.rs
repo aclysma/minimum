@@ -324,10 +324,12 @@ impl EditorStateResource {
 
             let version = loop {
                 asset_resource.update(resources);
-                if let atelier_loader::LoadStatus::Loaded = handle
+                let state = handle
                     .load_status::<atelier_loader::rpc_loader::RpcLoader>(
-                    asset_resource.loader(),
-                ) {
+                        asset_resource.loader(),
+                    );
+                println!("opening... {:?}", state);
+                if let atelier_loader::LoadStatus::Loaded = state {
                     break handle
                         .asset_version::<PrefabAsset, _>(asset_resource.storage())
                         .unwrap();
@@ -546,8 +548,9 @@ impl EditorStateResource {
                 }
                 EditorOp::SavePrefab => {
                     let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
-                    let component_registry = resources.get_mut::<ComponentRegistry>().unwrap();
-                    editor_state.save(&*component_registry);
+                    let component_registry = resources.get_mut::<ComponentRegistryResource>().unwrap();
+                    let asset_resource = resources.get_mut::<AssetResource>().unwrap();
+                    editor_state.save(&*component_registry, &*asset_resource);
                 }
                 EditorOp::Play => {
                     let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
@@ -953,6 +956,7 @@ impl EditorStateResource {
     fn save(
         &mut self,
         component_registry: &ComponentRegistry,
+        asset_resource: &AssetResource,
     ) {
         //
         // Check that a prefab is opened
@@ -976,12 +980,16 @@ impl EditorStateResource {
             prefab_serde_context,
             &opened_prefab.uncooked_prefab,
         );
-        prefab_format::serialize(
-            &mut ron_ser,
-            &prefab_ser,
-            opened_prefab.uncooked_prefab.prefab_id(),
-        )
-        .expect("failed to round-trip prefab");
+
+        asset_resource.loader().with_serde_context(asset_resource.tx(), || {
+            //let new_prefab_uuid = *uuid::Uuid::new_v4().as_bytes();
+            prefab_format::serialize(
+                &mut ron_ser,
+                &prefab_ser,
+                //new_prefab_uuid
+                opened_prefab.uncooked_prefab.prefab_id(),
+            ).expect("failed to round-trip prefab");
+        });
 
         let output = ron_ser.into_output_string();
         log::trace!("Exporting prefab:");
@@ -1090,12 +1098,14 @@ impl EditorTransaction {
     /// the world to the state when the transaction began.
     pub fn update(
         &mut self,
+        asset_resource: &AssetResource,
         editor_state: &mut EditorStateResource,
         _post_commit_selection: PostCommitSelection,
         component_registry: &ComponentRegistry,
     ) {
         log::info!("update transaction");
         self.do_update(
+            asset_resource,
             editor_state,
             false,
             PostCommitSelection::KeepCurrentSelection,
@@ -1106,12 +1116,14 @@ impl EditorTransaction {
     /// Commits the transaction, writing an undo step
     pub fn commit(
         mut self,
+        asset_resource: &AssetResource,
         editor_state: &mut EditorStateResource,
         post_commit_selection: PostCommitSelection,
         component_registry: &ComponentRegistry,
     ) {
         log::info!("commit transaction");
         self.do_update(
+            asset_resource,
             editor_state,
             true,
             post_commit_selection,
@@ -1141,6 +1153,7 @@ impl EditorTransaction {
 
     fn do_update(
         &mut self,
+        asset_resource: &AssetResource,
         editor_state: &mut EditorStateResource,
         commit_changes: bool,
         post_commit_selection: PostCommitSelection,
@@ -1166,10 +1179,13 @@ impl EditorTransaction {
             );
         }
 
-        // Create diffs for this transaction
-        let diffs = self
-            .transaction
-            .create_transaction_diffs(component_registry.components_by_uuid());
+        // create a context?
+        let diffs = asset_resource.loader().with_serde_context(asset_resource.tx(), || {
+            // Create diffs for this transaction
+            self
+                .transaction
+                .create_transaction_diffs(component_registry.components_by_uuid())
+        });
 
         // Update the current transaction info on the editor state. This is necessary book-keeping
         // to handle multiple transactions.

@@ -19,6 +19,8 @@ use legion::filter::ComponentFilter;
 use legion::filter::Passthrough;
 
 use minimum_kernel::resources::ComponentRegistryResource;
+use minimum_kernel::resources::AssetResource;
+use minimum_game::resources::DebugDraw3DDepthBehavior;
 
 //TODO: Adapt the size of "hot" area around the editor drawn shapes based on zoom level
 
@@ -32,6 +34,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
         .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
+        .read_resource::<AssetResource>()
         .with_query(<Read<PositionComponent>>::query())
         .with_query(<(
             Read<PositionComponent>,
@@ -40,19 +43,20 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
         )>::query())
         .with_query(<(Read<PositionComponent>, Read<Rotation2DComponent>)>::query())
         .build(
-            |_command_buffer,
-             subworld,
-             (
-                editor_state,
-                _input_state,
-                _viewport,
-                editor_selection,
-                debug_draw,
-                editor_draw,
-                universe_resource,
-                component_registry,
+           |_command_buffer,
+            subworld,
+            (
+               editor_state,
+               _input_state,
+               _viewport,
+               editor_selection,
+               debug_draw,
+               editor_draw,
+               universe_resource,
+               component_registry,
+               asset_resource
             ),
-             (translate_query, scale_query, rotate_query)| {
+            (translate_query, scale_query, rotate_query)| {
                 let mut gizmo_tx = None;
                 std::mem::swap(&mut gizmo_tx, editor_state.gizmo_transaction_mut());
 
@@ -78,6 +82,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                         GizmoResult::NoChange => {}
                         GizmoResult::Update => {
                             gizmo_tx.update(
+                                asset_resource,
                                 editor_state,
                                 PostCommitSelection::KeepCurrentSelection,
                                 &*component_registry,
@@ -86,6 +91,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                         }
                         GizmoResult::Commit => {
                             gizmo_tx.commit(
+                                asset_resource,
                                 editor_state,
                                 PostCommitSelection::KeepCurrentSelection,
                                 &*component_registry,
@@ -201,8 +207,8 @@ fn draw_translate_gizmo(
             continue;
         }
 
-        let x_color = glam::vec4(0.0, 1.0, 0.0, 1.0);
-        let y_color = glam::vec4(1.0, 0.6, 0.0, 1.0);
+        let x_color = glam::vec4(1.0, 0.0, 0.0, 1.0);
+        let y_color = glam::vec4(0.0, 1.0, 0.0, 1.0);
         let xy_color = glam::vec4(1.0, 1.0, 0.0, 1.0);
 
         let xy_position = position.position.into();
@@ -218,6 +224,7 @@ fn draw_translate_gizmo(
             xy_position,
             xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
         editor_draw.add_line(
@@ -226,6 +233,7 @@ fn draw_translate_gizmo(
             xy_position + (glam::vec3(85.0, 15.0, 0.0) * ui_multiplier),
             xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
         editor_draw.add_line(
@@ -234,6 +242,7 @@ fn draw_translate_gizmo(
             xy_position + (glam::vec3(85.0, -15.0, 0.0) * ui_multiplier),
             xy_position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
             x_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
         // y axis line
@@ -243,6 +252,7 @@ fn draw_translate_gizmo(
             xy_position,
             xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
         editor_draw.add_line(
@@ -251,6 +261,7 @@ fn draw_translate_gizmo(
             xy_position + (glam::vec3(-15.0, 85.0, 0.0) * ui_multiplier),
             xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
         editor_draw.add_line(
@@ -259,6 +270,7 @@ fn draw_translate_gizmo(
             xy_position + (glam::vec3(15.0, 85.0, 0.0) * ui_multiplier),
             xy_position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
             y_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
         // xy line
@@ -268,6 +280,7 @@ fn draw_translate_gizmo(
             xy_position + (glam::vec3(0.0, 25.0, 0.0) * ui_multiplier),
             xy_position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
             xy_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
         // xy line
@@ -277,6 +290,7 @@ fn draw_translate_gizmo(
             xy_position + (glam::vec3(25.0, 0.0, 0.0) * ui_multiplier),
             xy_position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
             xy_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
     }
 }
@@ -416,6 +430,7 @@ fn draw_scale_gizmo(
                 position,
                 position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
                 x_color,
+                DebugDraw3DDepthBehavior::NoDepthTest,
             );
 
             // x axis line end
@@ -425,6 +440,7 @@ fn draw_scale_gizmo(
                 position + (glam::vec3(100.0, -20.0, 0.0) * ui_multiplier),
                 position + (glam::vec3(100.0, 20.0, 0.0) * ui_multiplier),
                 x_color,
+                DebugDraw3DDepthBehavior::NoDepthTest,
             );
 
             // y axis line
@@ -434,6 +450,7 @@ fn draw_scale_gizmo(
                 position,
                 position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
                 y_color,
+                DebugDraw3DDepthBehavior::NoDepthTest,
             );
 
             // y axis line end
@@ -443,6 +460,7 @@ fn draw_scale_gizmo(
                 position + (glam::Vec3::new(-20.0, 100.0, 0.0) * ui_multiplier),
                 position + (glam::Vec3::new(20.0, 100.0, 0.0) * ui_multiplier),
                 y_color,
+                DebugDraw3DDepthBehavior::NoDepthTest,
             );
         }
 
@@ -454,6 +472,7 @@ fn draw_scale_gizmo(
                 position + (glam::Vec3::new(0.0, 0.0, 0.0) * ui_multiplier),
                 position + (glam::Vec3::new(50.0, 50.0, 0.0) * ui_multiplier),
                 xy_color,
+                DebugDraw3DDepthBehavior::NoDepthTest,
             );
 
             // xy line
@@ -463,6 +482,7 @@ fn draw_scale_gizmo(
                 position + (glam::Vec3::new(40.0, 60.0, 0.0) * ui_multiplier),
                 position + (glam::Vec3::new(60.0, 40.0, 0.0) * ui_multiplier),
                 xy_color,
+                DebugDraw3DDepthBehavior::NoDepthTest,
             );
         }
     }
@@ -546,6 +566,7 @@ fn draw_rotate_gizmo(
             50.0 * ui_multiplier,
             12,
             z_axis_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
         editor_draw.add_sphere(
             "z_axis_rotate",
@@ -554,6 +575,7 @@ fn draw_rotate_gizmo(
             52.0 * ui_multiplier,
             12,
             z_axis_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
         );
     }
 }

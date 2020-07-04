@@ -1,4 +1,5 @@
 use minimum_game::resources::DebugDraw3DResource;
+use minimum_game::resources::DebugDraw3DDepthBehavior;
 use minimum_game::resources::ViewportResource;
 
 use minimum_game::input::InputState;
@@ -124,6 +125,7 @@ impl EditorDraw3DResource {
         p0: glam::Vec3,
         p1: glam::Vec3,
         mut color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
     ) {
         if self.closest_shape_to_mouse.id == id
             && self.closest_shape_to_mouse.distance_sq < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ
@@ -131,7 +133,7 @@ impl EditorDraw3DResource {
             color = glam::vec4(1.0, 0.0, 0.0, 1.0);
         }
 
-        debug_draw.add_line(p0, p1, color);
+        debug_draw.add_line(p0, p1, color, depth_behavior);
         self.shapes
             .push(ShapeWithId::new_line(id.to_string(), p0, p1));
     }
@@ -145,6 +147,7 @@ impl EditorDraw3DResource {
         radius: f32,
         segments: u32,
         mut color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
     ) {
         if self.closest_shape_to_mouse.id == id
             && self.closest_shape_to_mouse.distance_sq < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE_SQ
@@ -152,7 +155,7 @@ impl EditorDraw3DResource {
             color = glam::vec4(1.0, 0.0, 0.0, 1.0);
         }
 
-        debug_draw.add_sphere(center, radius, color, segments);
+        debug_draw.add_sphere(center, radius, color, depth_behavior, segments);
         self.shapes.push(ShapeWithId::new_sphere(
             id.to_string(),
             center,
