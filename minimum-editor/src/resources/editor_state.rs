@@ -544,7 +544,7 @@ impl EditorStateResource {
                         world
                     };
                     *world = new_world;
-                    Self::open_prefab(world, resources, asset_uuid).unwrap_err();
+                    Self::open_prefab(world, resources, asset_uuid).unwrap();
                 }
                 EditorOp::SavePrefab => {
                     let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
