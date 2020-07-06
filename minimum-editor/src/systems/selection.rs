@@ -1,6 +1,6 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource, UniverseResource};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource, DebugDraw3DDepthBehavior, UniverseResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
@@ -10,6 +10,9 @@ use minimum_game::input::MouseButton;
 use ncollide3d::pipeline::{CollisionGroups};
 
 use minimum_transform::components::PositionComponent;
+use ncollide3d::query::RayIntersection;
+use ncollide3d::shape::{ConvexHull, Shape};
+use ncollide3d::query::algorithms::gjk::GJKResult::Proximity;
 
 pub fn vec3_glam_to_glm(value: glam::Vec3) -> glm::Vec3 {
     glm::Vec3::new(value.x(), value.y(), value.z())
@@ -29,77 +32,102 @@ fn handle_selection(
         //
         // If the user is doing something with the editor draw API, disable the selection logic
         //
-    } else if let Some(position) = input_state.mouse_button_just_clicked_position(MouseButton::LEFT)
+    }
+    else if let Some(position) = input_state.mouse_button_just_clicked_position(MouseButton::LEFT)
     {
         //
         // Handle a single click. Do a raycast to find find anything under the mouse position
         //
+        let ray = viewport.viewport_space_to_ray(position);
+        trace!("Single click selection raycast: {:?}", ray);
 
-        // Determine where in world space to do the raycast
-        let world_space = ncollide3d::math::Point::from(vec3_glam_to_glm(
-            viewport.ui_space_to_world_space(position),
-        ));
+        // Convert to nalgebra
+        let nray = ncollide3d::query::Ray::new(
+            ncollide3d::math::Point::from(vec3_glam_to_glm(ray.origin)),
+            ncollide3d::math::Vector::from(vec3_glam_to_glm(ray.dir))
+        );
 
         // Do the raycast
         let collision_groups = CollisionGroups::default();
         let results = editor_selection
             .editor_selection_world()
-            .interferences_with_point(&world_space, &collision_groups);
+            .interferences_with_ray(&nray, &collision_groups);
 
         // Find all the entities that were hit and set the selected entity set to those entities
-        let results: Vec<Entity> = results.map(|(_, x)| *x.data()).collect();
+        let results: Vec<Entity> = results.map(|(_, x, _)| *x.data()).collect();
         intersecting_entities = Some(results);
     } else if let Some(drag_complete) = input_state.mouse_drag_just_finished(MouseButton::LEFT) {
-        /*
         //
         // Handle user finishing dragging a box around entities. Create a shape that matches the
         // drag location in the world and project it into space to find intersecting entities
         //
+        let p0 = drag_complete.begin_position;
+        let p2 = drag_complete.end_position;
+        let p1 = glam::Vec2::new(p0.x(), p2.y());
+        let p3 = glam::Vec2::new(p2.x(), p0.y());
 
-        // Determine where in world space to do the intersection test
-        let target_position0: glam::Vec2 = viewport
-            .ui_space_to_world_space(drag_complete.begin_position)
-            .into();
-        let target_position1: glam::Vec2 = viewport
-            .ui_space_to_world_space(drag_complete.end_position)
-            .into();
+        let p0_segment = viewport.viewport_space_to_segment(p0);
+        let p1_segment = viewport.viewport_space_to_segment(p1);
+        let p2_segment = viewport.viewport_space_to_segment(p2);
+        let p3_segment = viewport.viewport_space_to_segment(p3);
 
-        // Find the top-left corner
-        let mins = glam::vec2(
-            f32::min(target_position0.x(), target_position1.x()),
-            f32::min(target_position0.y(), target_position1.y()),
-        );
+        let points = vec![
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p0_segment.p0)),
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p0_segment.p1)),
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p1_segment.p0)),
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p1_segment.p1)),
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p2_segment.p0)),
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p2_segment.p1)),
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p3_segment.p0)),
+            ncollide3d::math::Point::from(vec3_glam_to_glm(p3_segment.p1)),
+        ];
+        if let Some(convex_shape) = ConvexHull::try_from_points(&points) {
 
-        // Find the bottom-right corner
-        let maxs = glam::vec2(
-            f32::max(target_position0.x(), target_position1.x()),
-            f32::max(target_position0.y(), target_position1.y()),
-        );
+            let collision_groups = CollisionGroups::default();
+            let aabb = convex_shape.aabb(&ncollide3d::math::Isometry::identity());
+            let interferences: Vec<_> = editor_selection.editor_selection_world().interferences_with_aabb(&aabb, &collision_groups).collect();
 
-        // Build an AABB to use in the collision intersection test
-        let aabb = ncollide3d::bounding_volume::AABB::new(
-            nalgebra::Point::from(vec3_glam_to_glm(mins)),
-            nalgebra::Point::from(vec3_glam_to_glm(maxs)),
-        );
+            let results = interferences.into_iter().filter_map(move |(handle, x)| {
+                let prox = ncollide3d::query::proximity(
+                    &ncollide3d::math::Isometry::identity(),
+                    &convex_shape,
+                    x.position(),
+                    x.shape().as_ref(),
+                    0.0,
+                );
 
-        // Do the intersection test
-        let collision_groups = CollisionGroups::default();
-        let results = editor_selection
-            .editor_selection_world()
-            .interferences_with_aabb(&aabb, &collision_groups);
-
-        let results: Vec<Entity> = results.map(|(_, x)| *x.data()).collect();
-        intersecting_entities = Some(results);
-        */
+                if prox == ncollide3d::query::Proximity::Intersecting {
+                    Some(*x.data())
+                } else {
+                    None
+                }
+            }).collect();
+            intersecting_entities = Some(results);
+        } else {
+            intersecting_entities = None;
+        }
     } else if let Some(drag_in_progress) = input_state.mouse_drag_in_progress(MouseButton::LEFT) {
         //
         // User is dragging a box around entities. Just draw the box.
         //
-        // debug_draw.add_rect(
-        //     viewport.ui_space_to_world_space(drag_in_progress.begin_position),
-        //     viewport.ui_space_to_world_space(drag_in_progress.end_position),
-        //     glam::vec4(1.0, 1.0, 0.0, 1.0),
-        // );
+        //TODO: use 2d debug draw
+        let p0 = drag_in_progress.begin_position;
+        let p2 = drag_in_progress.end_position;
+        let p1 = glam::Vec2::new(p0.x(), p2.y());
+        let p3 = glam::Vec2::new(p2.x(), p0.y());
+
+        let points = vec![
+            viewport.viewport_space_to_world_space(p0, 0.1),
+            viewport.viewport_space_to_world_space(p1, 0.1),
+            viewport.viewport_space_to_world_space(p2, 0.1),
+            viewport.viewport_space_to_world_space(p3, 0.1),
+        ];
+
+        debug_draw.add_line_loop(
+            points,
+            glam::vec4(1.0, 1.0, 0.0, 1.0),
+            DebugDraw3DDepthBehavior::NoDepthTest
+        );
     }
 
     if let Some(intersecting_entities) = intersecting_entities {
@@ -189,11 +217,12 @@ pub fn draw_selection_shapes() -> Box<dyn Schedulable> {
                     // Found in actual usage this ended up being annoying.
                     let expand = glam::vec2(0.0, 0.0);
 
-                    // debug_draw.add_rect(
-                    //     glam::vec2(aabb.mins().x, aabb.mins().y) - expand,
-                    //     glam::vec2(aabb.maxs().x, aabb.maxs().y) + expand,
-                    //     color,
-                    // );
+                    let aabb = minimum_math::BoundingAabb {
+                        min: glam::Vec3::new(aabb.mins().x, aabb.mins().y, aabb.mins().z),
+                        max: glam::Vec3::new(aabb.maxs().x, aabb.maxs().y, aabb.maxs().z)
+                    };
+
+                    debug_draw.add_aabb(aabb, color, DebugDraw3DDepthBehavior::NoDepthTest);
                 }
             }
         })

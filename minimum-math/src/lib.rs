@@ -13,6 +13,8 @@ pub use math::Vec4;
 pub use matrix::Mat4;
 
 pub mod functions;
+pub use functions::Segment;
+pub use functions::NormalizedRay;
 
 pub mod bounds;
 pub use bounds::BoundingSphere;

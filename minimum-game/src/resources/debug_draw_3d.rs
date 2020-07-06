@@ -205,6 +205,47 @@ impl DebugDraw3DResource {
         }
     }
 
+    pub fn add_aabb(
+        &mut self,
+        aabb: minimum_math::BoundingAabb,
+        color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
+    ) {
+        // Likely can be improved!
+        let points = vec![
+            // Quad 1
+            glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.max.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.max.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.min.z()),
+
+            // Quad 2
+            glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.max.z()),
+            glam::Vec3::new(aabb.max.x(), aabb.max.y(), aabb.max.z()),
+            glam::Vec3::new(aabb.max.x(), aabb.max.y(), aabb.min.z()),
+
+            // Retrace towards quad 3
+            glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.min.z()),
+
+            // Quad 3
+            glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.max.x(), aabb.max.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.min.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.max.z()),
+
+            // Quad 4
+            glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.max.z()),
+            glam::Vec3::new(aabb.max.x(), aabb.max.y(), aabb.max.z()),
+            glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.max.z()),
+            glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.max.z()),
+        ];
+        self.add_line_strip(points, color, depth_behavior);
+    }
+
     // Returns the draw data, leaving this object in an empty state
     pub fn take_line_lists(&mut self) -> Vec<LineList3D> {
         std::mem::replace(&mut self.line_lists, vec![])

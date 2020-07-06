@@ -93,7 +93,7 @@ impl EditorSelectionResource {
         &mut self,
         selected_entities: Vec<Entity>,
     ) {
-        log::info!("Selected entities: {:?}", selected_entities);
+        log::trace!("Selected entities: {:?}", selected_entities);
         self.pending_selection_ops
             .push(SelectionOp::Set(selected_entities));
     }

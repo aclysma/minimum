@@ -406,7 +406,7 @@ impl EditorStateResource {
         world: &mut World,
         resources: &Resources,
     ) {
-        log::info!("RESET THE WORLD");
+        log::trace!("RESET THE WORLD");
         // this is scoped to avoid holding TimeResource while spawning
         {
             let mut time_resource = resources.get_mut::<TimeResource>().unwrap();
@@ -610,7 +610,7 @@ impl EditorStateResource {
                     let entity_uuid = prefab_entity_to_uuid.get(prefab_entity);
                     // Insert the UUID into selected_uuids
                     if let Some(uuid) = entity_uuid {
-                        log::info!(
+                        log::trace!(
                             "Selected entity {:?} corresponds to prefab entity {:?} uuid {:?}",
                             selected_entity,
                             prefab_entity,
@@ -771,7 +771,7 @@ impl EditorStateResource {
         // We assume the caller has done whatever was needed
         self.undo_chain_position += 1;
 
-        log::info!(
+        log::trace!(
             "Pushed to undo queue, undo chain length: {} position: {}",
             self.undo_chain.len(),
             self.undo_chain_position
@@ -1103,7 +1103,7 @@ impl EditorTransaction {
         _post_commit_selection: PostCommitSelection,
         component_registry: &ComponentRegistry,
     ) {
-        log::info!("update transaction");
+        log::trace!("update transaction");
         self.do_update(
             asset_resource,
             editor_state,
@@ -1192,7 +1192,7 @@ impl EditorTransaction {
         if commit_changes {
             editor_state.current_transaction_info = None;
         } else {
-            log::info!("saving transaction for future commit");
+            log::trace!("saving transaction for future commit");
             editor_state.current_transaction_info = Some(CurrentTransactionInfo {
                 id: self.id,
                 diffs: diffs.clone(),

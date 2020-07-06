@@ -97,6 +97,19 @@ pub fn distance_to_sphere_sq(
 }
 
 #[derive(Debug)]
+pub struct Segment {
+    pub p0: glam::Vec3,
+    pub p1: glam::Vec3,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct NormalizedRay {
+    pub origin: glam::Vec3,
+    pub dir: glam::Vec3,
+    pub length: f32,
+}
+
+#[derive(Debug)]
 pub struct RayIntersectResult {
     pub t0: f32,
     pub t1: f32,
@@ -105,14 +118,17 @@ pub struct RayIntersectResult {
 }
 
 pub fn ray_intersect(
-    p0: glam::Vec3,
-    d0: glam::Vec3,
-    t0_max: f32,
-    p1: glam::Vec3,
-    d1: glam::Vec3,
-    t1_max: f32
+    r0: NormalizedRay,
+    r1: NormalizedRay,
 ) -> RayIntersectResult {
     const SMALL_NUMBER : f32 = 0.00001;
+
+    let p0 = r0.origin;
+    let d0 = r0.dir;
+    let t0_max = r0.length;
+    let p1 = r1.origin;
+    let d1 = r1.dir;
+    let t1_max = r1.length;
 
     //Close enough to equivalent
     if (p1 - p0).length_squared() < SMALL_NUMBER {

@@ -162,6 +162,8 @@ fn handle_translate_gizmo_input(
         let mut world_space_previous_frame_delta =
             drag_in_progress.world_space_previous_frame_delta;
 
+        println!("drag {:?}", world_space_previous_frame_delta);
+
         if !translate_x {
             world_space_previous_frame_delta.set_x(0.0);
         }
@@ -629,23 +631,23 @@ fn draw_rotate_gizmo(
         //TODO: Make this resolution independent. Need a UI multiplier?
         let ui_multiplier = 0.01;
 
-        editor_draw.add_sphere(
-            "z_axis_rotate",
-            debug_draw,
-            *position,
-            50.0 * ui_multiplier,
-            12,
-            z_axis_color,
-            DebugDraw3DDepthBehavior::NoDepthTest,
-        );
-        editor_draw.add_sphere(
-            "z_axis_rotate",
-            debug_draw,
-            *position,
-            52.0 * ui_multiplier,
-            12,
-            z_axis_color,
-            DebugDraw3DDepthBehavior::NoDepthTest,
-        );
+        // editor_draw.add_sphere(
+        //     "z_axis_rotate",
+        //     debug_draw,
+        //     *position,
+        //     50.0 * ui_multiplier,
+        //     12,
+        //     z_axis_color,
+        //     DebugDraw3DDepthBehavior::NoDepthTest,
+        // );
+        // editor_draw.add_sphere(
+        //     "z_axis_rotate",
+        //     debug_draw,
+        //     *position,
+        //     52.0 * ui_multiplier,
+        //     12,
+        //     z_axis_color,
+        //     DebugDraw3DDepthBehavior::NoDepthTest,
+        // );
     }
 }

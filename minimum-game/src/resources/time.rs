@@ -60,7 +60,7 @@ impl TimeResource {
 
     pub fn reset_simulation_time(&mut self) {
         self.simulation_time = TimeContext::new();
-        log::info!("Simulation time reset");
+        log::trace!("Simulation time reset");
     }
 
     pub fn is_simulation_paused(&self) -> bool {
