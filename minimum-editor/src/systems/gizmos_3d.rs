@@ -2,7 +2,7 @@ use legion::prelude::*;
 
 use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource, UniverseResource};
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorTransaction,
+    EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorDraw3DConstraint, EditorTransaction,
     PostCommitSelection,
 };
 use crate::resources::EditorTool;
@@ -144,17 +144,26 @@ fn handle_translate_gizmo_input(
         // See what if any axis we will operate on
         let mut translate_x = false;
         let mut translate_y = false;
+        let mut translate_z = false;
         if drag_in_progress.shape_id == "x_axis_translate" {
             translate_x = true;
         } else if drag_in_progress.shape_id == "y_axis_translate" {
             translate_y = true;
+        } else if drag_in_progress.shape_id == "z_axis_translate" {
+            translate_z = true;
         } else if drag_in_progress.shape_id == "xy_axis_translate" {
             translate_x = true;
             translate_y = true;
+        } else if drag_in_progress.shape_id == "xz_axis_translate" {
+            translate_x = true;
+            translate_z = true;
+        } else if drag_in_progress.shape_id == "yz_axis_translate" {
+            translate_y = true;
+            translate_z = true;
         }
 
         // Early out if we didn't touch either axis
-        if !translate_x && !translate_y {
+        if !translate_x && !translate_y && !translate_z {
             return GizmoResult::NoChange;
         }
 
@@ -172,6 +181,10 @@ fn handle_translate_gizmo_input(
             world_space_previous_frame_delta.set_y(0.0);
         }
 
+        if !translate_z {
+            world_space_previous_frame_delta.set_z(0.0);
+        }
+
         let query = <Write<PositionComponent>>::query();
 
         for (_entity_handle, mut position) in query.iter_entities_mut(tx.world_mut()) {
@@ -180,7 +193,7 @@ fn handle_translate_gizmo_input(
             *position.position += glam::Vec3::new(
                 world_space_previous_frame_delta.x(),
                 world_space_previous_frame_delta.y(),
-                0.0,
+                world_space_previous_frame_delta.z(),
             );
         }
 
@@ -228,6 +241,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position,
             position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::x_line(position),
             x_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -237,6 +251,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(85.0, 15.0, 0.0) * ui_multiplier),
             position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::x_line(position),
             x_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -246,6 +261,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(85.0, -15.0, 0.0) * ui_multiplier),
             position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::x_line(position),
             x_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -256,6 +272,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position,
             position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::y_line(position),
             y_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -265,6 +282,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(-15.0, 85.0, 0.0) * ui_multiplier),
             position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::y_line(position),
             y_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -274,6 +292,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(15.0, 85.0, 0.0) * ui_multiplier),
             position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::y_line(position),
             y_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -284,6 +303,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position,
             position + (glam::vec3(0.0, 0.0, 100.0) * ui_multiplier),
+            EditorDraw3DConstraint::z_line(position),
             z_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -293,6 +313,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(0.0, -15.0, 85.0) * ui_multiplier),
             position + (glam::vec3(0.0, 0.0, 100.0) * ui_multiplier),
+            EditorDraw3DConstraint::z_line(position),
             z_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -302,6 +323,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(0.0, 15.0, 85.0) * ui_multiplier),
             position + (glam::vec3(0.0, 0.0, 100.0) * ui_multiplier),
+            EditorDraw3DConstraint::z_line(position),
             z_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -312,6 +334,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(0.0, 25.0, 0.0) * ui_multiplier),
             position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::xy_plane(position),
             xy_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -321,6 +344,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(25.0, 0.0, 0.0) * ui_multiplier),
             position + (glam::vec3(25.0, 25.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::xy_plane(position),
             xy_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -332,6 +356,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(0.0, 0.0, 25.0) * ui_multiplier),
             position + (glam::vec3(25.0, 0.0, 25.0) * ui_multiplier),
+            EditorDraw3DConstraint::xz_plane(position),
             xz_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -341,6 +366,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(25.0, 0.0, 0.0) * ui_multiplier),
             position + (glam::vec3(25.0, 0.0, 25.0) * ui_multiplier),
+            EditorDraw3DConstraint::xz_plane(position),
             xz_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -352,6 +378,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(0.0, 0.0, 25.0) * ui_multiplier),
             position + (glam::vec3(0.0, 25.0, 25.0) * ui_multiplier),
+            EditorDraw3DConstraint::yz_plane(position),
             yz_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -361,6 +388,7 @@ fn draw_translate_gizmo(
             debug_draw,
             position + (glam::vec3(0.0, 25.0, 0.0) * ui_multiplier),
             position + (glam::vec3(0.0, 25.0, 25.0) * ui_multiplier),
+            EditorDraw3DConstraint::yz_plane(position),
             yz_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
@@ -501,6 +529,7 @@ fn draw_scale_gizmo(
                 debug_draw,
                 position,
                 position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+                EditorDraw3DConstraint::x_line(position),
                 x_color,
                 DebugDraw3DDepthBehavior::NoDepthTest,
             );
@@ -511,6 +540,7 @@ fn draw_scale_gizmo(
                 debug_draw,
                 position + (glam::vec3(100.0, -20.0, 0.0) * ui_multiplier),
                 position + (glam::vec3(100.0, 20.0, 0.0) * ui_multiplier),
+                EditorDraw3DConstraint::x_line(position),
                 x_color,
                 DebugDraw3DDepthBehavior::NoDepthTest,
             );
@@ -521,6 +551,7 @@ fn draw_scale_gizmo(
                 debug_draw,
                 position,
                 position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+                EditorDraw3DConstraint::y_line(position),
                 y_color,
                 DebugDraw3DDepthBehavior::NoDepthTest,
             );
@@ -531,6 +562,7 @@ fn draw_scale_gizmo(
                 debug_draw,
                 position + (glam::Vec3::new(-20.0, 100.0, 0.0) * ui_multiplier),
                 position + (glam::Vec3::new(20.0, 100.0, 0.0) * ui_multiplier),
+                EditorDraw3DConstraint::y_line(position),
                 y_color,
                 DebugDraw3DDepthBehavior::NoDepthTest,
             );
@@ -543,6 +575,7 @@ fn draw_scale_gizmo(
                 debug_draw,
                 position + (glam::Vec3::new(0.0, 0.0, 0.0) * ui_multiplier),
                 position + (glam::Vec3::new(50.0, 50.0, 0.0) * ui_multiplier),
+                EditorDraw3DConstraint::xy_plane(position),
                 xy_color,
                 DebugDraw3DDepthBehavior::NoDepthTest,
             );
@@ -553,6 +586,7 @@ fn draw_scale_gizmo(
                 debug_draw,
                 position + (glam::Vec3::new(40.0, 60.0, 0.0) * ui_multiplier),
                 position + (glam::Vec3::new(60.0, 40.0, 0.0) * ui_multiplier),
+                EditorDraw3DConstraint::xy_plane(position),
                 xy_color,
                 DebugDraw3DDepthBehavior::NoDepthTest,
             );

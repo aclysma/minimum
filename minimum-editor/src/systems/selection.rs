@@ -126,7 +126,7 @@ fn handle_selection(
 
         debug_draw_2d.add_line_loop(
             points_2d,
-            glam::vec4(1.0, 0.0, 0.0, 1.0),
+            glam::vec4(1.0, 1.0, 0.0, 1.0),
         );
 
         // let points_3d = vec![

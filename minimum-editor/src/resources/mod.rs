@@ -19,6 +19,7 @@ mod editor_draw_3d;
 pub use editor_draw_3d::EditorDraw3DResource;
 pub use editor_draw_3d::EditorDraw3DShapeClickedState;
 pub use editor_draw_3d::EditorDraw3DShapeDragState;
+pub use editor_draw_3d::EditorDraw3DConstraint;
 
 mod editor_inspect_registry;
 pub use editor_inspect_registry::EditorInspectRegistryResource;

@@ -17,3 +17,4 @@ imgui-inspect-derive = "0.4"
 imgui-inspect = "0.4"
 
 log="0.4"
+assert_approx_eq = "1.1"
