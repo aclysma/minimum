@@ -79,8 +79,6 @@ impl EditorDraw3DConstraint {
         }
     }
 
-    // basis: the position in 3d the constraint is based on
-    // ray: the new position
     pub fn project_mouse_to_world(&self, mouse_ray: NormalizedRay) -> glam::Vec3 {
         match self {
             EditorDraw3DConstraint::Line(constraint) => {
@@ -98,8 +96,19 @@ impl EditorDraw3DConstraint {
                 // Closest point on the line
                 result.c1
             },
-            EditorDraw3DConstraint::Plane(_) => {
-                glam::Vec3::zero()
+            EditorDraw3DConstraint::Plane(constraint) => {
+                let intersection = minimum_math::functions::line_plane_intersect_3d(
+                    mouse_ray.origin,
+                    mouse_ray.dir,
+                    constraint.basis,
+                    constraint.normal
+                );
+
+                match intersection {
+                    minimum_math::functions::PlaneIntersectResult::NoIntersection => constraint.basis,
+                    minimum_math::functions::PlaneIntersectResult::LineContainedWithinPlane => constraint.basis,
+                    minimum_math::functions::PlaneIntersectResult::Intersect(position) => position
+                }
             }
         }
     }
@@ -108,7 +117,6 @@ impl EditorDraw3DConstraint {
 struct Line {
     p0: glam::Vec3,
     p1: glam::Vec3,
-    //basis: glam::Vec3,
     constraint: EditorDraw3DConstraint
 }
 
@@ -132,7 +140,6 @@ impl ShapeWithId {
         id: String,
         p0: glam::Vec3,
         p1: glam::Vec3,
-        //basis: glam::Vec3,
         constraint: EditorDraw3DConstraint
     ) -> Self {
         ShapeWithId {
@@ -155,15 +162,12 @@ impl ShapeWithId {
 
 struct ClosestShapeIdDistance {
     id: String,
-    //basis_position: glam::Vec2,
-    //constraint: EditorDraw3DConstraint,
     distance: f32,
 }
 
 #[derive(Debug)]
 struct ClosestShapeIndexDistance {
     index: usize,
-    //basis_position: glam::Vec2,
     constraint: EditorDraw3DConstraint,
     distance: f32,
 }
@@ -176,29 +180,22 @@ struct Ray {
 
 #[derive(Clone, Debug)]
 pub struct EditorDraw3DShapeClickedState {
-    pub click_position: glam::Vec2, // screen space of mouse
-    //pub basis_position: glam::Vec2, // screen space of basis point
-    //pub click_position_3d: glam::Vec3,
-    //pub hit_position: glam::Vec2, // screen space of the thing that was clicked
-    //pub click_ray: Ray,
+    pub mouse_position: glam::Vec2, // screen space of mouse
     pub shape_id: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct EditorDraw3DShapeDragState {
-    pub begin_position: glam::Vec2, // screen space
-    pub end_position: glam::Vec2, // screen space
-    pub previous_frame_delta: glam::Vec2, // screen space
-    pub accumulated_frame_delta: glam::Vec2, // screen space
+    pub shape_id: String,
+    pub constraint: EditorDraw3DConstraint,
+    pub mouse_begin_position: glam::Vec2,
+    pub mouse_end_position: glam::Vec2,
+    pub mouse_previous_frame_delta: glam::Vec2,
+    pub mouse_accumulated_frame_delta: glam::Vec2,
     pub world_space_begin_position: glam::Vec3,
     pub world_space_end_position: glam::Vec3,
     pub world_space_previous_frame_delta: glam::Vec3,
     pub world_space_accumulated_frame_delta: glam::Vec3,
-    pub shape_id: String,
-
-    //pub mouse_begin_position: glam::Vec2,
-    //pub basis_begin_position: glam::Vec2,
-    pub constraint: EditorDraw3DConstraint,
 }
 
 const MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE: f32 = 10.0;
@@ -236,7 +233,6 @@ impl EditorDraw3DResource {
             shape_last_interacted: "".to_string(),
             closest_shape_to_mouse: ClosestShapeIdDistance {
                 id: "".to_string(),
-                //basis_position: glam::Vec2::zero(),
                 distance: std::f32::MAX,
             },
         }
@@ -296,8 +292,6 @@ impl EditorDraw3DResource {
     //     ));
     // }
 
-    // test_position is ui space, the shapes we keep are in world space
-    //TODO: Consider converting to ui space immediately
     fn get_closest_shape(
         &self,
         mouse_position: glam::Vec2,
@@ -306,28 +300,16 @@ impl EditorDraw3DResource {
         debug_draw_2d: &mut DebugDraw2DResource,
         call_reason: GetClosestShapeCallReason
     ) -> Option<ClosestShapeIndexDistance> {
-
-        let ray = viewport.viewport_space_to_ray(mouse_position);
-
-        // if call_reason == GetClosestShapeCallReason::Hover {
-        //     println!("-------");
-        //     println!("mouse_position {:?}", mouse_position);
-        //     println!("get_closest_shape {:?}", ray);
-        // }
-
         struct ShapeIntersectResult {
             shape_index: usize,
             t: f32,
-            //basis_position: glam::Vec2,
             constraint: EditorDraw3DConstraint,
             distance_2d: f32
         }
 
-        // let mut closest_shape_index = None;
-        // let mut closest_t = std::f32::MAX;
-        // let mut closest_distance_2d
-
         let mut closest_intersect : Option<ShapeIntersectResult> = None;
+
+        let ray = viewport.viewport_space_to_ray(mouse_position);
 
         // Linearly iterate the shapes to find the closest one to the mouse position
         for i in 0..self.shapes.len() {
@@ -339,15 +321,6 @@ impl EditorDraw3DResource {
                     let mut line_dir = (line.p1 - line.p0).normalize();
                     let line_length = line_dir.length();
                     line_dir = line_dir / line_length;
-
-                    // let result = minimum_math::functions::ray_ray_intersect(
-                    //     ray,
-                    //     NormalizedRay {
-                    //         origin: line.p0,
-                    //         dir: line_dir,
-                    //         length: line_length
-                    //     }
-                    // );
 
                     // Project the 3d line to 2d
                     let line_p0_2d = viewport.world_space_to_viewport_space(line.p0);
@@ -370,33 +343,12 @@ impl EditorDraw3DResource {
                         1.0
                     );
 
-                    if call_reason == GetClosestShapeCallReason::Hover {
-                        //let closest_point_3d = (line.p0 * (1.0 - result_2d.t)) + (line.p1 * result_2d.t);
-                        //debug_draw_3d.add_sphere(
-                        //    closest_point_3d,
-                        //    0.25,
-                        //    glam::Vec4::new(0.0, 1.0, 1.0, 1.0),
-                        //    DebugDraw3DDepthBehavior::NoDepthTest,
-                        //    12
-                        //);
-                        //debug_draw_2d.add_line(
-                        //    mouse_position,
-                        //    closest_point_2d,
-                        //    glam::Vec4::new(0.0, 1.0, 1.0, 1.0),
-                        //);
-                    }
-
                     //TODO: Adjust by screen DPI?
                     let distance_2d = result_2d.distance_sq.sqrt();
                     if distance_2d < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE {
-                        //result_3d.t0
-
-                        //let basis_position = viewport.world_space_to_viewport_space(line.basis);
-
                         Some(ShapeIntersectResult {
                             shape_index: i,
                             t: result_3d.t0,
-                            //basis_position,
                             constraint: line.constraint,
                             distance_2d
                         })
@@ -430,11 +382,9 @@ impl EditorDraw3DResource {
 
         if let Some(closest_intersect) = closest_intersect {
             if closest_intersect.t <= ray.length {
-                //let closest_distance = ray.length * closest_intersect.t;
                 Some(ClosestShapeIndexDistance {
                     index: closest_intersect.shape_index,
                     constraint: closest_intersect.constraint,
-                    //basis_position: closest_intersect.basis_position,
                     distance: closest_intersect.distance_2d,
                 })
             } else {
@@ -461,7 +411,6 @@ impl EditorDraw3DResource {
         let mouse_position = input_state.mouse_position();
         let closest_shape = self.get_closest_shape(mouse_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::Hover);
 
-        //println!("{:#?}", closest_shape);
         if let Some(closest_shape) = closest_shape {
             self.closest_shape_to_mouse.id = self.shapes[closest_shape.index].id.clone();
             self.closest_shape_to_mouse.distance = closest_shape.distance;
@@ -483,16 +432,13 @@ impl EditorDraw3DResource {
 
             // See if mouse button went down and is over a shape. Check this first because we may need to know this in the next block
             // that handles click/drag detection.
-            if let Some(down_position) = input_state.mouse_button_went_down_position(mouse_button) {
-                if let Some(closest_shape) = self.get_closest_shape(down_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::Down) {
+            if let Some(mouse_previous_down_position) = input_state.mouse_button_went_down_position(mouse_button) {
+                if let Some(closest_shape) = self.get_closest_shape(mouse_previous_down_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::Down) {
                     if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE {
                         println!("set mouse is down on shape");
                         self.mouse_previous_down_on_shape[mouse_button_index] =
                             Some(EditorDraw3DShapeClickedState {
-                                click_position: down_position,
-                                //basis_position: closest_shape.basis_position,
-                                //constraint: clo
-                                //click_ray:
+                                mouse_position: mouse_previous_down_position,
                                 shape_id: self.shapes[closest_shape.index].id.clone(),
                             });
                     }
@@ -515,41 +461,6 @@ impl EditorDraw3DResource {
                 if let Some(input_state_drag_in_progress) =
                     &input_state.mouse_drag_in_progress(mouse_button)
                 {
-                    println!("drag in progress");
-                    //
-                    // Drag is in progress, update position changes
-                    //
-
-                    // update shape drag state
-                    //self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
-
-                    // - We know where the old mouse position/basis position was in screen space from when we started dragging
-                    // - We know the new mouse position in screen space
-                    // - We want to calculate a new basis position in screen space such that the relative difference
-                    //   between mouse/basis is the same
-                    // - We might project onto a line or a plane
-
-                    // Figure out new basis screen space
-                    //let mouse_to_basis = current_drag_in_progress.basis_begin_position - current_drag_in_progress.mouse_begin_position;
-                    //let new_basis_position = mouse_position + mouse_to_basis;
-
-                    // Project a ray
-                    //let basis_ray = viewport.viewport_space_to_ray(new_basis_position);
-
-                    // Find closest point to plane or line
-
-                    // Get change in world position
-
-                    // let mouse_ray = viewport.viewport_space_to_ray(input_state_drag_in_progress.end_position);
-                    // current_drag_in_progress.constraint.project_mouse_to_world(mouse_ray);
-                    //
-                    // let world_space_end_position =
-                    //     viewport.viewport_space_to_world_space(input_state_drag_in_progress.end_position, 0.99);
-                    // let delta = world_space_end_position
-                    //     - (current_drag_in_progress.world_space_begin_position
-                    //         + current_drag_in_progress.world_space_accumulated_frame_delta);
-
-
                     let end_position_mouse_ray = viewport.viewport_space_to_ray(input_state_drag_in_progress.end_position);
                     let world_space_end_position = current_drag_in_progress.constraint.project_mouse_to_world(end_position_mouse_ray);
                     let delta = world_space_end_position
@@ -557,10 +468,10 @@ impl EditorDraw3DResource {
                         + current_drag_in_progress.world_space_accumulated_frame_delta);
 
                     self.shape_drag_in_progress[mouse_button_index] = Some(EditorDraw3DShapeDragState {
-                        begin_position: input_state_drag_in_progress.begin_position,
-                        end_position: input_state_drag_in_progress.end_position,
-                        previous_frame_delta: input_state_drag_in_progress.previous_frame_delta,
-                        accumulated_frame_delta: input_state_drag_in_progress
+                        mouse_begin_position: input_state_drag_in_progress.begin_position,
+                        mouse_end_position: input_state_drag_in_progress.end_position,
+                        mouse_previous_frame_delta: input_state_drag_in_progress.previous_frame_delta,
+                        mouse_accumulated_frame_delta: input_state_drag_in_progress
                             .accumulated_frame_delta,
                         world_space_begin_position: current_drag_in_progress
                             .world_space_begin_position,
@@ -569,10 +480,7 @@ impl EditorDraw3DResource {
                         world_space_accumulated_frame_delta: delta
                             + current_drag_in_progress.world_space_accumulated_frame_delta,
                         shape_id: current_drag_in_progress.shape_id.clone(),
-
                         constraint: current_drag_in_progress.constraint,
-                        //mouse_begin_position: current_drag_in_progress.mouse_begin_position,
-                        //basis_begin_position: current_drag_in_progress.basis_begin_position,
                     });
                     self.shape_drag_just_finished[mouse_button_index] = None;
                 } else if let Some(input_state_drag_just_finished) =
@@ -588,20 +496,14 @@ impl EditorDraw3DResource {
                         - (current_drag_in_progress.world_space_begin_position
                             + current_drag_in_progress.world_space_accumulated_frame_delta);
 
-                    // let world_space_end_position = viewport
-                    //     .viewport_space_to_world_space(input_state_drag_just_finished.end_position, 0.99);
-                    // let delta = world_space_end_position
-                    //     - (current_drag_in_progress.world_space_begin_position
-                    //         + current_drag_in_progress.world_space_accumulated_frame_delta);
-
                     self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
                     self.shape_drag_just_finished[mouse_button_index] =
                         Some(EditorDraw3DShapeDragState {
-                            begin_position: input_state_drag_just_finished.begin_position,
-                            end_position: input_state_drag_just_finished.end_position,
-                            previous_frame_delta: input_state_drag_just_finished
+                            mouse_begin_position: input_state_drag_just_finished.begin_position,
+                            mouse_end_position: input_state_drag_just_finished.end_position,
+                            mouse_previous_frame_delta: input_state_drag_just_finished
                                 .previous_frame_delta,
-                            accumulated_frame_delta: input_state_drag_just_finished
+                            mouse_accumulated_frame_delta: input_state_drag_just_finished
                                 .accumulated_frame_delta,
                             world_space_begin_position: current_drag_in_progress
                                 .world_space_begin_position,
@@ -612,8 +514,6 @@ impl EditorDraw3DResource {
                             shape_id: current_drag_in_progress.shape_id.clone(),
 
                             constraint: current_drag_in_progress.constraint
-                            //mouse_begin_position: current_drag_in_progress.mouse_begin_position,
-                            //basis_begin_position: current_drag_in_progress.basis_begin_position,
                         });
                     self.shape_drag_in_progress[mouse_button_index] = None;
                 } else {
@@ -657,20 +557,6 @@ impl EditorDraw3DResource {
                                     < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE
                                     && down_on_shape.shape_id == shape.id
                                 {
-
-                                    // let world_space_begin_position = viewport
-                                    //     .viewport_space_to_world_space(
-                                    //         mouse_drag_in_progress.begin_position,
-                                    //         0.0
-                                    //     );
-                                    // let world_space_end_position = viewport
-                                    //     .viewport_space_to_world_space(
-                                    //         mouse_drag_in_progress.end_position,
-                                    //         0.0
-                                    //     );
-                                    // let world_space_previous_frame_delta =
-                                    //     world_space_end_position - world_space_begin_position;
-
                                     let begin_position_mouse_ray = viewport.viewport_space_to_ray(mouse_drag_in_progress.begin_position);
                                     let world_space_begin_position = closest_shape.constraint.project_mouse_to_world(begin_position_mouse_ray);
                                     let end_position_mouse_ray = viewport.viewport_space_to_ray(mouse_drag_in_progress.end_position);
@@ -682,11 +568,11 @@ impl EditorDraw3DResource {
                                         self.closest_shape_to_mouse.id.clone();
                                     self.shape_drag_in_progress[mouse_button_index] =
                                         Some(EditorDraw3DShapeDragState {
-                                            begin_position: mouse_drag_in_progress.begin_position,
-                                            end_position: mouse_drag_in_progress.end_position,
-                                            previous_frame_delta: mouse_drag_in_progress
+                                            mouse_begin_position: mouse_drag_in_progress.begin_position,
+                                            mouse_end_position: mouse_drag_in_progress.end_position,
+                                            mouse_previous_frame_delta: mouse_drag_in_progress
                                                 .previous_frame_delta,
-                                            accumulated_frame_delta: mouse_drag_in_progress
+                                            mouse_accumulated_frame_delta: mouse_drag_in_progress
                                                 .accumulated_frame_delta,
                                             world_space_begin_position,
                                             world_space_end_position,
@@ -696,13 +582,11 @@ impl EditorDraw3DResource {
                                             shape_id: self.closest_shape_to_mouse.id.clone(),
 
                                             constraint: closest_shape.constraint
-                                            //mouse_begin_position: mouse_drag_in_progress.begin_position,
-                                            //basis_begin_position: closest_shape.basis_position,
                                         });
                                 }
                             }
                         }
-                    } else if let Some(just_clicked_position) =
+                    } else if let Some(just_clicked_mouse_position) =
                         input_state.mouse_button_just_clicked_position(mouse_button)
                     {
                         //
@@ -715,7 +599,7 @@ impl EditorDraw3DResource {
                         {
                             if let Some(closest_shape) =
                                 self.get_closest_shape(
-                                    just_clicked_position,
+                                    just_clicked_mouse_position,
                                     viewport,
                                     debug_draw_3d,
                                     debug_draw_2d,
@@ -730,8 +614,7 @@ impl EditorDraw3DResource {
                                     self.shape_last_interacted = shape.id.clone();
                                     self.shape_just_clicked[mouse_button_index] =
                                         Some(EditorDraw3DShapeClickedState {
-                                            click_position: just_clicked_position,
-                                            //basis_position: closest_shape.basis_position,
+                                            mouse_position: just_clicked_mouse_position,
                                             shape_id: shape.id.clone(),
                                         });
                                 }

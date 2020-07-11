@@ -443,7 +443,7 @@ fn handle_scale_gizmo_input(
         // Determine the drag distance in ui_space
         //TODO: I was intending this to use ui space but the values during drag are not lining up
         // with values on end drag. This is likely an fp precision issue.
-        let mut ui_space_previous_frame_delta = drag_in_progress.previous_frame_delta;
+        let mut ui_space_previous_frame_delta = drag_in_progress.mouse_previous_frame_delta;
 
         if !scale_x && !scale_uniform {
             ui_space_previous_frame_delta.set_x(0.0);
@@ -619,7 +619,7 @@ fn handle_rotate_gizmo_input(
         //TODO: I was intending this to use ui space but the values during drag are not lining up
         // with values on end drag. This is likely an fp precision issue.
         let ui_space_previous_frame_delta =
-            sign_aware_magnitude(drag_in_progress.previous_frame_delta);
+            sign_aware_magnitude(drag_in_progress.mouse_previous_frame_delta);
 
         let query = <Write<Rotation2DComponent>>::query();
         for (_entity_handle, mut rotation) in query.iter_entities_mut(tx.world_mut()) {

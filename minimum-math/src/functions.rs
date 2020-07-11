@@ -133,6 +133,33 @@ pub struct NormalizedRay {
     pub length: f32,
 }
 
+pub enum PlaneIntersectResult {
+    NoIntersection,
+    LineContainedWithinPlane,
+    Intersect(glam::Vec3)
+}
+
+pub fn line_plane_intersect_3d(
+    line_position: glam::Vec3,
+    line_dir: glam::Vec3,
+    plane_origin: glam::Vec3,
+    plane_normal_dir: glam::Vec3,
+) -> PlaneIntersectResult {
+    let line_dot_normal = line_dir.dot(plane_normal_dir);
+    let line_to_plane = plane_origin - line_position;
+    if line_dot_normal.abs() < std::f32::EPSILON {
+        if line_to_plane.dot(plane_normal_dir) < std::f32::EPSILON {
+            PlaneIntersectResult::NoIntersection
+        } else {
+            PlaneIntersectResult::LineContainedWithinPlane
+        }
+    } else {
+        let d = line_to_plane.dot(plane_normal_dir) / line_dot_normal;
+        let intersection = line_position + line_dir * d;
+        PlaneIntersectResult::Intersect(intersection)
+    }
+}
+
 #[derive(Debug)]
 pub struct RayIntersectResult {
     pub t0: f32,
@@ -147,7 +174,7 @@ pub fn ray_ray_intersect_3d(
     t0_max: f32,
     t1_max: f32,
 ) -> RayIntersectResult {
-    ray_intersect_old(
+    ray_intersect_internal(
         r0.origin,
         r0.dir * r0.length,
         0.0,
@@ -164,7 +191,7 @@ pub fn line_ray_intersect_3d(
     r1: NormalizedRay,
     t1_max: f32,
 ) -> RayIntersectResult {
-    ray_intersect_old(
+    ray_intersect_internal(
         r0.origin,
         r0.dir * r0.length,
         std::f32::MIN,
@@ -180,7 +207,7 @@ pub fn line_line_intersect_3d(
     r0: NormalizedRay,
     r1: NormalizedRay,
 ) -> RayIntersectResult {
-    ray_intersect_old(
+    ray_intersect_internal(
         r0.origin,
         r0.dir * r0.length,
         std::f32::MIN,
@@ -190,6 +217,80 @@ pub fn line_line_intersect_3d(
         std::f32::MIN,
         std::f32::MAX,
     )
+}
+
+pub fn ray_intersect_internal(
+    p0: glam::Vec3,
+    d0: glam::Vec3,
+    t0_min: f32,
+    t0_max: f32,
+    p1: glam::Vec3,
+    d1: glam::Vec3,
+    t1_min: f32,
+    t1_max: f32
+) -> RayIntersectResult {
+    const SMALL_NUMBER : f32 = 0.00001;
+
+    //Close enough to equivalent
+    if (p1 - p0).length_squared() < SMALL_NUMBER {
+        return RayIntersectResult {
+            c0: p0,
+            c1: p0,
+            t0: 0.0,
+            t1: 0.0,
+        }
+    }
+
+    // Get a direction orthogonal to both rays
+    let n = d0.cross(d1);
+    if n.length_squared() < SMALL_NUMBER {
+        // It's parallel. Determine distance between the lines.
+        // https://math.stackexchange.com/questions/1347604/find-3d-distance-between-two-parallel-lines-in-simple-way
+        //let distance = d1.cross(p1 - p0);
+
+        // Use dot product to get the ideal t0 required to get as close as possible to the point on
+        // the other line. The clamp between 0.0 and t0_max. Use t0 to determine c0.
+        let t0 = d0.dot(p1 - p0).max(t0_min).min(t0_max);
+        let c0 = p0 + t0 * d0;
+
+        // Now project p1 - c0. It's possible c0 was constrained by 0 < t0 < t0_max.
+        let t1 = d1.dot(c0 - p1).max(t1_min).min(t1_max);
+        let c1 = p1 + t1 * d1;
+
+        let t0 = d0.dot(c1 - p0).max(t0_min).min(t0_max);
+        let c0 = p0 + t0 * d0;
+
+        RayIntersectResult {
+            //distance,
+            c0,
+            c1,
+            t0,
+            t1,
+        }
+    } else {
+        // based on https://en.wikipedia.org/wiki/Skew_lines#Nearest_Points
+        let n1 = d1.cross(n);
+
+        // Calculate c0 assuming that t1 will not be constrained and that t1 = (c0 - p1).dot(d1)
+        let t0 = (n1.dot(p1 - p0) / d0.dot(n1)).max(t0_min).min(t0_max);
+        let c0 = p0 + t0 * d0;
+
+        // Now figure out c1 based on where c0 ended up. This will factor in t0 being constrained
+        //let d1_norm = d1.normalize();
+        let t1 = (d1.dot(c0 - p1) / d1.length_squared()).max(t1_min).min(t1_max);
+        let c1 = p1 + t1 * d1;
+
+        // Recompute t0/c0 as t1 may have been constrained
+        let t0 = (d0.dot(c1 - p0) / d0.length_squared()).max(t0_min).min(t0_max);
+        let c0 = p0 + t0 * d0;
+
+        RayIntersectResult {
+            t0,
+            t1,
+            c0,
+            c1
+        }
+    }
 }
 
 #[test]
@@ -682,356 +783,4 @@ fn point_segment_intersect_2d_90deg() {
     assert_eq!(result.closest_point, glam::Vec2::new(200.0, 0.0));
     assert_eq!(result.distance_sq, 10000.0);
     assert!(dot.abs() < 0.0001);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// #[derive(Debug)]
-// pub struct OldRayIntersectResult {
-//     pub t0: f32,
-//     pub t1: f32,
-//     pub c0: glam::Vec3,
-//     pub c1: glam::Vec3
-// }
-
-pub fn ray_intersect_old(
-    p0: glam::Vec3,
-    d0: glam::Vec3,
-    t0_min: f32,
-    t0_max: f32,
-    p1: glam::Vec3,
-    d1: glam::Vec3,
-    t1_min: f32,
-    t1_max: f32
-) -> RayIntersectResult {
-    const SMALL_NUMBER : f32 = 0.00001;
-
-    //Close enough to equivalent
-    if (p1 - p0).length_squared() < SMALL_NUMBER {
-        return RayIntersectResult {
-            c0: p0,
-            c1: p0,
-            t0: 0.0,
-            t1: 0.0,
-        }
-    }
-
-    // Get a direction orthogonal to both rays
-    let n = d0.cross(d1);
-    if n.length_squared() < SMALL_NUMBER {
-        // It's parallel. Determine distance between the lines.
-        // https://math.stackexchange.com/questions/1347604/find-3d-distance-between-two-parallel-lines-in-simple-way
-        //let distance = d1.cross(p1 - p0);
-
-        // Use dot product to get the ideal t0 required to get as close as possible to the point on
-        // the other line. The clamp between 0.0 and t0_max. Use t0 to determine c0.
-        let t0 = d0.dot(p1 - p0).max(t0_min).min(t0_max);
-        let c0 = p0 + t0 * d0;
-
-        // Now project p1 - c0. It's possible c0 was constrained by 0 < t0 < t0_max.
-        let t1 = d1.dot(c0 - p1).max(t1_min).min(t1_max);
-        let c1 = p1 + t1 * d1;
-
-        let t0 = d0.dot(c1 - p0).max(t0_min).min(t0_max);
-        let c0 = p0 + t0 * d0;
-
-        RayIntersectResult {
-            //distance,
-            c0,
-            c1,
-            t0,
-            t1,
-        }
-    } else {
-        // based on https://en.wikipedia.org/wiki/Skew_lines#Nearest_Points
-        let n1 = d1.cross(n);
-
-        // Calculate c0 assuming that t1 will not be constrained and that t1 = (c0 - p1).dot(d1)
-        let t0 = (n1.dot(p1 - p0) / d0.dot(n1)).max(t0_min).min(t0_max);
-        let c0 = p0 + t0 * d0;
-
-        // Now figure out c1 based on where c0 ended up. This will factor in t0 being constrained
-        //let d1_norm = d1.normalize();
-        let t1 = (d1.dot(c0 - p1) / d1.length_squared()).max(t1_min).min(t1_max);
-        let c1 = p1 + t1 * d1;
-
-        // Recompute t0/c0 as t1 may have been constrained
-        let t0 = (d0.dot(c1 - p0) / d0.length_squared()).max(t0_min).min(t0_max);
-        let c0 = p0 + t0 * d0;
-
-        RayIntersectResult {
-            t0,
-            t1,
-            c0,
-            c1
-        }
-    }
-}
-
-#[test]
-fn old_ray_intersect_same_origin() {
-    let p0 = glam::Vec3::new(0.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::zero());
-}
-
-
-#[test]
-fn old_ray_intersect_given_points_closest_orthogonal() {
-    let p0 = glam::Vec3::new(0.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, 0.0, 1.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::new(0.0, 0.0, 1.0));
-}
-
-#[test]
-fn old_ray_intersect_orthogonal_non_intersect() {
-    let p0 = glam::Vec3::new(-2.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 1.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.0);
-    assert_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::new(0.0, 0.0, 1.0));
-}
-
-#[test]
-fn old_ray_intersect_orthogonal_intersect() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.0);
-    assert_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::zero());
-}
-
-#[test]
-fn old_ray_intersect_non_orthogonal_non_intersect() {
-    let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.0);
-    assert_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::zero());
-}
-
-#[test]
-fn old_ray_intersect_non_power2() {
-    let p0 = glam::Vec3::new(0.0, -25.0, 0.0);
-    let d0 = glam::Vec3::new(0.0, 5.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(-5.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 6.0);
-    assert_eq!(result.t1, 5.0);
-    assert_eq!(result.c0, glam::Vec3::new(0.0, 5.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(0.0, 5.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_opposite_direction() {
-    let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 1.5);
-    assert_eq!(result.c0, glam::Vec3::new(-1.0, -1.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(0.0, -1.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_opposite_direction_rev() {
-    let p0 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d0 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d1 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.5);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(0.0, -1.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(-1.0, -1.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_distance_limited() {
-    let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = 1.0;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 1.0);
-    assert_eq!(result.c0, glam::Vec3::new(-1.0, -1.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(0.0, -2.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_distance_limited_rev() {
-    let p0 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d0 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t0_max = 1.0;
-
-    let p1 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(0.0, -2.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(-1.0, -1.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_parallel_towards() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 2.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_parallel_away() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(-1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_parallel_same_dir() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 2.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
-}
-
-#[test]
-fn old_ray_intersect_parallel_same_dir_rev() {
-    let p0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let result = ray_intersect_old(p0, d0, t0_max, p1, d1, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
 }
