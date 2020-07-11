@@ -93,9 +93,10 @@ impl ViewportResource {
     // Out: pixel coordinates within the viewport. Top left: (0, 0) Bottom right: self.size_in_pixels
     pub fn normalized_space_to_viewport_space(
         &self,
-        viewport_position: glam::Vec2,
+        normalized_position: glam::Vec2,
     ) -> glam::Vec2 {
-        (viewport_position * self.size_in_pixels * glam::Vec2::new(0.5, 0.5)) + self.size_in_pixels
+        //(viewport_position * self.size_in_pixels * glam::Vec2::new(0.5, 0.5)) + self.size_in_pixels
+        ((normalized_position + glam::Vec2::new(1.0, 1.0)) * self.size_in_pixels * glam::Vec2::new(0.5, 0.5))
     }
 
     // In: pixel coordinates within the viewport. Top left: (0, 0) Bottom right: self.size_in_pixels
@@ -201,13 +202,14 @@ impl ViewportResource {
         world_position: glam::Vec3,
     ) -> glam::Vec2 {
         // input is a position in pixels
-        let position = glam::Vec4::new(world_position.x(), world_position.y(), world_position.z(), 1.0);
+        let mut position = glam::Vec4::new(world_position.x(), world_position.y(), world_position.z(), 1.0);
 
         // project to raw space
-        let position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
+        position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
+        position = position / position.w();
 
         // project to world space
-        self.viewport_space_to_normalized_space(glam::Vec2::new(position.x(), position.y()))
+        self.normalized_space_to_viewport_space(glam::Vec2::new(position.x(), position.y()))
     }
 
     pub fn viewport_space_delta_to_world_space_delta(

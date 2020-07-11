@@ -1,7 +1,7 @@
 use legion::prelude::*;
 
 use minimum_game::resources::{
-    InputResource, ViewportResource, DebugDraw3DResource, UniverseResource, CameraResource,
+    InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, UniverseResource, CameraResource,
 };
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
@@ -154,6 +154,7 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
         .write_resource::<DebugDraw3DResource>()
+        .write_resource::<DebugDraw2DResource>()
         .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .with_query(<Read<PositionComponent>>::query())
@@ -165,12 +166,13 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
                 input_state,
                 viewport,
                 _editor_selection,
-                _debug_draw,
+                debug_draw_3d,
+                debug_draw_2d,
                 editor_draw,
                 _universe_resource,
             ),
              _position_query| {
-                editor_draw.update(input_state.input_state(), &*viewport);
+                editor_draw.update(input_state.input_state(), &*viewport, debug_draw_3d, debug_draw_2d);
             },
         )
 }

@@ -9,9 +9,9 @@ pub use app_control::AppControlResource;
 mod universe;
 pub use universe::UniverseResource;
 
-// mod debug_draw_2d;
-// pub use debug_draw_2d::DebugDraw2DResource;
-// pub use debug_draw_2d::LineList2D;
+mod debug_draw_2d;
+pub use debug_draw_2d::DebugDraw2DResource;
+pub use debug_draw_2d::LineList2D;
 
 mod debug_draw_3d;
 pub use debug_draw_3d::DebugDraw3DResource;

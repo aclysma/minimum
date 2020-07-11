@@ -1,6 +1,6 @@
 use legion::prelude::*;
 
-use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource, DebugDraw3DDepthBehavior, UniverseResource};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, DebugDraw3DDepthBehavior, UniverseResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
@@ -23,7 +23,8 @@ fn handle_selection(
     input_state: &InputResource,
     viewport: &ViewportResource,
     editor_selection: &mut EditorSelectionResource,
-    debug_draw: &mut DebugDraw3DResource,
+    debug_draw_3d: &mut DebugDraw3DResource,
+    debug_draw_2d: &mut DebugDraw2DResource,
     editor_settings: &EditorSettingsResource,
 ) {
     let mut intersecting_entities = None;
@@ -116,18 +117,30 @@ fn handle_selection(
         let p1 = glam::Vec2::new(p0.x(), p2.y());
         let p3 = glam::Vec2::new(p2.x(), p0.y());
 
-        let points = vec![
-            viewport.viewport_space_to_world_space(p0, 0.1),
-            viewport.viewport_space_to_world_space(p1, 0.1),
-            viewport.viewport_space_to_world_space(p2, 0.1),
-            viewport.viewport_space_to_world_space(p3, 0.1),
+        let points_2d = vec![
+            p0,
+            p1,
+            p2,
+            p3,
         ];
 
-        debug_draw.add_line_loop(
-            points,
-            glam::vec4(1.0, 1.0, 0.0, 1.0),
-            DebugDraw3DDepthBehavior::NoDepthTest
+        debug_draw_2d.add_line_loop(
+            points_2d,
+            glam::vec4(1.0, 0.0, 0.0, 1.0),
         );
+
+        // let points_3d = vec![
+        //     viewport.viewport_space_to_world_space(p0, 0.01),
+        //     viewport.viewport_space_to_world_space(p1, 0.01),
+        //     viewport.viewport_space_to_world_space(p2, 0.01),
+        //     viewport.viewport_space_to_world_space(p3, 0.01),
+        // ];
+        //
+        // debug_draw_3d.add_line_loop(
+        //     points_3d,
+        //     glam::vec4(1.0, 1.0, 0.0, 1.0),
+        //     DebugDraw3DDepthBehavior::NoDepthTest
+        // );
     }
 
     if let Some(intersecting_entities) = intersecting_entities {
@@ -172,6 +185,7 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
         .write_resource::<DebugDraw3DResource>()
+        .write_resource::<DebugDraw2DResource>()
         .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
@@ -184,7 +198,8 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
                 input_state,
                 viewport,
                 editor_selection,
-                debug_draw,
+                debug_draw_3d,
+                debug_draw_2d,
                 editor_draw,
                 _universe_resource,
                 editor_settings,
@@ -195,7 +210,8 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
                     &*input_state,
                     &*viewport,
                     &mut *editor_selection,
-                    &mut *debug_draw,
+                    &mut *debug_draw_3d,
+                    &mut *debug_draw_2d,
                     &*editor_settings,
                 );
             },

@@ -9,42 +9,64 @@ pub fn normal_to_xy(normal: glam::Vec3) -> (glam::Vec3, glam::Vec3) {
     }
 }
 
-pub fn distance_to_2d_segment_sq(
+#[derive(Debug)]
+pub struct DistanceTo2dSegmentResult {
+    pub t: f32,
+    pub closest_point: glam::Vec2,
+    pub distance_sq: f32
+}
+
+pub fn point_segment_intersect_2d(
     test_point: glam::Vec2,
     p0: glam::Vec2,
     p1: glam::Vec2,
-) -> f32 {
+) -> DistanceTo2dSegmentResult {
     let p0_to_p1 = p1 - p0;
+    let p0_to_p1_length = p0_to_p1.length();
 
     // Early out in case of extremely short segment, get distance to midpoint
-    if p0_to_p1.length_squared() < 0.01 {
-        let midpoint = p0 + (p0_to_p1 / 2.0);
-        return (test_point - midpoint).length_squared();
+    if p0_to_p1_length < 0.001 {
+        let midpoint = p0 * 0.5 + p1 * 0.5;
+        return DistanceTo2dSegmentResult {
+            t: 0.5,
+            closest_point: midpoint,
+            distance_sq: (test_point - midpoint).length_squared()
+        }
     }
 
-    // Get "tangent" and "normal" of the segment
-    let tangent = p0_to_p1.normalize();
-    let normal = glam::Vec2::new(tangent.y(), -tangent.x());
-
     // distance to the infinite line described by the points
+    let p0_to_p1_normalized = p0_to_p1 / p0_to_p1_length;
     let p0_to_test_point = test_point - p0;
 
     // find closest point to the line
-    let distance_along_segment = glam::Vec2::dot(tangent, p0_to_test_point);
+    let distance_along_segment = glam::Vec2::dot(p0_to_p1_normalized, p0_to_test_point);
     if distance_along_segment <= 0.0 {
         // early out, test_point is closer to p0 than any other part of the line
-        return (test_point - p0).length_squared();
+        return DistanceTo2dSegmentResult {
+            t: 0.0,
+            closest_point: p0,
+            distance_sq: (test_point - p0).length_squared()
+        };
     }
 
-    let fraction_along_segment =
-        (distance_along_segment * distance_along_segment) / p0_to_p1.length_squared();
-    if fraction_along_segment >= 1.0 {
+    if distance_along_segment >= p0_to_p1_length {
         // test_point is closer to p1 than any other part of the line
-        (test_point - p1).length_squared()
+        DistanceTo2dSegmentResult {
+            t: 1.0,
+            closest_point: p1,
+            distance_sq: (test_point - p1).length_squared()
+        }
     } else {
         // the closest point on the segment to test_point is between p0 and p1
-        let distance_to_line = glam::Vec2::dot(normal, p0_to_test_point);
-        f32::abs(distance_to_line * distance_to_line)
+        // let distance_to_line = glam::Vec2::dot(normal, p0_to_test_point);
+        let t = distance_along_segment / p0_to_p1_length;
+        let closest_point = p0 + p0_to_p1 * t;
+
+        DistanceTo2dSegmentResult {
+            t,
+            closest_point,
+            distance_sq: (test_point - closest_point).length_squared()
+        }
     }
 }
 
@@ -117,7 +139,7 @@ pub struct RayIntersectResult {
     pub c1: glam::Vec3
 }
 
-pub fn ray_intersect(
+pub fn ray_ray_intersect_3d(
     r0: NormalizedRay,
     r1: NormalizedRay,
 ) -> RayIntersectResult {
@@ -202,7 +224,7 @@ fn ray_intersect_same_origin() {
     let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 0.0);
     assert_eq!(result.t1, 0.0);
@@ -221,7 +243,7 @@ fn ray_intersect_given_points_closest_orthogonal() {
     let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 0.0);
     assert_eq!(result.t1, 0.0);
@@ -239,7 +261,7 @@ fn ray_intersect_orthogonal_non_intersect() {
     let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 1.0);
     assert_eq!(result.t1, 2.0);
@@ -257,7 +279,7 @@ fn ray_intersect_orthogonal_intersect() {
     let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 1.0);
     assert_eq!(result.t1, 2.0);
@@ -275,7 +297,7 @@ fn ray_intersect_non_orthogonal_non_intersect() {
     let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 1.0);
     assert_eq!(result.t1, 2.0);
@@ -293,7 +315,7 @@ fn ray_intersect_non_power2() {
     let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 6.0);
     assert_eq!(result.t1, 5.0);
@@ -311,7 +333,7 @@ fn ray_intersect_opposite_direction() {
     let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 0.0);
     assert_eq!(result.t1, 1.5);
@@ -329,7 +351,7 @@ fn ray_intersect_opposite_direction_rev() {
     let d1 = glam::Vec3::new(-1.0, -1.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 1.5);
     assert_eq!(result.t1, 0.0);
@@ -347,7 +369,7 @@ fn ray_intersect_distance_limited() {
     let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
     let t1_max = 1.0;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 0.0);
     assert_eq!(result.t1, 1.0);
@@ -365,7 +387,7 @@ fn ray_intersect_distance_limited_rev() {
     let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 1.0);
     assert_eq!(result.t1, 0.0);
@@ -383,7 +405,7 @@ fn ray_intersect_parallel_towards() {
     let d1 = glam::Vec3::new(-1.0, 0.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 2.0);
     assert_eq!(result.t1, 0.0);
@@ -401,7 +423,7 @@ fn ray_intersect_parallel_away() {
     let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 0.0);
     assert_eq!(result.t1, 0.0);
@@ -419,7 +441,7 @@ fn ray_intersect_parallel_same_dir() {
     let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 2.0);
     assert_eq!(result.t1, 0.0);
@@ -437,10 +459,95 @@ fn ray_intersect_parallel_same_dir_rev() {
     let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
     let t1_max = f32::MAX;
 
-    let result = ray_intersect(p0, d0, t0_max, p1, d1, t1_max);
+    let result = ray_ray_intersect_3d(p0, d0, t0_max, p1, d1, t1_max);
     println!("{:#?}", result);
     assert_eq!(result.t0, 0.0);
     assert_eq!(result.t1, 2.0);
     assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
     assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
+}
+
+#[test]
+fn point_segment_intersect_2d_0deg() {
+    let test_point = glam::Vec2::new(100.0, 0.0);
+    let p0 = glam::Vec2::new(0.0, 100.0);
+    let p1 = glam::Vec2::new(200.0,  100.0);
+
+    let result = minimum::math::functions::point_segment_intersect_2d(test_point, p0, p1);
+    let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+    println!("{:#?}", result);
+    println!("dot {}", dot);
+    assert_eq!(result.t, 0.5);
+    assert_eq!(result.closest_point, glam::Vec2::new(100.0, 100.0));
+    assert_eq!(result.distance_sq, 10000.0);
+    assert!(dot.abs() < 0.0001);
+}
+
+#[test]
+fn point_segment_intersect_2d_45deg() {
+    let test_point = glam::Vec2::new(100.0, 0.0);
+    let p0 = glam::Vec2::new(100.0, 100.0);
+    let p1 = glam::Vec2::new(200.0,  0.0);
+
+    let result = minimum::math::functions::point_segment_intersect_2d(test_point, p0, p1);
+    let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+    println!("{:#?}", result);
+    println!("dot {}", dot);
+    assert_eq!(result.t, 0.5);
+    assert_eq!(result.closest_point, glam::Vec2::new(150.0, 50.0));
+    assert_eq!(result.distance_sq, 5000.0);
+    assert!(dot.abs() < 0.0001);
+}
+
+#[test]
+fn point_segment_intersect_2d_30deg() {
+    let test_point = glam::Vec2::new(100.0, 0.0);
+    let p0 = glam::Vec2::new(100.0, 300.0);
+    let p1 = glam::Vec2::new(500.0,  0.0);
+
+    let result = minimum::math::functions::point_segment_intersect_2d(test_point, p0, p1);
+    let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+    println!("{:#?}", result);
+    println!("dot {}", dot);
+    assert_eq!(result.t, 0.36);
+    assert_eq!(result.closest_point, glam::Vec2::new(244.0, 192.0));
+    assert_eq!(result.distance_sq, 57600.0);
+    assert!(dot.abs() < 0.0001);
+}
+
+#[test]
+fn point_segment_intersect_2d_60deg() {
+    let test_point = glam::Vec2::new(100.0, 0.0);
+    let p0 = glam::Vec2::new(100.0, 400.0);
+    let p1 = glam::Vec2::new(400.0,  0.0);
+
+    let result = minimum::math::functions::point_segment_intersect_2d(test_point, p0, p1);
+    let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+    println!("{:#?}", result);
+    println!("dot {}", dot);
+    assert_eq!(result.t, 0.64);
+    assert_eq!(result.closest_point, glam::Vec2::new(292.0, 144.0));
+    assert_eq!(result.distance_sq, 57600.0);
+    assert!(dot.abs() < 0.0001);
+}
+
+#[test]
+fn point_segment_intersect_2d_90deg() {
+    let test_point = glam::Vec2::new(100.0, 0.0);
+    let p0 = glam::Vec2::new(200.0, 100.0);
+    let p1 = glam::Vec2::new(200.0,  -100.0);
+
+    let result = minimum::math::functions::point_segment_intersect_2d(test_point, p0, p1);
+    let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+    println!("{:#?}", result);
+    println!("dot {}", dot);
+    assert_eq!(result.t, 0.5);
+    assert_eq!(result.closest_point, glam::Vec2::new(200.0, 0.0));
+    assert_eq!(result.distance_sq, 10000.0);
+    assert!(dot.abs() < 0.0001);
 }

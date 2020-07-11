@@ -22,7 +22,18 @@ impl DebugDraw2DResource {
     }
 
     // Adds a single polygon
-    pub fn add_polygon(
+    pub fn add_line_strip(
+        &mut self,
+        mut points: Vec<glam::Vec2>,
+        color: glam::Vec4,
+    ) {
+        // Nothing will draw if we don't have at least 2 points
+        if points.len() > 1 {
+            self.line_lists.push(LineList2D::new(points, color));
+        }
+    }
+
+    pub fn add_line_loop(
         &mut self,
         mut points: Vec<glam::Vec2>,
         color: glam::Vec4,
@@ -30,8 +41,19 @@ impl DebugDraw2DResource {
         // Nothing will draw if we don't have at least 2 points
         if points.len() > 1 {
             points.push(points[0].clone());
-            self.line_lists.push(LineList2D::new(points, color));
+            self.add_line_strip(points, color);
         }
+    }
+
+    pub fn add_line(
+        &mut self,
+        p0: glam::Vec2,
+        p1: glam::Vec2,
+        color: glam::Vec4,
+    ) {
+        let points = vec![p0, p1];
+
+        self.add_line_strip(points, color);
     }
 
     pub fn add_tristrip(
@@ -42,7 +64,7 @@ impl DebugDraw2DResource {
         // Nothing will draw if we don't have at least 2 points
         for index in 0..(points.len() - 2) {
             let v = vec![points[index], points[index + 1], points[index + 2]];
-            self.add_polygon(v, color);
+            self.add_line_loop(v, color);
         }
     }
 
@@ -61,7 +83,7 @@ impl DebugDraw2DResource {
             points.push(glam::Vec2::new(fraction.sin() * radius, fraction.cos() * radius) + center);
         }
 
-        self.add_polygon(points, color);
+        self.add_line_loop(points, color);
     }
 
     pub fn add_rect(
@@ -78,18 +100,7 @@ impl DebugDraw2DResource {
             p0,
         ];
 
-        self.add_polygon(points, color);
-    }
-
-    pub fn add_line(
-        &mut self,
-        p0: glam::Vec2,
-        p1: glam::Vec2,
-        color: glam::Vec4,
-    ) {
-        let points = vec![p0, p1];
-
-        self.add_polygon(points, color);
+        self.add_line_loop(points, color);
     }
 
     // Returns the draw data, leaving this object in an empty state

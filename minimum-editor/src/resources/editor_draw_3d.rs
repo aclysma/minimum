@@ -1,5 +1,6 @@
 use minimum_game::resources::DebugDraw3DResource;
 use minimum_game::resources::DebugDraw3DDepthBehavior;
+use minimum_game::resources::DebugDraw2DResource;
 use minimum_game::resources::ViewportResource;
 use minimum_math::NormalizedRay;
 
@@ -102,6 +103,14 @@ pub struct EditorDraw3DResource {
     closest_shape_to_mouse: ClosestShapeIdDistance,
 }
 
+#[derive(Debug, PartialEq)]
+enum GetClosestShapeCallReason {
+    Hover,
+    Down,
+    DragInProgress,
+    JustClicked
+}
+
 impl EditorDraw3DResource {
     pub fn new() -> Self {
         EditorDraw3DResource {
@@ -168,13 +177,23 @@ impl EditorDraw3DResource {
     //TODO: Consider converting to ui space immediately
     fn get_closest_shape(
         &self,
-        ray: NormalizedRay,
+        mouse_position: glam::Vec2,
+        viewport: &ViewportResource,
+        debug_draw_3d: &mut DebugDraw3DResource,
+        debug_draw_2d: &mut DebugDraw2DResource,
+        call_reason: GetClosestShapeCallReason
     ) -> Option<ClosestShapeIndexDistance> {
 
-        //println!("get_closest_shape {:?}", ray);
+        let ray = viewport.viewport_space_to_ray(mouse_position);
+
+        // if call_reason == GetClosestShapeCallReason::Hover {
+        //     println!("-------");
+        //     println!("mouse_position {:?}", mouse_position);
+        //     println!("get_closest_shape {:?}", ray);
+        // }
 
         let mut closest_shape_index = None;
-        let mut closest_t = 1.0;
+        let mut closest_t = std::f32::MAX;
 
         // Linearly iterate the shapes to find the closest one to the mouse position
         for i in 0..self.shapes.len() {
@@ -183,20 +202,134 @@ impl EditorDraw3DResource {
             let t = match &shape.shape {
                 Shape::Line(line) => {
 
+                    // Figure out where the 3d line is in world space
                     let mut line_dir = line.p1 - line.p0;
                     let line_length = line_dir.length();
                     line_dir = line_dir / line_length;
 
-                    let result = minimum_math::functions::ray_intersect(
-                        ray,
+                    // let result = minimum_math::functions::ray_intersect(
+                    //     ray,
+                    //     NormalizedRay {
+                    //         origin: line.p0,
+                    //         dir: line_dir,
+                    //         length: line_length
+                    //     }
+                    // );
+
+                    // let result = minimum_math::functions::ray_ray_intersect(
+                    //     ray,
+                    //     NormalizedRay {
+                    //         origin: line.p0,
+                    //         dir: line_dir,
+                    //         length: line_length
+                    //     }
+                    // );
+
+                    // Project the 3d line to 2d
+                    let line_p0_2d = viewport.world_space_to_viewport_space(line.p0);
+                    let line_p1_2d = viewport.world_space_to_viewport_space(line.p1);
+
+                    // Do 2D intersection to find closest point on the line in screen space
+                    let result_2d = minimum_math::functions::point_segment_intersect_2d(mouse_position, line_p0_2d, line_p1_2d);
+                    let closest_point_2d = result_2d.closest_point;
+
+                    // Now produce a ray at that 2d coordinate to find the intersection in 3d space and viewport depth
+                    let closest_point_ray = viewport.viewport_space_to_ray(closest_point_2d);
+                    let result_3d = minimum_math::functions::ray_ray_intersect_3d(
+                        closest_point_ray,
                         NormalizedRay {
                             origin: line.p0,
                             dir: line_dir,
                             length: line_length
                         }
                     );
+                    // let closest_point_3d = result_3d.c1;
+                    let closest_point_3d = (line.p0 * (1.0 - result_2d.t)) + (line.p1 * result_2d.t);
 
-                    result.t0
+
+                    //let screen_distance = viewport.world_space_to_viewport_space(result.c0) - viewport.world_space_to_viewport_space(result.c1);
+                    let screen_distance = result_2d.distance_sq.sqrt();
+
+                    if call_reason == GetClosestShapeCallReason::Hover {
+                        //println!("CLOSEST POINT COMPARE {} {}", closest_point_3d, closest_point_3dx);
+                        // debug_draw.add_sphere(
+                        //     result.c0,
+                        //     0.25,
+                        //     glam::Vec4::new(0.0, 1.0, 1.0, 1.0),
+                        //     DebugDraw3DDepthBehavior::NoDepthTest,
+                        //     12
+                        // );
+                        //////debug_draw_3d.add_sphere(
+                        //////    closest_point_3d,
+                        //////    0.25,
+                        //////    glam::Vec4::new(0.0, 1.0, 1.0, 1.0),
+                        //////    DebugDraw3DDepthBehavior::NoDepthTest,
+                        //////    12
+                        //////);
+
+                        //println!("RESULT {}", result_3d.t0 / closest_point_ray.length);
+                        // debug_draw.add_line(
+                        //     viewport.viewport_space_to_world_space(mouse_position, result_3d.t0 / closest_point_ray.length),
+                        //     closest_point_3d,
+                        //     glam::Vec4::new(0.0, 1.0, 0.0, 1.0),
+                        //     DebugDraw3DDepthBehavior::NoDepthTest
+                        // );
+
+                        // debug_draw.add_line(
+                        //     viewport.viewport_space_to_world_space(mouse_position, 1.0),
+                        //     closest_point_3d,
+                        //     glam::Vec4::new(1.0, 0.0, 1.0, 1.0),
+                        //     DebugDraw3DDepthBehavior::NoDepthTest
+                        // );
+                        //
+                        // debug_draw_3d.add_line(
+                        //     viewport.viewport_space_to_world_space(mouse_position, 0.0),
+                        //     closest_point_3d,
+                        //     glam::Vec4::new(0.0, 1.0, 1.0, 1.0),
+                        //     DebugDraw3DDepthBehavior::NoDepthTest
+                        // );
+
+                        //////debug_draw_2d.add_line(
+                        //////    mouse_position,
+                        //////    closest_point_2d,
+                        //////    glam::Vec4::new(0.0, 1.0, 1.0, 1.0),
+                        //////);
+
+                        // debug_draw.add_line(
+                        //     viewport.viewport_space_to_world_space(closest_point_2d, 0.01),
+                        //     viewport.viewport_space_to_world_space(mouse_position, 0.01),
+                        //     glam::Vec4::new(0.0, 1.0, 0.0, 1.0),
+                        //     DebugDraw3DDepthBehavior::NoDepthTest
+                        // );
+
+                        //println!("result: {:?}", result);
+                        //println!("world: {:?}", result.c1);
+                        //println!("screen0: {:?}", viewport.world_space_to_viewport_space(result.c0));
+                        //println!("screen1: {:?}", viewport.world_space_to_viewport_space(result.c1));
+
+                        // println!("line_p0_2d: {}", line_p0_2d);
+                        // println!("line_p1_2d: {}", line_p1_2d);
+                        // println!("closest_point_2d: {}", closest_point_2d);
+                        // println!("screen distance: {}", screen_distance);
+                        // println!("dot {}", (closest_point_2d - mouse_position).dot(line_p1_2d - line_p0_2d));
+                    }
+
+
+
+                    //TODO: Adjust by screen DPI?
+                    if screen_distance < 10.0 {
+                        result_3d.t0
+                        //result.t0
+                        //std::f32::MAX
+                    } else {
+                        std::f32::MAX
+                    }
+
+                    // if (result.c0 - result.c1).length() < 1.0 {
+                    //     result.t0
+                    // } else {
+                    //     std::f32::MAX
+                    // }
                 },
                 Shape::Sphere(circle) => {
                     // // This is an odd kludge, but we want to work in ui space. However, the radius in ui space won't match the radius in
@@ -210,7 +343,7 @@ impl EditorDraw3DResource {
                     //
                     // minimum_math::functions::distance_to_sphere_sq(test_position, scaled_center, scaled_radius)
 
-                    2.0
+                    std::f32::MAX
                 }
             };
 
@@ -220,9 +353,15 @@ impl EditorDraw3DResource {
             }
         }
 
-        if closest_t > 1.0 {
+        if closest_t > ray.length {
             closest_shape_index = None;
         }
+
+        // if call_reason == GetClosestShapeCallReason::Hover {
+        //     if closest_shape_index.is_some() {
+        //         println!("closest t: {:?} {:?}", closest_t, closest_shape_index);
+        //     }
+        // }
 
         let closest_distance = ray.length * closest_t;
 
@@ -236,6 +375,8 @@ impl EditorDraw3DResource {
         &mut self,
         input_state: &InputState,
         viewport: &ViewportResource,
+        debug_draw_3d: &mut DebugDraw3DResource,
+        debug_draw_2d: &mut DebugDraw2DResource,
     ) {
         // See if the user interacted with anything. If they did, then cache it. User code would need to
         // check this and possibly check against other clickable things (like if an object in the editor was clicked.)
@@ -243,8 +384,7 @@ impl EditorDraw3DResource {
 
         // Get mouse UI-space position
         let mouse_position = input_state.mouse_position();
-        let mouse_ray = viewport.viewport_space_to_ray(mouse_position);
-        let closest_shape = self.get_closest_shape(mouse_ray);
+        let closest_shape = self.get_closest_shape(mouse_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::Hover);
 
         if let Some(closest_shape) = closest_shape {
             self.closest_shape_to_mouse.id = self.shapes[closest_shape.index].id.clone();
@@ -252,6 +392,10 @@ impl EditorDraw3DResource {
         } else {
             self.closest_shape_to_mouse.id.clear();
             self.closest_shape_to_mouse.distance = std::f32::MAX;
+        }
+
+        if !self.closest_shape_to_mouse.id.is_empty() {
+            println!("closest shape: {}", self.closest_shape_to_mouse.id);
         }
 
         self.shape_last_interacted.clear();
@@ -264,8 +408,7 @@ impl EditorDraw3DResource {
             // See if mouse button went down and is over a shape. Check this first because we may need to know this in the next block
             // that handles click/drag detection.
             if let Some(down_position) = input_state.mouse_button_went_down_position(mouse_button) {
-                let down_ray = viewport.viewport_space_to_ray(down_position);
-                if let Some(closest_shape) = self.get_closest_shape(down_ray) {
+                if let Some(closest_shape) = self.get_closest_shape(down_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::Down) {
                     if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE {
                         self.mouse_is_down_on_shape[mouse_button_index] =
                             Some(EditorDraw3DShapeClickedState {
@@ -364,9 +507,8 @@ impl EditorDraw3DResource {
                         if let Some(down_on_shape) =
                             &self.mouse_is_down_on_shape[mouse_button_index]
                         {
-                            let begin_ray = viewport.viewport_space_to_ray(mouse_drag_in_progress.begin_position);
                             if let Some(closest_shape) = self
-                                .get_closest_shape(begin_ray)
+                                .get_closest_shape(mouse_drag_in_progress.begin_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::DragInProgress)
                             {
                                 let shape = &self.shapes[closest_shape.index];
                                 if closest_shape.distance
@@ -413,9 +555,8 @@ impl EditorDraw3DResource {
                         if let Some(down_on_shape) =
                             &self.mouse_is_down_on_shape[mouse_button_index]
                         {
-                            let just_clicked_ray = viewport.viewport_space_to_ray(just_clicked_position);
                             if let Some(closest_shape) =
-                                self.get_closest_shape(just_clicked_ray)
+                                self.get_closest_shape(just_clicked_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::JustClicked)
                             {
                                 let shape = &self.shapes[closest_shape.index];
                                 if closest_shape.distance
