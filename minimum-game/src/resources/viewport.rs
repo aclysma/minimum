@@ -18,7 +18,7 @@ pub struct ViewportResource {
     world_space_view_matrix_inv: glam::Mat4,
 
     // Normalized vector
-    // world_space_eye_position: glam::Vec3,
+    world_space_eye_position: glam::Vec3,
     // world_space_eye_direction: glam::Vec3,
     // world_space_up: glam::Vec3,
     // fov: f32, // 0.0 = ortho?
@@ -36,7 +36,7 @@ impl ViewportResource {
             world_space_proj_matrix_inv: glam::Mat4::zero(),
             world_space_view_matrix: glam::Mat4::zero(),
             world_space_view_matrix_inv: glam::Mat4::zero(),
-            // world_space_eye_position: glam::Vec3::zero(),
+            world_space_eye_position: glam::Vec3::zero(),
             // world_space_eye_direction: glam::Vec3::zero(),
             // world_space_up: glam::Vec3::zero(),
             // fov: 0.0,
@@ -46,9 +46,9 @@ impl ViewportResource {
         }
     }
 
-    // pub fn world_space_eye_position(&self) -> glam::Vec3 {
-    //     self.world_space_eye_position
-    // }
+    pub fn world_space_eye_position(&self) -> glam::Vec3 {
+        self.world_space_eye_position
+    }
 
     pub fn screen_space_matrix(&self) -> &glam::Mat4 {
         &self.screen_space_matrix
@@ -70,7 +70,7 @@ impl ViewportResource {
         &mut self,
         proj_matrix: glam::Mat4,
         view_matrix: glam::Mat4,
-        // eye: glam::Vec3,
+        eye: glam::Vec3,
         // dir: glam::Vec3,
         // up: glam::Vec3,
         // fov: f32,
@@ -81,7 +81,7 @@ impl ViewportResource {
         self.world_space_proj_matrix_inv = proj_matrix.inverse();
         self.world_space_view_matrix = view_matrix;
         self.world_space_view_matrix_inv = view_matrix.inverse();
-        // self.world_space_eye_position = eye;
+        self.world_space_eye_position = eye;
         // self.world_space_eye_direction = dir;
         // self.world_space_up = up;
         // self.fov = fov;
@@ -194,8 +194,7 @@ impl ViewportResource {
         glam::Vec2::new(position.x(), position.y())
     }
 
-    // In: Position in world space. If clip range = 0 it will intersect the near plane and if
-    //     clip range = 1 it will intersect the far plane
+    // In: Position in world space.
     // Out: pixel coordinates within the viewport. Top left: (0, 0) Bottom right: self.size_in_pixels
     pub fn world_space_to_viewport_space(
         &self,
@@ -220,4 +219,63 @@ impl ViewportResource {
         let world_space_zero = self.viewport_space_to_world_space(glam::Vec2::zero(), 0.0);
         self.viewport_space_to_world_space(viewport_space_delta, 0.0) - world_space_zero
     }
+
+
+    pub fn world_space_clip(
+        &self,
+        world_position: glam::Vec3,
+    ) -> f32 {
+        // input is a position in pixels
+        let mut position = world_position.extend(1.0);
+
+        // project to raw space
+        position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
+        position = position / position.w();
+
+        position.z()
+    }
+
+    // I'm sure there's a much better way to do this, but it looks good and is consistent across FOV
+    // unlike just using distance. I'm not even sure exactly what it returns, but treat it like a
+    // unit-less ratio and scale world-space things by it.
+    pub fn world_space_ui_multiplier(
+        &self,
+        position: glam::Vec3
+    ) -> f32 {
+        let position_2d = self.world_space_to_viewport_space(position);
+        let depth = self.world_space_clip(position);
+
+        // Determine the world space distance we would get if we translate in screen space
+        let offset_min = self.viewport_space_to_world_space(position_2d - glam::Vec2::new(50.0, 50.0), depth);
+        let offset_max = self.viewport_space_to_world_space(position_2d + glam::Vec2::new(50.0, 50.0), depth);
+        (offset_max - offset_min).length()
+    }
+
+    /*
+    pub fn apply_viewport_delta_to_world_space(
+        &self,
+        world_space: glam::Vec3,
+        viewport_space_delta: glam::Vec2,
+    ) -> glam::Vec3 {
+        // input is a position in pixels
+        let mut position = world_space.extend(1.0);
+
+        // project to raw space
+        position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
+        position = position / position.w();
+
+        let z = position.z();
+
+        // project to world space
+        let mut viewport_space = self.normalized_space_to_viewport_space(glam::Vec2::new(position.x(), position.y()));
+        viewport_space += viewport_space_delta;
+
+        self.viewport_space_to_world_space(viewport_space, z)
+
+        // let normalized = self.viewport_space_to_normalized_space(viewport_space);
+        //
+        // let position = glam::Vec4::new(normalized.x(), normalized.y(), z, 1.0);
+        // position =
+    }
+    */
 }

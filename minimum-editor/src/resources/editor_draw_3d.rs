@@ -267,6 +267,50 @@ impl EditorDraw3DResource {
         );
     }
 
+    /*
+    // Input here is world space
+    pub fn add_ui_line(
+        &mut self,
+        viewport: &ViewportResource,
+        id: &str,
+        debug_draw: &mut DebugDraw3DResource,
+        p0: glam::Vec3,
+        p1: glam::Vec3,
+        constraint: EditorDraw3DConstraint,
+        //basis: glam::Vec3,
+        mut color: glam::Vec4,
+        depth_behavior: DebugDraw3DDepthBehavior,
+    ) {
+        if self.closest_shape_to_mouse.id == id
+            && self.closest_shape_to_mouse.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE
+        {
+            color = glam::vec4(1.0, 0.0, 0.0, 1.0);
+        }
+
+        let world_offset = viewport.apply_viewport_delta_to_world_space(constraint.basis(), glam::Vec2::new(100.0, 100.0));
+        let viewport_old = viewport.world_space_to_viewport_space(constraint.basis());
+        let viewport_new = viewport.world_space_to_viewport_space(constraint.basis() + world_offset);
+
+        println!("w0 {:?} w1 {:?}   v0 {:?} v1 {:?}", constraint.basis(), constraint.basis() + world_offset, viewport_old, viewport_new);
+        //let ratio = world_offset / 100.0;
+
+        let p0 = constraint.basis() + (p0 - constraint.basis()).normalize() * world_offset;
+        let p1 = constraint.basis() + (p1 - constraint.basis()).normalize() * world_offset;
+
+        //dbg!(world_offset);
+
+        debug_draw.add_line(p0, p1, color, depth_behavior);
+        self.shapes
+            .push(ShapeWithId::new_line(
+                id.to_string(),
+                p0,
+                p1,
+                constraint
+            )
+        );
+    }
+*/
+
     // Input here is world space
     // pub fn add_sphere(
     //     &mut self,
@@ -435,7 +479,6 @@ impl EditorDraw3DResource {
             if let Some(mouse_previous_down_position) = input_state.mouse_button_went_down_position(mouse_button) {
                 if let Some(closest_shape) = self.get_closest_shape(mouse_previous_down_position, viewport, debug_draw_3d, debug_draw_2d, GetClosestShapeCallReason::Down) {
                     if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE {
-                        println!("set mouse is down on shape");
                         self.mouse_previous_down_on_shape[mouse_button_index] =
                             Some(EditorDraw3DShapeClickedState {
                                 mouse_position: mouse_previous_down_position,
@@ -467,6 +510,7 @@ impl EditorDraw3DResource {
                         - (current_drag_in_progress.world_space_begin_position
                         + current_drag_in_progress.world_space_accumulated_frame_delta);
 
+                    self.shape_last_interacted = current_drag_in_progress.shape_id.clone();
                     self.shape_drag_in_progress[mouse_button_index] = Some(EditorDraw3DShapeDragState {
                         mouse_begin_position: input_state_drag_in_progress.begin_position,
                         mouse_end_position: input_state_drag_in_progress.end_position,
