@@ -194,44 +194,34 @@ impl ViewportResource {
         glam::Vec2::new(position.x(), position.y())
     }
 
+    fn world_space_to_normalized_space_internal(
+        &self,
+        world_position: glam::Vec3,
+    ) -> glam::Vec4 {
+        // input is a position in pixels
+        let mut position = glam::Vec4::new(world_position.x(), world_position.y(), world_position.z(), 1.0);
+
+        // project to raw space
+        position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
+        position / position.w()
+    }
+
     // In: Position in world space.
     // Out: pixel coordinates within the viewport. Top left: (0, 0) Bottom right: self.size_in_pixels
     pub fn world_space_to_viewport_space(
         &self,
         world_position: glam::Vec3,
     ) -> glam::Vec2 {
-        // input is a position in pixels
-        let mut position = glam::Vec4::new(world_position.x(), world_position.y(), world_position.z(), 1.0);
-
-        // project to raw space
-        position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
-        position = position / position.w();
-
         // project to world space
+        let position = self.world_space_to_normalized_space_internal(world_position);
         self.normalized_space_to_viewport_space(glam::Vec2::new(position.x(), position.y()))
     }
-
-    pub fn viewport_space_delta_to_world_space_delta(
-        &self,
-        viewport_space_delta: glam::Vec2,
-    ) -> glam::Vec3 {
-        // Find the world space delta
-        let world_space_zero = self.viewport_space_to_world_space(glam::Vec2::zero(), 0.0);
-        self.viewport_space_to_world_space(viewport_space_delta, 0.0) - world_space_zero
-    }
-
 
     pub fn world_space_clip(
         &self,
         world_position: glam::Vec3,
     ) -> f32 {
-        // input is a position in pixels
-        let mut position = world_position.extend(1.0);
-
-        // project to raw space
-        position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
-        position = position / position.w();
-
+        let position = self.world_space_to_normalized_space_internal(world_position);
         position.z()
     }
 
@@ -240,42 +230,17 @@ impl ViewportResource {
     // unit-less ratio and scale world-space things by it.
     pub fn world_space_ui_multiplier(
         &self,
-        position: glam::Vec3
+        world_position: glam::Vec3
     ) -> f32 {
-        let position_2d = self.world_space_to_viewport_space(position);
-        let depth = self.world_space_clip(position);
+
+        // project to world space
+        let position = self.world_space_to_normalized_space_internal(world_position);
+        let position_2d = self.normalized_space_to_viewport_space(glam::Vec2::new(position.x(), position.y()));
+        let depth = position.z();
 
         // Determine the world space distance we would get if we translate in screen space
         let offset_min = self.viewport_space_to_world_space(position_2d - glam::Vec2::new(50.0, 50.0), depth);
         let offset_max = self.viewport_space_to_world_space(position_2d + glam::Vec2::new(50.0, 50.0), depth);
         (offset_max - offset_min).length()
     }
-
-    /*
-    pub fn apply_viewport_delta_to_world_space(
-        &self,
-        world_space: glam::Vec3,
-        viewport_space_delta: glam::Vec2,
-    ) -> glam::Vec3 {
-        // input is a position in pixels
-        let mut position = world_space.extend(1.0);
-
-        // project to raw space
-        position = self.world_space_proj_matrix * self.world_space_view_matrix * position;
-        position = position / position.w();
-
-        let z = position.z();
-
-        // project to world space
-        let mut viewport_space = self.normalized_space_to_viewport_space(glam::Vec2::new(position.x(), position.y()));
-        viewport_space += viewport_space_delta;
-
-        self.viewport_space_to_world_space(viewport_space, z)
-
-        // let normalized = self.viewport_space_to_normalized_space(viewport_space);
-        //
-        // let position = glam::Vec4::new(normalized.x(), normalized.y(), z, 1.0);
-        // position =
-    }
-    */
 }

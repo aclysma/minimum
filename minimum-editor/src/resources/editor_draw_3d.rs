@@ -267,50 +267,6 @@ impl EditorDraw3DResource {
         );
     }
 
-    /*
-    // Input here is world space
-    pub fn add_ui_line(
-        &mut self,
-        viewport: &ViewportResource,
-        id: &str,
-        debug_draw: &mut DebugDraw3DResource,
-        p0: glam::Vec3,
-        p1: glam::Vec3,
-        constraint: EditorDraw3DConstraint,
-        //basis: glam::Vec3,
-        mut color: glam::Vec4,
-        depth_behavior: DebugDraw3DDepthBehavior,
-    ) {
-        if self.closest_shape_to_mouse.id == id
-            && self.closest_shape_to_mouse.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE
-        {
-            color = glam::vec4(1.0, 0.0, 0.0, 1.0);
-        }
-
-        let world_offset = viewport.apply_viewport_delta_to_world_space(constraint.basis(), glam::Vec2::new(100.0, 100.0));
-        let viewport_old = viewport.world_space_to_viewport_space(constraint.basis());
-        let viewport_new = viewport.world_space_to_viewport_space(constraint.basis() + world_offset);
-
-        println!("w0 {:?} w1 {:?}   v0 {:?} v1 {:?}", constraint.basis(), constraint.basis() + world_offset, viewport_old, viewport_new);
-        //let ratio = world_offset / 100.0;
-
-        let p0 = constraint.basis() + (p0 - constraint.basis()).normalize() * world_offset;
-        let p1 = constraint.basis() + (p1 - constraint.basis()).normalize() * world_offset;
-
-        //dbg!(world_offset);
-
-        debug_draw.add_line(p0, p1, color, depth_behavior);
-        self.shapes
-            .push(ShapeWithId::new_line(
-                id.to_string(),
-                p0,
-                p1,
-                constraint
-            )
-        );
-    }
-*/
-
     // Input here is world space
     // pub fn add_sphere(
     //     &mut self,
