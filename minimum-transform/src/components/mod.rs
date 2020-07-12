@@ -9,3 +9,4 @@ pub use scale::NonUniformScaleComponent;
 
 mod rotation;
 pub use rotation::Rotation2DComponent;
+pub use rotation::RotationComponent;

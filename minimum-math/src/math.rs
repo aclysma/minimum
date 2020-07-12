@@ -299,3 +299,103 @@ impl InspectRenderDefault<Vec4> for Vec4 {
         changed
     }
 }
+
+
+
+
+#[derive(Copy, Clone, Serialize, Deserialize, Debug, PartialEq, Default)]
+#[repr(transparent)]
+#[serde(transparent)]
+pub struct Quat {
+    value: glam::Quat,
+}
+
+impl Quat {
+    pub fn zero() -> Self {
+        Quat {
+            value: glam::Quat::identity(),
+        }
+    }
+}
+
+impl From<[f32;4]> for Quat {
+    fn from(value: [f32;4]) -> Self {
+        Quat { value: glam::Quat::from_xyzw(value[0], value[1], value[2], value[3] ) }
+    }
+}
+
+impl From<glam::Quat> for Quat {
+    fn from(value: glam::Quat) -> Self {
+        Quat { value }
+    }
+}
+
+impl Into<glam::Quat> for Quat {
+    fn into(self) -> glam::Quat {
+        *self
+    }
+}
+
+impl Deref for Quat {
+    type Target = glam::Quat;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl DerefMut for Quat {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.value
+    }
+}
+
+impl InspectRenderDefault<Quat> for Quat {
+    fn render(
+        data: &[&Quat],
+        label: &'static str,
+        ui: &imgui::Ui,
+        _args: &InspectArgsDefault,
+    ) {
+        if data.len() == 0 {
+            return;
+        }
+
+        ui.text(&imgui::im_str!(
+            "{}: {} {} {} {}",
+            label,
+            data[0].x(),
+            data[0].y(),
+            data[0].z(),
+            data[0].w()
+        ));
+    }
+
+    fn render_mut(
+        data: &mut [&mut Quat],
+        label: &'static str,
+        ui: &imgui::Ui,
+        _args: &InspectArgsDefault,
+    ) -> bool {
+        if data.len() == 0 {
+            return false;
+        }
+
+        let mut changed = false;
+        let mut val = [data[0].x(), data[0].y(), data[0].z(), data[0].w()];
+        if ui
+            .input_float4(&imgui::im_str!("{}", label), &mut val)
+            .build()
+        {
+            let q = glam::Quat::from_xyzw(val[0], val[1], val[2], val[3]);
+            changed = true;
+            for d in data {
+                d.value = q;
+            }
+        }
+
+        changed
+    }
+}

@@ -9,6 +9,7 @@ pub mod matrix;
 pub use math::Vec2;
 pub use math::Vec3;
 pub use math::Vec4;
+pub use math::Quat;
 
 pub use matrix::Mat4;
 
