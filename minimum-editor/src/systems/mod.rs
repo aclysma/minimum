@@ -10,7 +10,7 @@ use crate::resources::EditorTool;
 
 use minimum_game::input::MouseButton;
 
-use minimum_transform::PositionComponent;
+use minimum_transform::TransformComponent;
 
 mod main_menu;
 pub use main_menu::editor_imgui_menu;
@@ -86,7 +86,6 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
         .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
-        .with_query(<Read<PositionComponent>>::query())
         .build(
             |_command_buffer,
              _subworld,
@@ -100,7 +99,7 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
                 _universe_resource,
                 editor_settings,
             ),
-             _position_query| {
+             _| {
                 if input_state.is_key_just_down(editor_settings.keybinds().tool_translate) {
                     editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
                 }
@@ -157,7 +156,6 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
         .write_resource::<DebugDraw2DResource>()
         .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
-        .with_query(<Read<PositionComponent>>::query())
         .build(
             |_command_buffer,
              _subworld,
@@ -171,7 +169,7 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
                 editor_draw,
                 _universe_resource,
             ),
-             _position_query| {
+            _| {
                 editor_draw.update(input_state.input_state(), &*viewport, debug_draw_3d, debug_draw_2d);
             },
         )

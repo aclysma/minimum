@@ -10,7 +10,8 @@ use crate::resources::EditorTool;
 use minimum_game::input::MouseButton;
 
 use minimum_transform::components::{
-    PositionComponent, Rotation2DComponent, UniformScaleComponent, NonUniformScaleComponent,
+    TransformComponentDef,
+    TransformComponent
 };
 
 use legion::filter::EntityFilterTuple;
@@ -36,13 +37,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
         .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
         .read_resource::<AssetResource>()
-        .with_query(<Read<PositionComponent>>::query())
-        .with_query(<(
-            Read<PositionComponent>,
-            TryRead<UniformScaleComponent>,
-            TryRead<NonUniformScaleComponent>,
-        )>::query())
-        .with_query(<(Read<PositionComponent>, Read<Rotation2DComponent>)>::query())
+        .with_query(<Read<TransformComponent>>::query())
         .build(
            |_command_buffer,
             subworld,
@@ -58,7 +53,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                 component_registry,
                 asset_resource
             ),
-            (translate_query, scale_query, rotate_query)| {
+            transform_query| {
                 let mut gizmo_tx = None;
                 std::mem::swap(&mut gizmo_tx, editor_state.gizmo_transaction_mut());
 
@@ -109,7 +104,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                         &mut *editor_draw,
                         &mut *editor_selection,
                         subworld,
-                        translate_query,
+                        transform_query,
                     ),
                     EditorTool::Scale => draw_scale_gizmo(
                         &* viewport_resource,
@@ -117,7 +112,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                         &mut *editor_draw,
                         &mut *editor_selection,
                         subworld,
-                        scale_query,
+                        transform_query,
                     ),
                     EditorTool::Rotate => draw_rotate_gizmo(
                         &* viewport_resource,
@@ -125,7 +120,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                         &mut *editor_draw,
                         &mut *editor_selection,
                         subworld,
-                        rotate_query,
+                        transform_query,
                     ),
                 }
             },
@@ -176,7 +171,7 @@ fn handle_translate_gizmo_input(
         let mut world_space_previous_frame_delta =
             drag_in_progress.world_space_previous_frame_delta;
 
-        let query = <Write<PositionComponent>>::query();
+        let query = <Write<TransformComponentDef>>::query();
 
         for (_entity_handle, mut position) in query.iter_entities_mut(tx.world_mut()) {
             // Can use editor_draw.is_shape_drag_just_finished(MouseButton::LEFT) to see if this is the final drag,
@@ -204,12 +199,12 @@ fn draw_translate_gizmo(
     editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    translate_query: &mut Query<
-        Read<PositionComponent>,
-        EntityFilterTuple<ComponentFilter<PositionComponent>, Passthrough, Passthrough>,
+    transform_query: &mut Query<
+        Read<TransformComponent>,
+        EntityFilterTuple<ComponentFilter<TransformComponent>, Passthrough, Passthrough>,
     >,
 ) {
-    for (entity, position) in translate_query.iter_entities(subworld) {
+    for (entity, transform) in transform_query.iter_entities(subworld) {
         if !selection_world.is_entity_selected(entity) {
             continue;
         }
@@ -221,7 +216,7 @@ fn draw_translate_gizmo(
         let xz_color = glam::vec4(1.0, 0.0, 1.0, 1.0);
         let yz_color = glam::vec4(0.0, 1.0, 1.0, 1.0);
 
-        let position = position.position.into();
+        let position = transform.position();
         let ui_multiplier = 0.005 * viewport.world_space_ui_multiplier(position);
 
         // x axis line
@@ -463,13 +458,13 @@ fn handle_scale_gizmo_input(
         }
 
         if scale_uniform {
-            let query = <Write<UniformScaleComponent>>::query();
+            let query = <Write<TransformComponentDef>>::query();
 
-            for (_entity_handle, mut uniform_scale) in query.iter_entities_mut(tx.world_mut()) {
-                uniform_scale.uniform_scale += ui_space_previous_frame_delta.x()
+            for (_entity_handle, mut transform) in query.iter_entities_mut(tx.world_mut()) {
+                *transform.uniform_scale_mut() += ui_space_previous_frame_delta.x()
             }
         } else {
-            let query = <Write<NonUniformScaleComponent>>::query();
+            let query = <Write<TransformComponentDef>>::query();
 
             for (_entity_handle, mut non_uniform_scale) in query.iter_entities_mut(tx.world_mut()) {
                 *non_uniform_scale.non_uniform_scale += glam::Vec3::new(
@@ -496,27 +491,17 @@ fn draw_scale_gizmo(
     editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    scale_query: &mut Query<
-        (
-            Read<PositionComponent>,
-            TryRead<UniformScaleComponent>,
-            TryRead<NonUniformScaleComponent>,
-        ),
-        EntityFilterTuple<
-            And<(ComponentFilter<PositionComponent>, Passthrough, Passthrough)>,
-            And<(Passthrough, Passthrough, Passthrough)>,
-            And<(Passthrough, Passthrough, Passthrough)>,
-        >,
+    transform_query: &mut Query<
+        Read<TransformComponent>,
+        EntityFilterTuple<ComponentFilter<TransformComponent>, Passthrough, Passthrough>,
     >,
 ) {
-    for (entity, (position, uniform_scale, non_uniform_scale)) in
-        scale_query.iter_entities(subworld)
-    {
+    for (entity, transform) in transform_query.iter_entities(subworld) {
         if !selection_world.is_entity_selected(entity) {
             continue;
         }
 
-        let position = position.position.into();
+        let position = transform.position();
 
         let x_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
         let y_color = glam::Vec4::new(1.0, 0.6, 0.0, 1.0);
@@ -524,75 +509,71 @@ fn draw_scale_gizmo(
 
         let ui_multiplier = 0.005 * viewport.world_space_ui_multiplier(position);
 
-        if non_uniform_scale.is_some() {
-            // x axis line
-            editor_draw.add_line(
-                "x_axis_scale",
-                debug_draw,
-                position,
-                position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
-                EditorDraw3DConstraint::x_line(position),
-                x_color,
-                DebugDraw3DDepthBehavior::NoDepthTest,
-            );
+        // x axis line
+        editor_draw.add_line(
+            "x_axis_scale",
+            debug_draw,
+            position,
+            position + (glam::vec3(100.0, 0.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::x_line(position),
+            x_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
 
-            // x axis line end
-            editor_draw.add_line(
-                "x_axis_scale",
-                debug_draw,
-                position + (glam::vec3(100.0, -20.0, 0.0) * ui_multiplier),
-                position + (glam::vec3(100.0, 20.0, 0.0) * ui_multiplier),
-                EditorDraw3DConstraint::x_line(position),
-                x_color,
-                DebugDraw3DDepthBehavior::NoDepthTest,
-            );
+        // x axis line end
+        editor_draw.add_line(
+            "x_axis_scale",
+            debug_draw,
+            position + (glam::vec3(100.0, -20.0, 0.0) * ui_multiplier),
+            position + (glam::vec3(100.0, 20.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::x_line(position),
+            x_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
 
-            // y axis line
-            editor_draw.add_line(
-                "y_axis_scale",
-                debug_draw,
-                position,
-                position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
-                EditorDraw3DConstraint::y_line(position),
-                y_color,
-                DebugDraw3DDepthBehavior::NoDepthTest,
-            );
+        // y axis line
+        editor_draw.add_line(
+            "y_axis_scale",
+            debug_draw,
+            position,
+            position + (glam::vec3(0.0, 100.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::y_line(position),
+            y_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
 
-            // y axis line end
-            editor_draw.add_line(
-                "y_axis_scale",
-                debug_draw,
-                position + (glam::Vec3::new(-20.0, 100.0, 0.0) * ui_multiplier),
-                position + (glam::Vec3::new(20.0, 100.0, 0.0) * ui_multiplier),
-                EditorDraw3DConstraint::y_line(position),
-                y_color,
-                DebugDraw3DDepthBehavior::NoDepthTest,
-            );
-        }
+        // y axis line end
+        editor_draw.add_line(
+            "y_axis_scale",
+            debug_draw,
+            position + (glam::Vec3::new(-20.0, 100.0, 0.0) * ui_multiplier),
+            position + (glam::Vec3::new(20.0, 100.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::y_line(position),
+            y_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
 
-        if uniform_scale.is_some() {
-            // xy line
-            editor_draw.add_line(
-                "uniform_scale",
-                debug_draw,
-                position + (glam::Vec3::new(0.0, 0.0, 0.0) * ui_multiplier),
-                position + (glam::Vec3::new(50.0, 50.0, 0.0) * ui_multiplier),
-                EditorDraw3DConstraint::xy_plane(position),
-                xy_color,
-                DebugDraw3DDepthBehavior::NoDepthTest,
-            );
+        // xy line
+        editor_draw.add_line(
+            "uniform_scale",
+            debug_draw,
+            position + (glam::Vec3::new(0.0, 0.0, 0.0) * ui_multiplier),
+            position + (glam::Vec3::new(50.0, 50.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::xy_plane(position),
+            xy_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
 
-            // xy line
-            editor_draw.add_line(
-                "uniform_scale",
-                debug_draw,
-                position + (glam::Vec3::new(40.0, 60.0, 0.0) * ui_multiplier),
-                position + (glam::Vec3::new(60.0, 40.0, 0.0) * ui_multiplier),
-                EditorDraw3DConstraint::xy_plane(position),
-                xy_color,
-                DebugDraw3DDepthBehavior::NoDepthTest,
-            );
-        }
+        // xy line
+        editor_draw.add_line(
+            "uniform_scale",
+            debug_draw,
+            position + (glam::Vec3::new(40.0, 60.0, 0.0) * ui_multiplier),
+            position + (glam::Vec3::new(60.0, 40.0, 0.0) * ui_multiplier),
+            EditorDraw3DConstraint::xy_plane(position),
+            xy_color,
+            DebugDraw3DDepthBehavior::NoDepthTest,
+        );
     }
 }
 
@@ -623,9 +604,9 @@ fn handle_rotate_gizmo_input(
         let ui_space_previous_frame_delta =
             sign_aware_magnitude(drag_in_progress.world_space_previous_frame_delta);
 
-        let query = <Write<Rotation2DComponent>>::query();
+        let query = <Write<TransformComponentDef>>::query();
         for (_entity_handle, mut rotation) in query.iter_entities_mut(tx.world_mut()) {
-            rotation.rotation += ui_space_previous_frame_delta
+            *rotation.rotation_euler_mut() += glam::Vec3::unit_z() * ui_space_previous_frame_delta
         }
 
         if editor_draw.is_shape_drag_just_finished(MouseButton::LEFT) {
@@ -644,28 +625,21 @@ fn draw_rotate_gizmo(
     editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    scale_query: &mut Query<
-        (Read<PositionComponent>, Read<Rotation2DComponent>),
-        EntityFilterTuple<
-            And<(
-                ComponentFilter<PositionComponent>,
-                ComponentFilter<Rotation2DComponent>,
-            )>,
-            And<(Passthrough, Passthrough)>,
-            And<(Passthrough, Passthrough)>,
-        >,
+    transform_query: &mut Query<
+        Read<TransformComponent>,
+        EntityFilterTuple<ComponentFilter<TransformComponent>, Passthrough, Passthrough>,
     >,
 ) {
-    for (entity, (position, _rotation)) in scale_query.iter_entities(subworld) {
+    for (entity, transform) in transform_query.iter_entities(subworld) {
         if !selection_world.is_entity_selected(entity) {
             continue;
         }
 
-        let position = position.position;
+        let position = transform.position();
 
         let z_axis_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
 
-        let ui_multiplier = 0.005 * viewport.world_space_ui_multiplier(*position);
+        let ui_multiplier = 0.005 * viewport.world_space_ui_multiplier(position);
 
         // editor_draw.add_sphere(
         //     "z_axis_rotate",

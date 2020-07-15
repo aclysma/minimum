@@ -10,6 +10,7 @@ edition = "2018"
 minimum-math = { path = "../minimum-math" }
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
 
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }

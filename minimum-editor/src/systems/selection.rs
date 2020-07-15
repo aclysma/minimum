@@ -9,7 +9,7 @@ use minimum_game::input::MouseButton;
 
 use ncollide3d::pipeline::{CollisionGroups};
 
-use minimum_transform::components::PositionComponent;
+use minimum_transform::components::TransformComponentDef;
 use ncollide3d::query::RayIntersection;
 use ncollide3d::shape::{ConvexHull, Shape};
 use ncollide3d::query::algorithms::gjk::GJKResult::Proximity;
@@ -189,7 +189,6 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
         .write_resource::<EditorDraw3DResource>()
         .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
-        .with_query(<Read<PositionComponent>>::query())
         .build(
             |_command_buffer,
              _subworld,
@@ -203,8 +202,8 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
                 editor_draw,
                 _universe_resource,
                 editor_settings,
-            ),
-             _position_query| {
+             ),
+             _| {
                 handle_selection(
                     &*editor_draw,
                     &*input_state,
