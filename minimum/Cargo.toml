@@ -14,10 +14,10 @@ minimum-transform = { path = "../minimum-transform" }
 minimum-editor = { path = "../minimum-editor" }
 minimum-game = { path = "../minimum-game" }
 
-imgui-inspect-derive = "0.4"
-imgui-inspect = "0.4"
+imgui-inspect-derive = "0.5"
+imgui-inspect = "0.5"
 
-imgui = "0.3"
+imgui = "0.4"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 

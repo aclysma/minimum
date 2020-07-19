@@ -15,13 +15,13 @@ minimum-nphysics2d = { path = "../../contrib/minimum-nphysics2d" }
 example-shared = { path = "../example-shared" }
 
 skulpin = { version = "0.9", default-features = false, features = ["skia_complete", "skulpin_winit"] }
-skulpin-plugin-imgui = "0.3"
+skulpin-plugin-imgui = "0.4"
 
-imgui-inspect-derive = "0.4"
-imgui-inspect = "0.4"
+imgui-inspect-derive = "0.5"
+imgui-inspect = "0.5"
 
-imgui = "0.3"
-imgui-winit-support = "=0.3.0"
+imgui = "0.4"
+imgui-winit-support = "0.4.0"
 
 crossbeam-channel = "0.3"
 

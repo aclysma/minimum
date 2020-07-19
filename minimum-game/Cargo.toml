@@ -10,7 +10,7 @@ edition = "2018"
 minimum-kernel = { path = "../minimum-kernel" }
 minimum-math = { path = "../minimum-math" }
 
-imgui = "0.3"
+imgui = "0.4"
 
 legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
 

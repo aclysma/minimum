@@ -17,13 +17,13 @@ example-shared = { path = "../example-shared" }
 sdl2 = { version = "0.33", features = ["bundled", "static-link"] }
 
 skulpin = { version = "0.9", default-features = false, features = ["skulpin_sdl2", "skia_complete"] }
-skulpin-plugin-imgui = "0.3"
+skulpin-plugin-imgui = "0.4"
 
-imgui-inspect-derive = "0.4"
-imgui-inspect = "0.4"
+imgui-inspect-derive = "0.5"
+imgui-inspect = "0.5"
 
-imgui = "0.3"
-imgui-sdl2 = "0.9.0"
+imgui = "0.4"
+imgui-sdl2 = "0.11.0"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 
