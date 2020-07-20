@@ -31,13 +31,11 @@ pub struct AssetResource {
     update_callback: Option<Box<dyn AssetResourceUpdateCallback>>
 }
 
-impl Default for AssetResource {
-    fn default() -> Self {
+impl AssetResource {
+    pub fn new(loader: RpcLoader) -> Self {
         let (tx, rx) = atelier_loader::crossbeam_channel::unbounded();
         let tx = Arc::new(tx);
         let storage = AssetStorageSet::new(tx.clone());
-
-        let loader = RpcLoader::default();
 
         AssetResource {
             loader,
