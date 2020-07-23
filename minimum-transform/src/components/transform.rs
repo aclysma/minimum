@@ -21,22 +21,6 @@ pub struct TransformComponentDef {
     pub scale: f32,
     #[serde_diff(opaque)]
     pub non_uniform_scale: Vec3,
-
-    //TODO: Put these in separate component def?
-
-    // pub l_position: Vec3,
-    // // representation order: x=pitch, y=roll, z=yaw
-    // // rotation order: yaw, pitch, roll (zxy)
-    // pub l_rotation: Vec3,
-    // pub l_scale: f32,
-    // pub l_non_uniform_scale: Vec3,
-
-    //pub root: Option<Entity>
-
-    // #[serde_diff(opaque)]
-    // pub global_transform: Mat4,
-    // pub local_transform: Mat4,
-    // pub root: Option<Entity>,
 }
 
 impl Default for TransformComponentDef {
@@ -50,19 +34,52 @@ impl Default for TransformComponentDef {
     }
 }
 
+fn quat_to_ypr(q: glam::Quat) -> (f32, f32, f32) {
+    let x = q.x();
+    let y = q.y();
+    let z = q.z();
+    let w = q.w();
+
+    let test = x * y + z * w;
+    if test >= 0.5 {
+        let yaw = 2.0 * f32::atan2(x, w);
+        let pitch = std::f32::consts::FRAC_PI_2;
+        let roll = 0.0;
+
+        (yaw, pitch, roll)
+    } else if test <= 0.5 {
+        let yaw = -2.0 * f32::atan2(x, w);
+        let pitch = -std::f32::consts::FRAC_PI_2;
+        let roll = 0.0;
+
+        (yaw, pitch, roll)
+    } else {
+        let x_sq = x * x;
+        let y_sq = y * y;
+        let z_sq = z * z;
+        let yaw = f32::atan2(2.0 * y * w - 2.0 * x * z, 1.0 - 2.0 * y_sq - 2.0 * z_sq);
+        let pitch = f32::asin(2.0 * test);
+        let roll = f32::atan2(2.0 * x * w - 2.0 * y * z, 1.0 - 2.0 * x_sq - 2.0 * z_sq);
+
+        (yaw, pitch, roll)
+    }
+}
+
 impl TransformComponentDef {
-    // pub fn global_position(&self) -> glam::Vec3 {
-    //     *self.position
-    // }
-    //
-    // pub fn global_rotation_ypr(&self) -> glam::Vec3 {
-    //     glam::Vec3::new(self.rotation.z(), self.rotation.x(), self.position.)
-    //     //self.global_transform.to_scale_rotation_translation()
-    // }
-    //
-    // pub fn local_position(&self) -> glam::Vec3 {
-    //     self.transform.w_axis().truncate()
-    // }
+    pub fn from_matrix(matrix: glam::Mat4) -> Self {
+        let (scale_combined, rotation, position) = matrix.to_scale_rotation_translation();
+        let rotation = quat_to_ypr(rotation);
+
+        let scale = scale_combined.x();
+        let non_uniform_scale = scale_combined / scale;
+
+        TransformComponentDef {
+            position: position.into(),
+            rotation: glam::Vec3::from(rotation).into(),
+            scale,
+            non_uniform_scale: non_uniform_scale.into()
+        }
+    }
 
     pub fn position(&self) -> glam::Vec3 {
         *self.position
