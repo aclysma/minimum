@@ -18,3 +18,10 @@ imgui-inspect = "0.5"
 
 log="0.4"
 assert_approx_eq = "1.1"
+
+nalgebra = { version = "0.18", features = [ "serde-serialize" ], optional = true }
+nalgebra-glm = { version = "0.4", optional = true }
+
+[features]
+default = []
+na_conversion = ["nalgebra", "nalgebra-glm"]

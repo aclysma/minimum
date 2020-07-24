@@ -48,3 +48,6 @@ erased-serde = "0.3"
 
 log="0.4"
 env_logger = "0.6"
+
+[features]
+default = ["minimum-math/na_conversion"]

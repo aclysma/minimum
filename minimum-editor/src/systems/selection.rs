@@ -13,10 +13,7 @@ use minimum_transform::components::TransformComponentDef;
 use ncollide3d::query::RayIntersection;
 use ncollide3d::shape::{ConvexHull, Shape};
 use ncollide3d::query::algorithms::gjk::GJKResult::Proximity;
-
-pub fn vec3_glam_to_glm(value: glam::Vec3) -> glm::Vec3 {
-    glm::Vec3::new(value.x(), value.y(), value.z())
-}
+use minimum_math::na_convert::vec3_glam_to_glm;
 
 fn handle_selection(
     editor_draw: &EditorDraw3DResource,

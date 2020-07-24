@@ -2,6 +2,7 @@ pub mod daemon;
 
 pub mod components {
     pub use minimum_transform::components::*;
+    pub use minimum_editor::components::*;
 }
 
 pub mod pipeline {

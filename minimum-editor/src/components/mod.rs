@@ -1,0 +1,2 @@
+mod editor_metadata_component;
+pub use editor_metadata_component::EditorMetadataComponent;

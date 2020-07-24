@@ -20,5 +20,6 @@ mod inspect;
 pub use inspect::EditorInspectRegistryBuilder;
 pub use inspect::EditorInspectRegistry;
 
+pub mod components;
 pub mod resources;
 pub mod systems;

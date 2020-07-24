@@ -12,6 +12,7 @@ use imgui::im_str;
 
 use minimum_kernel::resources::ComponentRegistryResource;
 use minimum_kernel::resources::AssetResource;
+use crate::components::EditorMetadataComponent;
 
 pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
     SystemBuilder::new("editor_entity_list_window")
@@ -23,7 +24,7 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
         .read_resource::<ComponentRegistryResource>()
         .read_resource::<EditorSettingsResource>()
         .read_resource::<AssetResource>()
-        .with_query(<TryRead<()>>::query())
+        .with_query(<(TryRead<()>, TryRead<EditorMetadataComponent>)>::query())
         .build(
             |_,
             world,
@@ -92,10 +93,15 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                         imgui::sys::ImVec2 { x: -1.0, y: -1.0 },
                                     )
                                 } {
-                                    for (e, _) in all_query.iter_entities(world) {
+                                    for (e, (_, editor_metadata)) in all_query.iter_entities(world) {
                                         let is_selected = editor_selection.is_entity_selected(e);
 
-                                        let s = im_str!("{:?}", e);
+                                        let s = if let Some(editor_metadata) = editor_metadata {
+                                            im_str!("{:?}", editor_metadata.name)
+                                        } else {
+                                            im_str!("{:?}", e)
+                                        };
+
                                         let clicked = imgui::Selectable::new(&s)
                                             .selected(is_selected)
                                             .build(ui);
