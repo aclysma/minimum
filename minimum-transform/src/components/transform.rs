@@ -5,6 +5,7 @@ use imgui_inspect_derive::Inspect;
 use minimum_math::matrix::Mat4;
 use legion::prelude::Entity;
 use minimum_math::math::Vec3;
+use glam::Quat;
 
 //
 // Primary transform component, usually populated by using other components
@@ -34,10 +35,13 @@ impl Default for TransformComponentDef {
     }
 }
 
+// http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+// original code used yaw=Y, pitch=Z, roll=X applied in that order
+// this corresponds to yaw=Z, pitch=Y, roll=X applied in that order
 fn quat_to_ypr(q: glam::Quat) -> (f32, f32, f32) {
     let x = q.x();
-    let y = q.y();
-    let z = q.z();
+    let z = q.y();
+    let y = q.z();
     let w = q.w();
 
     let test = x * y + z * w;
@@ -47,7 +51,7 @@ fn quat_to_ypr(q: glam::Quat) -> (f32, f32, f32) {
         let roll = 0.0;
 
         (yaw, pitch, roll)
-    } else if test <= 0.5 {
+    } else if test <= -0.5 {
         let yaw = -2.0 * f32::atan2(x, w);
         let pitch = -std::f32::consts::FRAC_PI_2;
         let roll = 0.0;
@@ -65,17 +69,25 @@ fn quat_to_ypr(q: glam::Quat) -> (f32, f32, f32) {
     }
 }
 
+//GLTF: facing +Z, up +Y
+//blender: facing -Y, up +Z
+// 90deg rotation around X fixes it
+
 impl TransformComponentDef {
     pub fn from_matrix(matrix: glam::Mat4) -> Self {
-        let (scale_combined, rotation, position) = matrix.to_scale_rotation_translation();
-        let rotation = quat_to_ypr(rotation);
+        let (scale_combined, rotation_q, position) = matrix.to_scale_rotation_translation();
+        let rotation_ypr = quat_to_ypr(rotation_q);
+
+        let rotation_xyz = (rotation_ypr.2, rotation_ypr.1, rotation_ypr.0);
+        //let rotation_xyz = (rotation_ypr.2, rotation_ypr.0, rotation_ypr.1);
+        //let rotation_xyz = (rotation_ypr.1, rotation_ypr.2, rotation_ypr.0);
 
         let scale = scale_combined.x();
         let non_uniform_scale = scale_combined / scale;
 
         TransformComponentDef {
             position: position.into(),
-            rotation: glam::Vec3::from(rotation).into(),
+            rotation: glam::Vec3::from(rotation_xyz).into(),
             scale,
             non_uniform_scale: non_uniform_scale.into()
         }
@@ -94,9 +106,17 @@ impl TransformComponentDef {
         // Default is rotating around y, x, z (i.e. y is up)
         // We are z-up, so sandwich with an X axis rotation. This is temporary until I can do
         // a better rotation system
-        glam::Quat::from_rotation_x(std::f32::consts::FRAC_PI_2) *
-            glam::Quat::from_rotation_ypr(self.rotation.z(), self.rotation.y(), self.rotation.x()) *
-            glam::Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
+        glam::Quat::from_rotation_z(self.rotation.z()) * // yaw?
+        glam::Quat::from_rotation_x(self.rotation.x()) * // pitch?
+        glam::Quat::from_rotation_y(self.rotation.y())   // roll?
+        // glam::Quat::from_rotation_y(self.rotation.y()) *
+        //     glam::Quat::from_rotation_x(self.rotation.x()) *
+        //     glam::Quat::from_rotation_z(self.rotation.z())
+
+
+        //glam::Quat::from_rotation_x(std::f32::consts::FRAC_PI_2) *
+            //glam::Quat::from_rotation_ypr(self.rotation.z(), self.rotation.y(), self.rotation.x()) *
+            //glam::Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
     }
 
     pub fn rotation_euler(&self) -> glam::Vec3 {
@@ -133,10 +153,22 @@ impl TransformComponentDef {
 legion_prefab::register_component_type!(TransformComponentDef);
 
 
+#[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug)]
+#[uuid = "3f76404d-abdf-40dd-9bc3-997c1726d3f0"]
 pub struct TransformComponent {
     // It may be possible to pack scale in the w components of each simd register later on rather
     // than having them mixed with the 3x3 rotation
+    #[serde_diff(opaque)]
     pub transform: glam::Mat4
+}
+legion_prefab::register_component_type!(TransformComponent);
+
+impl Default for TransformComponent {
+    fn default() -> Self {
+        TransformComponent {
+            transform: glam::Mat4::identity()
+        }
+    }
 }
 
 impl TransformComponent {
