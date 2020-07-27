@@ -107,7 +107,7 @@ pub fn create_update_schedule(criteria: &ScheduleCriteria) -> Schedule {
         .always(update_input_resource)
         .always(advance_time)
         .always(quit_if_escape_pressed)
-        .always(update_asset_manager)
+        .always_thread_local(update_asset_manager)
         .always(update_fps_text)
         .always(update_physics)
         .simulation_unpaused_only(read_from_physics)

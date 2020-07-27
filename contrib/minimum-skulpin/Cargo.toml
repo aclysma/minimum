@@ -28,7 +28,7 @@ legion = { version = "0.2.4", default-features = false, features = ["serialize"]
 
 nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
 nalgebra-glm = "0.4"
-ncollide2d = "0.20"
+ncollide3d = "0.20"
 
 structopt = "0.3"
 serde = "1"

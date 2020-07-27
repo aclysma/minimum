@@ -11,19 +11,23 @@ use std::ops::Range;
 use legion::storage::ComponentStorage;
 use imgui;
 use imgui_inspect_derive::Inspect;
-use ncollide2d::shape::ShapeHandle;
-use ncollide2d::shape::{Ball, Cuboid};
-use ncollide2d::pipeline::{CollisionGroups, GeometricQueryType};
+use ncollide2d::shape::ShapeHandle as ShapeHandle2d;
+use ncollide3d::shape::ShapeHandle as ShapeHandle3d;
+use ncollide3d::shape::Ball as Ball3d;
+use ncollide3d::shape::Cuboid as Cuboid3d;
+use ncollide2d::shape::Ball as Ball2d;
+use ncollide2d::shape::Cuboid as Cuboid2d;
+use ncollide3d::pipeline::{CollisionGroups, GeometricQueryType};
 use legion::index::ComponentIndex;
 use legion_transaction::iter_components_in_storage;
 use nalgebra_glm as glm;
 
 use minimum::components::{
-    PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
+    TransformComponentDef
 };
-use ncollide2d::world::CollisionWorld;
+use ncollide3d::world::CollisionWorld;
 
-use crate::math_conversions::vec2_glam_to_glm;
+use crate::math_conversions::{vec2_glam_to_glm, vec3_glam_to_glm, quat_glam_to_glm};
 
 //
 // Add a ball rigid body
@@ -61,12 +65,11 @@ impl Drop for RigidBodyComponent {
 fn transform_shape_to_rigid_body(
     physics: &mut PhysicsResource,
     into: &mut std::mem::MaybeUninit<RigidBodyComponent>,
-    src_position: Option<&PositionComponent>,
-    _src_rotation: Option<&Rotation2DComponent>,
-    shape_handle: ShapeHandle<f32>,
+    src_transform: Option<&TransformComponentDef>,
+    shape_handle: ShapeHandle2d<f32>,
     is_static: bool,
 ) {
-    let position = if let Some(position) = src_position {
+    let position = if let Some(position) = src_transform {
         position.position
     } else {
         Vec3::zero()
@@ -114,40 +117,27 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
 
-        let position_components = iter_components_in_storage::<PositionComponent>(
+        let position_components = iter_components_in_storage::<TransformComponentDef>(
             src_component_storage,
             src_component_storage_indexes.clone(),
         );
 
-        let uniform_scale_components = iter_components_in_storage::<UniformScaleComponent>(
-            src_component_storage,
-            src_component_storage_indexes.clone(),
-        );
-
-        let rotation_components = iter_components_in_storage::<Rotation2DComponent>(
-            src_component_storage,
-            src_component_storage_indexes,
-        );
-
-        for (src_position, src_uniform_scale, src_rotation, from, into) in izip!(
+        for (src_transform, from, into) in izip!(
             position_components,
-            uniform_scale_components,
-            rotation_components,
             from,
             into
         ) {
             let mut radius = from.radius;
-            if let Some(src_uniform_scale) = src_uniform_scale {
-                radius *= src_uniform_scale.uniform_scale;
+            if let Some(transform) = src_transform {
+                radius *= transform.uniform_scale();
             }
 
             //TODO: Warn if radius is 0
-            let shape_handle = ShapeHandle::new(Ball::new(radius.max(0.01)));
+            let shape_handle = ShapeHandle2d::new(Ball2d::new(radius.max(0.01)));
             transform_shape_to_rigid_body(
                 &mut physics,
                 into,
-                src_position,
-                src_rotation,
+                src_transform,
                 shape_handle,
                 from.is_static,
             );
@@ -169,19 +159,20 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
         transformed_entity: Entity,
         _transformed_component: &RigidBodyComponent,
     ) {
-        if let Some(position) = prefab_world.get_component::<PositionComponent>(prefab_entity) {
+        if let Some(transform) = prefab_world.get_component::<TransformComponentDef>(prefab_entity) {
             let mut radius = self.radius;
+            radius *= transform.uniform_scale();
 
-            if let Some(uniform_scale) =
-                prefab_world.get_component::<UniformScaleComponent>(prefab_entity)
-            {
-                radius *= uniform_scale.uniform_scale;
-            }
+            let shape_handle = ShapeHandle3d::new(Ball3d::new(radius.max(0.01)));
 
-            let shape_handle = ShapeHandle::new(Ball::new(radius.max(0.01)));
-
+            //TODO: This might be wrong
+            let rotation = quat_glam_to_glm(transform.rotation_quat());
+            let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
             collision_world.add(
-                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), 0.0),
+                ncollide3d::math::Isometry::from_parts(
+                    nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
+                    rotation
+                ),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),
@@ -204,53 +195,30 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
 
-        let position_components = iter_components_in_storage::<PositionComponent>(
+        let transform_components = iter_components_in_storage::<TransformComponentDef>(
             src_component_storage,
             src_component_storage_indexes.clone(),
         );
 
-        let uniform_scale_components = iter_components_in_storage::<UniformScaleComponent>(
-            src_component_storage,
-            src_component_storage_indexes.clone(),
-        );
-
-        let non_uniform_scale_components = iter_components_in_storage::<NonUniformScaleComponent>(
-            src_component_storage,
-            src_component_storage_indexes.clone(),
-        );
-
-        let rotation_components = iter_components_in_storage::<Rotation2DComponent>(
-            src_component_storage,
-            src_component_storage_indexes,
-        );
-
-        for (src_position, src_uniform_scale, src_non_uniform_scale, src_rotation, from, into) in izip!(
-            position_components,
-            uniform_scale_components,
-            non_uniform_scale_components,
-            rotation_components,
+        for (src_transform, from, into) in izip!(
+            transform_components,
             from,
             into
         ) {
             let mut half_extents = *from.half_extents;
 
-            if let Some(src_uniform_scale) = src_uniform_scale {
-                half_extents *= glam::Vec3::splat(src_uniform_scale.uniform_scale);
+            if let Some(transform) = src_transform {
+                half_extents *= transform.scale();
             }
 
-            if let Some(src_non_uniform_scale) = src_non_uniform_scale {
-                half_extents *= *src_non_uniform_scale.non_uniform_scale;
-            }
-
-            let shape_handle = ShapeHandle::new(Cuboid::new(glm::Vec2::new(
+            let shape_handle = ShapeHandle2d::new(Cuboid2d::new(glm::Vec2::new(
                 half_extents.x(),
                 half_extents.y(),
             )));
             transform_shape_to_rigid_body(
                 &mut physics,
                 into,
-                src_position,
-                src_rotation,
+                src_transform,
                 shape_handle,
                 from.is_static,
             );
@@ -270,36 +238,23 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent> for RigidB
         transformed_entity: Entity,
         _transformed_component: &RigidBodyComponent,
     ) {
-        if let Some(position) = prefab_world.get_component::<PositionComponent>(prefab_entity) {
+        if let Some(transform) = prefab_world.get_component::<TransformComponentDef>(prefab_entity) {
             let mut half_extents = *self.half_extents;
+            half_extents *= transform.scale();
 
-            if let Some(uniform_scale) =
-                prefab_world.get_component::<UniformScaleComponent>(prefab_entity)
-            {
-                half_extents *= uniform_scale.uniform_scale;
-            }
-
-            if let Some(non_uniform_scale) =
-                prefab_world.get_component::<NonUniformScaleComponent>(prefab_entity)
-            {
-                half_extents *= *non_uniform_scale.non_uniform_scale;
-            }
-
-            let mut rotation = 0.0;
-            if let Some(rotation_component) =
-                prefab_world.get_component::<Rotation2DComponent>(prefab_entity)
-            {
-                rotation = rotation_component.rotation;
-            }
-
-            let shape_handle = ShapeHandle::new(Cuboid::new(glm::Vec2::new(
+            let shape_handle = ShapeHandle3d::new(Cuboid3d::new(glm::Vec3::new(
                 half_extents.x(),
                 half_extents.y(),
+                0.0
             )));
 
+            //TODO: This might be wrong
+            let rotation = quat_glam_to_glm(transform.rotation_quat());
+            let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
+
             collision_world.add(
-                ncollide2d::math::Isometry::new(
-                    vec2_glam_to_glm(*position.position.xy()),
+                ncollide3d::math::Isometry::from_parts(
+                    nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
                     rotation,
                 ),
                 shape_handle,

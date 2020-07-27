@@ -266,6 +266,9 @@ impl App {
             {
                 let app_control = resources.get::<AppControlResource>().unwrap();
                 if app_control.should_terminate_process() {
+                    // Drop entities now as resources will be dropped
+                    // physics components may point back at resources
+                    world.delete_all();
                     *control_flow = winit::event_loop::ControlFlow::Exit
                 }
             }

@@ -26,13 +26,14 @@ mod registration;
 
 use minimum::resources::editor::{
     EditorMode, EditorSelectionResource, EditorInspectRegistryResource, EditorStateResource,
-    EditorDrawResource,
+    EditorDraw3DResource,
 };
 use minimum_sdl2::resources::{Sdl2WindowResource, Sdl2ImguiManagerResource};
 use minimum_sdl2::imgui::Sdl2ImguiManager;
 use minimum_skulpin::resources::CanvasDrawResource;
 use example_shared::resources::FpsTextResource;
 use minimum_nphysics2d::resources::PhysicsResource;
+use atelier_assets::loader::rpc_loader::RpcLoader;
 
 pub const GRAVITY: f32 = -9.81;
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
@@ -187,7 +188,8 @@ fn create_resources(
 ) -> Resources {
     let mut resources = Resources::default();
 
-    let asset_resource = registration::create_asset_manager();
+    let rpc_loader = RpcLoader::new("127.0.0.1:9999".to_string()).unwrap();
+    let asset_resource = registration::create_asset_manager(rpc_loader);
 
     let physics_resource = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
 
@@ -199,14 +201,20 @@ fn create_resources(
     let sdl2_window_resource = Sdl2WindowResource::new(sdl2_window);
 
     let drawable = sdl2_window_resource.drawable_size();
-    let viewport_size = ViewportSize::new(drawable.width, drawable.height);
-    resources.insert(ViewportResource::new(
-        viewport_size,
+
+    let mut viewport = ViewportResource::empty();
+    let viewport_size_in_pixels = glam::Vec2::new(drawable.width as f32, drawable.height as f32);
+    example_shared::viewport::update_viewport(
+        &mut viewport,
+        viewport_size_in_pixels,
         camera_resource.position,
-        camera_resource.x_half_extents,
-    ));
-    resources.insert(DebugDrawResource::new());
-    resources.insert(EditorDrawResource::new());
+        camera_resource.x_half_extents
+    );
+
+    resources.insert(viewport);
+    resources.insert(DebugDraw2DResource::new());
+    resources.insert(DebugDraw3DResource::new());
+    resources.insert(EditorDraw3DResource::new());
     resources.insert(EditorSelectionResource::new(
         registration::create_editor_selection_registry(),
     ));

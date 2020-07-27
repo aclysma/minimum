@@ -2,124 +2,15 @@ Prefab(
     id: "3991506e-ed7e-4bcb-8cfd-3366b31a6439",
     objects: [
         Entity(PrefabEntity(
-            id: "e938c98b-df7e-41d7-a2e4-9f028702b022",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.12796938, 2.868164, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.4,
-                        paint: PaintDef(
-                            color: Vec4(1, 0.2, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.4,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "44e80421-31c4-4af0-9f79-a1cabc1a9041",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.72929704, 2.1600783, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(0.2, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "bbc6d6d2-3743-413f-afbe-cf10d5b024cd",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-1.0500001, 3.63, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(1, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "30487509-cbc3-42f8-a465-f6477c76541c",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.21000004, 3.63, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(0.2, 0.2, 1, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
             id: "fb1e8e4f-436d-439b-a5cf-18b9f5e10e87",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.63, 4.8900003, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.63, 4.8900003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -128,174 +19,6 @@ Prefab(
                         radius: 0.2,
                         paint: PaintDef(
                             color: Vec4(0.2, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "c34521a3-85be-4d62-9efc-84879fa610f1",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.63, 4.4700003, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(0.2, 0.2, 1, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "e4b302f7-a222-45e3-b784-bcaebc770bbf",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.63000005, 4.8900003, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(1, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "08cc58b3-89a4-4dfd-a339-e93945f70f8a",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.63, 3.63, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(1, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "cb117c59-381e-4c4e-b4fa-fb1c3c71c7a6",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.20999992, 4.05, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(1, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "5df3740a-f299-4553-b2cc-cd172fca2bc4",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.20999992, 4.4700003, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(1, 0.2, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "36ad9542-2be9-4146-8674-6973400cb5ff",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.42656243, 2.0075002, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(1, 1, 0.2, 1),
                             stroke_width: 0.02,
                         ),
                     ),
@@ -313,9 +36,12 @@ Prefab(
             id: "418be6c1-73e7-4589-a844-0aeed0b930ff",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.20999992, 4.8900003, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.20999992, 4.8900003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -338,12 +64,46 @@ Prefab(
             ],
         )),
         Entity(PrefabEntity(
-            id: "d9b713a7-b8f7-4546-9f7e-4cfe7499e1a7",
+            id: "28d6b3bc-081c-46c1-b20f-a909e1ea2557",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.63000005, 4.05, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.20999992, 3.63, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(0.2, 1, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "30487509-cbc3-42f8-a465-f6477c76541c",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.21000004, 3.63, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -366,12 +126,15 @@ Prefab(
             ],
         )),
         Entity(PrefabEntity(
-            id: "03ac5e65-d2cb-435f-bbc1-1c69ed303ceb",
+            id: "bbc6d6d2-3743-413f-afbe-cf10d5b024cd",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-1.0500001, 4.4700003, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-1.0500001, 3.63, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -379,35 +142,7 @@ Prefab(
                     data: DrawSkiaCircleComponentDef(
                         radius: 0.2,
                         paint: PaintDef(
-                            color: Vec4(0.2, 0.2, 1, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "e959aaee-f8f9-4559-835f-ce49c76008ab",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.21000004, 4.8900003, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(1, 0.2, 0.2, 1),
+                            color: Vec4(1, 1, 0.2, 1),
                             stroke_width: 0.02,
                         ),
                     ),
@@ -425,9 +160,12 @@ Prefab(
             id: "9d9dcd96-fadc-4612-8272-0bc000005a39",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-1.0500001, 4.8900003, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-1.0500001, 4.8900003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -450,68 +188,15 @@ Prefab(
             ],
         )),
         Entity(PrefabEntity(
-            id: "712a21df-59e7-40b5-a842-b87f27a5d76a",
+            id: "08cc58b3-89a4-4dfd-a339-e93945f70f8a",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0, -0.2, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "c05e5c27-58ca-4d68-b825-b20f67fdaf37",
-                    data: DrawSkiaBoxComponentDef(
-                        half_extents: Vec3(3, 0.2, 0.0),
-                        paint: PaintDef(
-                            color: Vec4(0, 1, 0, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "36df3006-a5ad-4997-9ccc-0860f49195ad",
-                    data: RigidBodyBoxComponentDef(
-                        half_extents: Vec3(3, 0.2, 0.0),
-                        is_static: true,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "782ca901-cf09-4ffc-949b-6a7fb677a73f",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.63000005, 4.4700003, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(0.2, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "1e575846-3dbc-4273-ab37-5be0bf210f26",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.21000004, 4.4700003, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.63, 3.63, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -537,9 +222,136 @@ Prefab(
             id: "8777f306-7882-4b02-9155-e202c64a39fe",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.63, 4.05, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.63, 4.05, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(1, 0.2, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "e4b302f7-a222-45e3-b784-bcaebc770bbf",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.63000005, 4.8900003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(1, 1, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "e959aaee-f8f9-4559-835f-ce49c76008ab",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.21000004, 4.8900003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(1, 0.2, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "c34521a3-85be-4d62-9efc-84879fa610f1",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.63, 4.4700003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(0.2, 0.2, 1, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "24f0baf3-ff5d-4321-abb2-296a09ac78fd",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-1.0500001, 4.05, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -565,9 +377,12 @@ Prefab(
             id: "db5578dd-d241-4551-ba69-e7ce5d042401",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.7608597, 2.9337497, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.7608597, 2.9337497, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -590,12 +405,15 @@ Prefab(
             ],
         )),
         Entity(PrefabEntity(
-            id: "72bdf071-242e-4569-a5c9-3874bb1fb0ec",
+            id: "44e80421-31c4-4af0-9f79-a1cabc1a9041",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.21000004, 4.05, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(1.6222662, 0.85359406, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -618,40 +436,15 @@ Prefab(
             ],
         )),
         Entity(PrefabEntity(
-            id: "28d6b3bc-081c-46c1-b20f-a909e1ea2557",
+            id: "782ca901-cf09-4ffc-949b-6a7fb677a73f",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(0.20999992, 3.63, 0.0),
-                    ),
-                ),
-                EntityComponent(
-                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
-                    data: DrawSkiaCircleComponentDef(
-                        radius: 0.2,
-                        paint: PaintDef(
-                            color: Vec4(0.2, 1, 0.2, 1),
-                            stroke_width: 0.02,
-                        ),
-                    ),
-                ),
-                EntityComponent(
-                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
-                    data: RigidBodyBallComponentDef(
-                        radius: 0.2,
-                        is_static: false,
-                    ),
-                ),
-            ],
-        )),
-        Entity(PrefabEntity(
-            id: "9f95c904-b851-4b56-8c50-06db83b6d224",
-            components: [
-                EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.950703, 2.1600783, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.63000005, 4.4700003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -677,9 +470,12 @@ Prefab(
             id: "0d5b4235-0844-4eb9-9708-0f6066fb55f0",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-0.63000005, 3.63, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.63000005, 3.63, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -702,12 +498,170 @@ Prefab(
             ],
         )),
         Entity(PrefabEntity(
-            id: "24f0baf3-ff5d-4321-abb2-296a09ac78fd",
+            id: "e938c98b-df7e-41d7-a2e4-9f028702b022",
             components: [
                 EntityComponent(
-                    type: "8bf67228-f96c-4649-b306-ecd107194cf0",
-                    data: PositionComponent(
-                        position: Vec3(-1.0500001, 4.05, 0.0),
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(2, 2.3366408, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.4,
+                        paint: PaintDef(
+                            color: Vec4(1, 0.2, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.4,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "712a21df-59e7-40b5-a842-b87f27a5d76a",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0, -0.2, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "c05e5c27-58ca-4d68-b825-b20f67fdaf37",
+                    data: DrawSkiaBoxComponentDef(
+                        half_extents: Vec3(3, 0.2, 0),
+                        paint: PaintDef(
+                            color: Vec4(0, 1, 0, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "36df3006-a5ad-4997-9ccc-0860f49195ad",
+                    data: RigidBodyBoxComponentDef(
+                        half_extents: Vec3(3, 0.2, 0),
+                        is_static: true,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "cb117c59-381e-4c4e-b4fa-fb1c3c71c7a6",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.20999992, 4.05, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(1, 1, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "1e575846-3dbc-4273-ab37-5be0bf210f26",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.21000004, 4.4700003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(1, 1, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "d9b713a7-b8f7-4546-9f7e-4cfe7499e1a7",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.63000005, 4.05, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(0.2, 0.2, 1, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "5df3740a-f299-4553-b2cc-cd172fca2bc4",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.20999992, 4.4700003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
                     ),
                 ),
                 EntityComponent(
@@ -716,6 +670,130 @@ Prefab(
                         radius: 0.2,
                         paint: PaintDef(
                             color: Vec4(1, 0.2, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "03ac5e65-d2cb-435f-bbc1-1c69ed303ceb",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-1.0500001, 4.4700003, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(0.2, 0.2, 1, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "36ad9542-2be9-4146-8674-6973400cb5ff",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(0.4664067, 0.70101595, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(1, 1, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "72bdf071-242e-4569-a5c9-3874bb1fb0ec",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.21000004, 4.05, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(0.2, 1, 0.2, 1),
+                            stroke_width: 0.02,
+                        ),
+                    ),
+                ),
+                EntityComponent(
+                    type: "fa518c0a-a65a-44c8-9d35-3f4f336b4de4",
+                    data: RigidBodyBallComponentDef(
+                        radius: 0.2,
+                        is_static: false,
+                    ),
+                ),
+            ],
+        )),
+        Entity(PrefabEntity(
+            id: "9f95c904-b851-4b56-8c50-06db83b6d224",
+            components: [
+                EntityComponent(
+                    type: "35657365-bb0c-4306-8c69-d5e158ad978f",
+                    data: TransformComponentDef(
+                        position: Vec3(-0.950703, 2.1600783, 0),
+                        rotation: Vec3(0, 0, 0),
+                        scale: 1,
+                        non_uniform_scale: Vec3(1, 1, 1),
+                    ),
+                ),
+                EntityComponent(
+                    type: "e47f9943-d5bf-4e1b-9601-13e47d7b737c",
+                    data: DrawSkiaCircleComponentDef(
+                        radius: 0.2,
+                        paint: PaintDef(
+                            color: Vec4(0.2, 1, 0.2, 1),
                             stroke_width: 0.02,
                         ),
                     ),

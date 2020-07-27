@@ -20,18 +20,14 @@ pub mod app;
 
 use atelier_assets::core as atelier_core;
 
-use minimum::resources::{
-    AssetResource, CameraResource, ViewportResource, DebugDrawResource, TimeResource,
-    ComponentRegistryResource,
-};
+use minimum::resources::{AssetResource, CameraResource, ViewportResource, DebugDraw2DResource, TimeResource, ComponentRegistryResource, DebugDraw3DResource};
 use minimum::editor::EditorInspectRegistry;
 use minimum::editor::EditorInspectRegistryBuilder;
 use minimum::editor::EditorSelectRegistry;
 use minimum::editor::resources::EditorMode;
 use minimum::editor::resources::EditorStateResource;
-use minimum::editor::resources::EditorDrawResource;
+use minimum::editor::resources::EditorDraw3DResource;
 use minimum::editor::resources::EditorSelectionResource;
-use minimum::resources::ViewportSize;
 use skulpin::Window;
 use minimum::ComponentRegistry;
 use minimum::resources::editor::EditorInspectRegistryResource;
@@ -41,13 +37,14 @@ use minimum_nphysics2d::resources::PhysicsResource;
 use minimum_nphysics2d::components::*;
 use example_shared::resources::FpsTextResource;
 use minimum_skulpin::components::*;
+use atelier_assets::loader::rpc_loader::RpcLoader;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
 
 /// Create the asset manager that has all the required types registered
-pub fn create_asset_manager() -> AssetResource {
-    let mut asset_manager = AssetResource::default();
+pub fn create_asset_manager(loader: RpcLoader) -> AssetResource {
+    let mut asset_manager = AssetResource::new(loader);
     asset_manager.add_storage::<minimum::pipeline::PrefabAsset>();
     asset_manager
 }
@@ -59,6 +56,7 @@ pub fn create_component_registry() -> ComponentRegistry {
         .add_spawn_mapping_into::<DrawSkiaBoxComponentDef, DrawSkiaBoxComponent>()
         .add_spawn_mapping::<RigidBodyBallComponentDef, RigidBodyComponent>()
         .add_spawn_mapping::<RigidBodyBoxComponentDef, RigidBodyComponent>()
+        .add_spawn_mapping_into::<TransformComponentDef, TransformComponent>()
         .build()
 }
 
@@ -75,12 +73,9 @@ pub fn create_editor_inspector_registry() -> EditorInspectRegistry {
     EditorInspectRegistryBuilder::default()
         .register::<DrawSkiaCircleComponentDef>()
         .register::<DrawSkiaBoxComponentDef>()
-        .register::<PositionComponent>()
-        .register::<UniformScaleComponent>()
-        .register::<NonUniformScaleComponent>()
-        .register::<Rotation2DComponent>()
         .register::<RigidBodyBallComponentDef>()
         .register::<RigidBodyBoxComponentDef>()
+        .register::<TransformComponentDef>()
         .build()
 }
 
@@ -137,17 +132,25 @@ impl app::AppHandler for DemoApp {
         resources: &mut Resources,
         window: &dyn Window,
     ) {
-        let asset_manager = create_asset_manager();
+        let rpc_loader = RpcLoader::new("127.0.0.1:9999".to_string()).unwrap();
+        let asset_manager = create_asset_manager(rpc_loader);
         let physics = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
 
-        let window_size = window.physical_size();
-        let viewport_size = ViewportSize::new(window_size.width, window_size.height);
-
-        let camera = CameraResource::new(
+        let camera_resource = CameraResource::new(
             glam::Vec2::new(0.0, 1.0),
             crate::GROUND_HALF_EXTENTS_WIDTH * 1.5,
         );
-        let viewport = ViewportResource::new(viewport_size, camera.position, camera.x_half_extents);
+
+        let window_size = window.physical_size();
+        let viewport_size_in_pixels = glam::Vec2::new(window_size.width as f32, window_size.height as f32);
+
+        let mut viewport = ViewportResource::empty();
+        example_shared::viewport::update_viewport(
+            &mut viewport,
+            viewport_size_in_pixels,
+            camera_resource.position,
+            camera_resource.x_half_extents
+        );
 
         resources.insert(EditorInspectRegistryResource::new(
             create_editor_inspector_registry(),
@@ -160,10 +163,11 @@ impl app::AppHandler for DemoApp {
         resources.insert(FpsTextResource::new());
         resources.insert(asset_manager);
         resources.insert(EditorStateResource::new());
-        resources.insert(camera);
+        resources.insert(camera_resource);
         resources.insert(viewport);
-        resources.insert(DebugDrawResource::new());
-        resources.insert(EditorDrawResource::new());
+        resources.insert(DebugDraw2DResource::new());
+        resources.insert(DebugDraw3DResource::new());
+        resources.insert(EditorDraw3DResource::new());
 
         use minimum_winit::input::WinitKeyboardKey;
         use skulpin::winit::event::VirtualKeyCode;

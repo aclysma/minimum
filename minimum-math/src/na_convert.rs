@@ -24,3 +24,11 @@ pub fn vec3_glm_to_glam(value: glm::Vec3) -> glam::Vec3 {
 pub fn vec4_glm_to_glam(value: glm::Vec4) -> glam::Vec4 {
     glam::Vec4::new(value.x, value.y, value.z, value.w)
 }
+
+pub fn quat_glm_to_glam(value: glm::Quat) -> glam::Quat {
+    glam::Quat::from_xyzw(value.coords.x, value.coords.y, value.coords.z, value.coords.w)
+}
+
+pub fn quat_glam_to_glm(value: glam::Quat) -> glm::Quat {
+    glm::Quat::new(value.w(), value.x(), value.y(), value.z())
+}

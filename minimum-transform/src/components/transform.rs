@@ -240,6 +240,10 @@ impl TransformComponent {
 
     }
     */
+
+    pub fn set_position(&mut self, position: glam::Vec3) {
+        self.transform.set_w_axis(position.extend(1.0));
+    }
 }
 
 impl From<TransformComponentDef> for TransformComponent {

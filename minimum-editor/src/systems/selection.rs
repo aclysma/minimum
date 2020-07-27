@@ -108,7 +108,6 @@ fn handle_selection(
         //
         // User is dragging a box around entities. Just draw the box.
         //
-        //TODO: use 2d debug draw
         let p0 = drag_in_progress.begin_position;
         let p2 = drag_in_progress.end_position;
         let p1 = glam::Vec2::new(p0.x(), p2.y());
@@ -125,19 +124,6 @@ fn handle_selection(
             points_2d,
             glam::vec4(1.0, 1.0, 0.0, 1.0),
         );
-
-        // let points_3d = vec![
-        //     viewport.viewport_space_to_world_space(p0, 0.01),
-        //     viewport.viewport_space_to_world_space(p1, 0.01),
-        //     viewport.viewport_space_to_world_space(p2, 0.01),
-        //     viewport.viewport_space_to_world_space(p3, 0.01),
-        // ];
-        //
-        // debug_draw_3d.add_line_loop(
-        //     points_3d,
-        //     glam::vec4(1.0, 1.0, 0.0, 1.0),
-        //     DebugDraw3DDepthBehavior::NoDepthTest
-        // );
     }
 
     if let Some(intersecting_entities) = intersecting_entities {

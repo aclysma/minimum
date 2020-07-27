@@ -419,10 +419,6 @@ impl EditorDraw3DResource {
             self.closest_shape_to_mouse.distance = std::f32::MAX;
         }
 
-        if !self.closest_shape_to_mouse.id.is_empty() {
-            println!("closest shape: {}", self.closest_shape_to_mouse.id);
-        }
-
         self.shape_last_interacted.clear();
 
         // Check for clicking/dragging for each mouse button

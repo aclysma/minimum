@@ -28,9 +28,10 @@ glam = { version = "0.8.5", features = ["serde"] }
 nalgebra = { version = "0.18", features = [ "serde-serialize" ] }
 nalgebra-glm = "0.4"
 ncollide2d = "0.20"
+ncollide3d = "0.20"
 nphysics2d = "0.12"
 
-crossbeam-channel = "0.3"
+crossbeam-channel = "0.4"
 
 #structopt = "0.3"
 serde = "1"

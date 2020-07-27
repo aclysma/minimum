@@ -23,7 +23,7 @@ imgui-inspect = "0.5"
 imgui = "0.4"
 imgui-winit-support = "0.4.0"
 
-crossbeam-channel = "0.3"
+crossbeam-channel = "0.4"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
 

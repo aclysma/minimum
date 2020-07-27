@@ -3,14 +3,12 @@ use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use skulpin::skia_safe;
 use legion::entity::Entity;
-use ncollide2d::world::CollisionWorld;
+use ncollide3d::world::CollisionWorld;
 use legion::world::World;
-use ncollide2d::pipeline::{CollisionGroups, GeometricQueryType};
-use ncollide2d::shape::{Ball, Cuboid};
-use ncollide2d::shape::ShapeHandle;
-use minimum::components::{
-    PositionComponent, UniformScaleComponent, NonUniformScaleComponent, Rotation2DComponent,
-};
+use ncollide3d::pipeline::{CollisionGroups, GeometricQueryType};
+use ncollide3d::shape::{Ball, Cuboid};
+use ncollide3d::shape::ShapeHandle;
+use minimum::components::{TransformComponent, TransformComponentDef};
 use imgui_inspect_derive;
 use minimum::math::Vec3;
 use minimum::math::Vec4;
@@ -19,7 +17,7 @@ use legion::prelude::*;
 use minimum::resources::editor::OpenedPrefabState;
 use nalgebra_glm as glm;
 
-use crate::math_conversions::vec2_glam_to_glm;
+use crate::math_conversions::{vec2_glam_to_glm, vec3_glam_to_glm, quat_glam_to_glm};
 
 // A utility struct to describe color for a skia shape
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, SerdeDiff, PartialEq, Inspect, Default)]
@@ -88,31 +86,19 @@ impl minimum::editor::EditorSelectable for DrawSkiaBoxComponent {
         world: &World,
         entity: Entity,
     ) {
-        if let Some(position) = world.get_component::<PositionComponent>(entity) {
+        if let Some(transform) = world.get_component::<TransformComponentDef>(entity) {
             let mut half_extents = *self.half_extents;
 
-            if let Some(uniform_scale) = world.get_component::<UniformScaleComponent>(entity) {
-                half_extents *= uniform_scale.uniform_scale;
-            }
+            half_extents *= transform.scale();
 
-            if let Some(non_uniform_scale) = world.get_component::<NonUniformScaleComponent>(entity)
-            {
-                half_extents *= *non_uniform_scale.non_uniform_scale;
-            }
+            let shape_handle = ShapeHandle::new(Cuboid::new(vec3_glam_to_glm(half_extents)));
 
-            let mut rotation = 0.0;
-            if let Some(rotation_component) = world.get_component::<Rotation2DComponent>(entity) {
-                rotation = rotation_component.rotation;
-            }
-
-            let shape_handle = ShapeHandle::new(Cuboid::new(glm::Vec2::new(
-                half_extents.x(),
-                half_extents.y(),
-            )));
-
+            //TODO: This might be wrong
+            let rotation = quat_glam_to_glm(transform.rotation_quat());
+            let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
             collision_world.add(
-                ncollide2d::math::Isometry::new(
-                    vec2_glam_to_glm(*position.position.xy()),
+                ncollide3d::math::Isometry::from_parts(
+                    nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
                     rotation,
                 ),
                 shape_handle,
@@ -161,17 +147,20 @@ impl minimum::editor::EditorSelectable for DrawSkiaCircleComponent {
         world: &World,
         entity: Entity,
     ) {
-        if let Some(position) = world.get_component::<PositionComponent>(entity) {
+        if let Some(transform) = world.get_component::<TransformComponentDef>(entity) {
             let mut radius = self.radius;
-
-            if let Some(uniform_scale) = world.get_component::<UniformScaleComponent>(entity) {
-                radius *= uniform_scale.uniform_scale;
-            }
+            radius *= transform.uniform_scale();
 
             //TODO: Warn if radius is 0
             let shape_handle = ShapeHandle::new(Ball::new(radius.max(0.01)));
+            //TODO: This might be wrong
+            let rotation = quat_glam_to_glm(transform.rotation_quat());
+            let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
             collision_world.add(
-                ncollide2d::math::Isometry::new(vec2_glam_to_glm(*position.position.xy()), 0.0),
+                ncollide3d::math::Isometry::from_parts(
+                    nalgebra::Translation::from(vec3_glam_to_glm(transform.position())),
+                    rotation,
+                ),
                 shape_handle,
                 CollisionGroups::new(),
                 GeometricQueryType::Proximity(0.001),
