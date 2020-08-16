@@ -1,6 +1,6 @@
-use legion::prelude::*;
+use legion::*;
 
-use minimum_game::resources::{UniverseResource, ImguiResource};
+use minimum_game::resources::{ImguiResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, PostCommitSelection,
     EditorInspectRegistryResource,
@@ -28,8 +28,6 @@ pub fn editor_inspector_window(
         let mut editor_ui_state = resources.get_mut::<EditorStateResource>().unwrap();
         let asset_resource = resources.get::<AssetResource>().unwrap();
 
-        let universe_resource = resources.get::<UniverseResource>().unwrap();
-
         let opened_prefab = editor_ui_state.opened_prefab();
         if opened_prefab.is_none() {
             return;
@@ -39,13 +37,6 @@ pub fn editor_inspector_window(
 
         // Create a lookup from prefab entity to the entity UUID
         use std::iter::FromIterator;
-        let _prefab_entity_to_uuid: HashMap<Entity, EntityUuid> = HashMap::from_iter(
-            opened_prefab
-                .cooked_prefab()
-                .entities
-                .iter()
-                .map(|(k, v)| (*v, *k)),
-        );
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             let window_options = editor_ui_state.window_options();
@@ -59,7 +50,6 @@ pub fn editor_inspector_window(
                             resources.get::<ComponentRegistryResource>().unwrap();
                         let tx = editor_ui_state.create_transaction_from_selected(
                             &*selection_world,
-                            &*universe_resource,
                             &*component_registry,
                         );
 
@@ -110,9 +100,9 @@ pub fn editor_inspector_window(
                                 for (index, (_, component_type)) in
                                     component_types.iter().enumerate()
                                 {
-                                    for entity in tx.world().iter_entities() {
-                                        if !tx.world().has_component_by_id(
-                                            entity,
+                                    let mut all = Entity::query();
+                                    for entity in all.iter(tx.world()) {
+                                        if !tx.world().entry_ref(*entity).unwrap().archetype().layout().has_component_by_id(
                                             component_type.component_type_id(),
                                         ) {
                                             can_add_to_some_entity[index] = true;
@@ -138,7 +128,8 @@ pub fn editor_inspector_window(
 
                             // Make a list of all entities, this is necessary because we can't take an &-borrow for uuid_to_entities at the
                             // same time as an &mut-borrow for world_mut()
-                            let all_entities: Vec<Entity> = tx.world().iter_entities().collect();
+                            let mut all = Entity::query();
+                            let all_entities: Vec<Entity> = all.iter(tx.world()).map(|x| *x).collect();
 
                             //
                             // If a component needs to be added, do that now
@@ -149,7 +140,6 @@ pub fn editor_inspector_window(
                                     // e guaranteed to be Some, this is a new transaction and we aren't deleting entities
                                     component_type_to_add
                                         .add_default_to_entity(tx.world_mut(), *e)
-                                        .unwrap();
                                 }
 
                                 commit_required |= true;

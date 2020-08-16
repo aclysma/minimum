@@ -1,6 +1,6 @@
-use legion::prelude::*;
+use legion::*;
 
-use minimum_game::resources::{InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, DebugDraw3DDepthBehavior, UniverseResource};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, DebugDraw3DDepthBehavior};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
@@ -161,8 +161,8 @@ fn handle_selection(
     }
 }
 
-pub fn editor_handle_selection() -> Box<dyn Schedulable> {
-    SystemBuilder::new("editor_input")
+pub fn editor_handle_selection(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("editor_input")
         .write_resource::<EditorStateResource>()
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
@@ -170,7 +170,6 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
         .write_resource::<DebugDraw3DResource>()
         .write_resource::<DebugDraw2DResource>()
         .write_resource::<EditorDraw3DResource>()
-        .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
         .build(
             |_command_buffer,
@@ -183,7 +182,6 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
                 debug_draw_3d,
                 debug_draw_2d,
                 editor_draw,
-                _universe_resource,
                 editor_settings,
              ),
              _| {
@@ -197,11 +195,11 @@ pub fn editor_handle_selection() -> Box<dyn Schedulable> {
                     &*editor_settings,
                 );
             },
-        )
+        ));
 }
 
-pub fn draw_selection_shapes() -> Box<dyn Schedulable> {
-    SystemBuilder::new("draw_selection_shapes")
+pub fn draw_selection_shapes(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("draw_selection_shapes")
         .write_resource::<EditorSelectionResource>()
         .write_resource::<DebugDraw3DResource>()
         .build(|_, _, (editor_selection, debug_draw), _| {
@@ -223,5 +221,5 @@ pub fn draw_selection_shapes() -> Box<dyn Schedulable> {
                     debug_draw.add_aabb(aabb, color, DebugDraw3DDepthBehavior::NoDepthTest);
                 }
             }
-        })
+        }));
 }

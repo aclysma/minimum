@@ -12,7 +12,7 @@ minimum-math = { path = "../minimum-math" }
 
 imgui = "0.4"
 
-legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
+legion = { version = "0.3", default-features = false, features = ["serialize"] }
 
 glam = { version = "0.8.5", features = ["serde"] }
 

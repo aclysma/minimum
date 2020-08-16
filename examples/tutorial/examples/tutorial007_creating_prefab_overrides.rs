@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use glam::Vec2;
 
@@ -45,11 +45,8 @@ fn main() {
         .auto_register_components()
         .build();
 
-    // Create a legion universe
-    let universe = Universe::new();
-
     // Create a world and insert data into it that we would like to save into a prefab
-    let mut prefab_world = universe.create_world();
+    let mut prefab_world = World::default();
     let prefab_entity = *prefab_world
         .insert(
             (),
@@ -87,7 +84,6 @@ fn main() {
     prefab_lookup.insert(prefab.prefab_id(), &prefab);
 
     let cooked_prefab = legion_prefab::cook_prefab(
-        &universe,
         component_registry.components(),
         component_registry.components_by_uuid(),
         prefab_cook_order.as_slice(),
@@ -100,7 +96,6 @@ fn main() {
     let mut prefab_builder = PrefabBuilder::new(
         prefab.prefab_id(),
         cooked_prefab,
-        &universe,
         &component_registry.copy_clone_impl(),
     );
 
@@ -116,7 +111,6 @@ fn main() {
     // Produce the prefab that overrides the original prefab
     let prefab_with_override = prefab_builder
         .create_prefab(
-            &universe,
             component_registry.components_by_uuid(),
             &component_registry.copy_clone_impl(),
         )
@@ -131,7 +125,6 @@ fn main() {
     prefab_lookup.insert(prefab_with_override.prefab_id(), &prefab_with_override);
 
     let cooked_prefab_with_override = legion_prefab::cook_prefab(
-        &universe,
         component_registry.components(),
         component_registry.components_by_uuid(),
         prefab_cook_order.as_slice(),

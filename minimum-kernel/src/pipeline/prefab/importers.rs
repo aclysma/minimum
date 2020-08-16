@@ -6,7 +6,7 @@ use type_uuid::TypeUuid;
 
 use crate::pipeline::PrefabAsset;
 
-use legion_prefab::ComponentRegistration;
+use legion_prefab::{ComponentRegistration, Prefab};
 use std::collections::HashMap;
 use prefab_format::ComponentTypeUuid;
 
@@ -111,6 +111,23 @@ impl Importer for PrefabImporter {
         // Add the ID to the .meta
         let prefab_id = prefab_asset.prefab.prefab_id();
         state.id = Some(AssetUuid(prefab_id));
+
+
+        // {
+        //     //let mut ron_serializer = ron::ser::Serializer::new(Some(ron::ser::PrettyConfig::default()), true);
+        //     let ron_string = ron::ser::to_string_pretty(&prefab_asset, Default::default()).unwrap();
+        //     println!("{}", ron_string);
+        //     let deser = ron::de::from_str::<PrefabAsset>(&ron_string).unwrap();
+        //     println!("ron deser complete");
+        //     println!("read {} entities", deser.prefab.world.len());
+        // }
+        //
+        // {
+        //     println!("start bincode ser");
+        //     let s = bincode::serialize(&prefab_asset).unwrap();
+        //     let d = bincode::deserialize::<PrefabAsset>(&s).unwrap();
+        //     println!("read {} entities", d.prefab.world.len());
+        // }
 
         Ok(ImporterValue {
             assets: vec![ImportedAsset {

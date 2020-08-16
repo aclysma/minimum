@@ -6,9 +6,6 @@ pub use time::TimeState;
 mod app_control;
 pub use app_control::AppControlResource;
 
-mod universe;
-pub use universe::UniverseResource;
-
 mod debug_draw_2d;
 pub use debug_draw_2d::DebugDraw2DResource;
 pub use debug_draw_2d::LineList2D;

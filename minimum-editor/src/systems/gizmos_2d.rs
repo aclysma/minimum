@@ -1,6 +1,6 @@
-use legion::prelude::*;
+use legion::*;
 
-use minimum_game::resources::{InputResource, ViewportResource, DebugDraw2DResource, UniverseResource};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDraw2DResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw2DResource, EditorTransaction,
     PostCommitSelection,
@@ -13,24 +13,24 @@ use minimum_transform::components::{
     PositionComponent, Rotation2DComponent, UniformScaleComponent, NonUniformScaleComponent,
 };
 
-use legion::filter::EntityFilterTuple;
-use legion::filter::And;
-use legion::filter::ComponentFilter;
-use legion::filter::Passthrough;
+use legion::query::{EntityFilter, Query};
+use legion::query::And;
+use legion::query::ComponentFilter;
+use legion::query::Passthrough;
+use legion::world::SubWorld;
 
 use minimum_kernel::resources::ComponentRegistryResource;
 
 //TODO: Adapt the size of "hot" area around the editor drawn shapes based on zoom level
 
 pub fn editor_gizmos() -> Box<dyn Schedulable> {
-    SystemBuilder::new("editor_input")
+    Box::new(SystemBuilder::new("editor_input")
         .write_resource::<EditorStateResource>()
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
         .write_resource::<DebugDraw2DResource>()
         .write_resource::<EditorDraw2DResource>()
-        .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
         .with_query(<Read<PositionComponent>>::query())
         .with_query(<(
@@ -49,7 +49,6 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                 editor_selection,
                 debug_draw,
                 editor_draw,
-                universe_resource,
                 component_registry,
             ),
              (translate_query, scale_query, rotate_query)| {
@@ -59,7 +58,6 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                 if gizmo_tx.is_none() {
                     gizmo_tx = editor_state.create_transaction_from_selected(
                         &*editor_selection,
-                        &*universe_resource,
                         &*component_registry,
                     );
                 }
@@ -118,7 +116,7 @@ pub fn editor_gizmos() -> Box<dyn Schedulable> {
                     ),
                 }
             },
-        )
+        ))
 }
 
 #[derive(Ord, PartialOrd, PartialEq, Eq)]
@@ -166,7 +164,7 @@ fn handle_translate_gizmo_input(
 
         let query = <Write<PositionComponent>>::query();
 
-        for (_entity_handle, mut position) in query.iter_entities_mut(tx.world_mut()) {
+        for mut position in query.iter_mut(tx.world_mut()) {
             // Can use editor_draw.is_shape_drag_just_finished(MouseButton::LEFT) to see if this is the final drag,
             // in which case we might want to save an undo step
             *position.position += glam::Vec3::new(
@@ -191,10 +189,12 @@ fn draw_translate_gizmo(
     editor_draw: &mut EditorDraw2DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    translate_query: &mut Query<
-        Read<PositionComponent>,
-        EntityFilterTuple<ComponentFilter<PositionComponent>, Passthrough, Passthrough>,
-    >,
+    translate_query: u32
+    // translate_query: &mut Query<
+    //     Read<PositionComponent>,
+    //     //EntityFilterTuple<ComponentFilter<PositionComponent>, Passthrough, Passthrough>,
+    //     u32
+    // >,
 ) {
     for (entity, position) in translate_query.iter_entities(subworld) {
         if !selection_world.is_entity_selected(entity) {
@@ -348,13 +348,13 @@ fn handle_scale_gizmo_input(
         if scale_uniform {
             let query = <Write<UniformScaleComponent>>::query();
 
-            for (_entity_handle, mut uniform_scale) in query.iter_entities_mut(tx.world_mut()) {
+            for mut uniform_scale in query.iter_mut(tx.world_mut()) {
                 uniform_scale.uniform_scale += ui_space_previous_frame_delta.x()
             }
         } else {
             let query = <Write<NonUniformScaleComponent>>::query();
 
-            for (_entity_handle, mut non_uniform_scale) in query.iter_entities_mut(tx.world_mut()) {
+            for mut non_uniform_scale in query.iter_mut(tx.world_mut()) {
                 *non_uniform_scale.non_uniform_scale += glam::Vec3::new(
                     ui_space_previous_frame_delta.x(),
                     ui_space_previous_frame_delta.y(),
@@ -378,18 +378,20 @@ fn draw_scale_gizmo(
     editor_draw: &mut EditorDraw2DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    scale_query: &mut Query<
-        (
-            Read<PositionComponent>,
-            TryRead<UniformScaleComponent>,
-            TryRead<NonUniformScaleComponent>,
-        ),
-        EntityFilterTuple<
-            And<(ComponentFilter<PositionComponent>, Passthrough, Passthrough)>,
-            And<(Passthrough, Passthrough, Passthrough)>,
-            And<(Passthrough, Passthrough, Passthrough)>,
-        >,
-    >,
+    scale_query: u32,
+    // scale_query: &mut Query<
+    //     (
+    //         Read<PositionComponent>,
+    //         TryRead<UniformScaleComponent>,
+    //         TryRead<NonUniformScaleComponent>,
+    //     ),
+    //     u32
+    //     // EntityFilterTuple<
+    //     //     And<(ComponentFilter<PositionComponent>, Passthrough, Passthrough)>,
+    //     //     And<(Passthrough, Passthrough, Passthrough)>,
+    //     //     And<(Passthrough, Passthrough, Passthrough)>,
+    //     // >,
+    // >,
 ) {
     for (entity, (position, uniform_scale, non_uniform_scale)) in
         scale_query.iter_entities(subworld)
@@ -496,7 +498,7 @@ fn handle_rotate_gizmo_input(
             sign_aware_magnitude(drag_in_progress.world_space_previous_frame_delta);
 
         let query = <Write<Rotation2DComponent>>::query();
-        for (_entity_handle, mut rotation) in query.iter_entities_mut(tx.world_mut()) {
+        for mut rotation in query.iter_mut(tx.world_mut()) {
             rotation.rotation += ui_space_previous_frame_delta
         }
 
@@ -515,17 +517,19 @@ fn draw_rotate_gizmo(
     editor_draw: &mut EditorDraw2DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    scale_query: &mut Query<
-        (Read<PositionComponent>, Read<Rotation2DComponent>),
-        EntityFilterTuple<
-            And<(
-                ComponentFilter<PositionComponent>,
-                ComponentFilter<Rotation2DComponent>,
-            )>,
-            And<(Passthrough, Passthrough)>,
-            And<(Passthrough, Passthrough)>,
-        >,
-    >,
+    scale_query: u32,
+    // scale_query: &mut Query<
+    //     (Read<PositionComponent>, Read<Rotation2DComponent>),
+    //     u32
+    //     // EntityFilter<
+    //     //     And<(
+    //     //         ComponentFilter<PositionComponent>,
+    //     //         ComponentFilter<Rotation2DComponent>,
+    //     //     )>,
+    //     //     And<(Passthrough, Passthrough)>,
+    //     //     And<(Passthrough, Passthrough)>,
+    //     // >,
+    // >,
 ) {
     for (entity, (position, _rotation)) in scale_query.iter_entities(subworld) {
         if !selection_world.is_entity_selected(entity) {

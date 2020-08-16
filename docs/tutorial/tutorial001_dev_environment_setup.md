@@ -22,7 +22,7 @@ legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 
 # Legion ECS
-legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
+legion = { version = "0.3", default-features = false, features = ["serialize"] }
 
 # Required for serializing/desieralizing components
 serde = "1"
@@ -90,16 +90,14 @@ Next, we need to start up legion and register components.
 
 ```rust
 // This import grabs most of the things you'd want in legion
-use legion::prelude::*;
+use legion::*;
 
-// Create a legion universe world, and resources
-let universe = Universe::new();
-let mut world = universe.create_world();
+// Create a legion world and resources
+let mut world = World::default();
 let mut resources = Resources::default();
 ```
 
 What is this stuff?
- * Universe - You generally want exactly one of these in any application using legion.. you use it to create worlds
  * World - This is a set of entities and the components that are attached to them
  * Resources - A resource is a bit like a hash map of globals. Elements can be read and written by type. For example:
 

@@ -25,7 +25,7 @@ legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimu
 legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 prefab-format = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 
-legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
+legion = { version = "0.3", default-features = false, features = ["serialize"] }
 
 glam = { version = "0.8.5", features = ["serde"] }
 

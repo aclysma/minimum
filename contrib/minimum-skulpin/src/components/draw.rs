@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use skulpin::skia_safe;
-use legion::entity::Entity;
 use ncollide3d::world::CollisionWorld;
 use legion::world::World;
 use ncollide3d::pipeline::{CollisionGroups, GeometricQueryType};
@@ -13,7 +12,7 @@ use imgui_inspect_derive;
 use minimum::math::Vec3;
 use minimum::math::Vec4;
 use imgui_inspect_derive::Inspect;
-use legion::prelude::*;
+use legion::*;
 use minimum::resources::editor::OpenedPrefabState;
 use nalgebra_glm as glm;
 
@@ -86,7 +85,8 @@ impl minimum::editor::EditorSelectable for DrawSkiaBoxComponent {
         world: &World,
         entity: Entity,
     ) {
-        if let Some(transform) = world.get_component::<TransformComponentDef>(entity) {
+        let entity_ref = world.entry_ref(entity).unwrap();
+        if let Ok(transform) = entity_ref.get_component::<TransformComponentDef>() {
             let mut half_extents = *self.half_extents;
 
             half_extents *= transform.scale();
@@ -147,7 +147,8 @@ impl minimum::editor::EditorSelectable for DrawSkiaCircleComponent {
         world: &World,
         entity: Entity,
     ) {
-        if let Some(transform) = world.get_component::<TransformComponentDef>(entity) {
+        let entity_ref = world.entry_ref(entity).unwrap();
+        if let Ok(transform) = entity_ref.get_component::<TransformComponentDef>() {
             let mut radius = self.radius;
             radius *= transform.uniform_scale();
 

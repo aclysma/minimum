@@ -1,4 +1,4 @@
-use legion::prelude::World;
+use legion::World;
 use minimum_math::Segment;
 use minimum_math::NormalizedRay;
 

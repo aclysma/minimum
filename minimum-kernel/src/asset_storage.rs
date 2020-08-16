@@ -291,7 +291,9 @@ where
     ) -> Result<UpdateAssetResult<AssetDataT>, Box<dyn Error>> {
         let asset = SerdeContext::with_sync(loader_info, refop_sender.clone(), || {
             bincode::deserialize::<AssetDataT>(data)
-        })?;
+        });
+
+        let asset = asset?;
 
         load_op.complete();
         Ok(UpdateAssetResult::Result(asset))

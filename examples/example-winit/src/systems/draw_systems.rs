@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use skulpin::{skia_safe};
 
@@ -14,9 +14,9 @@ use minimum::resources::{CameraResource, ViewportResource, DebugDraw2DResource, 
 use example_shared::resources::FpsTextResource;
 use minimum_winit::resources::WinitWindowResource;
 
-pub fn draw() -> Box<dyn Schedulable> {
+pub fn draw(schedule: &mut legion::systems::Builder) {
     // Copy the data from physics rigid bodies into position components
-    SystemBuilder::new("draw")
+    schedule.add_system(SystemBuilder::new("draw")
         .write_resource::<CanvasDrawResource>()
         .read_resource::<FpsTextResource>()
         .write_resource::<CameraResource>()
@@ -196,5 +196,5 @@ pub fn draw() -> Box<dyn Schedulable> {
                     canvas.draw_str(fps_text.fps_text.clone(), (50, 50), &font, &text_paint);
                 });
             },
-        )
+        ));
 }

@@ -116,7 +116,7 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
 ## Spawning Components
 
 ```rust
-let mut world = universe.create_world();
+let mut world = World::default();
 let mut resources = Resources::default();
 
 //

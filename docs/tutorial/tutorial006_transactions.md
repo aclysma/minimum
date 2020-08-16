@@ -25,7 +25,6 @@ entity that is selected in the editor.
 let mut transaction = legion_transaction::TransactionBuilder::new()
     .add_entity(cooked_entity, entity_uuid)
     .begin(
-        &universe,
         &cooked_prefab.world,
         &component_registry.copy_clone_impl(),
     );
@@ -73,7 +72,6 @@ Currently, this only works with prefabs that have no overrides. We hope to imple
     // The return value is a result that may indicate failure if there are prefab overrides
     let mut prefab = legion_transaction::apply_diff_to_prefab(
         &mut prefab,
-        &universe,
         diffs.apply_diff(),
         component_registry.components_by_uuid(),
         &component_registry.copy_clone_impl(),
@@ -87,7 +85,6 @@ Currently, this only works with prefabs that have no overrides. We hope to imple
     // Apply the change to the prefab
     let mut cooked_prefab = legion_transaction::apply_diff_to_cooked_prefab(
         &mut cooked_prefab,
-        &universe,
         diffs.apply_diff(),
         component_registry.components_by_uuid(),
         &component_registry.copy_clone_impl(),

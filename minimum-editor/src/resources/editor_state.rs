@@ -1,9 +1,9 @@
 use std::collections::{HashSet, HashMap, VecDeque};
-use legion::prelude::*;
+use legion::*;
 
 use minimum_kernel::resources::{AssetResource, ComponentRegistryResource};
 use minimum_kernel::pipeline::PrefabAsset;
-use minimum_game::resources::{TimeResource, UniverseResource};
+use minimum_game::resources::TimeResource;
 use crate::resources::EditorSelectionResource;
 use minimum_game::resources::SimulationTimePauseReason;
 use atelier_assets::core::AssetUuid;
@@ -19,6 +19,7 @@ use imgui::ImString;
 
 use atelier_assets::loader as atelier_loader;
 use minimum_kernel::ComponentRegistry;
+use legion::world::EntityHasher;
 
 #[derive(Clone, Copy)]
 pub enum PostCommitSelection {
@@ -131,7 +132,7 @@ pub struct OpenedPrefabState {
     cooked_prefab: Arc<CookedPrefab>,
 
     /// Assists in finding the world entity that corresponds with a prefab entity
-    prefab_to_world_mappings: HashMap<Entity, Entity>,
+    prefab_to_world_mappings: HashMap<Entity, Entity, EntityHasher>,
 
     /// Assists in finding the prefab entity that corresponds with a world entity
     world_to_prefab_mappings: HashMap<Entity, Entity>,
@@ -142,7 +143,7 @@ impl OpenedPrefabState {
         &self.cooked_prefab
     }
 
-    pub fn prefab_to_world_mappings(&self) -> &HashMap<Entity, Entity> {
+    pub fn prefab_to_world_mappings(&self) -> &HashMap<Entity, Entity, EntityHasher> {
         &self.prefab_to_world_mappings
     }
 
@@ -338,16 +339,15 @@ impl EditorStateResource {
 
             // Load the uncooked prefab from disk and cook it. (Eventually this will be handled
             // during atelier's build step
-            let universe = resources.get_mut::<UniverseResource>().unwrap();
             let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
-            let cooked_prefab = Arc::new(minimum_kernel::prefab_cooking::cook_prefab(
-                &*universe,
+            let cooked_prefab = minimum_kernel::prefab_cooking::cook_prefab(
                 &mut *asset_resource,
                 component_registry.components(),
                 component_registry.components_by_uuid(),
                 prefab_uuid,
                 &|asset_resource| asset_resource.update(resources)
-            ));
+            );
+            let cooked_prefab = Arc::new(cooked_prefab);
 
 
             let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
@@ -358,15 +358,14 @@ impl EditorStateResource {
             match prefab_asset {
                 None => return Err(OpenPrefabResult::AssetNotFound),
                 Some(_asset) => {
-                    // Duplicate the prefab data so we can apply diffs to it. This is temporary and will eventually be
-                    // done within the daemon. (This is kind of like a clone() on the uncooked prefab asset)
+                    // Make a writable copy of the uncooked world. This is temporary and cooking will eventually be
+                    // done within the daemon.
                     let noop_diff = WorldDiff::new(vec![], vec![]);
                     let uncooked_prefab = legion_transaction::apply_diff_to_prefab(
                         &handle.asset(asset_resource.storage()).unwrap().prefab,
-                        &universe.universe,
                         &noop_diff,
                         component_registry.components_by_uuid(),
-                        &component_registry.copy_clone_impl(),
+                        component_registry.copy_clone_impl(),
                     );
 
                     match uncooked_prefab {
@@ -424,13 +423,12 @@ impl EditorStateResource {
 
         // If a prefab is opened, reset all the data
         if let Some(opened_prefab) = opened_prefab {
-            let mut prefab_to_world_mappings = HashMap::default();
             let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
-            world.clone_from(
+
+            let prefab_to_world_mappings = world.clone_from(
                 &opened_prefab.cooked_prefab.world,
-                &component_registry.spawn_clone_impl(resources),
-                &mut legion::world::HashMapCloneImplResult(&mut prefab_to_world_mappings),
-                &legion::world::HashMapEntityReplacePolicy(&opened_prefab.prefab_to_world_mappings),
+                &legion::query::any(),
+                &mut component_registry.spawn_clone_impl(resources, &opened_prefab.prefab_to_world_mappings)
             );
 
             let mut world_to_prefab_mappings =
@@ -439,17 +437,17 @@ impl EditorStateResource {
                 world_to_prefab_mappings.insert(*v, *k);
             }
 
-            for (cooked_prefab_entity_uuid, cooked_prefab_entity) in
-                &opened_prefab.cooked_prefab.entities
-            {
-                let world_entity = prefab_to_world_mappings.get(cooked_prefab_entity);
-                log::trace!(
-                    "Prefab entity {} {:?} spawned as world entity {:?}",
-                    uuid::Uuid::from_bytes(*cooked_prefab_entity_uuid).to_string(),
-                    cooked_prefab_entity,
-                    world_entity
-                );
-            }
+            // for (cooked_prefab_entity_uuid, cooked_prefab_entity) in
+            //     &opened_prefab.cooked_prefab.entities
+            // {
+            //     let world_entity = prefab_to_world_mappings.get(cooked_prefab_entity);
+            //     log::trace!(
+            //         "Prefab entity {} {:?} spawned as world entity {:?}",
+            //         uuid::Uuid::from_bytes(*cooked_prefab_entity_uuid).to_string(),
+            //         cooked_prefab_entity,
+            //         world_entity
+            //     );
+            // }
 
             let new_opened_prefab = OpenedPrefabState {
                 uuid: opened_prefab.uuid,
@@ -539,9 +537,7 @@ impl EditorStateResource {
                         let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
                         editor_state.clear_undo_history();
 
-                        let universe = resources.get::<UniverseResource>().unwrap();
-                        let world = universe.universe.create_world();
-                        world
+                        World::default()
                     };
                     *world = new_world;
                     Self::open_prefab(world, resources, asset_uuid).unwrap();
@@ -585,7 +581,7 @@ impl EditorStateResource {
     fn get_selected_uuids(
         &mut self,
         selection_resource: &EditorSelectionResource,
-        _world: &World,
+        world: &World,
     ) -> HashSet<EntityUuid> {
         // Get the UUIDs of all selected entities
         let mut selected_uuids = HashSet::new();
@@ -631,7 +627,7 @@ impl EditorStateResource {
     fn restore_selected_uuids(
         &mut self,
         selection_resource: &mut EditorSelectionResource,
-        _world: &World,
+        world: &World,
         selected_uuids: &HashSet<EntityUuid>,
     ) {
         let mut selected_entities: HashSet<Entity> = HashSet::default();
@@ -682,7 +678,7 @@ impl EditorStateResource {
 
             // Delete the old stuff from the world
             for x in opened_prefab.prefab_to_world_mappings.values() {
-                world.delete(*x);
+                world.remove(*x);
             }
 
             // re-cook and load the prefab
@@ -723,8 +719,7 @@ impl EditorStateResource {
 
             // flush selection ops, world entities can change after this call leading to entities not being
             // found and selections lost
-            let universe_resource = resources.get::<UniverseResource>().unwrap();
-            editor_selection.process_selection_ops(&mut *editor_state, &*universe_resource, world);
+            editor_selection.process_selection_ops(&mut *editor_state, world);
 
             // Take all the diffs that are queued to be applied this frame
             if !editor_state.diffs_pending_apply.is_empty() {
@@ -872,28 +867,25 @@ impl EditorStateResource {
 
             // Delete the old stuff from the world
             for x in opened_prefab.prefab_to_world_mappings.values() {
-                world.delete(*x);
+                world.remove(*x);
             }
 
             {
                 let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
 
                 // Apply the diffs to the cooked data
-                let universe = resources.get_mut::<UniverseResource>().unwrap();
                 let new_cooked_prefab = Arc::new(legion_transaction::apply_diff_to_cooked_prefab(
                     &opened_prefab.cooked_prefab,
-                    &universe.universe,
                     &diffs,
                     component_registry.components_by_uuid(),
-                    &component_registry.copy_clone_impl(),
+                    component_registry.copy_clone_impl(),
                 ));
 
                 let uncooked_prefab = legion_transaction::apply_diff_to_prefab(
                     &opened_prefab.uncooked_prefab,
-                    &universe.universe,
                     &diffs,
                     &component_registry.components_by_uuid(),
-                    &component_registry.copy_clone_impl(),
+                    component_registry.copy_clone_impl(),
                 );
 
                 match uncooked_prefab {
@@ -1000,7 +992,6 @@ impl EditorStateResource {
 
     pub fn create_empty_transaction(
         &self,
-        universe_resource: &UniverseResource,
         component_registry: &ComponentRegistry,
     ) -> Option<EditorTransaction> {
         if let Some(opened_prefab) = &self.opened_prefab {
@@ -1008,7 +999,6 @@ impl EditorStateResource {
 
             Some(EditorTransaction::new(
                 tx_builder,
-                &universe_resource.universe,
                 &opened_prefab.cooked_prefab().world,
                 component_registry,
             ))
@@ -1020,7 +1010,6 @@ impl EditorStateResource {
     pub fn create_transaction_from_selected(
         &self,
         selection_resources: &EditorSelectionResource,
-        universe_resource: &UniverseResource,
         component_registry: &ComponentRegistry,
     ) -> Option<EditorTransaction> {
         if selection_resources.selected_entities().is_empty() {
@@ -1045,14 +1034,13 @@ impl EditorStateResource {
                     opened_prefab.world_to_prefab_mappings().get(world_entity)
                 {
                     if let Some(entity_uuid) = prefab_entity_to_uuid.get(prefab_entity) {
-                        tx_builder = tx_builder.add_entity(*prefab_entity, *entity_uuid);
+                       tx_builder = tx_builder.add_entity(*prefab_entity, *entity_uuid);
                     }
                 }
             }
 
             Some(EditorTransaction::new(
                 tx_builder,
-                &universe_resource.universe,
                 &opened_prefab.cooked_prefab().world,
                 component_registry,
             ))
@@ -1076,12 +1064,11 @@ pub struct EditorTransaction {
 impl EditorTransaction {
     pub fn new(
         builder: TransactionBuilder,
-        universe: &Universe,
         world: &World,
         component_registry: &ComponentRegistry,
     ) -> EditorTransaction {
         let id = EditorTransactionId(uuid::Uuid::new_v4());
-        let transaction = builder.begin(universe, world, &component_registry.copy_clone_impl());
+        let transaction = builder.begin(world, component_registry.copy_clone_impl());
 
         EditorTransaction { id, transaction }
     }

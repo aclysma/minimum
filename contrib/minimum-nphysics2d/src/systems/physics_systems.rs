@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use minimum::resources::TimeResource;
 use crate::resources::PhysicsResource;
@@ -7,9 +7,9 @@ use minimum::components::TransformComponent;
 use crate::components::RigidBodyComponent;
 use crate::math_conversions::{vec2_glm_to_glam};
 
-pub fn update_physics() -> Box<dyn Schedulable> {
+pub fn update_physics(schedule: &mut legion::systems::Builder) {
     // Do a physics simulation timestep
-    SystemBuilder::new("update physics")
+    schedule.add_system(SystemBuilder::new("update physics")
         .write_resource::<PhysicsResource>()
         .read_resource::<TimeResource>()
         .build(|_, _, (physics, time), _| {
@@ -18,11 +18,11 @@ pub fn update_physics() -> Box<dyn Schedulable> {
             } else {
                 physics.step();
             }
-        })
+        }));
 }
 
-pub fn read_from_physics() -> Box<dyn Schedulable> {
-    SystemBuilder::new("read physics data")
+pub fn read_from_physics(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("read physics data")
         .read_resource::<PhysicsResource>()
         .with_query(<(Write<TransformComponent>, Read<RigidBodyComponent>)>::query())
         .build(|_, world, physics, query| {
@@ -34,5 +34,5 @@ pub fn read_from_physics() -> Box<dyn Schedulable> {
                     transform.set_position(v3);
                 }
             }
-        })
+        }));
 }

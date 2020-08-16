@@ -19,7 +19,7 @@ imgui-inspect = "0.5"
 imgui = "0.4"
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
-legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
+legion = { version = "0.3", default-features = false, features = ["serialize", "extended-tuple-impls"] }
 
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }

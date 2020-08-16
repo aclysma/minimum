@@ -8,7 +8,7 @@ use crate::DynAssetLoader;
 use type_uuid::TypeUuid;
 
 use atelier_assets::loader as atelier_loader;
-use legion::prelude::Resources;
+use legion::Resources;
 use crossbeam_channel::{Receiver, Sender};
 
 pub trait AssetResourceUpdateCallback : Send + Sync {

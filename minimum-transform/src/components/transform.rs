@@ -3,7 +3,7 @@ use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use imgui_inspect_derive::Inspect;
 use minimum_math::matrix::Mat4;
-use legion::prelude::Entity;
+use legion::Entity;
 use minimum_math::math::Vec3;
 use glam::Quat;
 

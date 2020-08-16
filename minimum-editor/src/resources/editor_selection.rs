@@ -1,13 +1,12 @@
 use ncollide3d::world::CollisionWorld;
 use ncollide3d::bounding_volume::AABB;
-use legion::prelude::*;
+use legion::*;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::resources::EditorStateResource;
-use minimum_game::resources::UniverseResource;
 use crate::EditorSelectRegistry;
 
 enum SelectionOp {
@@ -108,7 +107,6 @@ impl EditorSelectionResource {
     pub fn process_selection_ops(
         &mut self,
         _editor_state: &mut EditorStateResource,
-        _universe_resource: &UniverseResource,
         _world: &mut World,
     ) -> bool {
         let ops: Vec<_> = self.pending_selection_ops.drain(..).collect();

@@ -43,7 +43,6 @@ let mut prefab_lookup = HashMap::new();
 prefab_lookup.insert(prefab.prefab_id(), &prefab);
 
 let cooked_prefab = legion_prefab::cook_prefab(
-    &universe,
     component_registry.components(),
     component_registry.components_by_uuid(),
     prefab_cook_order.as_slice(),

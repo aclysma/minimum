@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 
 atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
-legion = { version = "0.2.4", default-features = false, features = ["serialize"] }
+legion = { version = "0.3", default-features = false, features = ["serialize"] }
 
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum" }
 legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum" }
@@ -31,6 +31,7 @@ serde-diff = "0.3"
 
 ron = "0.5"
 erased-serde = "0.3"
+fnv = "1.0"
 
 crossbeam-channel = "0.4"
 

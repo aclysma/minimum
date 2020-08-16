@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use glam::Vec2;
 
@@ -47,11 +47,8 @@ fn main() {
         .auto_register_components()
         .build();
 
-    // Create a legion universe
-    let universe = Universe::new();
-
     // Create a world and insert data into it that we would like to save into a prefab
-    let mut prefab_world = universe.create_world();
+    let mut prefab_world = World::default();
     let prefab_entity = *prefab_world
         .insert(
             (),

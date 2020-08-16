@@ -13,7 +13,6 @@ support modifying and adding components, and adding entities.
 let mut prefab_builder = PrefabBuilder::new(
     prefab.prefab_id(),
     cooked_prefab,
-    &universe,
     &component_registry.copy_clone_impl(),
 );
 
@@ -29,7 +28,6 @@ prefab_builder
 // Produce the prefab that overrides the original prefab
 let prefab_with_override = prefab_builder
     .create_prefab(
-        &universe,
         component_registry.components_by_uuid(),
         &component_registry.copy_clone_impl(),
     )
@@ -54,7 +52,6 @@ prefab_lookup.insert(prefab.prefab_id(), &prefab);
 prefab_lookup.insert(prefab_with_override.prefab_id(), &prefab_with_override);
 
 let cooked_prefab_with_override = legion_prefab::cook_prefab(
-    &universe,
     component_registry.components(),
     component_registry.components_by_uuid(),
     prefab_cook_order.as_slice(),

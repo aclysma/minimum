@@ -177,7 +177,7 @@ In the demo, the editing tools do not modify world data directly. Instead, when 
     let tx = TransactionBuilder::new()
         .add_entity(entity_one)
         .add_entity(entity_two)
-        .begin(universe, world, clone_impl);
+        .begin(world, clone_impl);
 
 Most of the time the transaction will just operate on whatever is selected in the editor. In the demo, we have a shorthand for this.
 
@@ -185,7 +185,6 @@ Most of the time the transaction will just operate on whatever is selected in th
     // the selected entities to the transaction
     let tx = editor_ui_state.create_transaction_from_selected(
         &*editor_selection,
-        &*universe_resource,
     );
 
 The end-user’s code can then modify the transaction’s world freely. This code that performs the edit doesn’t need to be aware of the transaction - just the transaction’s “after” legion world (likely passed via mutable ref).

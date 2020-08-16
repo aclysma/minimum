@@ -6,19 +6,19 @@ use atelier_assets::loader::{
     LoadStatus, Loader,
 };
 use std::collections::HashMap;
-use legion::prelude::*;
+use legion::*;
 
 use legion::storage::ComponentTypeId;
 use prefab_format::{ComponentTypeUuid, PrefabUuid};
 use legion_prefab::{ComponentRegistration, CookedPrefab};
 use crate::pipeline::PrefabAsset;
 use atelier_assets::core::AssetUuid;
+use std::hash::BuildHasher;
 
-pub fn cook_prefab<F: Fn(&mut AssetResource)>(
-    universe: &Universe,
+pub fn cook_prefab<F: Fn(&mut AssetResource), S: BuildHasher, T: BuildHasher>(
     asset_manager: &mut AssetResource,
-    registered_components: &HashMap<ComponentTypeId, ComponentRegistration>,
-    registered_components_by_uuid: &HashMap<ComponentTypeUuid, ComponentRegistration>,
+    registered_components: &HashMap<ComponentTypeId, ComponentRegistration, S>,
+    registered_components_by_uuid: &HashMap<ComponentTypeUuid, ComponentRegistration, T>,
     prefab_uuid: AssetUuid,
     update_fn: &F
 ) -> CookedPrefab {
@@ -48,7 +48,6 @@ pub fn cook_prefab<F: Fn(&mut AssetResource)>(
     }
 
     legion_prefab::cook_prefab(
-        universe,
         registered_components,
         registered_components_by_uuid,
         prefab_cook_order.as_slice(),

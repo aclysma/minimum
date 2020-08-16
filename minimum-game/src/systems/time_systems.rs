@@ -1,9 +1,9 @@
-use legion::prelude::*;
+use legion::*;
 
 use crate::resources::TimeResource;
 
-pub fn advance_time() -> Box<dyn Schedulable> {
-    SystemBuilder::new("advance_time")
+pub fn advance_time(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("advance_time")
         .write_resource::<TimeResource>()
         .build(|_, _, time_resource, _| {
             time_resource.process_time_ops();
@@ -16,5 +16,5 @@ pub fn advance_time() -> Box<dyn Schedulable> {
             {
                 log::debug!("fps: {}", time_resource.time_state.updates_per_second());
             }
-        })
+        }));
 }

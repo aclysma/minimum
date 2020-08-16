@@ -16,7 +16,7 @@ use skulpin_plugin_imgui::ImguiRendererPlugin;
 use atelier_assets::core::asset_uuid;
 use atelier_assets::core as atelier_core;
 
-use legion::prelude::*;
+use legion::*;
 
 use minimum::resources::*;
 
@@ -101,9 +101,8 @@ pub fn run() {
         .expect("Could not create sdl event pump");
 
     // Create a legion world
-    let universe = Universe::new();
-    let mut world = universe.create_world();
-    let mut resources = create_resources(universe, &sdl2_window, &sdl2_imgui);
+    let mut world = World::default();
+    let mut resources = create_resources(&sdl2_window, &sdl2_imgui);
 
     // Start the application
     EditorStateResource::open_prefab(
@@ -182,7 +181,6 @@ pub fn run() {
 }
 
 fn create_resources(
-    universe: Universe,
     sdl2_window: &sdl2::video::Window,
     sdl2_imgui: &Sdl2ImguiManager,
 ) -> Resources {
@@ -234,7 +232,6 @@ fn create_resources(
     resources.insert(TimeResource::new());
     resources.insert(InputResource::new());
     resources.insert(CanvasDrawResource::default());
-    resources.insert(UniverseResource::new(universe));
     resources.insert(Sdl2WindowResource::new(&sdl2_window));
     resources.insert(EditorStateResource::new());
 

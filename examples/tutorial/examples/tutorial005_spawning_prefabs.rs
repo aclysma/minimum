@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use glam::Vec2;
 
@@ -45,11 +45,8 @@ fn main() {
         .auto_register_components()
         .build();
 
-    // Create a legion universe
-    let universe = Universe::new();
-
     // Create a world and insert data into it that we would like to save into a prefab
-    let mut prefab_world = universe.create_world();
+    let mut prefab_world = World::default();
     let prefab_entity = *prefab_world
         .insert(
             (),
@@ -87,14 +84,13 @@ fn main() {
     prefab_lookup.insert(prefab.prefab_id(), &prefab);
 
     let cooked_prefab = legion_prefab::cook_prefab(
-        &universe,
         component_registry.components(),
         component_registry.components_by_uuid(),
         prefab_cook_order.as_slice(),
         &prefab_lookup,
     );
 
-    let mut world = universe.create_world();
+    let mut world = World::default();
     let resources = Resources::default();
 
     //

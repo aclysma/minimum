@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use glam::Vec2;
 
@@ -49,11 +49,8 @@ fn main() {
         .auto_register_components()
         .build();
 
-    // Create a legion universe
-    let universe = Universe::new();
-
     // Create a world and insert data into it that we would like to save into a prefab
-    let mut prefab_world = universe.create_world();
+    let mut prefab_world = World::default();
     let prefab_entity = *prefab_world
         .insert(
             (),
@@ -91,7 +88,6 @@ fn main() {
     prefab_lookup.insert(prefab.prefab_id(), &prefab);
 
     let cooked_prefab = legion_prefab::cook_prefab(
-        &universe,
         component_registry.components(),
         component_registry.components_by_uuid(),
         prefab_cook_order.as_slice(),
@@ -105,7 +101,6 @@ fn main() {
     let mut transaction = legion_transaction::TransactionBuilder::new()
         .add_entity(cooked_entity, entity_uuid)
         .begin(
-            &universe,
             &cooked_prefab.world,
             &component_registry.copy_clone_impl(),
         );
@@ -122,12 +117,11 @@ fn main() {
     let diffs = transaction.create_transaction_diffs(component_registry.components_by_uuid());
 
     // Show how this is used with uncooked prefabs
-    apply_to_prefab(prefab, &universe, &component_registry, entity_uuid, &diffs);
+    apply_to_prefab(prefab, &component_registry, entity_uuid, &diffs);
 
     // Show how this is used with cooked prefabs
     apply_to_cooked_prefab(
         cooked_prefab,
-        &universe,
         &component_registry,
         entity_uuid,
         &diffs,
@@ -136,7 +130,6 @@ fn main() {
 
 fn apply_to_prefab(
     mut prefab: Prefab,
-    universe: &Universe,
     component_registry: &ComponentRegistry,
     entity_uuid: EntityUuid,
     diffs: &TransactionDiffs,
@@ -154,7 +147,6 @@ fn apply_to_prefab(
     // The return value is a result that may indicate failure if there are prefab overrides
     let mut prefab = legion_transaction::apply_diff_to_prefab(
         &mut prefab,
-        &universe,
         diffs.apply_diff(),
         component_registry.components_by_uuid(),
         &component_registry.copy_clone_impl(),
@@ -174,7 +166,6 @@ fn apply_to_prefab(
     // The return value is a result that may indicate failure if there are prefab overrides
     let prefab = legion_transaction::apply_diff_to_prefab(
         &mut prefab,
-        &universe,
         diffs.revert_diff(),
         component_registry.components_by_uuid(),
         &component_registry.copy_clone_impl(),
@@ -193,7 +184,6 @@ fn apply_to_prefab(
 
 fn apply_to_cooked_prefab(
     mut cooked_prefab: CookedPrefab,
-    universe: &Universe,
     component_registry: &ComponentRegistry,
     entity_uuid: EntityUuid,
     diffs: &TransactionDiffs,
@@ -210,7 +200,6 @@ fn apply_to_cooked_prefab(
     // Apply the change to the prefab
     let mut cooked_prefab = legion_transaction::apply_diff_to_cooked_prefab(
         &mut cooked_prefab,
-        &universe,
         diffs.apply_diff(),
         component_registry.components_by_uuid(),
         &component_registry.copy_clone_impl(),
@@ -228,7 +217,6 @@ fn apply_to_cooked_prefab(
     // Revert the change
     let cooked_prefab = legion_transaction::apply_diff_to_cooked_prefab(
         &mut cooked_prefab,
-        &universe,
         diffs.revert_diff(),
         component_registry.components_by_uuid(),
         &component_registry.copy_clone_impl(),

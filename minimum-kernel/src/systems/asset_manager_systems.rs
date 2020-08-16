@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 use crate::resources::AssetResource;
 
 pub fn update_asset_manager(

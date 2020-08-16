@@ -1,21 +1,22 @@
 use legion_prefab::ComponentRegistration;
 use prefab_format::ComponentTypeUuid;
-use legion::storage::ComponentTypeId;
+use legion::storage::{ComponentTypeId, Archetype, Components, ComponentWriter};
 use std::collections::HashMap;
 
 use legion_prefab::{CopyCloneImpl, SpawnCloneImpl, SpawnCloneImplHandlerSet, SpawnInto};
-use legion::prelude::Resources;
 use legion::storage::{Component, ComponentStorage};
-use legion::index::ComponentIndex;
-use legion::prelude::*;
+use legion::storage::ComponentIndex;
+use legion::*;
 use std::ops::Range;
 use std::mem::MaybeUninit;
 
 use std::collections::hash_map::RandomState;
+use fnv::{FnvHashMap, FnvBuildHasher};
+use legion::world::EntityHasher;
 
 pub struct ComponentRegistryBuilder {
-    components: HashMap<ComponentTypeId, ComponentRegistration>,
-    components_by_uuid: HashMap<ComponentTypeUuid, ComponentRegistration>,
+    components: FnvHashMap<ComponentTypeId, ComponentRegistration>,
+    components_by_uuid: FnvHashMap<ComponentTypeUuid, ComponentRegistration>,
     spawn_handler_set: SpawnCloneImplHandlerSet,
 }
 
@@ -70,19 +71,17 @@ impl ComponentRegistryBuilder {
         FromT: Component,
         IntoT: Component,
         F: Fn(
-                &World,                    // src_world
-                &ComponentStorage,         // src_component_storage
-                Range<ComponentIndex>,     // src_component_storage_indexes
-                &Resources,                // resources
-                &[Entity],                 // src_entities
-                &[Entity],                 // dst_entities
-                &[FromT],                  // src_data
-                &mut [MaybeUninit<IntoT>], // dst_data
+                &Resources,                             // resources
+                Range<usize>,                           // src_entity_range
+                &Archetype,                             // src_arch
+                &Components,                            // src_components
+                &mut ComponentWriter<IntoT>,            // dst
+                fn(&mut ComponentWriter<IntoT>, IntoT)  // push_fn
             ) + Send
             + Sync
             + 'static,
     {
-        self.spawn_handler_set.add_mapping_closure(clone_fn);
+        self.spawn_handler_set.add_mapping_closure::<FromT, _, _>(clone_fn);
     }
 
     pub fn build(self) -> ComponentRegistry {
@@ -95,28 +94,29 @@ impl ComponentRegistryBuilder {
 }
 
 pub struct ComponentRegistry {
-    components: HashMap<ComponentTypeId, ComponentRegistration>,
-    components_by_uuid: HashMap<ComponentTypeUuid, ComponentRegistration>,
+    components: FnvHashMap<ComponentTypeId, ComponentRegistration>,
+    components_by_uuid: FnvHashMap<ComponentTypeUuid, ComponentRegistration>,
     spawn_handler_set: SpawnCloneImplHandlerSet,
 }
 
 impl ComponentRegistry {
-    pub fn components(&self) -> &HashMap<ComponentTypeId, ComponentRegistration> {
+    pub fn components(&self) -> &FnvHashMap<ComponentTypeId, ComponentRegistration> {
         &self.components
     }
 
-    pub fn components_by_uuid(&self) -> &HashMap<ComponentTypeUuid, ComponentRegistration> {
+    pub fn components_by_uuid(&self) -> &FnvHashMap<ComponentTypeUuid, ComponentRegistration> {
         &self.components_by_uuid
     }
 
-    pub fn copy_clone_impl<'a>(&'a self) -> CopyCloneImpl<'a, RandomState> {
+    pub fn copy_clone_impl<'a>(&'a self) -> CopyCloneImpl<'a, FnvBuildHasher> {
         CopyCloneImpl::new(&self.components)
     }
 
-    pub fn spawn_clone_impl<'a, 'b>(
+    pub fn spawn_clone_impl<'a, 'b, 'c>(
         &'a self,
         resources: &'b Resources,
-    ) -> SpawnCloneImpl<'a, 'a, 'b> {
-        SpawnCloneImpl::new(&self.spawn_handler_set, &self.components, resources)
+        entity_map: &'c HashMap<Entity, Entity, EntityHasher>
+    ) -> SpawnCloneImpl<'a, 'a, 'b, 'c, fnv::FnvBuildHasher> {
+        SpawnCloneImpl::new(&self.spawn_handler_set, &self.components, resources, entity_map)
     }
 }

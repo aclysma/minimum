@@ -1,10 +1,10 @@
-use legion::prelude::*;
+use legion::*;
 
 use crate::resources::FpsTextResource;
 use minimum::resources::TimeResource;
 
-pub fn update_fps_text() -> Box<dyn Schedulable> {
-    SystemBuilder::new("update fps text")
+pub fn update_fps_text(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("update fps text")
         .read_resource::<TimeResource>()
         .write_resource::<FpsTextResource>()
         .build(|_, _, (time_resource, fps_text), _| {
@@ -23,5 +23,5 @@ pub fn update_fps_text() -> Box<dyn Schedulable> {
                 fps_text.fps_text = format!("Fps: {:.1}", fps);
                 fps_text.last_fps_text_change = Some(now);
             }
-        })
+        }));
 }

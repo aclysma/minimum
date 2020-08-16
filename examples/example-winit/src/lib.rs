@@ -5,7 +5,7 @@
 #[macro_use]
 extern crate log;
 
-use legion::prelude::*;
+use legion::*;
 
 use std::collections::HashMap;
 

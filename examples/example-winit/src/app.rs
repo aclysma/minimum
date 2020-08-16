@@ -6,10 +6,10 @@ use skulpin::winit;
 
 use minimum_winit::imgui::WinitImguiManager;
 
-use legion::prelude::*;
+use legion::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
 use minimum::resources::{
-    ImguiResource, AppControlResource, TimeResource, InputResource, UniverseResource,
+    ImguiResource, AppControlResource, TimeResource, InputResource,
     ViewportResource,
 };
 use minimum_winit::resources::{WinitImguiManagerResource, WinitWindowResource};
@@ -155,9 +155,8 @@ impl App {
             }
         };
 
-        let universe = Universe::new();
-        let mut world = universe.create_world();
-        let mut resources = legion::systems::resource::Resources::default();
+        let mut world = World::default();
+        let mut resources = Resources::default();
 
         resources.insert(WinitImguiManagerResource::new(winit_imgui_manager.clone()));
         resources.insert(ImguiResource::new(winit_imgui_manager.imgui_manager()));
@@ -165,7 +164,6 @@ impl App {
         resources.insert(TimeResource::new());
         resources.insert(InputResource::new());
         resources.insert(CanvasDrawResource::default());
-        resources.insert(UniverseResource::new(universe));
         resources.insert(WinitWindowResource::new(&winit_window));
 
         app_handler.init(&mut world, &mut resources, &skulpin_window);
@@ -268,7 +266,7 @@ impl App {
                 if app_control.should_terminate_process() {
                     // Drop entities now as resources will be dropped
                     // physics components may point back at resources
-                    world.delete_all();
+                    world.clear();
                     *control_flow = winit::event_loop::ControlFlow::Exit
                 }
             }

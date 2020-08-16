@@ -1,7 +1,7 @@
-use legion::prelude::*;
+use legion::*;
 
 use minimum_game::resources::{
-    InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, UniverseResource, CameraResource,
+    InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, CameraResource,
 };
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
@@ -50,9 +50,8 @@ pub fn editor_process_selection_ops(
 ) {
     let mut editor_selection = resources.get_mut::<EditorSelectionResource>().unwrap();
     let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
-    let universe = resources.get_mut::<UniverseResource>().unwrap();
 
-    editor_selection.process_selection_ops(&mut *editor_state, &*universe, world);
+    editor_selection.process_selection_ops(&mut *editor_state, world);
 }
 
 pub fn reload_editor_state_if_file_changed(
@@ -76,15 +75,14 @@ pub fn editor_process_editor_ops(
     EditorStateResource::process_editor_ops(world, resources);
 }
 
-pub fn editor_keybinds() -> Box<dyn Schedulable> {
-    SystemBuilder::new("editor_input")
+pub fn editor_keybinds(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("editor_input")
         .write_resource::<EditorStateResource>()
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
         .write_resource::<EditorSelectionResource>()
         .write_resource::<DebugDraw3DResource>()
         .write_resource::<EditorDraw3DResource>()
-        .read_resource::<UniverseResource>()
         .read_resource::<EditorSettingsResource>()
         .build(
             |_command_buffer,
@@ -96,7 +94,6 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
                 _editor_selection,
                 _debug_draw,
                 _editor_draw,
-                _universe_resource,
                 editor_settings,
             ),
              _| {
@@ -118,11 +115,11 @@ pub fn editor_keybinds() -> Box<dyn Schedulable> {
                     editor_state.enqueue_toggle_pause();
                 }
             },
-        )
+        ));
 }
 
-pub fn editor_mouse_input() -> Box<dyn Schedulable> {
-    SystemBuilder::new("editor_input")
+pub fn editor_mouse_input(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("editor_input")
         .read_resource::<InputResource>()
         .write_resource::<CameraResource>()
         .read_resource::<ViewportResource>()
@@ -143,11 +140,11 @@ pub fn editor_mouse_input() -> Box<dyn Schedulable> {
                 let delta = 1.05_f32.powf(-delta);
                 camera_resource.x_half_extents *= delta;
             },
-        )
+        ));
 }
 
-pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
-    SystemBuilder::new("editor_input")
+pub fn editor_update_editor_draw(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("editor_input")
         .write_resource::<EditorStateResource>()
         .read_resource::<InputResource>()
         .read_resource::<ViewportResource>()
@@ -155,7 +152,6 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
         .write_resource::<DebugDraw3DResource>()
         .write_resource::<DebugDraw2DResource>()
         .write_resource::<EditorDraw3DResource>()
-        .read_resource::<UniverseResource>()
         .build(
             |_command_buffer,
              _subworld,
@@ -167,10 +163,9 @@ pub fn editor_update_editor_draw() -> Box<dyn Schedulable> {
                 debug_draw_3d,
                 debug_draw_2d,
                 editor_draw,
-                _universe_resource,
             ),
             _| {
                 editor_draw.update(input_state.input_state(), &*viewport, debug_draw_3d, debug_draw_2d);
             },
-        )
+        ));
 }

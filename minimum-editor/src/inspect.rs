@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use std::marker::PhantomData;
 
@@ -60,8 +60,16 @@ where
         ui: &Ui,
         args: &InspectArgsStruct,
     ) {
-        let query = Read::<T>::query();
-        let values = query.components(world);
+        let mut query = Read::<T>::query();
+        let chunks : Vec<_> = query.iter_chunks(world).collect();
+        let mut values = vec![];
+        for chunk in &chunks {
+            let chunk_values = chunk.component_slice::<T>().unwrap();
+            for v in chunk_values {
+                values.push(v);
+            }
+        }
+
         let slice = values.as_slice();
 
         if !slice.is_empty() {
@@ -77,8 +85,17 @@ where
         _args: &InspectArgsStruct,
     ) -> InspectResult {
         let result = {
-            let query = Write::<T>::query();
-            let mut values = query.components_mut(world);
+            let mut query = Write::<T>::query();
+            let mut chunks : Vec<_> = query.iter_chunks_mut(world).collect();
+
+            let mut values = vec![];
+            for chunk in &mut chunks {
+                let chunk_values = chunk.component_slice_mut::<T>().unwrap();
+                for v in chunk_values {
+                    values.push(v);
+                }
+            }
+
             let slice = values.as_mut_slice();
 
             if !slice.is_empty() {
@@ -135,7 +152,7 @@ where
 
         if result == InspectResult::Deleted {
             for e in entities {
-                world.remove_component::<T>(*e).unwrap();
+                world.entry(*e).unwrap().remove_component::<T>();
             }
         }
 

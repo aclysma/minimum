@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 use glam::Vec2;
 
 struct PositionComponent(pub glam::Vec2);
@@ -18,8 +18,7 @@ fn main() {
     });
 
     // Create a legion world
-    let universe = Universe::new();
-    let mut world = universe.create_world();
+    let mut world = World::default();
     let mut resources = Resources::default();
 
     // Insert a resource that can be queried to find gravity

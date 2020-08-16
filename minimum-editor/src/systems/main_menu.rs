@@ -1,4 +1,4 @@
-use legion::prelude::*;
+use legion::*;
 
 use minimum_game::resources::TimeResource;
 use crate::resources::{EditorStateResource};
@@ -33,8 +33,8 @@ fn imgui_menu_tool_button(
     }
 }
 
-pub fn editor_imgui_menu() -> Box<dyn Schedulable> {
-    SystemBuilder::new("editor_imgui_menu")
+pub fn editor_imgui_menu(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("editor_imgui_menu")
         .write_resource::<ImguiResource>()
         .write_resource::<EditorStateResource>()
         .read_resource::<TimeResource>()
@@ -72,9 +72,13 @@ pub fn editor_imgui_menu() -> Box<dyn Schedulable> {
 
                     ui.menu(imgui::im_str!("File"), true, || {
                         if imgui::MenuItem::new(imgui::im_str!("Open")).build(ui) {
-                            editor_state.enqueue_open_prefab(asset_uuid!(
-                                "2aad7b4c-a323-415a-bea6-ae0f945446b9"
-                            ));
+                            if let Some(opened_prefab) = editor_state.opened_prefab() {
+                                // temporarily get the recently opened prefab uuid from editor state
+                                let uuid = opened_prefab.uuid();
+                                editor_state.enqueue_open_prefab(
+                                    *uuid
+                                );
+                            }
                         }
 
                         if imgui::MenuItem::new(im_str!("Save")).build(ui) {
@@ -140,5 +144,5 @@ pub fn editor_imgui_menu() -> Box<dyn Schedulable> {
                     }
                 });
             });
-        })
+        }));
 }

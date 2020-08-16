@@ -1,5 +1,5 @@
 use ncollide3d::world::CollisionWorld;
-use legion::prelude::*;
+use legion::*;
 use legion::storage::Component;
 use std::marker::PhantomData;
 
@@ -76,14 +76,14 @@ where
         opened_prefab: &OpenedPrefabState,
         world: &World,
     ) {
-        let query = <Read<T>>::query();
-        for (entity, t) in query.iter_entities(world) {
+        let mut query = <(Entity, Read<T>)>::query();
+        for (entity, t) in query.iter(world) {
             t.create_editor_selection_world(
                 collision_world,
                 resources,
                 opened_prefab,
                 world,
-                entity,
+                *entity,
             );
         }
     }
@@ -119,15 +119,17 @@ where
         opened_prefab: &OpenedPrefabState,
         world: &World,
     ) {
-        let query = <Read<U>>::query();
-        for (world_entity, world_component) in query.iter_entities(world) {
-            if let Some(prefab_entity) = opened_prefab.world_to_prefab_mappings().get(&world_entity)
+        let mut query = <(Entity, Read<U>)>::query();
+        for (world_entity, world_component) in query.iter(world) {
+            if let Some(prefab_entity) = opened_prefab.world_to_prefab_mappings().get(world_entity)
             {
-                if let Some(prefab_component) = opened_prefab
+                let entity_ref = opened_prefab
                     .cooked_prefab()
                     .world
-                    .get_component::<T>(*prefab_entity)
-                {
+                    .entry_ref(*prefab_entity)
+                    .unwrap();
+
+                if let Ok(prefab_component) = entity_ref.get_component::<T>() {
                     prefab_component.create_editor_selection_world(
                         collision_world,
                         resources,
@@ -135,10 +137,11 @@ where
                         &opened_prefab.cooked_prefab().world,
                         *prefab_entity,
                         world,
-                        world_entity,
+                        *world_entity,
                         &*world_component,
                     );
                 }
+
             }
         }
     }

@@ -1,6 +1,6 @@
-use legion::prelude::*;
+use legion::*;
 
-use minimum_game::resources::{InputResource, UniverseResource};
+use minimum_game::resources::{InputResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, PostCommitSelection, EditorSettingsResource,
 };
@@ -14,17 +14,16 @@ use minimum_kernel::resources::ComponentRegistryResource;
 use minimum_kernel::resources::AssetResource;
 use crate::components::EditorMetadataComponent;
 
-pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
-    SystemBuilder::new("editor_entity_list_window")
+pub fn editor_entity_list_window(schedule: &mut legion::systems::Builder) {
+    schedule.add_system(SystemBuilder::new("editor_entity_list_window")
         .write_resource::<ImguiResource>()
         .write_resource::<EditorStateResource>()
         .write_resource::<EditorSelectionResource>()
         .read_resource::<InputResource>()
-        .read_resource::<UniverseResource>()
         .read_resource::<ComponentRegistryResource>()
         .read_resource::<EditorSettingsResource>()
         .read_resource::<AssetResource>()
-        .with_query(<(TryRead<()>, TryRead<EditorMetadataComponent>)>::query())
+        .with_query(<(Entity, TryRead<EditorMetadataComponent>)>::query())
         .build(
             |_,
             world,
@@ -33,7 +32,6 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                 editor_ui_state,
                 editor_selection,
                 input,
-                universe_resource,
                 component_registry,
                 editor_settings,
                 asset_resource
@@ -55,10 +53,9 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                 if add_entity {
                                     //TODO: Update selection
                                     if let Some(mut tx) = editor_ui_state.create_empty_transaction(
-                                        &*universe_resource,
                                         &*component_registry,
                                     ) {
-                                        tx.world_mut().insert((), vec![()]);
+                                        tx.world_mut().push(());
                                         tx.commit(
                                             &* asset_resource,
                                             &mut *editor_ui_state,
@@ -72,11 +69,10 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                     if let Some(mut tx) = editor_ui_state
                                         .create_transaction_from_selected(
                                             &*editor_selection,
-                                            &*universe_resource,
                                             &*component_registry,
                                         )
                                     {
-                                        tx.world_mut().delete_all();
+                                        tx.world_mut().clear();
                                         tx.commit(
                                             &*asset_resource,
                                             &mut *editor_ui_state,
@@ -93,8 +89,8 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                         imgui::sys::ImVec2 { x: -1.0, y: -1.0 },
                                     )
                                 } {
-                                    for (e, (_, editor_metadata)) in all_query.iter_entities(world) {
-                                        let is_selected = editor_selection.is_entity_selected(e);
+                                    for (e, editor_metadata) in all_query.iter(world) {
+                                        let is_selected = editor_selection.is_entity_selected(*e);
 
                                         let s = if let Some(editor_metadata) = editor_metadata {
                                             im_str!("{:?}", editor_metadata.name)
@@ -115,15 +111,15 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                                                 if !is_selected {
                                                     // Add this entity
                                                     editor_selection
-                                                        .enqueue_add_to_selection(vec![e]);
+                                                        .enqueue_add_to_selection(vec![*e]);
                                                 } else {
                                                     //Remove this entity
                                                     editor_selection
-                                                        .enqueue_remove_from_selection(vec![e]);
+                                                        .enqueue_remove_from_selection(vec![*e]);
                                                 }
                                             } else {
                                                 // Select just this entity
-                                                editor_selection.enqueue_set_selection(vec![e]);
+                                                editor_selection.enqueue_set_selection(vec![*e]);
                                             }
                                         }
                                     }
@@ -136,5 +132,5 @@ pub fn editor_entity_list_window() -> Box<dyn Schedulable> {
                     }
                 })
             },
-        )
+        ));
 }

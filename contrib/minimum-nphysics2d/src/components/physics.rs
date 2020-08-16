@@ -6,9 +6,9 @@ use legion_prefab::SpawnFrom;
 use minimum::math::Vec3;
 use crate::resources::PhysicsResource;
 use minimum::resources::editor::OpenedPrefabState;
-use legion::prelude::*;
+use legion::*;
 use std::ops::Range;
-use legion::storage::ComponentStorage;
+use legion::storage::{ComponentStorage, Archetype, Components, ComponentWriter};
 use imgui;
 use imgui_inspect_derive::Inspect;
 use ncollide2d::shape::ShapeHandle as ShapeHandle2d;
@@ -18,8 +18,7 @@ use ncollide3d::shape::Cuboid as Cuboid3d;
 use ncollide2d::shape::Ball as Ball2d;
 use ncollide2d::shape::Cuboid as Cuboid2d;
 use ncollide3d::pipeline::{CollisionGroups, GeometricQueryType};
-use legion::index::ComponentIndex;
-use legion_transaction::iter_components_in_storage;
+use legion::storage::ComponentIndex;
 use nalgebra_glm as glm;
 
 use minimum::components::{
@@ -64,11 +63,10 @@ impl Drop for RigidBodyComponent {
 
 fn transform_shape_to_rigid_body(
     physics: &mut PhysicsResource,
-    into: &mut std::mem::MaybeUninit<RigidBodyComponent>,
     src_transform: Option<&TransformComponentDef>,
     shape_handle: ShapeHandle2d<f32>,
     is_static: bool,
-) {
+) -> RigidBodyComponent {
     let position = if let Some(position) = src_transform {
         position.position
     } else {
@@ -98,34 +96,28 @@ fn transform_shape_to_rigid_body(
     // Insert the collider to the body set.
     physics.colliders.insert(collider);
 
-    *into = std::mem::MaybeUninit::new(RigidBodyComponent {
+    RigidBodyComponent {
         handle: rigid_body_handle,
         delete_body_tx: physics.delete_body_tx().clone(),
-    })
+    }
 }
 
 impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
     fn spawn_from(
-        _src_world: &World,
-        src_component_storage: &ComponentStorage,
-        src_component_storage_indexes: Range<ComponentIndex>,
         resources: &Resources,
-        _src_entities: &[Entity],
-        _dst_entities: &[Entity],
-        from: &[RigidBodyBallComponentDef],
-        into: &mut [std::mem::MaybeUninit<Self>],
+        src_entity_range: Range<usize>,
+        src_arch: &Archetype,
+        src_components: &Components,
+        dst: &mut ComponentWriter<Self>,
+        push_fn: fn(&mut ComponentWriter<Self>, Self)
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
+        let transform_components = legion_transaction::iter_component_slice_from_archetype::<TransformComponentDef>(src_components, src_arch, src_entity_range.clone());
+        let from = legion_transaction::get_component_slice_from_archetype::<RigidBodyBallComponentDef>(src_components, src_arch, src_entity_range).unwrap();
 
-        let position_components = iter_components_in_storage::<TransformComponentDef>(
-            src_component_storage,
-            src_component_storage_indexes.clone(),
-        );
-
-        for (src_transform, from, into) in izip!(
-            position_components,
+        for (src_transform, from) in izip!(
+            transform_components,
             from,
-            into
         ) {
             let mut radius = from.radius;
             if let Some(transform) = src_transform {
@@ -134,13 +126,13 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
 
             //TODO: Warn if radius is 0
             let shape_handle = ShapeHandle2d::new(Ball2d::new(radius.max(0.01)));
-            transform_shape_to_rigid_body(
+            let rigid_body = transform_shape_to_rigid_body(
                 &mut physics,
-                into,
                 src_transform,
                 shape_handle,
                 from.is_static,
             );
+            (push_fn)(dst, rigid_body);
         }
     }
 }
@@ -159,51 +151,57 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
         transformed_entity: Entity,
         _transformed_component: &RigidBodyComponent,
     ) {
-        if let Some(transform) = prefab_world.get_component::<TransformComponentDef>(prefab_entity) {
-            let mut radius = self.radius;
-            radius *= transform.uniform_scale();
+        //TODO: Can we pass EntityRef?
+        let entity = prefab_world.entry_ref(prefab_entity).unwrap();
+        let transform = entity.get_component::<TransformComponentDef>().unwrap();
 
-            let shape_handle = ShapeHandle3d::new(Ball3d::new(radius.max(0.01)));
+        let mut radius = self.radius;
+        radius *= transform.uniform_scale();
 
-            //TODO: This might be wrong
-            let rotation = quat_glam_to_glm(transform.rotation_quat());
-            let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
-            collision_world.add(
-                ncollide3d::math::Isometry::from_parts(
-                    nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
-                    rotation
-                ),
-                shape_handle,
-                CollisionGroups::new(),
-                GeometricQueryType::Proximity(0.001),
-                transformed_entity,
-            );
-        }
+        let shape_handle = ShapeHandle3d::new(Ball3d::new(radius.max(0.01)));
+
+        //TODO: This might be wrong
+        let rotation = quat_glam_to_glm(transform.rotation_quat());
+        let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
+        collision_world.add(
+            ncollide3d::math::Isometry::from_parts(
+                nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
+                rotation
+            ),
+            shape_handle,
+            CollisionGroups::new(),
+            GeometricQueryType::Proximity(0.001),
+            transformed_entity,
+        );
     }
 }
 
 impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
     fn spawn_from(
-        _src_world: &World,
-        src_component_storage: &ComponentStorage,
-        src_component_storage_indexes: Range<ComponentIndex>,
         resources: &Resources,
-        _src_entities: &[Entity],
-        _dst_entities: &[Entity],
-        from: &[RigidBodyBoxComponentDef],
-        into: &mut [std::mem::MaybeUninit<Self>],
+        src_entity_range: Range<usize>,
+        src_arch: &Archetype,
+        src_components: &Components,
+        dst: &mut ComponentWriter<Self>,
+        push_fn: fn(&mut ComponentWriter<Self>, Self)
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
 
-        let transform_components = iter_components_in_storage::<TransformComponentDef>(
-            src_component_storage,
-            src_component_storage_indexes.clone(),
+        let transform_components = legion_transaction::iter_component_slice_from_archetype::<TransformComponentDef>(
+            src_components,
+            src_arch,
+            src_entity_range.clone()
         );
 
-        for (src_transform, from, into) in izip!(
+        let from = legion_transaction::get_component_slice_from_archetype::<RigidBodyBoxComponentDef>(
+            src_components,
+            src_arch,
+            src_entity_range
+        ).unwrap();
+
+        for (src_transform, from) in izip!(
             transform_components,
             from,
-            into
         ) {
             let mut half_extents = *from.half_extents;
 
@@ -215,13 +213,13 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
                 half_extents.x(),
                 half_extents.y(),
             )));
-            transform_shape_to_rigid_body(
+            let rigid_body = transform_shape_to_rigid_body(
                 &mut physics,
-                into,
                 src_transform,
                 shape_handle,
                 from.is_static,
             );
+            (push_fn)(dst, rigid_body);
         }
     }
 }
@@ -238,30 +236,31 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent> for RigidB
         transformed_entity: Entity,
         _transformed_component: &RigidBodyComponent,
     ) {
-        if let Some(transform) = prefab_world.get_component::<TransformComponentDef>(prefab_entity) {
-            let mut half_extents = *self.half_extents;
-            half_extents *= transform.scale();
+        let entity = prefab_world.entry_ref(prefab_entity).unwrap();
+        let transform = entity.get_component::<TransformComponentDef>().unwrap();
 
-            let shape_handle = ShapeHandle3d::new(Cuboid3d::new(glm::Vec3::new(
-                half_extents.x(),
-                half_extents.y(),
-                0.0
-            )));
+        let mut half_extents = *self.half_extents;
+        half_extents *= transform.scale();
 
-            //TODO: This might be wrong
-            let rotation = quat_glam_to_glm(transform.rotation_quat());
-            let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
+        let shape_handle = ShapeHandle3d::new(Cuboid3d::new(glm::Vec3::new(
+            half_extents.x(),
+            half_extents.y(),
+            0.0
+        )));
 
-            collision_world.add(
-                ncollide3d::math::Isometry::from_parts(
-                    nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
-                    rotation,
-                ),
-                shape_handle,
-                CollisionGroups::new(),
-                GeometricQueryType::Proximity(0.001),
-                transformed_entity,
-            );
-        }
+        //TODO: This might be wrong
+        let rotation = quat_glam_to_glm(transform.rotation_quat());
+        let rotation = nalgebra::UnitQuaternion::from_quaternion(rotation);
+
+        collision_world.add(
+            ncollide3d::math::Isometry::from_parts(
+                nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
+                rotation,
+            ),
+            shape_handle,
+            CollisionGroups::new(),
+            GeometricQueryType::Proximity(0.001),
+            transformed_entity,
+        );
     }
 }
