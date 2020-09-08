@@ -4,6 +4,7 @@ use std::{
 };
 
 use atelier_assets::daemon::AssetDaemon;
+use atelier_assets::importer::BoxedImporter;
 use structopt::StructOpt;
 
 /// Parameters to the asset daemon.
@@ -36,40 +37,11 @@ fn parse_socket_addr(s: &str) -> std::result::Result<SocketAddr, AddrParseError>
     s.parse()
 }
 
-// This is required because rustc does not recognize .ctor segments when considering which symbols
-// to include when linking static libraries to avoid having the module eliminated as "dead code".
-// We need to reference a symbol in each module (crate) that registers an importer since atelier_importer uses
-// inventory::submit and the .ctor linkage hack.
-// Note that this is only required if you use the built-in `atelier_importer::get_source_importers` to
-// register importers with the daemon builder.
-fn init_modules() {
-    // An example of how referencing of types could look to avoid dead code elimination
-    // #[cfg(feature = "amethyst-importers")]
-    // {
-    //     use amethyst::assets::Asset;
-    //     amethyst::renderer::types::Texture::name();
-    //     amethyst::assets::experimental::DefaultLoader::default();
-    //     let _w = amethyst::audio::output::outputs();
-    // }
-}
-
-pub fn run() {
-    init_modules();
-
-    log::info!(
-        "registered importers for {}",
-        atelier_assets::importer::get_source_importers()
-            .map(|(ext, _)| ext)
-            .collect::<Vec<_>>()
-            .join(", ")
-    );
-
+pub fn create_default_asset_daemon() -> AssetDaemon {
     let opt = AssetDaemonOpt::from_args();
 
     AssetDaemon::default()
-        .with_importers(atelier_assets::importer::get_source_importers())
         .with_db_path(opt.db_dir)
         .with_address(opt.address)
         .with_asset_dirs(opt.asset_dirs)
-        .run();
 }

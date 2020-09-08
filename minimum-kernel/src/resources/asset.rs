@@ -26,7 +26,7 @@ impl AssetResourceUpdateCallback for DefaultAssetResourceUpdateCallback {
 pub struct AssetResource {
     loader: RpcLoader,
     storage: AssetStorageSet,
-    tx: Arc<Sender<RefOp>>,
+    tx: Sender<RefOp>,
     rx: Receiver<RefOp>,
     update_callback: Option<Box<dyn AssetResourceUpdateCallback>>
 }
@@ -34,7 +34,6 @@ pub struct AssetResource {
 impl AssetResource {
     pub fn new(loader: RpcLoader) -> Self {
         let (tx, rx) = atelier_loader::crossbeam_channel::unbounded();
-        let tx = Arc::new(tx);
         let storage = AssetStorageSet::new(tx.clone());
 
         AssetResource {
@@ -90,7 +89,7 @@ impl AssetResource {
         &self.storage
     }
 
-    pub fn tx(&self) -> &Arc<atelier_loader::crossbeam_channel::Sender<RefOp>> {
+    pub fn tx(&self) -> &atelier_loader::crossbeam_channel::Sender<RefOp> {
         &self.tx
     }
 }

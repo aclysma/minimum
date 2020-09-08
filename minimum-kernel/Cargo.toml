@@ -8,7 +8,8 @@ edition = "2018"
 
 [dependencies]
 
-atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+futures-executor = "0.3.5"
+atelier-assets = { git = "https://github.com/aclysma/atelier-assets", branch = "minimum-0.3", features = ["serde_importers"] }
 legion = { version = "0.3", default-features = false, features = ["serialize"] }
 
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum-legion-0.3" }

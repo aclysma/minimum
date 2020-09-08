@@ -17,7 +17,7 @@ imgui-inspect = "0.5"
 imgui = "0.4"
 #imgui-sdl2 = "0.11.0"
 
-atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+atelier-assets = { git = "https://github.com/aclysma/atelier-assets", branch = "minimum-0.3" }
 
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum-legion-0.3" }
 legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum-legion-0.3" }

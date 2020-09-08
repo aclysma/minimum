@@ -25,7 +25,7 @@ imgui-winit-support = "0.4.0"
 
 crossbeam-channel = "0.4"
 
-atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+atelier-assets = { git = "https://github.com/aclysma/atelier-assets", branch = "minimum-0.3" }
 
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum-legion-0.3" }
 legion-prefab = { git = "https://github.com/aclysma/prefab", branch="minimum-legion-0.3" }

@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 minimum-math = { path = "../minimum-math" }
 
-atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+atelier-assets = { git = "https://github.com/aclysma/atelier-assets", branch = "minimum-0.3" }
 legion = { version = "0.3", default-features = false, features = ["serialize"] }
 
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum-legion-0.3" }

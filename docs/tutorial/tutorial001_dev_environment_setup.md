@@ -14,7 +14,7 @@ Next, we need to add some dependencies to the .toml
 minimum = { git = "https://github.com/aclysma/minimum" }
 
 # Asset Pipeline
-atelier-assets = { git = "https://github.com/amethyst/atelier-assets" }
+atelier-assets = { git = "https://github.com/aclysma/atelier-assets", branch = "minimum-0.3" }
 
 # Prefab/Transactions
 legion-transaction = { git = "https://github.com/aclysma/prefab", branch="minimum-legion-0.3" }

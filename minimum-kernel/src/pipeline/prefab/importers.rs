@@ -1,4 +1,4 @@
-use atelier_assets::importer::{ImportedAsset, Importer, ImporterValue, SourceFileImporter};
+use atelier_assets::importer::{ImportedAsset, Importer, ImporterValue};
 use atelier_assets::core::AssetUuid;
 use serde::{Deserialize, Serialize};
 use std::io::Read;
@@ -142,7 +142,3 @@ impl Importer for PrefabImporter {
     }
 }
 
-inventory::submit!(SourceFileImporter {
-    extension: ".prefab",
-    instantiator: || Box::new(PrefabImporter::default())
-});
