@@ -16,7 +16,9 @@ fn main() {
     // Spawn the daemon in a background thread. This could be a different process, but
     // for simplicity we'll launch it here.
     std::thread::spawn(move || {
-        daemon::run();
+        minimum::daemon::create_default_asset_daemon()
+            .with_importer("prefab", minimum::pipeline::PrefabImporter::default())
+            .run();
     });
 
     // Build the app and run it
