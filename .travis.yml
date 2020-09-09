@@ -16,16 +16,16 @@ install:
   - if [ $TRAVIS_OS_NAME = windows ]; then export PATH="C:\Python37:$PATH"; fi
 matrix:
   include:
-    - name: "Windows MSVC 1.41.0"
-      rust: 1.41.0-msvc
+    - name: "Windows MSVC 1.45.2"
+      rust: 1.45.2-msvc
       os: windows
       env: SKIP_FORMAT_CHECK=1 SKIP_CLIPPY=1
-    - name: "OSX 1.41.0"
-      rust: 1.41.0
+    - name: "OSX 1.45.2"
+      rust: 1.45.2
       os: osx
       env: SKIP_FORMAT_CHECK=1 SKIP_CLIPPY=1
-    - name: "Linux 1.41.0"
-      rust: 1.41.0
+    - name: "Linux 1.45.2"
+      rust: 1.45.2
       os: linux
       env: SKIP_FORMAT_CHECK=1 SKIP_CLIPPY=1
     - name: "Windows MSVC Stable"

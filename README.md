@@ -23,13 +23,10 @@ Youtube Video:
  
 ## Status
 
-This project was recently re-worked to adopt atelier-assets for the content pipeline and legion for the ECS. The two
-are tightly integrated to produce a prefab system and an easy-to-extend content-authoring workflow.
-
-There are a few examples and some documentation. The framework is - by design - a blank slate for end-users to extend.
-
-I'm currently investigating rendering options in Rust so there will be a hiatus, similar to between 0.1 and 0.2. I
-intend to maintain CI support and answer issues/PRs.
+This is probably more experimental than what most people are looking for. Unless you're looking for a totally blank
+slate with atelier assets and legion integrated, you'll probably be better off looking at something else. I'll likely
+keep using this project to prove out new ideas so I'll try to keep it building and up to date with the rest of the
+ecosystem.
 
 Please see the [docs](https://github.com/aclysma/minimum/blob/master/docs/index.md)!
 
@@ -51,7 +48,7 @@ that populates this.)
 
 ## Alternatives
 
-For more batteries-included solutions in rust, I would look at amethyst, coffee, or ggez. The main difference is that
+For more batteries-included solutions in rust, I would look at amethyst, bevy, coffee, or ggez. The main difference is that
 these libraries all tend to take over your game loop or assume you will use a particular windowing or rendering
 solution.
 
