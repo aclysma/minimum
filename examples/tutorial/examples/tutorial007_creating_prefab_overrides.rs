@@ -48,19 +48,16 @@ fn main() {
     // Create a world and insert data into it that we would like to save into a prefab
     let mut prefab_world = World::default();
     let prefab_entity = *prefab_world
-        .insert(
-            (),
-            (0..1).map(|_| {
-                (
-                    PositionComponent {
-                        value: Vec2::new(0.0, 500.0),
-                    },
-                    VelocityComponent {
-                        value: Vec2::new(5.0, 0.0),
-                    },
-                )
-            }),
-        )
+        .extend((0..1).map(|_| {
+            (
+                PositionComponent {
+                    value: Vec2::new(0.0, 500.0),
+                },
+                VelocityComponent {
+                    value: Vec2::new(5.0, 0.0),
+                },
+            )
+        }))
         .first()
         .unwrap();
 
@@ -96,7 +93,7 @@ fn main() {
     let mut prefab_builder = PrefabBuilder::new(
         prefab.prefab_id(),
         cooked_prefab,
-        &component_registry.copy_clone_impl(),
+        component_registry.copy_clone_impl(),
     );
 
     // Here, we modify the world on the prefab builder.
@@ -104,7 +101,9 @@ fn main() {
     let prefab_builder_entity = prefab_builder.uuid_to_entity(entity_uuid).unwrap();
     prefab_builder
         .world_mut()
-        .get_component_mut::<PositionComponent>(prefab_builder_entity)
+        .entry(prefab_builder_entity)
+        .unwrap()
+        .get_component_mut::<PositionComponent>()
         .unwrap()
         .value = glam::Vec2::new(0.0, 1000.0);
 
@@ -112,7 +111,7 @@ fn main() {
     let prefab_with_override = prefab_builder
         .create_prefab(
             component_registry.components_by_uuid(),
-            &component_registry.copy_clone_impl(),
+            component_registry.copy_clone_impl(),
         )
         .unwrap();
 

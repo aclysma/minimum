@@ -26,15 +26,12 @@ fn main() {
 
     // Insert an object with position and velocity
     let entity = *world
-        .insert(
-            (),
-            (0..1).map(|_| {
-                (
-                    PositionComponent(Vec2::new(0.0, 500.0)),
-                    VelocityComponent(Vec2::new(5.0, 0.0)),
-                )
-            }),
-        )
+        .extend((0..1).map(|_| {
+            (
+                PositionComponent(Vec2::new(0.0, 500.0)),
+                VelocityComponent(Vec2::new(5.0, 0.0)),
+            )
+        }))
         .first()
         .unwrap();
 
@@ -56,7 +53,11 @@ fn main() {
             pos.0 += gravity.0;
         }
 
-        let position = world.get_component::<PositionComponent>(entity).unwrap();
+        let position = world
+            .entry(entity)
+            .unwrap()
+            .get_component::<PositionComponent>()
+            .unwrap();
         println!("Position is {}", position.0);
     }
 }
