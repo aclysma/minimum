@@ -172,10 +172,34 @@ impl Sdl2ImguiManager {
     }
 }
 
-fn init_imgui(window: &Window) -> imgui::Context {
+#[derive(PartialEq)]
+pub enum ColorFormat {
+    Linear,
+    Srgb
+}
+
+fn init_imgui(window: &Window, color_format: ColorFormat) -> imgui::Context {
     use imgui::Context;
 
     let mut imgui = Context::create();
+
+    // Convert colors from SRGB to linear if linear format is chosen
+    if color_format == ColorFormat::Linear {
+        // Fix incorrect colors with sRGB framebuffer
+        fn imgui_gamma_to_linear(col: [f32; 4]) -> [f32; 4] {
+            let x = col[0].powf(2.2);
+            let y = col[1].powf(2.2);
+            let z = col[2].powf(2.2);
+            let w = 1.0 - (1.0 - col[3]).powf(2.2);
+            [x, y, z, w]
+        }
+
+        let style = imgui.style_mut();
+        for col in 0..style.colors.len() {
+            style.colors[col] = imgui_gamma_to_linear(style.colors[col]);
+        }
+    }
+
     imgui.set_ini_filename(None);
 
     let (win_w, win_h) = window.size();
@@ -248,7 +272,7 @@ fn init_imgui(window: &Window) -> imgui::Context {
     imgui
 }
 
-pub fn init_imgui_manager(window: &Window) -> Sdl2ImguiManager {
-    let imgui_context = init_imgui(&window);
+pub fn init_imgui_manager(window: &Window, color_format: ColorFormat) -> Sdl2ImguiManager {
+    let imgui_context = init_imgui(&window, color_format);
     Sdl2ImguiManager::new(imgui_context, window)
 }
