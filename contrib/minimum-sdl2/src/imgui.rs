@@ -185,12 +185,20 @@ fn init_imgui(window: &Window, color_format: ColorFormat) -> imgui::Context {
 
     // Convert colors from SRGB to linear if linear format is chosen
     if color_format == ColorFormat::Linear {
+        fn linear_to_gamma(value: f32) -> f32 {
+            if value <= 0.04045 {
+                value / 12.92
+            } else {
+                f32::powf((value + 0.055) / 1.055, 2.4)
+            }
+        }
+
         // Fix incorrect colors with sRGB framebuffer
         fn imgui_gamma_to_linear(col: [f32; 4]) -> [f32; 4] {
-            let x = col[0].powf(2.2);
-            let y = col[1].powf(2.2);
-            let z = col[2].powf(2.2);
-            let w = 1.0 - (1.0 - col[3]).powf(2.2);
+            let x = linear_to_gamma(col[0]);
+            let y = linear_to_gamma(col[1]);
+            let z = linear_to_gamma(col[2]);
+            let w = col[3];
             [x, y, z, w]
         }
 
