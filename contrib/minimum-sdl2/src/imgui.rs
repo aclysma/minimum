@@ -175,10 +175,13 @@ impl Sdl2ImguiManager {
 #[derive(PartialEq)]
 pub enum ColorFormat {
     Linear,
-    Srgb
+    Srgb,
 }
 
-fn init_imgui(window: &Window, color_format: ColorFormat) -> imgui::Context {
+fn init_imgui(
+    window: &Window,
+    color_format: ColorFormat,
+) -> imgui::Context {
     use imgui::Context;
 
     let mut imgui = Context::create();
@@ -280,7 +283,10 @@ fn init_imgui(window: &Window, color_format: ColorFormat) -> imgui::Context {
     imgui
 }
 
-pub fn init_imgui_manager(window: &Window, color_format: ColorFormat) -> Sdl2ImguiManager {
+pub fn init_imgui_manager(
+    window: &Window,
+    color_format: ColorFormat,
+) -> Sdl2ImguiManager {
     let imgui_context = init_imgui(&window, color_format);
     Sdl2ImguiManager::new(imgui_context, window)
 }

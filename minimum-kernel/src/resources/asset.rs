@@ -11,14 +11,22 @@ use atelier_assets::loader as atelier_loader;
 use legion::Resources;
 use crossbeam_channel::{Receiver, Sender};
 
-pub trait AssetResourceUpdateCallback : Send + Sync {
-    fn update(&self, resources: &Resources, asset_resource: &mut AssetResource);
+pub trait AssetResourceUpdateCallback: Send + Sync {
+    fn update(
+        &self,
+        resources: &Resources,
+        asset_resource: &mut AssetResource,
+    );
 }
 
 pub struct DefaultAssetResourceUpdateCallback;
 
 impl AssetResourceUpdateCallback for DefaultAssetResourceUpdateCallback {
-    fn update(&self, _resources: &Resources, asset_resource: &mut AssetResource) {
+    fn update(
+        &self,
+        _resources: &Resources,
+        asset_resource: &mut AssetResource,
+    ) {
         asset_resource.do_update();
     }
 }
@@ -28,7 +36,7 @@ pub struct AssetResource {
     storage: AssetStorageSet,
     tx: Sender<RefOp>,
     rx: Receiver<RefOp>,
-    update_callback: Option<Box<dyn AssetResourceUpdateCallback>>
+    update_callback: Option<Box<dyn AssetResourceUpdateCallback>>,
 }
 
 impl AssetResource {
@@ -41,7 +49,7 @@ impl AssetResource {
             storage,
             tx,
             rx,
-            update_callback: Some(Box::new(DefaultAssetResourceUpdateCallback))
+            update_callback: Some(Box::new(DefaultAssetResourceUpdateCallback)),
         }
     }
 }
@@ -63,7 +71,10 @@ impl AssetResource {
             .add_storage_with_loader::<AssetDataT, AssetT, LoaderT>(loader);
     }
 
-    pub fn update(&mut self, resources: &Resources) {
+    pub fn update(
+        &mut self,
+        resources: &Resources,
+    ) {
         // This take allows us to pass mutable self to the update callback
         let cb = self.update_callback.take().unwrap();
         cb.update(resources, self);
@@ -77,7 +88,10 @@ impl AssetResource {
             .expect("failed to process loader");
     }
 
-    pub fn set_update_fn(&mut self, update_callback: Box<dyn AssetResourceUpdateCallback>) {
+    pub fn set_update_fn(
+        &mut self,
+        update_callback: Box<dyn AssetResourceUpdateCallback>,
+    ) {
         self.update_callback = Some(update_callback);
     }
 

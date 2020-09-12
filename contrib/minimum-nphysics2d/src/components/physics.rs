@@ -21,9 +21,7 @@ use ncollide3d::pipeline::{CollisionGroups, GeometricQueryType};
 use legion::storage::ComponentIndex;
 use nalgebra_glm as glm;
 
-use minimum::components::{
-    TransformComponentDef
-};
+use minimum::components::{TransformComponentDef};
 use ncollide3d::world::CollisionWorld;
 
 use crate::math_conversions::{vec2_glam_to_glm, vec3_glam_to_glm, quat_glam_to_glm};
@@ -109,16 +107,18 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
         src_arch: &Archetype,
         src_components: &Components,
         dst: &mut ComponentWriter<Self>,
-        push_fn: fn(&mut ComponentWriter<Self>, Self)
+        push_fn: fn(&mut ComponentWriter<Self>, Self),
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
-        let transform_components = legion_transaction::iter_component_slice_from_archetype::<TransformComponentDef>(src_components, src_arch, src_entity_range.clone());
-        let from = legion_transaction::get_component_slice_from_archetype::<RigidBodyBallComponentDef>(src_components, src_arch, src_entity_range).unwrap();
+        let transform_components = legion_transaction::iter_component_slice_from_archetype::<
+            TransformComponentDef,
+        >(src_components, src_arch, src_entity_range.clone());
+        let from = legion_transaction::get_component_slice_from_archetype::<
+            RigidBodyBallComponentDef,
+        >(src_components, src_arch, src_entity_range)
+        .unwrap();
 
-        for (src_transform, from) in izip!(
-            transform_components,
-            from,
-        ) {
+        for (src_transform, from) in izip!(transform_components, from,) {
             let mut radius = from.radius;
             if let Some(transform) = src_transform {
                 radius *= transform.uniform_scale();
@@ -166,7 +166,7 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent>
         collision_world.add(
             ncollide3d::math::Isometry::from_parts(
                 nalgebra::Translation::from(vec3_glam_to_glm(*transform.position)),
-                rotation
+                rotation,
             ),
             shape_handle,
             CollisionGroups::new(),
@@ -183,26 +183,23 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
         src_arch: &Archetype,
         src_components: &Components,
         dst: &mut ComponentWriter<Self>,
-        push_fn: fn(&mut ComponentWriter<Self>, Self)
+        push_fn: fn(&mut ComponentWriter<Self>, Self),
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
 
-        let transform_components = legion_transaction::iter_component_slice_from_archetype::<TransformComponentDef>(
-            src_components,
-            src_arch,
-            src_entity_range.clone()
-        );
+        let transform_components = legion_transaction::iter_component_slice_from_archetype::<
+            TransformComponentDef,
+        >(src_components, src_arch, src_entity_range.clone());
 
-        let from = legion_transaction::get_component_slice_from_archetype::<RigidBodyBoxComponentDef>(
-            src_components,
-            src_arch,
-            src_entity_range
-        ).unwrap();
+        let from =
+            legion_transaction::get_component_slice_from_archetype::<RigidBodyBoxComponentDef>(
+                src_components,
+                src_arch,
+                src_entity_range,
+            )
+            .unwrap();
 
-        for (src_transform, from) in izip!(
-            transform_components,
-            from,
-        ) {
+        for (src_transform, from) in izip!(transform_components, from,) {
             let mut half_extents = *from.half_extents;
 
             if let Some(transform) = src_transform {
@@ -245,7 +242,7 @@ impl minimum::editor::EditorSelectableTransformed<RigidBodyComponent> for RigidB
         let shape_handle = ShapeHandle3d::new(Cuboid3d::new(glm::Vec3::new(
             half_extents.x(),
             half_extents.y(),
-            0.0
+            0.0,
         )));
 
         //TODO: This might be wrong

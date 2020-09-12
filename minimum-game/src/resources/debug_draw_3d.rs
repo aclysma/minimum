@@ -1,23 +1,26 @@
-
 #[derive(Copy, Clone, Debug)]
 pub enum DebugDraw3DDepthBehavior {
     Normal,
-    NoDepthTest
+    NoDepthTest,
 }
 
 pub struct LineList3D {
     pub points: Vec<glam::Vec3>,
     pub color: glam::Vec4,
-    pub depth_behavior: DebugDraw3DDepthBehavior
+    pub depth_behavior: DebugDraw3DDepthBehavior,
 }
 
 impl LineList3D {
     pub fn new(
         points: Vec<glam::Vec3>,
         color: glam::Vec4,
-        depth_behavior: DebugDraw3DDepthBehavior
+        depth_behavior: DebugDraw3DDepthBehavior,
     ) -> Self {
-        LineList3D { points, color, depth_behavior }
+        LineList3D {
+            points,
+            color,
+            depth_behavior,
+        }
     }
 }
 
@@ -35,11 +38,12 @@ impl DebugDraw3DResource {
         &mut self,
         points: Vec<glam::Vec3>,
         color: glam::Vec4,
-        depth_behavior: DebugDraw3DDepthBehavior
+        depth_behavior: DebugDraw3DDepthBehavior,
     ) {
         // Nothing will draw if we don't have at least 2 points
         if points.len() > 1 {
-            self.line_lists.push(LineList3D::new(points, color, depth_behavior));
+            self.line_lists
+                .push(LineList3D::new(points, color, depth_behavior));
         }
     }
 
@@ -48,7 +52,7 @@ impl DebugDraw3DResource {
         &mut self,
         mut points: Vec<glam::Vec3>,
         color: glam::Vec4,
-        depth_behavior: DebugDraw3DDepthBehavior
+        depth_behavior: DebugDraw3DDepthBehavior,
     ) {
         // Nothing will draw if we don't have at least 2 points
         if points.len() > 1 {
@@ -62,7 +66,7 @@ impl DebugDraw3DResource {
         p0: glam::Vec3,
         p1: glam::Vec3,
         color: glam::Vec4,
-        depth_behavior: DebugDraw3DDepthBehavior
+        depth_behavior: DebugDraw3DDepthBehavior,
     ) {
         let points = vec![p0, p1];
         self.add_line_strip(points, color, depth_behavior);
@@ -105,7 +109,15 @@ impl DebugDraw3DResource {
         segments: u32,
     ) {
         let (x_dir, y_dir) = minimum_math::functions::normal_to_xy(normal);
-        self.add_circle_xy(center, x_dir, y_dir, radius, color, depth_behavior, segments);
+        self.add_circle_xy(
+            center,
+            x_dir,
+            y_dir,
+            radius,
+            color,
+            depth_behavior,
+            segments,
+        );
     }
 
     pub fn add_sphere(
@@ -123,7 +135,15 @@ impl DebugDraw3DResource {
             let x_dir = glam::Vec3::new(fraction.cos(), fraction.sin(), 0.0);
             let y_dir = glam::Vec3::unit_z();
 
-            self.add_circle_xy(center, x_dir, y_dir, radius, color, depth_behavior, segments);
+            self.add_circle_xy(
+                center,
+                x_dir,
+                y_dir,
+                radius,
+                color,
+                depth_behavior,
+                segments,
+            );
         }
 
         // Draw the center horizontal ring
@@ -219,16 +239,13 @@ impl DebugDraw3DResource {
             glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.max.z()),
             glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.min.z()),
             glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.min.z()),
-
             // Quad 2
             glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.min.z()),
             glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.max.z()),
             glam::Vec3::new(aabb.max.x(), aabb.max.y(), aabb.max.z()),
             glam::Vec3::new(aabb.max.x(), aabb.max.y(), aabb.min.z()),
-
             // Retrace towards quad 3
             glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.min.z()),
-
             // Quad 3
             glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.min.z()),
             glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.min.z()),
@@ -236,7 +253,6 @@ impl DebugDraw3DResource {
             glam::Vec3::new(aabb.max.x(), aabb.min.y(), aabb.min.z()),
             glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.min.z()),
             glam::Vec3::new(aabb.min.x(), aabb.min.y(), aabb.max.z()),
-
             // Quad 4
             glam::Vec3::new(aabb.min.x(), aabb.max.y(), aabb.max.z()),
             glam::Vec3::new(aabb.max.x(), aabb.max.y(), aabb.max.z()),

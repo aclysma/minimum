@@ -57,7 +57,10 @@ pub fn run() {
         .expect("Failed to create window");
 
     // Init imgui
-    let sdl2_imgui = minimum_sdl2::imgui::init_imgui_manager(&sdl2_window, minimum_sdl2::imgui::ColorFormat::Srgb);
+    let sdl2_imgui = minimum_sdl2::imgui::init_imgui_manager(
+        &sdl2_window,
+        minimum_sdl2::imgui::ColorFormat::Srgb,
+    );
 
     // Setup skulpin imgui plugin
     let mut imgui_plugin: Option<Box<dyn skulpin::RendererPlugin>> = None;
@@ -206,7 +209,7 @@ fn create_resources(
         &mut viewport,
         viewport_size_in_pixels,
         camera_resource.position,
-        camera_resource.x_half_extents
+        camera_resource.x_half_extents,
     );
 
     resources.insert(viewport);

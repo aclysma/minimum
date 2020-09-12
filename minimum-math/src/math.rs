@@ -18,9 +18,11 @@ impl Vec2 {
     }
 }
 
-impl From<[f32;2]> for Vec2 {
-    fn from(value: [f32;2]) -> Self {
-        Vec2 { value: glam::Vec2::new(value[0], value[1] ) }
+impl From<[f32; 2]> for Vec2 {
+    fn from(value: [f32; 2]) -> Self {
+        Vec2 {
+            value: glam::Vec2::new(value[0], value[1]),
+        }
     }
 }
 
@@ -119,9 +121,11 @@ impl Vec3 {
     }
 }
 
-impl From<[f32;3]> for Vec3 {
-    fn from(value: [f32;3]) -> Self {
-        Vec3 { value: glam::Vec3::new(value[0], value[1], value[2] ) }
+impl From<[f32; 3]> for Vec3 {
+    fn from(value: [f32; 3]) -> Self {
+        Vec3 {
+            value: glam::Vec3::new(value[0], value[1], value[2]),
+        }
     }
 }
 
@@ -216,9 +220,11 @@ impl Vec4 {
     }
 }
 
-impl From<[f32;4]> for Vec4 {
-    fn from(value: [f32;4]) -> Self {
-        Vec4 { value: glam::Vec4::new(value[0], value[1], value[2], value[3] ) }
+impl From<[f32; 4]> for Vec4 {
+    fn from(value: [f32; 4]) -> Self {
+        Vec4 {
+            value: glam::Vec4::new(value[0], value[1], value[2], value[3]),
+        }
     }
 }
 
@@ -300,9 +306,6 @@ impl InspectRenderDefault<Vec4> for Vec4 {
     }
 }
 
-
-
-
 #[derive(Copy, Clone, Serialize, Deserialize, Debug, PartialEq, Default)]
 #[repr(transparent)]
 #[serde(transparent)]
@@ -318,9 +321,11 @@ impl Quat {
     }
 }
 
-impl From<[f32;4]> for Quat {
-    fn from(value: [f32;4]) -> Self {
-        Quat { value: glam::Quat::from_xyzw(value[0], value[1], value[2], value[3] ) }
+impl From<[f32; 4]> for Quat {
+    fn from(value: [f32; 4]) -> Self {
+        Quat {
+            value: glam::Quat::from_xyzw(value[0], value[1], value[2], value[3]),
+        }
     }
 }
 

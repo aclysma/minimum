@@ -30,7 +30,7 @@ impl Default for TransformComponentDef {
             position: Default::default(),
             rotation: Default::default(),
             scale: 1.0,
-            non_uniform_scale: glam::Vec3::new(1.0, 1.0, 1.0).into()
+            non_uniform_scale: glam::Vec3::new(1.0, 1.0, 1.0).into(),
         }
     }
 }
@@ -89,7 +89,7 @@ impl TransformComponentDef {
             position: position.into(),
             rotation: glam::Vec3::from(rotation_xyz).into(),
             scale,
-            non_uniform_scale: non_uniform_scale.into()
+            non_uniform_scale: non_uniform_scale.into(),
         }
     }
 
@@ -108,15 +108,14 @@ impl TransformComponentDef {
         // a better rotation system
         glam::Quat::from_rotation_z(self.rotation.z()) * // yaw?
         glam::Quat::from_rotation_x(self.rotation.x()) * // pitch?
-        glam::Quat::from_rotation_y(self.rotation.y())   // roll?
-        // glam::Quat::from_rotation_y(self.rotation.y()) *
-        //     glam::Quat::from_rotation_x(self.rotation.x()) *
-        //     glam::Quat::from_rotation_z(self.rotation.z())
-
+        glam::Quat::from_rotation_y(self.rotation.y()) // roll?
+                                                       // glam::Quat::from_rotation_y(self.rotation.y()) *
+                                                       //     glam::Quat::from_rotation_x(self.rotation.x()) *
+                                                       //     glam::Quat::from_rotation_z(self.rotation.z())
 
         //glam::Quat::from_rotation_x(std::f32::consts::FRAC_PI_2) *
-            //glam::Quat::from_rotation_ypr(self.rotation.z(), self.rotation.y(), self.rotation.x()) *
-            //glam::Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
+        //glam::Quat::from_rotation_ypr(self.rotation.z(), self.rotation.y(), self.rotation.x()) *
+        //glam::Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
     }
 
     pub fn rotation_euler(&self) -> glam::Vec3 {
@@ -140,7 +139,7 @@ impl TransformComponentDef {
         *self.non_uniform_scale
     }
 
-    pub fn non_uniform_scale_mut (&mut self) -> &mut glam::Vec3 {
+    pub fn non_uniform_scale_mut(&mut self) -> &mut glam::Vec3 {
         &mut *self.non_uniform_scale
     }
 
@@ -152,21 +151,20 @@ impl TransformComponentDef {
 
 legion_prefab::register_component_type!(TransformComponentDef);
 
-
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug)]
 #[uuid = "3f76404d-abdf-40dd-9bc3-997c1726d3f0"]
 pub struct TransformComponent {
     // It may be possible to pack scale in the w components of each simd register later on rather
     // than having them mixed with the 3x3 rotation
     #[serde_diff(opaque)]
-    pub transform: glam::Mat4
+    pub transform: glam::Mat4,
 }
 legion_prefab::register_component_type!(TransformComponent);
 
 impl Default for TransformComponent {
     fn default() -> Self {
         TransformComponent {
-            transform: glam::Mat4::identity()
+            transform: glam::Mat4::identity(),
         }
     }
 }
@@ -174,7 +172,7 @@ impl Default for TransformComponent {
 impl TransformComponent {
     pub fn from_position(position: glam::Vec3) -> Self {
         TransformComponent {
-            transform: glam::Mat4::from_translation(position)
+            transform: glam::Mat4::from_translation(position),
         }
     }
 
@@ -241,7 +239,10 @@ impl TransformComponent {
     }
     */
 
-    pub fn set_position(&mut self, position: glam::Vec3) {
+    pub fn set_position(
+        &mut self,
+        position: glam::Vec3,
+    ) {
         self.transform.set_w_axis(position.extend(1.0));
     }
 }
@@ -249,7 +250,11 @@ impl TransformComponent {
 impl From<TransformComponentDef> for TransformComponent {
     fn from(from: TransformComponentDef) -> Self {
         TransformComponent {
-            transform: glam::Mat4::from_scale_rotation_translation(from.scale(), from.rotation_quat(), from.position())
+            transform: glam::Mat4::from_scale_rotation_translation(
+                from.scale(),
+                from.rotation_quat(),
+                from.position(),
+            ),
         }
     }
 }

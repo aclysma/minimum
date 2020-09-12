@@ -15,7 +15,7 @@ pub fn normal_to_xy(normal: glam::Vec3) -> (glam::Vec3, glam::Vec3) {
 pub struct DistanceTo2dSegmentResult {
     pub t: f32,
     pub closest_point: glam::Vec2,
-    pub distance_sq: f32
+    pub distance_sq: f32,
 }
 
 pub fn point_segment_intersect_2d(
@@ -32,8 +32,8 @@ pub fn point_segment_intersect_2d(
         return DistanceTo2dSegmentResult {
             t: 0.5,
             closest_point: midpoint,
-            distance_sq: (test_point - midpoint).length_squared()
-        }
+            distance_sq: (test_point - midpoint).length_squared(),
+        };
     }
 
     // distance to the infinite line described by the points
@@ -47,7 +47,7 @@ pub fn point_segment_intersect_2d(
         return DistanceTo2dSegmentResult {
             t: 0.0,
             closest_point: p0,
-            distance_sq: (test_point - p0).length_squared()
+            distance_sq: (test_point - p0).length_squared(),
         };
     }
 
@@ -56,7 +56,7 @@ pub fn point_segment_intersect_2d(
         DistanceTo2dSegmentResult {
             t: 1.0,
             closest_point: p1,
-            distance_sq: (test_point - p1).length_squared()
+            distance_sq: (test_point - p1).length_squared(),
         }
     } else {
         // the closest point on the segment to test_point is between p0 and p1
@@ -67,7 +67,7 @@ pub fn point_segment_intersect_2d(
         DistanceTo2dSegmentResult {
             t,
             closest_point,
-            distance_sq: (test_point - closest_point).length_squared()
+            distance_sq: (test_point - closest_point).length_squared(),
         }
     }
 }
@@ -136,7 +136,7 @@ pub struct NormalizedRay {
 pub enum PlaneIntersectResult {
     NoIntersection,
     LineContainedWithinPlane,
-    Intersect(glam::Vec3)
+    Intersect(glam::Vec3),
 }
 
 pub fn line_plane_intersect_3d(
@@ -165,7 +165,7 @@ pub struct RayIntersectResult {
     pub t0: f32,
     pub t1: f32,
     pub c0: glam::Vec3,
-    pub c1: glam::Vec3
+    pub c1: glam::Vec3,
 }
 
 pub fn ray_ray_intersect_3d(
@@ -182,7 +182,7 @@ pub fn ray_ray_intersect_3d(
         r1.origin,
         r1.dir * r1.length,
         0.0,
-        t1_max
+        t1_max,
     )
 }
 
@@ -199,7 +199,7 @@ pub fn line_ray_intersect_3d(
         r1.origin,
         r1.dir * r1.length,
         0.0,
-        t1_max
+        t1_max,
     )
 }
 
@@ -227,9 +227,9 @@ pub fn ray_intersect_internal(
     p1: glam::Vec3,
     d1: glam::Vec3,
     t1_min: f32,
-    t1_max: f32
+    t1_max: f32,
 ) -> RayIntersectResult {
-    const SMALL_NUMBER : f32 = 0.00001;
+    const SMALL_NUMBER: f32 = 0.00001;
 
     //Close enough to equivalent
     if (p1 - p0).length_squared() < SMALL_NUMBER {
@@ -238,7 +238,7 @@ pub fn ray_intersect_internal(
             c1: p0,
             t0: 0.0,
             t1: 0.0,
-        }
+        };
     }
 
     // Get a direction orthogonal to both rays
@@ -277,19 +277,18 @@ pub fn ray_intersect_internal(
 
         // Now figure out c1 based on where c0 ended up. This will factor in t0 being constrained
         //let d1_norm = d1.normalize();
-        let t1 = (d1.dot(c0 - p1) / d1.length_squared()).max(t1_min).min(t1_max);
+        let t1 = (d1.dot(c0 - p1) / d1.length_squared())
+            .max(t1_min)
+            .min(t1_max);
         let c1 = p1 + t1 * d1;
 
         // Recompute t0/c0 as t1 may have been constrained
-        let t0 = (d0.dot(c1 - p0) / d0.length_squared()).max(t0_min).min(t0_max);
+        let t0 = (d0.dot(c1 - p0) / d0.length_squared())
+            .max(t0_min)
+            .min(t0_max);
         let c0 = p0 + t0 * d0;
 
-        RayIntersectResult {
-            t0,
-            t1,
-            c0,
-            c1
-        }
+        RayIntersectResult { t0, t1, c0, c1 }
     }
 }
 
@@ -306,12 +305,12 @@ fn ray_intersect_same_origin() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -321,7 +320,6 @@ fn ray_intersect_same_origin() {
     assert_eq!(result.c0, glam::Vec3::zero());
     assert_eq!(result.c1, glam::Vec3::zero());
 }
-
 
 #[test]
 fn ray_intersect_given_points_closest_orthogonal() {
@@ -336,12 +334,12 @@ fn ray_intersect_given_points_closest_orthogonal() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -365,12 +363,12 @@ fn ray_intersect_orthogonal_non_intersect() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -394,12 +392,12 @@ fn ray_intersect_orthogonal_intersect() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -423,12 +421,12 @@ fn ray_intersect_non_orthogonal_non_intersect() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -452,20 +450,26 @@ fn ray_intersect_non_power2() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
     println!("{:#?}", result);
     assert_approx_eq!(result.t0, 6.0);
     assert_approx_eq!(result.t1, 5.0);
-    assert_approx_eq!(0.0, (result.c0 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared());
-    assert_approx_eq!(0.0, (result.c1 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared());
+    assert_approx_eq!(
+        0.0,
+        (result.c0 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared()
+    );
+    assert_approx_eq!(
+        0.0,
+        (result.c1 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared()
+    );
 }
 
 #[test]
@@ -481,12 +485,12 @@ fn ray_intersect_opposite_direction() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -510,12 +514,12 @@ fn ray_intersect_opposite_direction_rev() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -539,12 +543,12 @@ fn ray_intersect_distance_limited() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -568,12 +572,12 @@ fn ray_intersect_distance_limited_rev() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -597,12 +601,12 @@ fn ray_intersect_parallel_towards() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -626,12 +630,12 @@ fn ray_intersect_parallel_away() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -655,12 +659,12 @@ fn ray_intersect_parallel_same_dir() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -684,12 +688,12 @@ fn ray_intersect_parallel_same_dir_rev() {
     let r0 = NormalizedRay {
         origin: p0,
         dir: d0.normalize(),
-        length: d0.length()
+        length: d0.length(),
     };
     let r1 = NormalizedRay {
         origin: p1,
         dir: d1.normalize(),
-        length: d1.length()
+        length: d1.length(),
     };
 
     let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
@@ -704,7 +708,7 @@ fn ray_intersect_parallel_same_dir_rev() {
 fn point_segment_intersect_2d_0deg() {
     let test_point = glam::Vec2::new(100.0, 0.0);
     let p0 = glam::Vec2::new(0.0, 100.0);
-    let p1 = glam::Vec2::new(200.0,  100.0);
+    let p1 = glam::Vec2::new(200.0, 100.0);
 
     let result = point_segment_intersect_2d(test_point, p0, p1);
     let dot = (result.closest_point - test_point).dot(p1 - p0);
@@ -721,7 +725,7 @@ fn point_segment_intersect_2d_0deg() {
 fn point_segment_intersect_2d_45deg() {
     let test_point = glam::Vec2::new(100.0, 0.0);
     let p0 = glam::Vec2::new(100.0, 100.0);
-    let p1 = glam::Vec2::new(200.0,  0.0);
+    let p1 = glam::Vec2::new(200.0, 0.0);
 
     let result = point_segment_intersect_2d(test_point, p0, p1);
     let dot = (result.closest_point - test_point).dot(p1 - p0);
@@ -738,7 +742,7 @@ fn point_segment_intersect_2d_45deg() {
 fn point_segment_intersect_2d_30deg() {
     let test_point = glam::Vec2::new(100.0, 0.0);
     let p0 = glam::Vec2::new(100.0, 300.0);
-    let p1 = glam::Vec2::new(500.0,  0.0);
+    let p1 = glam::Vec2::new(500.0, 0.0);
 
     let result = point_segment_intersect_2d(test_point, p0, p1);
     let dot = (result.closest_point - test_point).dot(p1 - p0);
@@ -755,7 +759,7 @@ fn point_segment_intersect_2d_30deg() {
 fn point_segment_intersect_2d_60deg() {
     let test_point = glam::Vec2::new(100.0, 0.0);
     let p0 = glam::Vec2::new(100.0, 400.0);
-    let p1 = glam::Vec2::new(400.0,  0.0);
+    let p1 = glam::Vec2::new(400.0, 0.0);
 
     let result = point_segment_intersect_2d(test_point, p0, p1);
     let dot = (result.closest_point - test_point).dot(p1 - p0);
@@ -772,7 +776,7 @@ fn point_segment_intersect_2d_60deg() {
 fn point_segment_intersect_2d_90deg() {
     let test_point = glam::Vec2::new(100.0, 0.0);
     let p0 = glam::Vec2::new(200.0, 100.0);
-    let p1 = glam::Vec2::new(200.0,  -100.0);
+    let p1 = glam::Vec2::new(200.0, -100.0);
 
     let result = point_segment_intersect_2d(test_point, p0, p1);
     let dot = (result.closest_point - test_point).dot(p1 - p0);

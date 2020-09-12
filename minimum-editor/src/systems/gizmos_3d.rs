@@ -2,17 +2,14 @@ use legion::*;
 
 use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource};
 use crate::resources::{
-    EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorDraw3DConstraint, EditorTransaction,
-    PostCommitSelection,
+    EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorDraw3DConstraint,
+    EditorTransaction, PostCommitSelection,
 };
 use crate::resources::EditorTool;
 
 use minimum_game::input::MouseButton;
 
-use minimum_transform::components::{
-    TransformComponentDef,
-    TransformComponent
-};
+use minimum_transform::components::{TransformComponentDef, TransformComponent};
 
 use legion::query::{EntityFilter, Query};
 use legion::query::And;
@@ -29,106 +26,109 @@ use legion::world::SubWorld;
 // The DefaultFilter is EntityFilterTuple<ComponentFilter<TransformComponent>, Passthrough>
 type TransformQuery = Query<
     (Entity, Read<TransformComponent>),
-    <(Entity, Read<TransformComponent>) as legion::query::DefaultFilter>::Filter
+    <(Entity, Read<TransformComponent>) as legion::query::DefaultFilter>::Filter,
 >;
 
 pub fn editor_gizmos(schedule: &mut legion::systems::Builder) {
-    schedule.add_system(SystemBuilder::new("editor_input")
-        .read_resource::<ViewportResource>()
-        .write_resource::<EditorStateResource>()
-        .read_resource::<InputResource>()
-        .read_resource::<ViewportResource>()
-        .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDraw3DResource>()
-        .write_resource::<EditorDraw3DResource>()
-        .read_resource::<ComponentRegistryResource>()
-        .read_resource::<AssetResource>()
-        .with_query(<(Entity, Read<TransformComponent>)>::query())
-        .build(
-           |_command_buffer,
-            subworld,
-            (
-                viewport_resource,
-                editor_state,
-                _input_state,
-                _viewport,
-                editor_selection,
-                debug_draw,
-                editor_draw,
-                component_registry,
-                asset_resource
-            ),
-            transform_query| {
-                let mut gizmo_tx = None;
-                std::mem::swap(&mut gizmo_tx, editor_state.gizmo_transaction_mut());
+    schedule.add_system(
+        SystemBuilder::new("editor_input")
+            .read_resource::<ViewportResource>()
+            .write_resource::<EditorStateResource>()
+            .read_resource::<InputResource>()
+            .read_resource::<ViewportResource>()
+            .write_resource::<EditorSelectionResource>()
+            .write_resource::<DebugDraw3DResource>()
+            .write_resource::<EditorDraw3DResource>()
+            .read_resource::<ComponentRegistryResource>()
+            .read_resource::<AssetResource>()
+            .with_query(<(Entity, Read<TransformComponent>)>::query())
+            .build(
+                |_command_buffer,
+                 subworld,
+                 (
+                    viewport_resource,
+                    editor_state,
+                    _input_state,
+                    _viewport,
+                    editor_selection,
+                    debug_draw,
+                    editor_draw,
+                    component_registry,
+                    asset_resource,
+                ),
+                 transform_query| {
+                    let mut gizmo_tx = None;
+                    std::mem::swap(&mut gizmo_tx, editor_state.gizmo_transaction_mut());
 
-                if gizmo_tx.is_none() {
-                    gizmo_tx = editor_state.create_transaction_from_selected(
-                        &*editor_selection,
-                        &*component_registry,
-                    );
-                }
+                    if gizmo_tx.is_none() {
+                        gizmo_tx = editor_state.create_transaction_from_selected(
+                            &*editor_selection,
+                            &*component_registry,
+                        );
+                    }
 
-                if let Some(mut gizmo_tx) = gizmo_tx {
-                    let mut result = GizmoResult::NoChange;
-                    result = result.max(handle_translate_gizmo_input(
-                        &mut *editor_draw,
-                        &mut gizmo_tx,
-                    ));
-                    result = result.max(handle_scale_gizmo_input(&mut *editor_draw, &mut gizmo_tx));
-                    result =
-                        result.max(handle_rotate_gizmo_input(&mut *editor_draw, &mut gizmo_tx));
+                    if let Some(mut gizmo_tx) = gizmo_tx {
+                        let mut result = GizmoResult::NoChange;
+                        result = result.max(handle_translate_gizmo_input(
+                            &mut *editor_draw,
+                            &mut gizmo_tx,
+                        ));
+                        result =
+                            result.max(handle_scale_gizmo_input(&mut *editor_draw, &mut gizmo_tx));
+                        result =
+                            result.max(handle_rotate_gizmo_input(&mut *editor_draw, &mut gizmo_tx));
 
-                    match result {
-                        GizmoResult::NoChange => {}
-                        GizmoResult::Update => {
-                            gizmo_tx.update(
-                                asset_resource,
-                                editor_state,
-                                PostCommitSelection::KeepCurrentSelection,
-                                &*component_registry,
-                            );
-                            *editor_state.gizmo_transaction_mut() = Some(gizmo_tx);
-                        }
-                        GizmoResult::Commit => {
-                            gizmo_tx.commit(
-                                asset_resource,
-                                editor_state,
-                                PostCommitSelection::KeepCurrentSelection,
-                                &*component_registry,
-                            );
+                        match result {
+                            GizmoResult::NoChange => {}
+                            GizmoResult::Update => {
+                                gizmo_tx.update(
+                                    asset_resource,
+                                    editor_state,
+                                    PostCommitSelection::KeepCurrentSelection,
+                                    &*component_registry,
+                                );
+                                *editor_state.gizmo_transaction_mut() = Some(gizmo_tx);
+                            }
+                            GizmoResult::Commit => {
+                                gizmo_tx.commit(
+                                    asset_resource,
+                                    editor_state,
+                                    PostCommitSelection::KeepCurrentSelection,
+                                    &*component_registry,
+                                );
+                            }
                         }
                     }
-                }
 
-                match editor_state.active_editor_tool() {
-                    EditorTool::Translate => draw_translate_gizmo(
-                        &* viewport_resource,
-                        &mut *debug_draw,
-                        &mut *editor_draw,
-                        &mut *editor_selection,
-                        subworld,
-                        transform_query,
-                    ),
-                    EditorTool::Scale => draw_scale_gizmo(
-                        &* viewport_resource,
-                        &mut *debug_draw,
-                        &mut *editor_draw,
-                        &mut *editor_selection,
-                        subworld,
-                        transform_query,
-                    ),
-                    EditorTool::Rotate => draw_rotate_gizmo(
-                        &* viewport_resource,
-                        &mut *debug_draw,
-                        &mut *editor_draw,
-                        &mut *editor_selection,
-                        subworld,
-                        transform_query,
-                    ),
-                }
-            },
-        ));
+                    match editor_state.active_editor_tool() {
+                        EditorTool::Translate => draw_translate_gizmo(
+                            &*viewport_resource,
+                            &mut *debug_draw,
+                            &mut *editor_draw,
+                            &mut *editor_selection,
+                            subworld,
+                            transform_query,
+                        ),
+                        EditorTool::Scale => draw_scale_gizmo(
+                            &*viewport_resource,
+                            &mut *debug_draw,
+                            &mut *editor_draw,
+                            &mut *editor_selection,
+                            subworld,
+                            transform_query,
+                        ),
+                        EditorTool::Rotate => draw_rotate_gizmo(
+                            &*viewport_resource,
+                            &mut *debug_draw,
+                            &mut *editor_draw,
+                            &mut *editor_selection,
+                            subworld,
+                            transform_query,
+                        ),
+                    }
+                },
+            ),
+    );
 }
 
 #[derive(Ord, PartialOrd, PartialEq, Eq)]
@@ -203,7 +203,7 @@ fn draw_translate_gizmo(
     editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    transform_query: &mut TransformQuery
+    transform_query: &mut TransformQuery,
 ) {
     for (entity, transform) in transform_query.iter(subworld) {
         if !selection_world.is_entity_selected(*entity) {
@@ -334,7 +334,6 @@ fn draw_translate_gizmo(
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
 
-
         // xz line
         editor_draw.add_line(
             "xz_axis_translate",
@@ -355,7 +354,6 @@ fn draw_translate_gizmo(
             xz_color,
             DebugDraw3DDepthBehavior::NoDepthTest,
         );
-
 
         // yz line
         editor_draw.add_line(
@@ -623,7 +621,7 @@ fn draw_rotate_gizmo(
     editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
-    transform_query: &mut TransformQuery
+    transform_query: &mut TransformQuery,
 ) {
     for (entity, transform) in transform_query.iter(subworld) {
         if !selection_world.is_entity_selected(*entity) {

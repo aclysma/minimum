@@ -102,9 +102,14 @@ pub fn editor_inspector_window(
                                 {
                                     let mut all = Entity::query();
                                     for entity in all.iter(tx.world()) {
-                                        if !tx.world().entry_ref(*entity).unwrap().archetype().layout().has_component_by_id(
-                                            component_type.component_type_id(),
-                                        ) {
+                                        if !tx
+                                            .world()
+                                            .entry_ref(*entity)
+                                            .unwrap()
+                                            .archetype()
+                                            .layout()
+                                            .has_component_by_id(component_type.component_type_id())
+                                        {
                                             can_add_to_some_entity[index] = true;
                                             break;
                                         }
@@ -129,7 +134,8 @@ pub fn editor_inspector_window(
                             // Make a list of all entities, this is necessary because we can't take an &-borrow for uuid_to_entities at the
                             // same time as an &mut-borrow for world_mut()
                             let mut all = Entity::query();
-                            let all_entities: Vec<Entity> = all.iter(tx.world()).map(|x| *x).collect();
+                            let all_entities: Vec<Entity> =
+                                all.iter(tx.world()).map(|x| *x).collect();
 
                             //
                             // If a component needs to be added, do that now
@@ -138,8 +144,7 @@ pub fn editor_inspector_window(
                                 //TODO: Add this component to all selected entities
                                 for e in &all_entities {
                                     // e guaranteed to be Some, this is a new transaction and we aren't deleting entities
-                                    component_type_to_add
-                                        .add_default_to_entity(tx.world_mut(), *e)
+                                    component_type_to_add.add_default_to_entity(tx.world_mut(), *e)
                                 }
 
                                 commit_required |= true;

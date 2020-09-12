@@ -82,7 +82,7 @@ pub fn update_viewport(
     viewport: &mut ViewportResource,
     viewport_size_in_pixels: glam::Vec2,
     camera_position: glam::Vec2,
-    x_half_extents: f32
+    x_half_extents: f32,
 ) -> glam::Vec2 {
     let y_half_extents =
         x_half_extents / (viewport_size_in_pixels.x() / viewport_size_in_pixels.y());
@@ -92,12 +92,23 @@ pub fn update_viewport(
     let camera_position = glam::Vec3::new(camera_position.x(), camera_position.y(), 0.0);
 
     viewport.set_viewport_size_in_pixels(viewport_size_in_pixels);
-    viewport.set_screen_space_view(calculate_screen_space_matrix(viewport_size_in_pixels, view_half_extents));
+    viewport.set_screen_space_view(calculate_screen_space_matrix(
+        viewport_size_in_pixels,
+        view_half_extents,
+    ));
 
     viewport.set_world_space_view(
-        calculate_world_space_proj_matrix(viewport_size_in_pixels, camera_position, view_half_extents),
-        calculate_world_space_view_matrix(viewport_size_in_pixels, camera_position, view_half_extents),
-        camera_position
+        calculate_world_space_proj_matrix(
+            viewport_size_in_pixels,
+            camera_position,
+            view_half_extents,
+        ),
+        calculate_world_space_view_matrix(
+            viewport_size_in_pixels,
+            camera_position,
+            view_half_extents,
+        ),
+        camera_position,
     );
 
     view_half_extents

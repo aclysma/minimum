@@ -472,10 +472,10 @@ impl InputState {
                                     glam::Vec2::length(went_down_position - self.mouse_position)
                                         > Self::MIN_DRAG_DISTANCE;
                                 if min_drag_distance_met {
-                                    let world_space_begin_position =
-                                        viewport.viewport_space_to_world_space(went_down_position, 0.0);
-                                    let world_space_end_position =
-                                        viewport.viewport_space_to_world_space(self.mouse_position, 0.0);
+                                    let world_space_begin_position = viewport
+                                        .viewport_space_to_world_space(went_down_position, 0.0);
+                                    let world_space_end_position = viewport
+                                        .viewport_space_to_world_space(self.mouse_position, 0.0);
 
                                     let delta = self.mouse_position - went_down_position;
                                     let _world_space_delta =

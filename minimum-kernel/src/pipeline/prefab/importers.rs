@@ -112,7 +112,6 @@ impl Importer for PrefabImporter {
         let prefab_id = prefab_asset.prefab.prefab_id();
         state.id = Some(AssetUuid(prefab_id));
 
-
         // {
         //     //let mut ron_serializer = ron::ser::Serializer::new(Some(ron::ser::PrettyConfig::default()), true);
         //     let ron_string = ron::ser::to_string_pretty(&prefab_asset, Default::default()).unwrap();
@@ -141,4 +140,3 @@ impl Importer for PrefabImporter {
         })
     }
 }
-

@@ -20,7 +20,10 @@ pub mod app;
 
 use atelier_assets::core as atelier_core;
 
-use minimum::resources::{AssetResource, CameraResource, ViewportResource, DebugDraw2DResource, TimeResource, ComponentRegistryResource, DebugDraw3DResource};
+use minimum::resources::{
+    AssetResource, CameraResource, ViewportResource, DebugDraw2DResource, TimeResource,
+    ComponentRegistryResource, DebugDraw3DResource,
+};
 use minimum::editor::EditorInspectRegistry;
 use minimum::editor::EditorInspectRegistryBuilder;
 use minimum::editor::EditorSelectRegistry;
@@ -142,14 +145,15 @@ impl app::AppHandler for DemoApp {
         );
 
         let window_size = window.physical_size();
-        let viewport_size_in_pixels = glam::Vec2::new(window_size.width as f32, window_size.height as f32);
+        let viewport_size_in_pixels =
+            glam::Vec2::new(window_size.width as f32, window_size.height as f32);
 
         let mut viewport = ViewportResource::empty();
         example_shared::viewport::update_viewport(
             &mut viewport,
             viewport_size_in_pixels,
             camera_resource.position,
-            camera_resource.x_half_extents
+            camera_resource.x_half_extents,
         );
 
         resources.insert(EditorInspectRegistryResource::new(

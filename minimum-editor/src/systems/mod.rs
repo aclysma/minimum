@@ -76,96 +76,110 @@ pub fn editor_process_editor_ops(
 }
 
 pub fn editor_keybinds(schedule: &mut legion::systems::Builder) {
-    schedule.add_system(SystemBuilder::new("editor_input")
-        .write_resource::<EditorStateResource>()
-        .read_resource::<InputResource>()
-        .read_resource::<ViewportResource>()
-        .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDraw3DResource>()
-        .write_resource::<EditorDraw3DResource>()
-        .read_resource::<EditorSettingsResource>()
-        .build(
-            |_command_buffer,
-             _subworld,
-             (
-                editor_state,
-                input_state,
-                _viewport,
-                _editor_selection,
-                _debug_draw,
-                _editor_draw,
-                editor_settings,
+    schedule.add_system(
+        SystemBuilder::new("editor_input")
+            .write_resource::<EditorStateResource>()
+            .read_resource::<InputResource>()
+            .read_resource::<ViewportResource>()
+            .write_resource::<EditorSelectionResource>()
+            .write_resource::<DebugDraw3DResource>()
+            .write_resource::<EditorDraw3DResource>()
+            .read_resource::<EditorSettingsResource>()
+            .build(
+                |_command_buffer,
+                 _subworld,
+                 (
+                    editor_state,
+                    input_state,
+                    _viewport,
+                    _editor_selection,
+                    _debug_draw,
+                    _editor_draw,
+                    editor_settings,
+                ),
+                 _| {
+                    if input_state.is_key_just_down(editor_settings.keybinds().tool_translate) {
+                        editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
+                    }
+
+                    if input_state.is_key_just_down(editor_settings.keybinds().tool_scale) {
+                        editor_state.enqueue_set_active_editor_tool(EditorTool::Scale);
+                    }
+
+                    if input_state.is_key_just_down(editor_settings.keybinds().tool_rotate) {
+                        editor_state.enqueue_set_active_editor_tool(EditorTool::Rotate);
+                    }
+
+                    if input_state
+                        .is_key_just_down(editor_settings.keybinds().action_toggle_editor_pause)
+                    {
+                        editor_state.enqueue_toggle_pause();
+                    }
+                },
             ),
-             _| {
-                if input_state.is_key_just_down(editor_settings.keybinds().tool_translate) {
-                    editor_state.enqueue_set_active_editor_tool(EditorTool::Translate);
-                }
-
-                if input_state.is_key_just_down(editor_settings.keybinds().tool_scale) {
-                    editor_state.enqueue_set_active_editor_tool(EditorTool::Scale);
-                }
-
-                if input_state.is_key_just_down(editor_settings.keybinds().tool_rotate) {
-                    editor_state.enqueue_set_active_editor_tool(EditorTool::Rotate);
-                }
-
-                if input_state
-                    .is_key_just_down(editor_settings.keybinds().action_toggle_editor_pause)
-                {
-                    editor_state.enqueue_toggle_pause();
-                }
-            },
-        ));
+    );
 }
 
 pub fn editor_mouse_input(schedule: &mut legion::systems::Builder) {
-    schedule.add_system(SystemBuilder::new("editor_input")
-        .read_resource::<InputResource>()
-        .write_resource::<CameraResource>()
-        .read_resource::<ViewportResource>()
-        .build(
-            |_command_buffer, _subworld, (input_state, camera_resource, _viewport_resource), _| {
-                // Right click drag pans the viewport
-                // if let Some(mouse_drag) = input_state.mouse_drag_in_progress(MouseButton::RIGHT) {
-                //     //let mut delta = mouse_drag.world_scale_previous_frame_delta;
-                //     let mut delta = mouse_drag.ui_
-                //     delta *= glam::Vec2::new(-1.0, -1.0);
-                //     camera_resource.position += delta;
-                // }
+    schedule.add_system(
+        SystemBuilder::new("editor_input")
+            .read_resource::<InputResource>()
+            .write_resource::<CameraResource>()
+            .read_resource::<ViewportResource>()
+            .build(
+                |_command_buffer,
+                 _subworld,
+                 (input_state, camera_resource, _viewport_resource),
+                 _| {
+                    // Right click drag pans the viewport
+                    // if let Some(mouse_drag) = input_state.mouse_drag_in_progress(MouseButton::RIGHT) {
+                    //     //let mut delta = mouse_drag.world_scale_previous_frame_delta;
+                    //     let mut delta = mouse_drag.ui_
+                    //     delta *= glam::Vec2::new(-1.0, -1.0);
+                    //     camera_resource.position += delta;
+                    // }
 
-                // Right click drag pans the viewport
-                let mouse_scroll = input_state.mouse_wheel_delta();
-                let delta = mouse_scroll.y as f32;
+                    // Right click drag pans the viewport
+                    let mouse_scroll = input_state.mouse_wheel_delta();
+                    let delta = mouse_scroll.y as f32;
 
-                let delta = 1.05_f32.powf(-delta);
-                camera_resource.x_half_extents *= delta;
-            },
-        ));
+                    let delta = 1.05_f32.powf(-delta);
+                    camera_resource.x_half_extents *= delta;
+                },
+            ),
+    );
 }
 
 pub fn editor_update_editor_draw(schedule: &mut legion::systems::Builder) {
-    schedule.add_system(SystemBuilder::new("editor_input")
-        .write_resource::<EditorStateResource>()
-        .read_resource::<InputResource>()
-        .read_resource::<ViewportResource>()
-        .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDraw3DResource>()
-        .write_resource::<DebugDraw2DResource>()
-        .write_resource::<EditorDraw3DResource>()
-        .build(
-            |_command_buffer,
-             _subworld,
-             (
-                _editor_state,
-                input_state,
-                viewport,
-                _editor_selection,
-                debug_draw_3d,
-                debug_draw_2d,
-                editor_draw,
+    schedule.add_system(
+        SystemBuilder::new("editor_input")
+            .write_resource::<EditorStateResource>()
+            .read_resource::<InputResource>()
+            .read_resource::<ViewportResource>()
+            .write_resource::<EditorSelectionResource>()
+            .write_resource::<DebugDraw3DResource>()
+            .write_resource::<DebugDraw2DResource>()
+            .write_resource::<EditorDraw3DResource>()
+            .build(
+                |_command_buffer,
+                 _subworld,
+                 (
+                    _editor_state,
+                    input_state,
+                    viewport,
+                    _editor_selection,
+                    debug_draw_3d,
+                    debug_draw_2d,
+                    editor_draw,
+                ),
+                 _| {
+                    editor_draw.update(
+                        input_state.input_state(),
+                        &*viewport,
+                        debug_draw_3d,
+                        debug_draw_2d,
+                    );
+                },
             ),
-            _| {
-                editor_draw.update(input_state.input_state(), &*viewport, debug_draw_3d, debug_draw_2d);
-            },
-        ));
+    );
 }

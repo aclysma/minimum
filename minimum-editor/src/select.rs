@@ -141,7 +141,6 @@ where
                         &*world_component,
                     );
                 }
-
             }
         }
     }

@@ -100,10 +100,7 @@ fn main() {
     // Start a new transaction
     let mut transaction = legion_transaction::TransactionBuilder::new()
         .add_entity(cooked_entity, entity_uuid)
-        .begin(
-            &cooked_prefab.world,
-            &component_registry.copy_clone_impl(),
-        );
+        .begin(&cooked_prefab.world, &component_registry.copy_clone_impl());
 
     // Mess with a value in the transaction's world
     let transaction_entity = transaction.uuid_to_entity(entity_uuid).unwrap();
@@ -120,12 +117,7 @@ fn main() {
     apply_to_prefab(prefab, &component_registry, entity_uuid, &diffs);
 
     // Show how this is used with cooked prefabs
-    apply_to_cooked_prefab(
-        cooked_prefab,
-        &component_registry,
-        entity_uuid,
-        &diffs,
-    );
+    apply_to_cooked_prefab(cooked_prefab, &component_registry, entity_uuid, &diffs);
 }
 
 fn apply_to_prefab(

@@ -1,4 +1,3 @@
-
 use nalgebra_glm as glm;
 
 pub fn vec2_glam_to_glm(value: glam::Vec2) -> glm::Vec2 {
@@ -26,7 +25,12 @@ pub fn vec4_glm_to_glam(value: glm::Vec4) -> glam::Vec4 {
 }
 
 pub fn quat_glm_to_glam(value: glm::Quat) -> glam::Quat {
-    glam::Quat::from_xyzw(value.coords.x, value.coords.y, value.coords.z, value.coords.w)
+    glam::Quat::from_xyzw(
+        value.coords.x,
+        value.coords.y,
+        value.coords.z,
+        value.coords.w,
+    )
 }
 
 pub fn quat_glam_to_glm(value: glam::Quat) -> glm::Quat {

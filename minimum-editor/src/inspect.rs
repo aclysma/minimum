@@ -61,7 +61,7 @@ where
         args: &InspectArgsStruct,
     ) {
         let mut query = Read::<T>::query();
-        let chunks : Vec<_> = query.iter_chunks(world).collect();
+        let chunks: Vec<_> = query.iter_chunks(world).collect();
         let mut values = vec![];
         for chunk in &chunks {
             let chunk_values = chunk.component_slice::<T>().unwrap();
@@ -86,7 +86,7 @@ where
     ) -> InspectResult {
         let result = {
             let mut query = Write::<T>::query();
-            let mut chunks : Vec<_> = query.iter_chunks_mut(world).collect();
+            let mut chunks: Vec<_> = query.iter_chunks_mut(world).collect();
 
             let mut values = vec![];
             for chunk in &mut chunks {

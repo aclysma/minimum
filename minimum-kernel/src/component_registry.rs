@@ -76,12 +76,13 @@ impl ComponentRegistryBuilder {
                 &Archetype,                             // src_arch
                 &Components,                            // src_components
                 &mut ComponentWriter<IntoT>,            // dst
-                fn(&mut ComponentWriter<IntoT>, IntoT)  // push_fn
+                fn(&mut ComponentWriter<IntoT>, IntoT), // push_fn
             ) + Send
             + Sync
             + 'static,
     {
-        self.spawn_handler_set.add_mapping_closure::<FromT, _, _>(clone_fn);
+        self.spawn_handler_set
+            .add_mapping_closure::<FromT, _, _>(clone_fn);
     }
 
     pub fn build(self) -> ComponentRegistry {
@@ -115,8 +116,13 @@ impl ComponentRegistry {
     pub fn spawn_clone_impl<'a, 'b, 'c>(
         &'a self,
         resources: &'b Resources,
-        entity_map: &'c HashMap<Entity, Entity, EntityHasher>
+        entity_map: &'c HashMap<Entity, Entity, EntityHasher>,
     ) -> SpawnCloneImpl<'a, 'a, 'b, 'c, fnv::FnvBuildHasher> {
-        SpawnCloneImpl::new(&self.spawn_handler_set, &self.components, resources, entity_map)
+        SpawnCloneImpl::new(
+            &self.spawn_handler_set,
+            &self.components,
+            resources,
+            entity_map,
+        )
     }
 }

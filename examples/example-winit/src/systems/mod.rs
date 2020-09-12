@@ -52,8 +52,8 @@ impl<'a> ScheduleBuilder<'a> {
         mut self,
         f: F,
     ) -> Self
-        where
-            F: Fn(&mut legion::systems::Builder),
+    where
+        F: Fn(&mut legion::systems::Builder),
     {
         (f)(&mut self.schedule);
         self
@@ -63,8 +63,8 @@ impl<'a> ScheduleBuilder<'a> {
         mut self,
         f: F,
     ) -> Self
-        where
-            F: Fn(&mut legion::systems::Builder),
+    where
+        F: Fn(&mut legion::systems::Builder),
     {
         if self.criteria.editor_mode == EditorMode::Active {
             (f)(&mut self.schedule);
@@ -77,8 +77,8 @@ impl<'a> ScheduleBuilder<'a> {
         mut self,
         f: F,
     ) -> Self
-        where
-            F: Fn(&mut legion::systems::Builder),
+    where
+        F: Fn(&mut legion::systems::Builder),
     {
         if !self.criteria.is_simulation_paused {
             (f)(&mut self.schedule);

@@ -1,6 +1,9 @@
 use legion::*;
 
-use minimum_game::resources::{InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, DebugDraw3DDepthBehavior};
+use minimum_game::resources::{
+    InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource,
+    DebugDraw3DDepthBehavior,
+};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
@@ -30,8 +33,7 @@ fn handle_selection(
         //
         // If the user is doing something with the editor draw API, disable the selection logic
         //
-    }
-    else if let Some(position) = input_state.mouse_button_just_clicked_position(MouseButton::LEFT)
+    } else if let Some(position) = input_state.mouse_button_just_clicked_position(MouseButton::LEFT)
     {
         //
         // Handle a single click. Do a raycast to find find anything under the mouse position
@@ -42,7 +44,7 @@ fn handle_selection(
         // Convert to nalgebra
         let nray = ncollide3d::query::Ray::new(
             ncollide3d::math::Point::from(vec3_glam_to_glm(ray.origin)),
-            ncollide3d::math::Vector::from(vec3_glam_to_glm(ray.dir))
+            ncollide3d::math::Vector::from(vec3_glam_to_glm(ray.dir)),
         );
 
         // Do the raycast
@@ -80,26 +82,31 @@ fn handle_selection(
             ncollide3d::math::Point::from(vec3_glam_to_glm(p3_segment.p1)),
         ];
         if let Some(convex_shape) = ConvexHull::try_from_points(&points) {
-
             let collision_groups = CollisionGroups::default();
             let aabb = convex_shape.aabb(&ncollide3d::math::Isometry::identity());
-            let interferences: Vec<_> = editor_selection.editor_selection_world().interferences_with_aabb(&aabb, &collision_groups).collect();
+            let interferences: Vec<_> = editor_selection
+                .editor_selection_world()
+                .interferences_with_aabb(&aabb, &collision_groups)
+                .collect();
 
-            let results = interferences.into_iter().filter_map(move |(handle, x)| {
-                let prox = ncollide3d::query::proximity(
-                    &ncollide3d::math::Isometry::identity(),
-                    &convex_shape,
-                    x.position(),
-                    x.shape().as_ref(),
-                    0.0,
-                );
+            let results = interferences
+                .into_iter()
+                .filter_map(move |(handle, x)| {
+                    let prox = ncollide3d::query::proximity(
+                        &ncollide3d::math::Isometry::identity(),
+                        &convex_shape,
+                        x.position(),
+                        x.shape().as_ref(),
+                        0.0,
+                    );
 
-                if prox == ncollide3d::query::Proximity::Intersecting {
-                    Some(*x.data())
-                } else {
-                    None
-                }
-            }).collect();
+                    if prox == ncollide3d::query::Proximity::Intersecting {
+                        Some(*x.data())
+                    } else {
+                        None
+                    }
+                })
+                .collect();
             intersecting_entities = Some(results);
         } else {
             intersecting_entities = None;
@@ -113,17 +120,9 @@ fn handle_selection(
         let p1 = glam::Vec2::new(p0.x(), p2.y());
         let p3 = glam::Vec2::new(p2.x(), p0.y());
 
-        let points_2d = vec![
-            p0,
-            p1,
-            p2,
-            p3,
-        ];
+        let points_2d = vec![p0, p1, p2, p3];
 
-        debug_draw_2d.add_line_loop(
-            points_2d,
-            glam::vec4(1.0, 1.0, 0.0, 1.0),
-        );
+        debug_draw_2d.add_line_loop(points_2d, glam::vec4(1.0, 1.0, 0.0, 1.0));
     }
 
     if let Some(intersecting_entities) = intersecting_entities {
@@ -162,64 +161,68 @@ fn handle_selection(
 }
 
 pub fn editor_handle_selection(schedule: &mut legion::systems::Builder) {
-    schedule.add_system(SystemBuilder::new("editor_input")
-        .write_resource::<EditorStateResource>()
-        .read_resource::<InputResource>()
-        .read_resource::<ViewportResource>()
-        .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDraw3DResource>()
-        .write_resource::<DebugDraw2DResource>()
-        .write_resource::<EditorDraw3DResource>()
-        .read_resource::<EditorSettingsResource>()
-        .build(
-            |_command_buffer,
-             _subworld,
-             (
-                _editor_state,
-                input_state,
-                viewport,
-                editor_selection,
-                debug_draw_3d,
-                debug_draw_2d,
-                editor_draw,
-                editor_settings,
-             ),
-             _| {
-                handle_selection(
-                    &*editor_draw,
-                    &*input_state,
-                    &*viewport,
-                    &mut *editor_selection,
-                    &mut *debug_draw_3d,
-                    &mut *debug_draw_2d,
-                    &*editor_settings,
-                );
-            },
-        ));
+    schedule.add_system(
+        SystemBuilder::new("editor_input")
+            .write_resource::<EditorStateResource>()
+            .read_resource::<InputResource>()
+            .read_resource::<ViewportResource>()
+            .write_resource::<EditorSelectionResource>()
+            .write_resource::<DebugDraw3DResource>()
+            .write_resource::<DebugDraw2DResource>()
+            .write_resource::<EditorDraw3DResource>()
+            .read_resource::<EditorSettingsResource>()
+            .build(
+                |_command_buffer,
+                 _subworld,
+                 (
+                    _editor_state,
+                    input_state,
+                    viewport,
+                    editor_selection,
+                    debug_draw_3d,
+                    debug_draw_2d,
+                    editor_draw,
+                    editor_settings,
+                ),
+                 _| {
+                    handle_selection(
+                        &*editor_draw,
+                        &*input_state,
+                        &*viewport,
+                        &mut *editor_selection,
+                        &mut *debug_draw_3d,
+                        &mut *debug_draw_2d,
+                        &*editor_settings,
+                    );
+                },
+            ),
+    );
 }
 
 pub fn draw_selection_shapes(schedule: &mut legion::systems::Builder) {
-    schedule.add_system(SystemBuilder::new("draw_selection_shapes")
-        .write_resource::<EditorSelectionResource>()
-        .write_resource::<DebugDraw3DResource>()
-        .build(|_, _, (editor_selection, debug_draw), _| {
-            let aabbs = editor_selection.selected_entity_aabbs();
+    schedule.add_system(
+        SystemBuilder::new("draw_selection_shapes")
+            .write_resource::<EditorSelectionResource>()
+            .write_resource::<DebugDraw3DResource>()
+            .build(|_, _, (editor_selection, debug_draw), _| {
+                let aabbs = editor_selection.selected_entity_aabbs();
 
-            for (_, aabb) in aabbs {
-                if let Some(aabb) = aabb {
-                    let color = glam::vec4(1.0, 1.0, 0.0, 1.0);
+                for (_, aabb) in aabbs {
+                    if let Some(aabb) = aabb {
+                        let color = glam::vec4(1.0, 1.0, 0.0, 1.0);
 
-                    // An amount to expand the AABB by so that we don't draw on top of the shape.
-                    // Found in actual usage this ended up being annoying.
-                    let expand = glam::vec2(0.0, 0.0);
+                        // An amount to expand the AABB by so that we don't draw on top of the shape.
+                        // Found in actual usage this ended up being annoying.
+                        let expand = glam::vec2(0.0, 0.0);
 
-                    let aabb = minimum_math::BoundingAabb {
-                        min: glam::Vec3::new(aabb.mins().x, aabb.mins().y, aabb.mins().z),
-                        max: glam::Vec3::new(aabb.maxs().x, aabb.maxs().y, aabb.maxs().z)
-                    };
+                        let aabb = minimum_math::BoundingAabb {
+                            min: glam::Vec3::new(aabb.mins().x, aabb.mins().y, aabb.mins().z),
+                            max: glam::Vec3::new(aabb.maxs().x, aabb.maxs().y, aabb.maxs().z),
+                        };
 
-                    debug_draw.add_aabb(aabb, color, DebugDraw3DDepthBehavior::NoDepthTest);
+                        debug_draw.add_aabb(aabb, color, DebugDraw3DDepthBehavior::NoDepthTest);
+                    }
                 }
-            }
-        }));
+            }),
+    );
 }
