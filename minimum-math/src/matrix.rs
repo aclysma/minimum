@@ -96,7 +96,7 @@ impl InspectRenderDefault<Mat4> for Mat4 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) {
-        if data.len() == 0 {
+        if data.is_empty() {
             return;
         }
 
@@ -112,7 +112,7 @@ impl InspectRenderDefault<Mat4> for Mat4 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) -> bool {
-        if data.len() == 0 {
+        if data.is_empty() {
             return false;
         }
 

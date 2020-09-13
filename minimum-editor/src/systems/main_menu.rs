@@ -5,12 +5,7 @@ use crate::resources::{EditorStateResource};
 use minimum_game::resources::ImguiResource;
 use crate::resources::EditorTool;
 
-use imgui;
 use imgui::im_str;
-
-use atelier_assets::core::asset_uuid;
-
-use atelier_assets::core as atelier_core;
 
 fn imgui_menu_tool_button(
     ui: &imgui::Ui,

@@ -2,10 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_diff::SerdeDiff;
 use type_uuid::TypeUuid;
 use imgui_inspect_derive::Inspect;
-use minimum_math::matrix::Mat4;
-use legion::Entity;
 use minimum_math::math::Vec3;
-use glam::Quat;
 
 //
 // Primary transform component, usually populated by using other components

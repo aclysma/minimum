@@ -5,7 +5,6 @@ pub use winit::event::VirtualKeyCode;
 pub use winit::event::ElementState;
 pub use winit::event::MouseScrollDelta;
 pub use winit::event::MouseButton;
-use minimum::resources::ViewportResource;
 
 #[derive(Copy, Clone)]
 pub struct WinitKeyboardKey {
@@ -97,7 +96,6 @@ impl Into<minimum::input::MouseScrollDelta> for WinitMouseScrollDelta {
 pub fn handle_winit_event<T>(
     event: &winit::event::Event<T>,
     input_state: &mut minimum::input::InputState,
-    viewport: &ViewportResource,
 ) {
     use winit::event::Event;
     use winit::event::WindowEvent;
@@ -139,7 +137,6 @@ pub fn handle_winit_event<T>(
             input_state.handle_mouse_button_event(
                 WinitMouseButton::new(*button).into(),
                 WinitElementState::new(*state).into(),
-                viewport,
             );
         }
 
@@ -155,7 +152,6 @@ pub fn handle_winit_event<T>(
             trace!("mouse move input {:?} {:?}", device_id, position,);
             input_state.handle_mouse_move_event(
                 glam::Vec2::new(position.x as f32, position.y as f32),
-                viewport,
             );
         }
 

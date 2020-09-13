@@ -199,7 +199,6 @@ impl EditorSelectRegistry {
             .get::<EditorStateResource>()
             .unwrap()
             .opened_prefab()
-            .clone()
         {
             for r in &self.registered {
                 r.create_editor_selection_world(

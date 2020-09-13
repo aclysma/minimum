@@ -4,7 +4,7 @@ use atelier_assets::loader::{
     AssetLoadOp, AssetStorage, AssetTypeId, LoadHandle, LoaderInfoProvider, TypeUuid,
 };
 use mopa::{mopafy, Any};
-use std::{sync::Mutex, collections::HashMap, error::Error, sync::Arc};
+use std::{sync::Mutex, collections::HashMap, error::Error};
 
 use atelier_assets::core::AssetUuid;
 use crossbeam_channel::Receiver;
@@ -340,7 +340,7 @@ impl<AssetT: TypeUuid + Send> Storage<AssetT> {
             refop_sender: sender,
             assets: HashMap::new(),
             uncommitted: HashMap::new(),
-            loader: loader,
+            loader,
         }
     }
     fn get<T: AssetHandle>(

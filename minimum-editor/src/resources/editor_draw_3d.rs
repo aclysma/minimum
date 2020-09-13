@@ -1,6 +1,5 @@
 use minimum_game::resources::DebugDraw3DResource;
 use minimum_game::resources::DebugDraw3DDepthBehavior;
-use minimum_game::resources::DebugDraw2DResource;
 use minimum_game::resources::ViewportResource;
 use minimum_math::NormalizedRay;
 
@@ -120,14 +119,14 @@ struct Line {
     constraint: EditorDraw3DConstraint,
 }
 
-struct Sphere {
-    center: glam::Vec3,
-    radius: f32,
-}
+// struct Sphere {
+//     center: glam::Vec3,
+//     radius: f32,
+// }
 
 enum Shape {
     Line(Line),
-    Sphere(Sphere),
+    //Sphere(Sphere),
 }
 
 struct ShapeWithId {
@@ -148,16 +147,16 @@ impl ShapeWithId {
         }
     }
 
-    fn new_sphere(
-        id: String,
-        center: glam::Vec3,
-        radius: f32,
-    ) -> Self {
-        ShapeWithId {
-            id,
-            shape: Shape::Sphere(Sphere { center, radius }),
-        }
-    }
+    // fn new_sphere(
+    //     id: String,
+    //     center: glam::Vec3,
+    //     radius: f32,
+    // ) -> Self {
+    //     ShapeWithId {
+    //         id,
+    //         shape: Shape::Sphere(Sphere { center, radius }),
+    //     }
+    // }
 }
 
 struct ClosestShapeIdDistance {
@@ -214,14 +213,6 @@ pub struct EditorDraw3DResource {
         [Option<EditorDraw3DShapeClickedState>; InputState::MOUSE_BUTTON_COUNT as usize],
     shape_last_interacted: String,
     closest_shape_to_mouse: ClosestShapeIdDistance,
-}
-
-#[derive(Debug, PartialEq)]
-enum GetClosestShapeCallReason {
-    Hover,
-    Down,
-    DragInProgress,
-    JustClicked,
 }
 
 impl EditorDraw3DResource {
@@ -292,9 +283,6 @@ impl EditorDraw3DResource {
         &self,
         mouse_position: glam::Vec2,
         viewport: &ViewportResource,
-        debug_draw_3d: &mut DebugDraw3DResource,
-        debug_draw_2d: &mut DebugDraw2DResource,
-        call_reason: GetClosestShapeCallReason,
     ) -> Option<ClosestShapeIndexDistance> {
         struct ShapeIntersectResult {
             shape_index: usize,
@@ -316,7 +304,7 @@ impl EditorDraw3DResource {
                     // Figure out where the 3d line is in world space
                     let mut line_dir = (line.p1 - line.p0).normalize();
                     let line_length = line_dir.length();
-                    line_dir = line_dir / line_length;
+                    line_dir /= line_length;
 
                     // Project the 3d line to 2d
                     let line_p0_2d = viewport.world_space_to_viewport_space(line.p0);
@@ -356,21 +344,21 @@ impl EditorDraw3DResource {
                         None
                     }
                 }
-                Shape::Sphere(circle) => {
-                    // // This is an odd kludge, but we want to work in ui space. However, the radius in ui space won't match the radius in
-                    // // world space.
-                    // let position_on_outline = circle.center + glam::vec2(circle.radius, 0.0);
-                    // let scaled_center = viewport.world_space_to_ui_space(circle.center);
-                    // let scaled_position_on_outline =
-                    //     viewport.world_space_to_ui_space(position_on_outline);
-                    // let scaled_radius =
-                    //     f32::abs(scaled_position_on_outline.x() - scaled_center.x());
-                    //
-                    // minimum_math::functions::distance_to_sphere_sq(test_position, scaled_center, scaled_radius)
-
-                    //std::f32::MAX
-                    None
-                }
+                // Shape::Sphere(_circle) => {
+                //     // // This is an odd kludge, but we want to work in ui space. However, the radius in ui space won't match the radius in
+                //     // // world space.
+                //     // let position_on_outline = circle.center + glam::vec2(circle.radius, 0.0);
+                //     // let scaled_center = viewport.world_space_to_ui_space(circle.center);
+                //     // let scaled_position_on_outline =
+                //     //     viewport.world_space_to_ui_space(position_on_outline);
+                //     // let scaled_radius =
+                //     //     f32::abs(scaled_position_on_outline.x() - scaled_center.x());
+                //     //
+                //     // minimum_math::functions::distance_to_sphere_sq(test_position, scaled_center, scaled_radius)
+                //
+                //     //std::f32::MAX
+                //     None
+                // }
             };
 
             if let Some(result) = result {
@@ -399,8 +387,6 @@ impl EditorDraw3DResource {
         &mut self,
         input_state: &InputState,
         viewport: &ViewportResource,
-        debug_draw_3d: &mut DebugDraw3DResource,
-        debug_draw_2d: &mut DebugDraw2DResource,
     ) {
         // See if the user interacted with anything. If they did, then cache it. User code would need to
         // check this and possibly check against other clickable things (like if an object in the editor was clicked.)
@@ -411,9 +397,6 @@ impl EditorDraw3DResource {
         let closest_shape = self.get_closest_shape(
             mouse_position,
             viewport,
-            debug_draw_3d,
-            debug_draw_2d,
-            GetClosestShapeCallReason::Hover,
         );
 
         if let Some(closest_shape) = closest_shape {
@@ -439,9 +422,6 @@ impl EditorDraw3DResource {
                 if let Some(closest_shape) = self.get_closest_shape(
                     mouse_previous_down_position,
                     viewport,
-                    debug_draw_3d,
-                    debug_draw_2d,
-                    GetClosestShapeCallReason::Down,
                 ) {
                     if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE {
                         self.mouse_previous_down_on_shape[mouse_button_index] =
@@ -566,9 +546,6 @@ impl EditorDraw3DResource {
                             if let Some(closest_shape) = self.get_closest_shape(
                                 mouse_drag_in_progress.begin_position,
                                 viewport,
-                                debug_draw_3d,
-                                debug_draw_2d,
-                                GetClosestShapeCallReason::DragInProgress,
                             ) {
                                 let shape = &self.shapes[closest_shape.index];
                                 if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE
@@ -625,9 +602,6 @@ impl EditorDraw3DResource {
                             if let Some(closest_shape) = self.get_closest_shape(
                                 just_clicked_mouse_position,
                                 viewport,
-                                debug_draw_3d,
-                                debug_draw_2d,
-                                GetClosestShapeCallReason::JustClicked,
                             ) {
                                 let shape = &self.shapes[closest_shape.index];
                                 if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE

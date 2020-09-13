@@ -4,7 +4,6 @@ use std::{
 };
 
 use atelier_assets::daemon::AssetDaemon;
-use atelier_assets::importer::BoxedImporter;
 use structopt::StructOpt;
 
 /// Parameters to the asset daemon.

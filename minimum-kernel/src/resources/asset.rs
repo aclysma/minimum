@@ -1,7 +1,5 @@
 use atelier_assets::loader::{handle::RefOp, rpc_loader::RpcLoader, Loader};
 
-use std::sync::Arc;
-
 use crate::AssetStorageSet;
 use crate::DynAssetLoader;
 

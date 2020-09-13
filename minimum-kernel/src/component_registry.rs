@@ -4,13 +4,10 @@ use legion::storage::{ComponentTypeId, Archetype, Components, ComponentWriter};
 use std::collections::HashMap;
 
 use legion_prefab::{CopyCloneImpl, SpawnCloneImpl, SpawnCloneImplHandlerSet, SpawnInto};
-use legion::storage::{Component, ComponentStorage};
-use legion::storage::ComponentIndex;
+use legion::storage::{Component};
 use legion::*;
 use std::ops::Range;
-use std::mem::MaybeUninit;
 
-use std::collections::hash_map::RandomState;
 use fnv::{FnvHashMap, FnvBuildHasher};
 use legion::world::EntityHasher;
 

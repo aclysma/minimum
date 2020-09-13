@@ -1,4 +1,3 @@
-use legion::World;
 use minimum_math::Segment;
 use minimum_math::NormalizedRay;
 
@@ -98,9 +97,9 @@ impl ViewportResource {
         normalized_position: glam::Vec2,
     ) -> glam::Vec2 {
         //(viewport_position * self.size_in_pixels * glam::Vec2::new(0.5, 0.5)) + self.size_in_pixels
-        ((normalized_position + glam::Vec2::new(1.0, 1.0))
+        (normalized_position + glam::Vec2::new(1.0, 1.0))
             * self.size_in_pixels
-            * glam::Vec2::new(0.5, 0.5))
+            * glam::Vec2::new(0.5, 0.5)
     }
 
     // In: pixel coordinates within the viewport. Top left: (0, 0) Bottom right: self.size_in_pixels
@@ -109,8 +108,8 @@ impl ViewportResource {
         &self,
         viewport_position: glam::Vec2,
     ) -> glam::Vec2 {
-        ((viewport_position * glam::Vec2::new(2.0, 2.0) / self.size_in_pixels)
-            - glam::Vec2::new(1.0, 1.0)) //* (glam::Vec2::new(1.0, -1.0))
+        (viewport_position * glam::Vec2::new(2.0, 2.0) / self.size_in_pixels)
+            - glam::Vec2::new(1.0, 1.0) //* (glam::Vec2::new(1.0, -1.0))
     }
 
     // In: pixel coordinates within the viewport. Top left: (0, 0) Bottom right: self.size_in_pixels
@@ -153,7 +152,7 @@ impl ViewportResource {
 
         let mut dir = segment.p1 - segment.p0;
         let length = dir.length();
-        dir = dir / length;
+        dir /= length;
 
         NormalizedRay {
             origin: segment.p0,
@@ -191,7 +190,7 @@ impl ViewportResource {
         viewport_position: glam::Vec2,
     ) -> glam::Vec2 {
         let position = self.viewport_space_to_normalized_space(viewport_position);
-        let mut position = glam::Vec4::new(position.x(), position.y(), 0.0, 1.0);
+        let position = glam::Vec4::new(position.x(), position.y(), 0.0, 1.0);
 
         // project to world space
         let position = self.screen_space_matrix_inv * position;

@@ -1,16 +1,12 @@
 use legion::*;
 
 use minimum_game::resources::{
-    InputResource, ViewportResource, DebugDraw2DResource, DebugDraw3DResource, CameraResource,
+    InputResource, ViewportResource, DebugDraw3DResource, CameraResource,
 };
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
 use crate::resources::EditorTool;
-
-use minimum_game::input::MouseButton;
-
-use minimum_transform::TransformComponent;
 
 mod main_menu;
 pub use main_menu::editor_imgui_menu;
@@ -157,8 +153,6 @@ pub fn editor_update_editor_draw(schedule: &mut legion::systems::Builder) {
             .read_resource::<InputResource>()
             .read_resource::<ViewportResource>()
             .write_resource::<EditorSelectionResource>()
-            .write_resource::<DebugDraw3DResource>()
-            .write_resource::<DebugDraw2DResource>()
             .write_resource::<EditorDraw3DResource>()
             .build(
                 |_command_buffer,
@@ -168,16 +162,12 @@ pub fn editor_update_editor_draw(schedule: &mut legion::systems::Builder) {
                     input_state,
                     viewport,
                     _editor_selection,
-                    debug_draw_3d,
-                    debug_draw_2d,
                     editor_draw,
                 ),
                  _| {
                     editor_draw.update(
                         input_state.input_state(),
                         &*viewport,
-                        debug_draw_3d,
-                        debug_draw_2d,
                     );
                 },
             ),

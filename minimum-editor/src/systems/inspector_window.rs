@@ -6,12 +6,7 @@ use crate::resources::{
     EditorInspectRegistryResource,
 };
 
-use imgui;
 use imgui::im_str;
-
-use std::collections::HashMap;
-
-use prefab_format::{EntityUuid};
 
 use minimum_kernel::resources::ComponentRegistryResource;
 use minimum_kernel::resources::AssetResource;
@@ -32,11 +27,6 @@ pub fn editor_inspector_window(
         if opened_prefab.is_none() {
             return;
         }
-
-        let opened_prefab = opened_prefab.unwrap();
-
-        // Create a lookup from prefab entity to the entity UUID
-        use std::iter::FromIterator;
 
         imgui_manager.with_ui(|ui: &mut imgui::Ui| {
             let window_options = editor_ui_state.window_options();
@@ -124,7 +114,7 @@ pub fn editor_inspector_window(
                                         .disabled(disabled)
                                         .build(ui)
                                     {
-                                        component_type_to_add = Some(v.clone());
+                                        component_type_to_add = Some((*v).clone());
                                     }
                                 }
                             });
@@ -135,7 +125,7 @@ pub fn editor_inspector_window(
                             // same time as an &mut-borrow for world_mut()
                             let mut all = Entity::query();
                             let all_entities: Vec<Entity> =
-                                all.iter(tx.world()).map(|x| *x).collect();
+                                all.iter(tx.world()).copied().collect();
 
                             //
                             // If a component needs to be added, do that now

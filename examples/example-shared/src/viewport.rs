@@ -1,32 +1,10 @@
 use minimum::resources::ViewportResource;
 
-// this is based on window size (i.e. pixels)
-// bottom-left: (0, 0)
-// top-right: (window_width_in_pixels, window_height_in_pixels)
-fn calculate_ui_space_matrix(viewport_size_in_pixels: glam::Vec2) -> glam::Mat4 {
-    let view = glam::Mat4::look_at_rh(
-        glam::Vec3::from([0.0, 0.0, 5.0]),
-        glam::Vec3::from([0.0, 0.0, 0.0]),
-        glam::Vec3::from([0.0, 1.0, 0.0]),
-    );
-
-    let projection = glam::Mat4::orthographic_rh(
-        0.0,
-        viewport_size_in_pixels.x(),
-        0.0,
-        viewport_size_in_pixels.y(),
-        -100.0,
-        100.0,
-    );
-
-    projection * view
-}
-
 // this is a virtual coordinate system
 // top-left: (0, 0)
 // bottom-right: (600 * aspect_ratio, 600) where aspect_ratio is window_width / window_height
 fn calculate_screen_space_matrix(
-    viewport_size_in_pixels: glam::Vec2,
+    _viewport_size_in_pixels: glam::Vec2,
     view_half_extents: glam::Vec2,
 ) -> glam::Mat4 {
     let view = glam::Mat4::look_at_rh(
@@ -52,9 +30,9 @@ fn calculate_screen_space_matrix(
 // top-left: (-w/2, -h/2)
 // bottom-right: (w/2, h/2)
 fn calculate_world_space_view_matrix(
-    viewport_size_in_pixels: glam::Vec2,
-    position: glam::Vec3,
-    view_half_extents: glam::Vec2,
+    _viewport_size_in_pixels: glam::Vec2,
+    _position: glam::Vec3,
+    _view_half_extents: glam::Vec2,
 ) -> glam::Mat4 {
     glam::Mat4::look_at_rh(
         glam::Vec3::from([0.0, 0.0, 5.0]),
@@ -64,7 +42,7 @@ fn calculate_world_space_view_matrix(
 }
 
 fn calculate_world_space_proj_matrix(
-    viewport_size_in_pixels: glam::Vec2,
+    _viewport_size_in_pixels: glam::Vec2,
     position: glam::Vec3,
     view_half_extents: glam::Vec2,
 ) -> glam::Mat4 {

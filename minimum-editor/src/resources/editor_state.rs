@@ -580,7 +580,6 @@ impl EditorStateResource {
     fn get_selected_uuids(
         &mut self,
         selection_resource: &EditorSelectionResource,
-        world: &World,
     ) -> HashSet<EntityUuid> {
         // Get the UUIDs of all selected entities
         let mut selected_uuids = HashSet::new();
@@ -626,7 +625,6 @@ impl EditorStateResource {
     fn restore_selected_uuids(
         &mut self,
         selection_resource: &mut EditorSelectionResource,
-        world: &World,
         selected_uuids: &HashSet<EntityUuid>,
     ) {
         let mut selected_entities: HashSet<Entity> = HashSet::default();
@@ -672,7 +670,7 @@ impl EditorStateResource {
             let selected_uuids = {
                 let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
                 let selection_resource = resources.get::<EditorSelectionResource>().unwrap();
-                editor_state.get_selected_uuids(&*selection_resource, world)
+                editor_state.get_selected_uuids(&*selection_resource)
             };
 
             // Delete the old stuff from the world
@@ -686,7 +684,7 @@ impl EditorStateResource {
             // Restore selection
             let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
             let mut selection_resource = resources.get_mut::<EditorSelectionResource>().unwrap();
-            editor_state.restore_selected_uuids(&mut *selection_resource, world, &selected_uuids);
+            editor_state.restore_selected_uuids(&mut *selection_resource, &selected_uuids);
         }
     }
 
@@ -849,7 +847,7 @@ impl EditorStateResource {
         post_commit_selection: PostCommitSelection,
     ) {
         let selected_uuids = {
-            let mut selection_resource = resources.get_mut::<EditorSelectionResource>().unwrap();
+            let selection_resource = resources.get::<EditorSelectionResource>().unwrap();
             let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
 
             // Clone the currently opened prefab Arc so we can refer back to it
@@ -862,7 +860,7 @@ impl EditorStateResource {
             };
 
             // Get the UUIDs of all selected entities
-            let selected_uuids = editor_state.get_selected_uuids(&mut *selection_resource, world);
+            let selected_uuids = editor_state.get_selected_uuids(&*selection_resource);
 
             // Delete the old stuff from the world
             for x in opened_prefab.prefab_to_world_mappings.values() {
@@ -929,7 +927,7 @@ impl EditorStateResource {
                 let mut selection_resource =
                     resources.get_mut::<EditorSelectionResource>().unwrap();
                 let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
-                editor_state.restore_selected_uuids(&mut *selection_resource, world, &entity_uuids);
+                editor_state.restore_selected_uuids(&mut *selection_resource, &entity_uuids);
             }
             PostCommitSelection::KeepCurrentSelection => {
                 let mut selection_resource =
@@ -937,7 +935,6 @@ impl EditorStateResource {
                 let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
                 editor_state.restore_selected_uuids(
                     &mut *selection_resource,
-                    world,
                     &selected_uuids,
                 );
             }

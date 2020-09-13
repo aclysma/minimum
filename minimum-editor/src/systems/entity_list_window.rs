@@ -6,8 +6,6 @@ use crate::resources::{
 };
 use minimum_game::resources::ImguiResource;
 
-use imgui;
-
 use imgui::im_str;
 
 use minimum_kernel::resources::ComponentRegistryResource;

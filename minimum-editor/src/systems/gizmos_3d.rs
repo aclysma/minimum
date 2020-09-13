@@ -11,10 +11,7 @@ use minimum_game::input::MouseButton;
 
 use minimum_transform::components::{TransformComponentDef, TransformComponent};
 
-use legion::query::{EntityFilter, Query};
-use legion::query::And;
-use legion::query::ComponentFilter;
-use legion::query::Passthrough;
+use legion::query::Query;
 
 use minimum_kernel::resources::ComponentRegistryResource;
 use minimum_kernel::resources::AssetResource;
@@ -172,12 +169,12 @@ fn handle_translate_gizmo_input(
         }
 
         // Determine the drag distance in ui_space
-        let mut world_space_previous_frame_delta =
+        let world_space_previous_frame_delta =
             drag_in_progress.world_space_previous_frame_delta;
 
         let mut query = <(Entity, Write<TransformComponentDef>)>::query();
 
-        for (_entity_handle, mut position) in query.iter_mut(tx.world_mut()) {
+        for (_entity_handle, position) in query.iter_mut(tx.world_mut()) {
             // Can use editor_draw.is_shape_drag_just_finished(MouseButton::LEFT) to see if this is the final drag,
             // in which case we might want to save an undo step
             *position.position += glam::Vec3::new(
@@ -421,7 +418,7 @@ fn handle_scale_gizmo_input(
             scale_x = true;
         } else if drag_in_progress.shape_id == "y_axis_scale" {
             scale_y = true;
-        } else if drag_in_progress.shape_id == "y_axis_scale" {
+        } else if drag_in_progress.shape_id == "z_axis_scale" {
             scale_z = true;
         } else if drag_in_progress.shape_id == "uniform_scale" {
             scale_uniform = true;
@@ -459,13 +456,13 @@ fn handle_scale_gizmo_input(
         if scale_uniform {
             let mut query = <Write<TransformComponentDef>>::query();
 
-            for mut transform in query.iter_mut(tx.world_mut()) {
+            for transform in query.iter_mut(tx.world_mut()) {
                 *transform.uniform_scale_mut() += ui_space_previous_frame_delta.x()
             }
         } else {
             let mut query = <Write<TransformComponentDef>>::query();
 
-            for mut non_uniform_scale in query.iter_mut(tx.world_mut()) {
+            for non_uniform_scale in query.iter_mut(tx.world_mut()) {
                 *non_uniform_scale.non_uniform_scale += glam::Vec3::new(
                     ui_space_previous_frame_delta.x(),
                     ui_space_previous_frame_delta.y(),
@@ -601,7 +598,7 @@ fn handle_rotate_gizmo_input(
             sign_aware_magnitude(drag_in_progress.world_space_previous_frame_delta);
 
         let mut query = <(Entity, Write<TransformComponentDef>)>::query();
-        for (_entity_handle, mut rotation) in query.iter_mut(tx.world_mut()) {
+        for (_entity_handle, rotation) in query.iter_mut(tx.world_mut()) {
             *rotation.rotation_euler_mut() += glam::Vec3::unit_z() * ui_space_previous_frame_delta
         }
 
@@ -616,23 +613,23 @@ fn handle_rotate_gizmo_input(
 }
 
 fn draw_rotate_gizmo(
-    viewport: &ViewportResource,
-    debug_draw: &mut DebugDraw3DResource,
-    editor_draw: &mut EditorDraw3DResource,
+    _viewport: &ViewportResource,
+    _debug_draw: &mut DebugDraw3DResource,
+    _editor_draw: &mut EditorDraw3DResource,
     selection_world: &mut EditorSelectionResource,
     subworld: &SubWorld,
     transform_query: &mut TransformQuery,
 ) {
-    for (entity, transform) in transform_query.iter(subworld) {
+    for (entity, _transform) in transform_query.iter(subworld) {
         if !selection_world.is_entity_selected(*entity) {
             continue;
         }
 
-        let position = transform.position();
-
-        let z_axis_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
-
-        let ui_multiplier = 0.005 * viewport.world_space_ui_multiplier(position);
+        // let position = transform.position();
+        //
+        // let z_axis_color = glam::Vec4::new(0.0, 1.0, 0.0, 1.0);
+        //
+        // let ui_multiplier = 0.005 * viewport.world_space_ui_multiplier(position);
 
         // editor_draw.add_sphere(
         //     "z_axis_rotate",

@@ -1,5 +1,3 @@
-use crate::resources::ViewportResource;
-
 // End-users should provide their own layer to translate from these general values to something
 // appropriate to their platform or windowing system
 #[derive(Copy, Clone)]
@@ -42,12 +40,6 @@ pub struct MouseDragState {
     pub end_position: glam::Vec2,
     pub previous_frame_delta: glam::Vec2,
     pub accumulated_frame_delta: glam::Vec2,
-    // pub world_space_begin_position: glam::Vec2,
-    // pub world_space_end_position: glam::Vec2,
-    // pub world_space_previous_frame_delta: glam::Vec2,
-    // pub world_space_accumulated_frame_delta: glam::Vec2,
-    // pub world_scale_previous_frame_delta: glam::Vec2,
-    // pub world_scale_accumulated_frame_delta: glam::Vec2,
 }
 
 /// State of input devices. This is maintained by processing events from winit
@@ -377,7 +369,6 @@ impl InputState {
         &mut self,
         button: MouseButton,
         button_event: ButtonState,
-        viewport: &ViewportResource,
     ) {
         if let Some(button_index) = Self::mouse_button_to_index(button) {
             assert!(button_index < InputState::MOUSE_BUTTON_COUNT as usize);
@@ -402,40 +393,12 @@ impl InputState {
                                 - (in_progress.begin_position
                                     + in_progress.accumulated_frame_delta);
 
-                            // This is where the cursor is now
-                            // let world_space_end_position =
-                            //     viewport.ui_space_to_world_space(self.mouse_position);
-
-                            // This is the math for if we want deltas to be based on begin/end position rather than mouse movement at world scale
-                            // let world_space_delta = world_space_end_position
-                            //     - (in_progress.world_space_begin_position
-                            //         + in_progress.world_space_accumulated_frame_delta);
-
-                            // Determine what delta is required to reach the end position, given our original begin position and accumulated deltas
-                            // so far
-                            let total_ui_space_delta =
-                                self.mouse_position - in_progress.begin_position;
-                            // let total_world_space_delta =
-                            //     viewport.ui_space_delta_to_world_space_delta(total_ui_space_delta);
-                            // let world_scale_delta = total_world_space_delta
-                            //     - in_progress.world_scale_accumulated_frame_delta;
-
                             self.mouse_drag_just_finished[button_index] = Some(MouseDragState {
                                 begin_position: in_progress.begin_position,
                                 end_position: self.mouse_position,
                                 previous_frame_delta: delta,
                                 accumulated_frame_delta: in_progress.accumulated_frame_delta
                                     + delta,
-                                // world_space_begin_position: in_progress.world_space_begin_position,
-                                // world_space_end_position,
-                                // world_space_previous_frame_delta: world_space_delta,
-                                // world_space_accumulated_frame_delta: in_progress
-                                //     .world_space_accumulated_frame_delta
-                                //     + world_space_delta,
-                                // world_scale_previous_frame_delta: world_scale_delta,
-                                // world_scale_accumulated_frame_delta: in_progress
-                                //     .world_scale_accumulated_frame_delta
-                                //     + world_scale_delta,
                             });
                         }
                         None => {
@@ -453,10 +416,7 @@ impl InputState {
     pub fn handle_mouse_move_event(
         &mut self,
         position: glam::Vec2,
-        viewport: &ViewportResource,
     ) {
-        //let old_mouse_position = self.mouse_position;
-
         // Update mouse position
         self.mouse_position = position;
 
@@ -472,14 +432,7 @@ impl InputState {
                                     glam::Vec2::length(went_down_position - self.mouse_position)
                                         > Self::MIN_DRAG_DISTANCE;
                                 if min_drag_distance_met {
-                                    let world_space_begin_position = viewport
-                                        .viewport_space_to_world_space(went_down_position, 0.0);
-                                    let world_space_end_position = viewport
-                                        .viewport_space_to_world_space(self.mouse_position, 0.0);
-
                                     let delta = self.mouse_position - went_down_position;
-                                    let _world_space_delta =
-                                        world_space_end_position - world_space_begin_position;
 
                                     // We dragged a non-trivial amount, start the drag
                                     Some(MouseDragState {
@@ -487,12 +440,6 @@ impl InputState {
                                         end_position: self.mouse_position,
                                         previous_frame_delta: delta,
                                         accumulated_frame_delta: delta,
-                                        // world_space_begin_position,
-                                        // world_space_end_position,
-                                        // world_space_previous_frame_delta: delta,
-                                        // world_space_accumulated_frame_delta: delta,
-                                        // world_scale_previous_frame_delta: delta,
-                                        // world_scale_accumulated_frame_delta: delta,
                                     })
                                 } else {
                                     // Mouse moved too small an amount to be considered a drag
@@ -511,39 +458,11 @@ impl InputState {
                             - (old_drag_state.begin_position
                                 + old_drag_state.accumulated_frame_delta);
 
-                        // // This is where the cursor is now
-                        // let world_space_end_position =
-                        //     viewport.ui_space_to_world_space(self.mouse_position);
-                        //
-                        // // This is the math for if we want deltas to be based on begin/end position rather than mouse movement at world scale
-                        // let world_space_delta = world_space_end_position
-                        //     - (old_drag_state.world_space_begin_position
-                        //         + old_drag_state.world_space_accumulated_frame_delta);
-
-                        // Determine what delta is required to reach the end position, given our original begin position and accumulated deltas
-                        // so far
-                        let total_ui_space_delta =
-                            self.mouse_position - old_drag_state.begin_position;
-                        // let total_world_space_delta =
-                        //     viewport.ui_space_delta_to_world_space_delta(total_ui_space_delta);
-                        // let world_scale_delta = total_world_space_delta
-                        //     - old_drag_state.world_scale_accumulated_frame_delta;
-
                         Some(MouseDragState {
                             begin_position: old_drag_state.begin_position,
                             end_position: self.mouse_position,
                             previous_frame_delta: delta,
                             accumulated_frame_delta: old_drag_state.accumulated_frame_delta + delta,
-                            // world_space_begin_position: old_drag_state.world_space_begin_position,
-                            // world_space_end_position,
-                            // world_space_previous_frame_delta: world_space_delta,
-                            // world_space_accumulated_frame_delta: old_drag_state
-                            //     .world_space_accumulated_frame_delta
-                            //     + world_space_delta,
-                            // world_scale_previous_frame_delta: world_scale_delta,
-                            // world_scale_accumulated_frame_delta: old_drag_state
-                            //     .world_scale_accumulated_frame_delta
-                            //     + world_scale_delta,
                         })
                     }
                 };

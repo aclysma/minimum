@@ -24,7 +24,7 @@ impl DebugDraw2DResource {
     // Adds a single polygon
     pub fn add_line_strip(
         &mut self,
-        mut points: Vec<glam::Vec2>,
+        points: Vec<glam::Vec2>,
         color: glam::Vec4,
     ) {
         // Nothing will draw if we don't have at least 2 points
@@ -40,7 +40,7 @@ impl DebugDraw2DResource {
     ) {
         // Nothing will draw if we don't have at least 2 points
         if points.len() > 1 {
-            points.push(points[0].clone());
+            points.push(points[0]);
             self.add_line_strip(points, color);
         }
     }
@@ -58,7 +58,7 @@ impl DebugDraw2DResource {
 
     pub fn add_tristrip(
         &mut self,
-        points: &Vec<glam::Vec2>,
+        points: &[glam::Vec2],
         color: glam::Vec4,
     ) {
         // Nothing will draw if we don't have at least 2 points

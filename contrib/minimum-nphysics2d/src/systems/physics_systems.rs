@@ -29,7 +29,7 @@ pub fn read_from_physics(schedule: &mut legion::systems::Builder) {
             .read_resource::<PhysicsResource>()
             .with_query(<(Write<TransformComponent>, Read<RigidBodyComponent>)>::query())
             .build(|_, world, physics, query| {
-                for (mut transform, body) in query.iter_mut(world) {
+                for (transform, body) in query.iter_mut(world) {
                     if let Some(rigid_body) = physics.bodies.rigid_body(body.handle) {
                         let position = rigid_body.position().translation.vector;
                         //TODO: Conversion from 2D to 3D - ideally we'd use 3D physics with a constraint to force 2D

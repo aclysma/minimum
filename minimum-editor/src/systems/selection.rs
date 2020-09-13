@@ -12,10 +12,7 @@ use minimum_game::input::MouseButton;
 
 use ncollide3d::pipeline::{CollisionGroups};
 
-use minimum_transform::components::TransformComponentDef;
-use ncollide3d::query::RayIntersection;
 use ncollide3d::shape::{ConvexHull, Shape};
-use ncollide3d::query::algorithms::gjk::GJKResult::Proximity;
 use minimum_math::na_convert::vec3_glam_to_glm;
 
 fn handle_selection(
@@ -23,7 +20,6 @@ fn handle_selection(
     input_state: &InputResource,
     viewport: &ViewportResource,
     editor_selection: &mut EditorSelectionResource,
-    debug_draw_3d: &mut DebugDraw3DResource,
     debug_draw_2d: &mut DebugDraw2DResource,
     editor_settings: &EditorSettingsResource,
 ) {
@@ -44,7 +40,7 @@ fn handle_selection(
         // Convert to nalgebra
         let nray = ncollide3d::query::Ray::new(
             ncollide3d::math::Point::from(vec3_glam_to_glm(ray.origin)),
-            ncollide3d::math::Vector::from(vec3_glam_to_glm(ray.dir)),
+            vec3_glam_to_glm(ray.dir),
         );
 
         // Do the raycast
@@ -91,7 +87,7 @@ fn handle_selection(
 
             let results = interferences
                 .into_iter()
-                .filter_map(move |(handle, x)| {
+                .filter_map(move |(_handle, x)| {
                     let prox = ncollide3d::query::proximity(
                         &ncollide3d::math::Isometry::identity(),
                         &convex_shape,
@@ -167,7 +163,6 @@ pub fn editor_handle_selection(schedule: &mut legion::systems::Builder) {
             .read_resource::<InputResource>()
             .read_resource::<ViewportResource>()
             .write_resource::<EditorSelectionResource>()
-            .write_resource::<DebugDraw3DResource>()
             .write_resource::<DebugDraw2DResource>()
             .write_resource::<EditorDraw3DResource>()
             .read_resource::<EditorSettingsResource>()
@@ -179,7 +174,6 @@ pub fn editor_handle_selection(schedule: &mut legion::systems::Builder) {
                     input_state,
                     viewport,
                     editor_selection,
-                    debug_draw_3d,
                     debug_draw_2d,
                     editor_draw,
                     editor_settings,
@@ -190,7 +184,6 @@ pub fn editor_handle_selection(schedule: &mut legion::systems::Builder) {
                         &*input_state,
                         &*viewport,
                         &mut *editor_selection,
-                        &mut *debug_draw_3d,
                         &mut *debug_draw_2d,
                         &*editor_settings,
                     );
@@ -210,10 +203,6 @@ pub fn draw_selection_shapes(schedule: &mut legion::systems::Builder) {
                 for (_, aabb) in aabbs {
                     if let Some(aabb) = aabb {
                         let color = glam::vec4(1.0, 1.0, 0.0, 1.0);
-
-                        // An amount to expand the AABB by so that we don't draw on top of the shape.
-                        // Found in actual usage this ended up being annoying.
-                        let expand = glam::vec2(0.0, 0.0);
 
                         let aabb = minimum_math::BoundingAabb {
                             min: glam::Vec3::new(aabb.mins().x, aabb.mins().y, aabb.mins().z),

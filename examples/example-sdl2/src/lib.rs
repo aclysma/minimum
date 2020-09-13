@@ -128,20 +128,16 @@ pub fn run() {
 
             if !sdl2_imgui.ignore_event(&event) {
                 let mut input_resource = resources.get_mut::<InputResource>().unwrap();
-                let viewport = resources.get_mut::<ViewportResource>().unwrap();
                 minimum_sdl2::input::handle_sdl2_event(
                     &event,
                     input_resource.input_state_mut(),
-                    &*viewport,
                 );
 
-                match event {
-                    //
-                    // Halt if the user requests to close the window
-                    //
-                    Event::Quit { .. } => break 'running,
-
-                    _ => {}
+                //
+                // Halt if the user requests to close the window
+                //
+                if let Event::Quit { .. } = event {
+                    break 'running;
                 }
             }
         }

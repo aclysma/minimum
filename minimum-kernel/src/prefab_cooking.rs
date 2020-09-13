@@ -6,7 +6,6 @@ use atelier_assets::loader::{
     LoadStatus, Loader,
 };
 use std::collections::HashMap;
-use legion::*;
 
 use legion::storage::ComponentTypeId;
 use prefab_format::{ComponentTypeUuid, PrefabUuid};
@@ -42,7 +41,7 @@ pub fn cook_prefab<F: Fn(&mut AssetResource), S: BuildHasher, T: BuildHasher>(
     // This will allowus to look up prefab references by AssetUuid
     let mut prefab_lookup = HashMap::new();
 
-    for (_uuid, prefab_handle) in &prefab_handle_lookup {
+    for prefab_handle in prefab_handle_lookup.values() {
         let prefab_asset: &PrefabAsset = prefab_handle.asset(asset_manager.storage()).unwrap();
         prefab_lookup.insert(prefab_asset.prefab.prefab_meta.id, &prefab_asset.prefab);
     }
@@ -85,7 +84,7 @@ fn request_prefab_dependencies<F: Fn(&mut AssetResource)>(
         .prefab_meta
         .prefab_refs
         .iter()
-        .map(|(other_prefab_id, _)| AssetUuid(other_prefab_id.clone()))
+        .map(|(other_prefab_id, _)| AssetUuid(*other_prefab_id))
         .collect();
 
     // Use recursion to visit the tree ensuring that ancestor prefab data gets processed first

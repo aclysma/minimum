@@ -1,5 +1,3 @@
-use assert_approx_eq::assert_approx_eq;
-
 pub fn normal_to_xy(normal: glam::Vec3) -> (glam::Vec3, glam::Vec3) {
     if normal.dot(glam::Vec3::unit_z()).abs() > 0.9999 {
         // Can't cross the Z axis with the up vector, so special case that here

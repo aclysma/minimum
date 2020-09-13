@@ -9,7 +9,7 @@ use minimum_winit::imgui::WinitImguiManager;
 use legion::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
 use minimum::resources::{
-    ImguiResource, AppControlResource, TimeResource, InputResource, ViewportResource,
+    ImguiResource, AppControlResource, TimeResource, InputResource,
 };
 use minimum_winit::resources::{WinitImguiManagerResource, WinitWindowResource};
 use minimum_skulpin::resources::CanvasDrawResource;
@@ -205,8 +205,7 @@ impl App {
             if !input_captured {
                 let mut input_state = resources.get_mut::<InputResource>().unwrap();
                 let _app_control = resources.get_mut::<AppControlResource>().unwrap();
-                let viewport = resources.get::<ViewportResource>().unwrap();
-                minimum_winit::input::handle_winit_event(&event, &mut *input_state, &*viewport);
+                minimum_winit::input::handle_winit_event(&event, &mut *input_state);
             }
 
             // Handle general update/redraw events
@@ -337,7 +336,7 @@ fn init_imgui(window: &winit::window::Window) -> imgui::Context {
         .fonts()
         .add_font(&[font_1p, font_feather, font_material]);
     imgui.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
-    return imgui;
+    imgui
 }
 
 pub fn init_winit_imgui_manager(window: &winit::window::Window) -> WinitImguiManager {

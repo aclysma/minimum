@@ -103,7 +103,7 @@ pub fn draw(schedule: &mut legion::systems::Builder) {
 
                         // Draw all the circles
                         for (transform, skia_circle) in draw_circles_query.iter(world) {
-                            let mut scale = transform.uniform_scale();
+                            let scale = transform.uniform_scale();
                             let paint = skia_circle.paint.0.lock().unwrap();
                             canvas.draw_circle(
                                 skia_safe::Point::new(

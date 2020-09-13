@@ -61,7 +61,7 @@ impl InspectRenderDefault<Vec2> for Vec2 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) {
-        if data.len() == 0 {
+        if data.is_empty() {
             return;
         }
 
@@ -79,7 +79,7 @@ impl InspectRenderDefault<Vec2> for Vec2 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) -> bool {
-        if data.len() == 0 {
+        if data.is_empty() {
             return false;
         }
 
@@ -164,7 +164,7 @@ impl InspectRenderDefault<Vec3> for Vec3 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) {
-        if data.len() == 0 {
+        if data.is_empty() {
             return;
         }
 
@@ -183,7 +183,7 @@ impl InspectRenderDefault<Vec3> for Vec3 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) -> bool {
-        if data.len() == 0 {
+        if data.is_empty() {
             return false;
         }
 
@@ -263,7 +263,7 @@ impl InspectRenderDefault<Vec4> for Vec4 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) {
-        if data.len() == 0 {
+        if data.is_empty() {
             return;
         }
 
@@ -283,7 +283,7 @@ impl InspectRenderDefault<Vec4> for Vec4 {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) -> bool {
-        if data.len() == 0 {
+        if data.is_empty() {
             return false;
         }
 
@@ -364,7 +364,7 @@ impl InspectRenderDefault<Quat> for Quat {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) {
-        if data.len() == 0 {
+        if data.is_empty() {
             return;
         }
 
@@ -384,7 +384,7 @@ impl InspectRenderDefault<Quat> for Quat {
         ui: &imgui::Ui,
         _args: &InspectArgsDefault,
     ) -> bool {
-        if data.len() == 0 {
+        if data.is_empty() {
             return false;
         }
 

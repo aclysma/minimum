@@ -8,8 +8,7 @@ use crate::resources::PhysicsResource;
 use minimum::resources::editor::OpenedPrefabState;
 use legion::*;
 use std::ops::Range;
-use legion::storage::{ComponentStorage, Archetype, Components, ComponentWriter};
-use imgui;
+use legion::storage::{Archetype, Components, ComponentWriter};
 use imgui_inspect_derive::Inspect;
 use ncollide2d::shape::ShapeHandle as ShapeHandle2d;
 use ncollide3d::shape::ShapeHandle as ShapeHandle3d;
@@ -18,7 +17,6 @@ use ncollide3d::shape::Cuboid as Cuboid3d;
 use ncollide2d::shape::Ball as Ball2d;
 use ncollide2d::shape::Cuboid as Cuboid2d;
 use ncollide3d::pipeline::{CollisionGroups, GeometricQueryType};
-use legion::storage::ComponentIndex;
 use nalgebra_glm as glm;
 
 use minimum::components::{TransformComponentDef};
@@ -86,7 +84,7 @@ fn transform_shape_to_rigid_body(
     };
 
     // Build the collider.
-    let collider = nphysics2d::object::ColliderDesc::new(shape_handle.clone())
+    let collider = nphysics2d::object::ColliderDesc::new(shape_handle)
         .density(1.0)
         .translation(vec2_glam_to_glm(*collider_offset.xy()))
         .build(nphysics2d::object::BodyPartHandle(rigid_body_handle, 0));

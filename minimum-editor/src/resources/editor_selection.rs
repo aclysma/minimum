@@ -63,7 +63,7 @@ impl EditorSelectionResource {
     }
 
     pub fn selected_entity_aabbs(&mut self) -> HashMap<Entity, Option<AABB<f32>>> {
-        Self::get_entity_aabbs(&self.selected_entities, &mut self.editor_selection_world)
+        Self::get_entity_aabbs(&self.selected_entities, &self.editor_selection_world)
     }
 
     pub fn enqueue_add_to_selection(
@@ -131,7 +131,7 @@ impl EditorSelectionResource {
                     changed
                 }
                 SelectionOp::Clear => {
-                    if self.selected_entities.len() > 0 {
+                    if !self.selected_entities.is_empty() {
                         self.selected_entities.clear();
                         true
                     } else {
@@ -139,7 +139,7 @@ impl EditorSelectionResource {
                     }
                 }
                 SelectionOp::Set(entities) => {
-                    self.selected_entities = entities.iter().map(|x| *x).collect();
+                    self.selected_entities = entities.iter().copied().collect();
                     true
                 }
             }

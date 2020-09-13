@@ -3,7 +3,6 @@ use sdl2::mouse::MouseButton;
 
 use sdl2::event::Event;
 
-use minimum::resources::ViewportResource;
 use minimum::input::InputState;
 
 use minimum::input as minimum_input;
@@ -55,7 +54,6 @@ impl Into<minimum_input::MouseButton> for Sdl2MouseButton {
 pub fn handle_sdl2_event(
     event: &Event,
     input_state: &mut InputState,
-    viewport: &ViewportResource,
 ) {
     let _is_close_requested = false;
 
@@ -69,17 +67,15 @@ pub fn handle_sdl2_event(
         Event::MouseButtonDown { mouse_btn, .. } => handle_mouse_button_event(
             input_state,
             mouse_btn,
-            viewport,
             minimum_input::ButtonState::Pressed,
         ),
         Event::MouseButtonUp { mouse_btn, .. } => handle_mouse_button_event(
             input_state,
             mouse_btn,
-            viewport,
             minimum_input::ButtonState::Released,
         ),
         Event::MouseMotion { x, y, .. } => {
-            input_state.handle_mouse_move_event(glam::Vec2::new(*x as f32, *y as f32), viewport);
+            input_state.handle_mouse_move_event(glam::Vec2::new(*x as f32, *y as f32));
         }
         Event::MouseWheel { x, y, .. } => {
             input_state.handle_mouse_wheel_event(minimum_input::MouseScrollDelta::new(
@@ -95,13 +91,11 @@ pub fn handle_sdl2_event(
 fn handle_mouse_button_event(
     input_state: &mut InputState,
     mouse_btn: &MouseButton,
-    viewport: &ViewportResource,
     button_state: minimum_input::ButtonState,
-) -> () {
+) {
     input_state.handle_mouse_button_event(
         Sdl2MouseButton::new(*mouse_btn).into(),
         button_state,
-        viewport,
     )
 }
 
@@ -109,7 +103,7 @@ fn handle_keyboard_event(
     input_state: &mut InputState,
     keycode: &Option<Keycode>,
     button_state: minimum_input::ButtonState,
-) -> () {
+) {
     if let Some(kc) = keycode {
         input_state.handle_keyboard_event(Sdl2KeyboardKey::new(*kc).into(), button_state)
     }

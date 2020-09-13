@@ -4,7 +4,6 @@ use std::ffi::CString;
 
 use example_winit::app::App;
 use example_winit::DemoApp;
-use minimum::daemon;
 
 fn main() {
     // Setup logging

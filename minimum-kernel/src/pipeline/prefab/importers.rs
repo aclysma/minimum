@@ -6,7 +6,7 @@ use type_uuid::TypeUuid;
 
 use crate::pipeline::PrefabAsset;
 
-use legion_prefab::{ComponentRegistration, Prefab};
+use legion_prefab::{ComponentRegistration};
 use std::collections::HashMap;
 use prefab_format::ComponentTypeUuid;
 
@@ -66,7 +66,7 @@ impl Importer for PrefabImporter {
             let comp_registrations = legion_prefab::iter_component_registrations();
             use std::iter::FromIterator;
             let component_types: HashMap<ComponentTypeUuid, ComponentRegistration> =
-                HashMap::from_iter(comp_registrations.map(|reg| (reg.uuid().clone(), reg.clone())));
+                HashMap::from_iter(comp_registrations.map(|reg| (*reg.uuid(), reg.clone())));
 
             component_types
         };

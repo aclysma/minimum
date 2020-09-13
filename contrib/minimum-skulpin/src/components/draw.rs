@@ -7,16 +7,14 @@ use legion::world::World;
 use ncollide3d::pipeline::{CollisionGroups, GeometricQueryType};
 use ncollide3d::shape::{Ball, Cuboid};
 use ncollide3d::shape::ShapeHandle;
-use minimum::components::{TransformComponent, TransformComponentDef};
-use imgui_inspect_derive;
+use minimum::components::{TransformComponentDef};
 use minimum::math::Vec3;
 use minimum::math::Vec4;
 use imgui_inspect_derive::Inspect;
 use legion::*;
 use minimum::resources::editor::OpenedPrefabState;
-use nalgebra_glm as glm;
 
-use crate::math_conversions::{vec2_glam_to_glm, vec3_glam_to_glm, quat_glam_to_glm};
+use crate::math_conversions::{vec3_glam_to_glm, quat_glam_to_glm};
 
 // A utility struct to describe color for a skia shape
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, SerdeDiff, PartialEq, Inspect, Default)]
@@ -130,11 +128,10 @@ pub struct DrawSkiaCircleComponent {
 
 impl From<DrawSkiaCircleComponentDef> for DrawSkiaCircleComponent {
     fn from(from: DrawSkiaCircleComponentDef) -> Self {
-        let c = DrawSkiaCircleComponent {
+        DrawSkiaCircleComponent {
             radius: from.radius,
             paint: from.paint.into(),
-        };
-        c
+        }
     }
 }
 
