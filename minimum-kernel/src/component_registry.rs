@@ -106,7 +106,7 @@ impl ComponentRegistry {
         &self.components_by_uuid
     }
 
-    pub fn copy_clone_impl<'a>(&'a self) -> CopyCloneImpl<'a, FnvBuildHasher> {
+    pub fn copy_clone_impl(&self) -> CopyCloneImpl<FnvBuildHasher> {
         CopyCloneImpl::new(&self.components)
     }
 
