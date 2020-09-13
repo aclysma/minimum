@@ -933,10 +933,7 @@ impl EditorStateResource {
                 let mut selection_resource =
                     resources.get_mut::<EditorSelectionResource>().unwrap();
                 let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
-                editor_state.restore_selected_uuids(
-                    &mut *selection_resource,
-                    &selected_uuids,
-                );
+                editor_state.restore_selected_uuids(&mut *selection_resource, &selected_uuids);
             }
         }
     }

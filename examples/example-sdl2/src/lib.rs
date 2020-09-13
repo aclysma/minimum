@@ -128,10 +128,7 @@ pub fn run() {
 
             if !sdl2_imgui.ignore_event(&event) {
                 let mut input_resource = resources.get_mut::<InputResource>().unwrap();
-                minimum_sdl2::input::handle_sdl2_event(
-                    &event,
-                    input_resource.input_state_mut(),
-                );
+                minimum_sdl2::input::handle_sdl2_event(&event, input_resource.input_state_mut());
 
                 //
                 // Halt if the user requests to close the window

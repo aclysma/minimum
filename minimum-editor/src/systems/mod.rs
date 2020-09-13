@@ -1,8 +1,6 @@
 use legion::*;
 
-use minimum_game::resources::{
-    InputResource, ViewportResource, DebugDraw3DResource, CameraResource,
-};
+use minimum_game::resources::{InputResource, ViewportResource, DebugDraw3DResource, CameraResource};
 use crate::resources::{
     EditorStateResource, EditorSelectionResource, EditorDraw3DResource, EditorSettingsResource,
 };
@@ -157,18 +155,9 @@ pub fn editor_update_editor_draw(schedule: &mut legion::systems::Builder) {
             .build(
                 |_command_buffer,
                  _subworld,
-                 (
-                    _editor_state,
-                    input_state,
-                    viewport,
-                    _editor_selection,
-                    editor_draw,
-                ),
+                 (_editor_state, input_state, viewport, _editor_selection, editor_draw),
                  _| {
-                    editor_draw.update(
-                        input_state.input_state(),
-                        &*viewport,
-                    );
+                    editor_draw.update(input_state.input_state(), &*viewport);
                 },
             ),
     );

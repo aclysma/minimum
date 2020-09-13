@@ -8,9 +8,7 @@ use minimum_winit::imgui::WinitImguiManager;
 
 use legion::*;
 use skulpin_plugin_imgui::ImguiRendererPlugin;
-use minimum::resources::{
-    ImguiResource, AppControlResource, TimeResource, InputResource,
-};
+use minimum::resources::{ImguiResource, AppControlResource, TimeResource, InputResource};
 use minimum_winit::resources::{WinitImguiManagerResource, WinitWindowResource};
 use minimum_skulpin::resources::CanvasDrawResource;
 

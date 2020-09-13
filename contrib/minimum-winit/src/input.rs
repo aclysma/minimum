@@ -150,9 +150,8 @@ pub fn handle_winit_event<T>(
             ..
         } => {
             trace!("mouse move input {:?} {:?}", device_id, position,);
-            input_state.handle_mouse_move_event(
-                glam::Vec2::new(position.x as f32, position.y as f32),
-            );
+            input_state
+                .handle_mouse_move_event(glam::Vec2::new(position.x as f32, position.y as f32));
         }
 
         Event::WindowEvent {

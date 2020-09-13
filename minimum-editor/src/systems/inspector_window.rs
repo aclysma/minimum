@@ -124,8 +124,7 @@ pub fn editor_inspector_window(
                             // Make a list of all entities, this is necessary because we can't take an &-borrow for uuid_to_entities at the
                             // same time as an &mut-borrow for world_mut()
                             let mut all = Entity::query();
-                            let all_entities: Vec<Entity> =
-                                all.iter(tx.world()).copied().collect();
+                            let all_entities: Vec<Entity> = all.iter(tx.world()).copied().collect();
 
                             //
                             // If a component needs to be added, do that now

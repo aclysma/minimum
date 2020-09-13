@@ -169,8 +169,7 @@ fn handle_translate_gizmo_input(
         }
 
         // Determine the drag distance in ui_space
-        let world_space_previous_frame_delta =
-            drag_in_progress.world_space_previous_frame_delta;
+        let world_space_previous_frame_delta = drag_in_progress.world_space_previous_frame_delta;
 
         let mut query = <(Entity, Write<TransformComponentDef>)>::query();
 

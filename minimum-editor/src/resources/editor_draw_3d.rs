@@ -343,22 +343,21 @@ impl EditorDraw3DResource {
                     } else {
                         None
                     }
-                }
-                // Shape::Sphere(_circle) => {
-                //     // // This is an odd kludge, but we want to work in ui space. However, the radius in ui space won't match the radius in
-                //     // // world space.
-                //     // let position_on_outline = circle.center + glam::vec2(circle.radius, 0.0);
-                //     // let scaled_center = viewport.world_space_to_ui_space(circle.center);
-                //     // let scaled_position_on_outline =
-                //     //     viewport.world_space_to_ui_space(position_on_outline);
-                //     // let scaled_radius =
-                //     //     f32::abs(scaled_position_on_outline.x() - scaled_center.x());
-                //     //
-                //     // minimum_math::functions::distance_to_sphere_sq(test_position, scaled_center, scaled_radius)
-                //
-                //     //std::f32::MAX
-                //     None
-                // }
+                } // Shape::Sphere(_circle) => {
+                  //     // // This is an odd kludge, but we want to work in ui space. However, the radius in ui space won't match the radius in
+                  //     // // world space.
+                  //     // let position_on_outline = circle.center + glam::vec2(circle.radius, 0.0);
+                  //     // let scaled_center = viewport.world_space_to_ui_space(circle.center);
+                  //     // let scaled_position_on_outline =
+                  //     //     viewport.world_space_to_ui_space(position_on_outline);
+                  //     // let scaled_radius =
+                  //     //     f32::abs(scaled_position_on_outline.x() - scaled_center.x());
+                  //     //
+                  //     // minimum_math::functions::distance_to_sphere_sq(test_position, scaled_center, scaled_radius)
+                  //
+                  //     //std::f32::MAX
+                  //     None
+                  // }
             };
 
             if let Some(result) = result {
@@ -394,10 +393,7 @@ impl EditorDraw3DResource {
 
         // Get mouse UI-space position
         let mouse_position = input_state.mouse_position();
-        let closest_shape = self.get_closest_shape(
-            mouse_position,
-            viewport,
-        );
+        let closest_shape = self.get_closest_shape(mouse_position, viewport);
 
         if let Some(closest_shape) = closest_shape {
             self.closest_shape_to_mouse.id = self.shapes[closest_shape.index].id.clone();
@@ -419,10 +415,9 @@ impl EditorDraw3DResource {
             if let Some(mouse_previous_down_position) =
                 input_state.mouse_button_went_down_position(mouse_button)
             {
-                if let Some(closest_shape) = self.get_closest_shape(
-                    mouse_previous_down_position,
-                    viewport,
-                ) {
+                if let Some(closest_shape) =
+                    self.get_closest_shape(mouse_previous_down_position, viewport)
+                {
                     if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE {
                         self.mouse_previous_down_on_shape[mouse_button_index] =
                             Some(EditorDraw3DShapeClickedState {
@@ -543,10 +538,9 @@ impl EditorDraw3DResource {
                         if let Some(down_on_shape) =
                             &self.mouse_previous_down_on_shape[mouse_button_index]
                         {
-                            if let Some(closest_shape) = self.get_closest_shape(
-                                mouse_drag_in_progress.begin_position,
-                                viewport,
-                            ) {
+                            if let Some(closest_shape) = self
+                                .get_closest_shape(mouse_drag_in_progress.begin_position, viewport)
+                            {
                                 let shape = &self.shapes[closest_shape.index];
                                 if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE
                                     && down_on_shape.shape_id == shape.id
@@ -599,10 +593,9 @@ impl EditorDraw3DResource {
                         if let Some(down_on_shape) =
                             &self.mouse_previous_down_on_shape[mouse_button_index]
                         {
-                            if let Some(closest_shape) = self.get_closest_shape(
-                                just_clicked_mouse_position,
-                                viewport,
-                            ) {
+                            if let Some(closest_shape) =
+                                self.get_closest_shape(just_clicked_mouse_position, viewport)
+                            {
                                 let shape = &self.shapes[closest_shape.index];
                                 if closest_shape.distance < MAX_MOUSE_INTERACT_DISTANCE_FROM_SHAPE
                                     && down_on_shape.shape_id == shape.id

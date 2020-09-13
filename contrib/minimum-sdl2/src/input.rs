@@ -64,16 +64,12 @@ pub fn handle_sdl2_event(
         Event::KeyUp {
             keycode, repeat: _, ..
         } => handle_keyboard_event(input_state, keycode, minimum_input::ButtonState::Released),
-        Event::MouseButtonDown { mouse_btn, .. } => handle_mouse_button_event(
-            input_state,
-            mouse_btn,
-            minimum_input::ButtonState::Pressed,
-        ),
-        Event::MouseButtonUp { mouse_btn, .. } => handle_mouse_button_event(
-            input_state,
-            mouse_btn,
-            minimum_input::ButtonState::Released,
-        ),
+        Event::MouseButtonDown { mouse_btn, .. } => {
+            handle_mouse_button_event(input_state, mouse_btn, minimum_input::ButtonState::Pressed)
+        }
+        Event::MouseButtonUp { mouse_btn, .. } => {
+            handle_mouse_button_event(input_state, mouse_btn, minimum_input::ButtonState::Released)
+        }
         Event::MouseMotion { x, y, .. } => {
             input_state.handle_mouse_move_event(glam::Vec2::new(*x as f32, *y as f32));
         }
@@ -93,10 +89,7 @@ fn handle_mouse_button_event(
     mouse_btn: &MouseButton,
     button_state: minimum_input::ButtonState,
 ) {
-    input_state.handle_mouse_button_event(
-        Sdl2MouseButton::new(*mouse_btn).into(),
-        button_state,
-    )
+    input_state.handle_mouse_button_event(Sdl2MouseButton::new(*mouse_btn).into(), button_state)
 }
 
 fn handle_keyboard_event(
