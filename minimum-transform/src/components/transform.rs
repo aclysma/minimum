@@ -90,6 +90,14 @@ impl TransformComponentDef {
         }
     }
 
+    pub fn transform(&self) -> glam::Mat4 {
+        glam::Mat4::from_scale_rotation_translation(
+            self.scale(),
+            self.rotation_quat(),
+            self.position(),
+        )
+    }
+
     pub fn position(&self) -> glam::Vec3 {
         *self.position
     }
@@ -247,11 +255,7 @@ impl TransformComponent {
 impl From<TransformComponentDef> for TransformComponent {
     fn from(from: TransformComponentDef) -> Self {
         TransformComponent {
-            transform: glam::Mat4::from_scale_rotation_translation(
-                from.scale(),
-                from.rotation_quat(),
-                from.position(),
-            ),
+            transform: from.transform(),
         }
     }
 }
