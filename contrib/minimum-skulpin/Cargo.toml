@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 minimum = { path = "../../minimum" }
 
-skulpin = "0.9"
+skulpin = "0.10"
 
 imgui-inspect-derive = "0.5"
 imgui-inspect = "0.5"

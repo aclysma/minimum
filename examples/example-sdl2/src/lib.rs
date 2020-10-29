@@ -52,7 +52,6 @@ pub fn run() {
         .position_centered()
         .allow_highdpi()
         .resizable()
-        .vulkan()
         .build()
         .expect("Failed to create window");
 
