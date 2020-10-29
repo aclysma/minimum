@@ -14,3 +14,8 @@ members = [
     "minimum-editor",
     "minimum"
 ]
+
+
+[patch.crates-io]
+skulpin = { git = "https://github.com/aclysma/skulpin.git" }
+skulpin-plugin-imgui = { git = "https://github.com/aclysma/skulpin.git" }
