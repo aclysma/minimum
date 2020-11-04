@@ -43,7 +43,7 @@ impl Importer for PrefabImporter {
     fn import(
         &self,
         source: &mut dyn Read,
-        _: Self::Options,
+        _: &Self::Options,
         state: &mut Self::State,
     ) -> atelier_importer::Result<ImporterValue> {
         ///////////////////////////////////////////////////////////////
