@@ -38,13 +38,12 @@ jobs:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0 -D warnings"
 
-#    TODO: Enable this
-#      - name: Run tests
-#        run: cargo test --workspace
-#        if: ${{ runner.os == 'Linux' }}
-#        env:
-#          CARGO_INCREMENTAL: 0
-#          RUSTFLAGS: "-C debuginfo=0 -D warnings"
+      - name: Run tests
+        run: cargo test --workspace
+        if: ${{ runner.os == 'Linux' }}
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0 -D warnings"
 
   clean:
     runs-on: ubuntu-latest
