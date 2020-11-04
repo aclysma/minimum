@@ -108,10 +108,10 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
         push_fn: fn(&mut ComponentWriter<Self>, Self),
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
-        let transform_components = legion_transaction::iter_component_slice_from_archetype::<
+        let transform_components = legion_prefab::iter_component_slice_from_archetype::<
             TransformComponentDef,
         >(src_components, src_arch, src_entity_range.clone());
-        let from = legion_transaction::get_component_slice_from_archetype::<
+        let from = legion_prefab::get_component_slice_from_archetype::<
             RigidBodyBallComponentDef,
         >(src_components, src_arch, src_entity_range)
         .unwrap();
@@ -185,12 +185,12 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
     ) {
         let mut physics = resources.get_mut::<PhysicsResource>().unwrap();
 
-        let transform_components = legion_transaction::iter_component_slice_from_archetype::<
+        let transform_components = legion_prefab::iter_component_slice_from_archetype::<
             TransformComponentDef,
         >(src_components, src_arch, src_entity_range.clone());
 
         let from =
-            legion_transaction::get_component_slice_from_archetype::<RigidBodyBoxComponentDef>(
+            legion_prefab::get_component_slice_from_archetype::<RigidBodyBoxComponentDef>(
                 src_components,
                 src_arch,
                 src_entity_range,

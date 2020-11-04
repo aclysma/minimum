@@ -14,7 +14,7 @@ minimum-nphysics2d = { path = "../../contrib/minimum-nphysics2d" }
 
 example-shared = { path = "../example-shared" }
 
-skulpin = { version = "0.11", default-features = false, features = ["skia_complete", "skulpin_winit"] }
+skulpin = { version = "0.11", default-features = false, features = ["skia_complete", "skulpin_winit", "winit-22"] }
 skulpin-plugin-imgui = "0.7"
 
 imgui-inspect-derive = "0.6"
