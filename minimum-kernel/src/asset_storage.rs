@@ -1,12 +1,12 @@
 use atelier_assets::loader::{
     crossbeam_channel::Sender,
     handle::{AssetHandle, RefOp, TypedAssetStorage},
-    AssetLoadOp, AssetStorage, AssetTypeId, LoadHandle, LoaderInfoProvider, TypeUuid,
+    storage::{AssetLoadOp, AssetStorage, LoaderInfoProvider}, AssetTypeId, LoadHandle,
 };
 use mopa::{mopafy, Any};
 use std::{sync::Mutex, collections::HashMap, error::Error};
 
-use atelier_assets::core::AssetUuid;
+use atelier_assets::core::{AssetUuid, type_uuid::TypeUuid};
 use crossbeam_channel::Receiver;
 use atelier_assets::loader::handle::SerdeContext;
 use std::marker::PhantomData;
@@ -20,7 +20,7 @@ pub trait DynAssetStorage: Any + Send {
         load_handle: LoadHandle,
         load_op: AssetLoadOp,
         version: u32,
-    ) -> Result<(), Box<dyn Error>>;
+    ) -> Result<(), Box<dyn Error + Send + 'static>>;
     fn commit_asset_version(
         &mut self,
         handle: LoadHandle,
@@ -99,11 +99,11 @@ impl AssetStorage for AssetStorageSet {
         &self,
         loader_info: &dyn LoaderInfoProvider,
         asset_data_type_id: &AssetTypeId,
-        data: &[u8],
+        data: Vec<u8>,
         load_handle: LoadHandle,
         load_op: AssetLoadOp,
         version: u32,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), Box<dyn Error + Send + 'static>> {
         let mut inner = self.inner.lock().unwrap();
 
         let asset_type_id = *inner
@@ -115,7 +115,7 @@ impl AssetStorage for AssetStorageSet {
             .storage
             .get_mut(&asset_type_id)
             .expect("unknown asset type")
-            .update_asset(loader_info, data, load_handle, load_op, version)
+            .update_asset(loader_info, &data, load_handle, load_op, version)
     }
 
     fn commit_asset_version(
@@ -241,7 +241,7 @@ where
         load_handle: LoadHandle,
         load_op: AssetLoadOp,
         version: u32,
-    ) -> Result<UpdateAssetResult<AssetT>, Box<dyn Error>>;
+    ) -> Result<UpdateAssetResult<AssetT>, Box<dyn Error + Send + 'static>>;
 
     fn commit_asset_version(
         &mut self,
@@ -286,12 +286,12 @@ where
         _load_handle: LoadHandle,
         load_op: AssetLoadOp,
         _version: u32,
-    ) -> Result<UpdateAssetResult<AssetDataT>, Box<dyn Error>> {
+    ) -> Result<UpdateAssetResult<AssetDataT>, Box<dyn Error + Send + 'static>> {
         let asset = futures_executor::block_on(SerdeContext::with(
             loader_info,
             refop_sender.clone(),
             async { bincode::deserialize::<AssetDataT>(data) },
-        ))?;
+        )).map_err(|x| unreachable!())?; //FIXME: atelier-assets upstream change
 
         load_op.complete();
         Ok(UpdateAssetResult::Result(asset))
@@ -373,7 +373,7 @@ impl<AssetT: TypeUuid + 'static + Send> DynAssetStorage for Storage<AssetT> {
         load_handle: LoadHandle,
         load_op: AssetLoadOp,
         version: u32,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), Box<dyn Error + Send + 'static>> {
         log::trace!(
             "update_asset {} {:?} {:?} {}",
             core::any::type_name::<AssetT>(),

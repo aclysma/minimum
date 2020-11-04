@@ -326,9 +326,9 @@ impl EditorStateResource {
             let version = loop {
                 asset_resource.update(resources);
                 let state = handle
-                    .load_status::<atelier_loader::rpc_loader::RpcLoader>(asset_resource.loader());
+                    .load_status(asset_resource.loader());
                 //println!("opening... {:?}", state);
-                if let atelier_loader::LoadStatus::Loaded = state {
+                if let atelier_loader::storage::LoadStatus::Loaded = state {
                     break handle
                         .asset_version::<PrefabAsset, _>(asset_resource.storage())
                         .unwrap();

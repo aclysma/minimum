@@ -40,14 +40,17 @@ use minimum_nphysics2d::resources::PhysicsResource;
 use minimum_nphysics2d::components::*;
 use example_shared::resources::FpsTextResource;
 use minimum_skulpin::components::*;
-use atelier_assets::loader::rpc_loader::RpcLoader;
+use atelier_assets::loader::storage::DefaultIndirectionResolver;
+use atelier_assets::loader::RpcIO;
+use atelier_assets::loader::Loader;
+use atelier_assets::loader::storage::IndirectionResolver;
 
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
 
 /// Create the asset manager that has all the required types registered
-pub fn create_asset_manager(loader: RpcLoader) -> AssetResource {
-    let mut asset_manager = AssetResource::new(loader);
+pub fn create_asset_manager(loader: Loader, resolver: Box<dyn IndirectionResolver>) -> AssetResource {
+    let mut asset_manager = AssetResource::new(loader, resolver);
     asset_manager.add_storage::<minimum::pipeline::PrefabAsset>();
     asset_manager
 }
@@ -135,8 +138,10 @@ impl app::AppHandler for DemoApp {
         resources: &mut Resources,
         window: &dyn Window,
     ) {
-        let rpc_loader = RpcLoader::new("127.0.0.1:9999".to_string()).unwrap();
-        let asset_manager = create_asset_manager(rpc_loader);
+        let rpc_loader = RpcIO::new("127.0.0.1:9999".to_string()).unwrap();
+        let loader = Loader::new(Box::new(rpc_loader));
+        let resolver = Box::new(DefaultIndirectionResolver);
+        let asset_manager = create_asset_manager(loader, resolver);
         let physics = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
 
         let camera_resource = CameraResource::new(

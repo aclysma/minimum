@@ -16,5 +16,7 @@ members = [
 ]
 
 
-[patch.crates-io]
+#[patch.crates-io]
 
+[patch."https://github.com/aclysma/atelier-assets"]
+atelier-assets = { path = "../atelier-assets"}

@@ -1,4 +1,4 @@
-use atelier_assets::loader::{handle::RefOp, rpc_loader::RpcLoader, Loader};
+use atelier_assets::loader::{handle::RefOp, Loader, storage::IndirectionResolver};
 
 use crate::AssetStorageSet;
 use crate::DynAssetLoader;
@@ -30,7 +30,8 @@ impl AssetResourceUpdateCallback for DefaultAssetResourceUpdateCallback {
 }
 
 pub struct AssetResource {
-    loader: RpcLoader,
+    loader: Loader,
+    resolver: Box<dyn IndirectionResolver>,
     storage: AssetStorageSet,
     tx: Sender<RefOp>,
     rx: Receiver<RefOp>,
@@ -38,12 +39,13 @@ pub struct AssetResource {
 }
 
 impl AssetResource {
-    pub fn new(loader: RpcLoader) -> Self {
+    pub fn new(loader: Loader, resolver: Box<dyn IndirectionResolver>) -> Self {
         let (tx, rx) = atelier_loader::crossbeam_channel::unbounded();
         let storage = AssetStorageSet::new(tx.clone());
 
         AssetResource {
             loader,
+            resolver,
             storage,
             tx,
             rx,
@@ -82,7 +84,7 @@ impl AssetResource {
     pub fn do_update(&mut self) {
         atelier_loader::handle::process_ref_ops(&self.loader, &self.rx);
         self.loader
-            .process(&self.storage)
+            .process(&self.storage, &*self.resolver)
             .expect("failed to process loader");
     }
 
@@ -93,7 +95,7 @@ impl AssetResource {
         self.update_callback = Some(update_callback);
     }
 
-    pub fn loader(&self) -> &RpcLoader {
+    pub fn loader(&self) -> &Loader {
         &self.loader
     }
 

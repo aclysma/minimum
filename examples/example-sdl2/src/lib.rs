@@ -33,7 +33,9 @@ use minimum_sdl2::imgui::Sdl2ImguiManager;
 use minimum_skulpin::resources::CanvasDrawResource;
 use example_shared::resources::FpsTextResource;
 use minimum_nphysics2d::resources::PhysicsResource;
-use atelier_assets::loader::rpc_loader::RpcLoader;
+use atelier_assets::loader::Loader;
+use atelier_assets::loader::RpcIO;
+use atelier_assets::loader::storage::DefaultIndirectionResolver;
 
 pub const GRAVITY: f32 = -9.81;
 pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
@@ -181,8 +183,10 @@ fn create_resources(
 ) -> Resources {
     let mut resources = Resources::default();
 
-    let rpc_loader = RpcLoader::new("127.0.0.1:9999".to_string()).unwrap();
-    let asset_resource = registration::create_asset_manager(rpc_loader);
+    let rpc_loader = RpcIO::new("127.0.0.1:9999".to_string()).unwrap();
+    let loader = Loader::new(Box::new(rpc_loader));
+    let resolver = Box::new(DefaultIndirectionResolver);
+    let asset_resource = registration::create_asset_manager(loader, resolver);
 
     let physics_resource = PhysicsResource::new(glam::Vec2::unit_y() * GRAVITY);
 

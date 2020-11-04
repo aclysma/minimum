@@ -11,11 +11,12 @@ use minimum::ComponentRegistry;
 use minimum_skulpin::components::*;
 use minimum_nphysics2d::components::*;
 
-use atelier_assets::loader::rpc_loader::RpcLoader;
+use atelier_assets::loader::Loader;
+use atelier_assets::loader::storage::IndirectionResolver;
 
 /// Create the asset manager that has all the required types registered
-pub fn create_asset_manager(loader: RpcLoader) -> AssetResource {
-    let mut asset_manager = AssetResource::new(loader);
+pub fn create_asset_manager(loader: Loader, resolver: Box<dyn IndirectionResolver>) -> AssetResource {
+    let mut asset_manager = AssetResource::new(loader, resolver);
     asset_manager.add_storage::<minimum::pipeline::PrefabAsset>();
     asset_manager
 }

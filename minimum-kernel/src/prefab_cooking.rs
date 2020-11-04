@@ -2,8 +2,7 @@ use crate::resources::AssetResource;
 
 use atelier_assets::loader::{
     handle::{AssetHandle, Handle},
-    rpc_loader::RpcLoader,
-    LoadStatus, Loader,
+    storage::LoadStatus,
 };
 use std::collections::HashMap;
 
@@ -70,7 +69,7 @@ fn request_prefab_dependencies<F: Fn(&mut AssetResource)>(
     // Block until it loads
     loop {
         (update_fn)(asset_manager);
-        if let LoadStatus::Loaded = handle.load_status::<RpcLoader>(asset_manager.loader()) {
+        if let LoadStatus::Loaded = handle.load_status(asset_manager.loader()) {
             break;
         }
     }
