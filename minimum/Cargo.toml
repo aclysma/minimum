@@ -14,10 +14,10 @@ minimum-transform = { path = "../minimum-transform" }
 minimum-editor = { path = "../minimum-editor" }
 minimum-game = { path = "../minimum-game" }
 
-imgui-inspect-derive = "0.5"
-imgui-inspect = "0.5"
+imgui-inspect-derive = "0.6"
+imgui-inspect = "0.6"
 
-imgui = "0.4"
+imgui = "0.5"
 
 atelier-assets = { git = "https://github.com/aclysma/atelier-assets", branch = "minimum-0.3" }
 

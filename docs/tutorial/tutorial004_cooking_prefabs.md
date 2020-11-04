@@ -59,7 +59,9 @@ let cooked_entity = cooked_prefab.entities[&entity_uuid];
 
 let position = cooked_prefab
     .world
-    .get_component::<PositionComponent>(cooked_entity)
+    .entry_ref(cooked_entity)
+    .unwrap()
+    .into_component::<PositionComponent>()
     .unwrap();
 println!(
     "Position of {} is {}",

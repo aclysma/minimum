@@ -101,7 +101,7 @@ impl WinitImguiManager {
         window: &winit::window::Window,
     ) {
         self.imgui_manager.with_ui(|ui| {
-            let inner = self.inner.lock().unwrap();
+            let mut inner = self.inner.lock().unwrap();
             inner.platform.prepare_render(&ui, window);
         });
 

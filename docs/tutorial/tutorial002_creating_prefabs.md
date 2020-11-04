@@ -95,7 +95,9 @@ let entity = prefab.prefab_meta.entities[&entity_uuid];
 
 let position = prefab
     .world
-    .get_component::<PositionComponent>(entity)
+    .entry_ref(entity)
+    .unwrap()
+    .into_component::<PositionComponent>()
     .unwrap();
 println!(
     "Position of {} is {}",

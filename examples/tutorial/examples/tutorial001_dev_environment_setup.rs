@@ -14,7 +14,7 @@ fn main() {
     // Spawn the daemon in a background thread. This could be a different process, but
     // for simplicity we'll launch it here.
     std::thread::spawn(move || {
-        minimum::daemon::run();
+        minimum::daemon::create_default_asset_daemon();
     });
 
     // Create a legion world
@@ -38,14 +38,14 @@ fn main() {
     for _ in 0..10 {
         // Fetch gravity... and integrate it to velocity.
         let gravity = resources.get::<Gravity>().unwrap();
-        let query = <Write<VelocityComponent>>::query();
-        for mut vel in query.iter_mut(&mut world) {
+        let mut query = <Write<VelocityComponent>>::query();
+        for vel in query.iter_mut(&mut world) {
             vel.0 += gravity.0;
         }
 
         // Iterate across all entities and integrate velocity to position
-        let query = <(Write<PositionComponent>, TryRead<VelocityComponent>)>::query();
-        for (mut pos, vel) in query.iter_mut(&mut world) {
+        let mut query = <(Write<PositionComponent>, TryRead<VelocityComponent>)>::query();
+        for (pos, vel) in query.iter_mut(&mut world) {
             if let Some(vel) = vel {
                 pos.0 += vel.0;
             }
@@ -54,9 +54,9 @@ fn main() {
         }
 
         let position = world
-            .entry(entity)
+            .entry_ref(entity)
             .unwrap()
-            .get_component::<PositionComponent>()
+            .into_component::<PositionComponent>()
             .unwrap();
         println!("Position is {}", position.0);
     }

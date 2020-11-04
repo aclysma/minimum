@@ -70,7 +70,9 @@ let entity = cooked_prefab_with_override.entities[&entity_uuid];
 
 let position = cooked_prefab_with_override
     .world
-    .get_component::<PositionComponent>(entity)
+    .entry_ref(entity)
+    .unwrap()
+    .into_component::<PositionComponent>()
     .unwrap();
 println!(
     "Position of {} is {}",

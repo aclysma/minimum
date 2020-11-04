@@ -122,13 +122,12 @@ let mut resources = Resources::default();
 //
 // Spawn the prefab in a new world.
 //
-let mut clone_impl_result = HashMap::new();
-let spawn_impl = component_registry.spawn_clone_impl(&resources);
+let mut clone_impl_result = HashMap::default();
+let mut spawn_impl = component_registry.spawn_clone_impl(&resources, &mut clone_impl_result);
 world.clone_from(
     &cooked_prefab.world,
-    &spawn_impl,
-    &mut legion::world::HashMapCloneImplResult(&mut clone_impl_result),
-    &legion::world::NoneEntityReplacePolicy,
+    &legion::query::any(),
+    &mut spawn_impl,
 );
 ```
 
@@ -143,7 +142,9 @@ let cooked_entity = cooked_prefab.entities[&entity_uuid];
 let world_entity = clone_impl_result[&cooked_entity];
 
 let position = world
-    .get_component::<PositionComponent>(world_entity)
+    .entry_ref(world_entity)
+    .unwrap()
+    .into_component::<PositionComponent>()
     .unwrap();
 println!(
     "Position of {} is {}",

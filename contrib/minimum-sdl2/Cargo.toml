@@ -11,8 +11,8 @@ minimum = { path = "../../minimum" }
 
 sdl2 = { version = ">=0.33" }
 
-imgui = "0.4"
-imgui-sdl2 = "0.11.0"
+imgui = "0.5"
+imgui-sdl2 = "0.12.0"
 
 glam = { version = "0.8.5", features = ["serde"] }
 

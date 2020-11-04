@@ -54,13 +54,13 @@ fn main() {
     // Spawn the daemon in a background thread. This could be a different process, but
     // for simplicity we'll launch it here.
     std::thread::spawn(move || {
-        minimum::daemon::run();
+        minimum::daemon::create_default_asset_daemon();
     });
 }
 ```
 
 This enables logging and starts the asset daemon. If you wanted to customize where on disk assets are being pulled from,
-you could look at the implementation of `minimum::daemon::run()`. This implementation uses command line args, but you
+you could look at the implementation of `minimum::daemon::create_default_asset_daemon()`. This implementation uses command line args, but you
 could implement this yourself if you prefer different defaults.
 
 At this point you can start working with legion and many of the features we've built on top of it.
@@ -161,7 +161,7 @@ for _ in 0..10 {
         pos.0 += gravity.0;
     }
 
-    let position = world.get_component::<PositionComponent>(entity).unwrap();
+    let position = world.entry_ref(entity).unwrap().into_component::<PositionComponent>().unwrap();
     println!("Position is {}", position.0);
 }
 ```

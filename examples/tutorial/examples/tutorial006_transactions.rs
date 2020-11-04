@@ -8,7 +8,7 @@ use serde::Serialize;
 use serde::Deserialize;
 use serde_diff::SerdeDiff;
 use std::collections::HashMap;
-use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration, CookedPrefab};
+use legion_prefab::{Prefab, CookedPrefab};
 
 use minimum::ComponentRegistry;
 use prefab_format::EntityUuid;
@@ -41,7 +41,7 @@ fn main() {
     // Spawn the daemon in a background thread. This could be a different process, but
     // for simplicity we'll launch it here.
     std::thread::spawn(move || {
-        minimum::daemon::run();
+        minimum::daemon::create_default_asset_daemon();
     });
 
     // Register all components (based on legion_prefab::register_component_type! macro)
@@ -129,7 +129,9 @@ fn apply_to_prefab(
         "Original value on prefab: {}",
         prefab
             .world
-            .get_component::<PositionComponent>(prefab.prefab_meta.entities[&entity_uuid])
+            .entry_ref(prefab.prefab_meta.entities[&entity_uuid])
+            .unwrap()
+            .into_component::<PositionComponent>()
             .unwrap()
             .value
     );
@@ -140,7 +142,7 @@ fn apply_to_prefab(
         &mut prefab,
         diffs.apply_diff(),
         component_registry.components_by_uuid(),
-        &component_registry.copy_clone_impl(),
+        component_registry.copy_clone_impl(),
     )
     .unwrap();
 
@@ -148,7 +150,9 @@ fn apply_to_prefab(
         "Modified value on prefab: {}",
         prefab
             .world
-            .get_component::<PositionComponent>(prefab.prefab_meta.entities[&entity_uuid])
+            .entry_ref(prefab.prefab_meta.entities[&entity_uuid])
+            .unwrap()
+            .into_component::<PositionComponent>()
             .unwrap()
             .value
     );
@@ -159,7 +163,7 @@ fn apply_to_prefab(
         &mut prefab,
         diffs.revert_diff(),
         component_registry.components_by_uuid(),
-        &component_registry.copy_clone_impl(),
+        component_registry.copy_clone_impl(),
     )
     .unwrap();
 
@@ -167,7 +171,9 @@ fn apply_to_prefab(
         "Revert value on prefab: {}",
         prefab
             .world
-            .get_component::<PositionComponent>(prefab.prefab_meta.entities[&entity_uuid])
+            .entry_ref(prefab.prefab_meta.entities[&entity_uuid])
+            .unwrap()
+            .into_component::<PositionComponent>()
             .unwrap()
             .value
     );
@@ -183,7 +189,9 @@ fn apply_to_cooked_prefab(
         "Original value on cooked prefab: {}",
         cooked_prefab
             .world
-            .get_component::<PositionComponent>(cooked_prefab.entities[&entity_uuid])
+            .entry_ref(cooked_prefab.entities[&entity_uuid])
+            .unwrap()
+            .get_component::<PositionComponent>()
             .unwrap()
             .value
     );
@@ -193,14 +201,16 @@ fn apply_to_cooked_prefab(
         &mut cooked_prefab,
         diffs.apply_diff(),
         component_registry.components_by_uuid(),
-        &component_registry.copy_clone_impl(),
+        component_registry.copy_clone_impl(),
     );
 
     println!(
         "Modified value on cooked prefab: {}",
         cooked_prefab
             .world
-            .get_component::<PositionComponent>(cooked_prefab.entities[&entity_uuid])
+            .entry_ref(cooked_prefab.entities[&entity_uuid])
+            .unwrap()
+            .into_component::<PositionComponent>()
             .unwrap()
             .value
     );
@@ -210,14 +220,16 @@ fn apply_to_cooked_prefab(
         &mut cooked_prefab,
         diffs.revert_diff(),
         component_registry.components_by_uuid(),
-        &component_registry.copy_clone_impl(),
+        component_registry.copy_clone_impl(),
     );
 
     println!(
         "Revert value on cooked prefab: {}",
         cooked_prefab
             .world
-            .get_component::<PositionComponent>(cooked_prefab.entities[&entity_uuid])
+            .entry_ref(cooked_prefab.entities[&entity_uuid])
+            .unwrap()
+            .into_component::<PositionComponent>()
             .unwrap()
             .value
     );

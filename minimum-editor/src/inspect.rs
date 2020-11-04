@@ -104,7 +104,7 @@ where
 
                 let id_token = ui.push_id(core::any::type_name::<T>());
                 let draw_children = unsafe {
-                    imgui_sys::igCollapsingHeader(
+                    imgui_sys::igCollapsingHeaderTreeNodeFlags(
                         header_text.as_ptr(),
                         imgui_sys::ImGuiTreeNodeFlags_DefaultOpen as i32
                             | imgui_sys::ImGuiTreeNodeFlags_AllowItemOverlap as i32,

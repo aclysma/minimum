@@ -8,7 +8,7 @@ use serde::Serialize;
 use serde::Deserialize;
 use serde_diff::SerdeDiff;
 use std::collections::HashMap;
-use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration};
+use legion_prefab::Prefab;
 
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107190000"]
@@ -37,7 +37,7 @@ fn main() {
     // Spawn the daemon in a background thread. This could be a different process, but
     // for simplicity we'll launch it here.
     std::thread::spawn(move || {
-        minimum::daemon::run();
+        minimum::daemon::create_default_asset_daemon();
     });
 
     // Register all components (based on legion_prefab::register_component_type! macro)
@@ -93,14 +93,9 @@ fn main() {
     //
     // Spawn the prefab in a new world.
     //
-    let mut clone_impl_result = HashMap::new();
-    let spawn_impl = component_registry.spawn_clone_impl(&resources);
-    world.clone_from(
-        &cooked_prefab.world,
-        &spawn_impl,
-        &mut legion::world::HashMapCloneImplResult(&mut clone_impl_result),
-        &legion::world::NoneEntityReplacePolicy,
-    );
+    let mut clone_impl_result = HashMap::default();
+    let mut spawn_impl = component_registry.spawn_clone_impl(&resources, &mut clone_impl_result);
+    world.clone_from(&cooked_prefab.world, &legion::query::any(), &mut spawn_impl);
 
     // Look up the entity associated with the entity_uuid. To do this, we have to:
     // - Look at the cooked prefab to determine which entity is associated with the UUID
@@ -109,7 +104,9 @@ fn main() {
     let world_entity = clone_impl_result[&cooked_entity];
 
     let position = world
-        .get_component::<PositionComponent>(world_entity)
+        .entry_ref(world_entity)
+        .unwrap()
+        .into_component::<PositionComponent>()
         .unwrap();
     println!(
         "Position of {} is {}",

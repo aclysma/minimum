@@ -8,7 +8,7 @@ use serde::Serialize;
 use serde::Deserialize;
 use serde_diff::SerdeDiff;
 use std::collections::HashMap;
-use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration, PrefabBuilder};
+use legion_prefab::{Prefab, PrefabBuilder};
 
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107190000"]
@@ -37,7 +37,7 @@ fn main() {
     // Spawn the daemon in a background thread. This could be a different process, but
     // for simplicity we'll launch it here.
     std::thread::spawn(move || {
-        minimum::daemon::run();
+        minimum::daemon::create_default_asset_daemon();
     });
 
     // Register all components (based on legion_prefab::register_component_type! macro)
@@ -107,10 +107,17 @@ fn main() {
         .unwrap()
         .value = glam::Vec2::new(0.0, 1000.0);
 
+    //NOTE: Temporary hack to compile, create_prefab is not generic over the hasher
+    let components_by_uuid_temp_hack: HashMap<_, _> = component_registry
+        .components_by_uuid()
+        .iter()
+        .map(|(k, v)| (*k, v.clone()))
+        .collect();
+
     // Produce the prefab that overrides the original prefab
     let prefab_with_override = prefab_builder
         .create_prefab(
-            component_registry.components_by_uuid(),
+            &components_by_uuid_temp_hack,
             component_registry.copy_clone_impl(),
         )
         .unwrap();
@@ -135,7 +142,9 @@ fn main() {
 
     let position = cooked_prefab_with_override
         .world
-        .get_component::<PositionComponent>(entity)
+        .entry_ref(entity)
+        .unwrap()
+        .into_component::<PositionComponent>()
         .unwrap();
     println!(
         "Position of {} is {}",

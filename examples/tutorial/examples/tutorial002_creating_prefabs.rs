@@ -8,7 +8,7 @@ use serde::Serialize;
 use serde::Deserialize;
 use serde_diff::SerdeDiff;
 
-use legion_prefab::{SpawnCloneImpl, Prefab, ComponentRegistration};
+use legion_prefab::Prefab;
 
 #[derive(TypeUuid, Clone, Serialize, Deserialize, SerdeDiff, Debug, Default)]
 #[uuid = "8bf67228-f96c-4649-b306-ecd107190000"]
@@ -37,7 +37,7 @@ fn main() {
     // Spawn the daemon in a background thread. This could be a different process, but
     // for simplicity we'll launch it here.
     std::thread::spawn(move || {
-        minimum::daemon::run();
+        minimum::daemon::create_default_asset_daemon();
     });
 
     // Register all components (based on legion_prefab::register_component_type! macro)
@@ -81,7 +81,9 @@ fn main() {
 
     let position = prefab
         .world
-        .get_component::<PositionComponent>(entity)
+        .entry_ref(entity)
+        .unwrap()
+        .into_component::<PositionComponent>()
         .unwrap();
     println!(
         "Position of {} is {}",

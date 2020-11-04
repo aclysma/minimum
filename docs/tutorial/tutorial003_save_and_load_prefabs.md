@@ -128,7 +128,9 @@ let mut deserialized_entity = deserialized_prefab.prefab_meta.entities[&entity_u
 // that we get the same results as before
 let position = deserialized_prefab
     .world
-    .get_component::<PositionComponent>(deserialized_entity)
+    .entry_ref(deserialized_entity)
+    .unwrap()
+    .into_component::<PositionComponent>()
     .unwrap();
 
 println!(

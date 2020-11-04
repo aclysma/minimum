@@ -290,499 +290,505 @@ pub fn ray_intersect_internal(
     }
 }
 
-#[test]
-fn ray_intersect_same_origin() {
-    let p0 = glam::Vec3::new(0.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::zero());
-}
-
-#[test]
-fn ray_intersect_given_points_closest_orthogonal() {
-    let p0 = glam::Vec3::new(0.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, 0.0, 1.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::new(0.0, 0.0, 1.0));
-}
-
-#[test]
-fn ray_intersect_orthogonal_non_intersect() {
-    let p0 = glam::Vec3::new(-2.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 1.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.0);
-    assert_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::new(0.0, 0.0, 1.0));
-}
-
-#[test]
-fn ray_intersect_orthogonal_intersect() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.0);
-    assert_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::zero());
-}
-
-#[test]
-fn ray_intersect_non_orthogonal_non_intersect() {
-    let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_approx_eq!(result.t0, 1.0);
-    assert_approx_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::zero());
-    assert_eq!(result.c1, glam::Vec3::zero());
-}
-
-#[test]
-fn ray_intersect_non_power2() {
-    let p0 = glam::Vec3::new(0.0, -25.0, 0.0);
-    let d0 = glam::Vec3::new(0.0, 5.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(-5.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_approx_eq!(result.t0, 6.0);
-    assert_approx_eq!(result.t1, 5.0);
-    assert_approx_eq!(
-        0.0,
-        (result.c0 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared()
-    );
-    assert_approx_eq!(
-        0.0,
-        (result.c1 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared()
-    );
-}
-
-#[test]
-fn ray_intersect_opposite_direction() {
-    let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_approx_eq!(result.t0, 0.0);
-    assert_approx_eq!(result.t1, 1.5);
-    assert_eq!(result.c0, glam::Vec3::new(-1.0, -1.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(0.0, -1.0, 0.0));
-}
-
-#[test]
-fn ray_intersect_opposite_direction_rev() {
-    let p0 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d0 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d1 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.5);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(0.0, -1.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(-1.0, -1.0, 0.0));
-}
-
-#[test]
-fn ray_intersect_distance_limited() {
-    let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t1_max = 1.0;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 1.0);
-    assert_eq!(result.c0, glam::Vec3::new(-1.0, -1.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(0.0, -2.0, 0.0));
-}
-
-#[test]
-fn ray_intersect_distance_limited_rev() {
-    let p0 = glam::Vec3::new(0.0, -4.0, 0.0);
-    let d0 = glam::Vec3::new(0.0, 2.0, 0.0);
-    let t0_max = 1.0;
-
-    let p1 = glam::Vec3::new(-1.0, -1.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 1.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(0.0, -2.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(-1.0, -1.0, 0.0));
-}
-
-#[test]
-fn ray_intersect_parallel_towards() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 2.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
-}
-
-#[test]
-fn ray_intersect_parallel_away() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(-1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
-}
-
-#[test]
-fn ray_intersect_parallel_same_dir() {
-    let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 2.0);
-    assert_eq!(result.t1, 0.0);
-    assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
-}
-
-#[test]
-fn ray_intersect_parallel_same_dir_rev() {
-    let p0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t0_max = f32::MAX;
-
-    let p1 = glam::Vec3::new(-1.0, 0.0, 0.0);
-    let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
-    let t1_max = f32::MAX;
-
-    let r0 = NormalizedRay {
-        origin: p0,
-        dir: d0.normalize(),
-        length: d0.length(),
-    };
-    let r1 = NormalizedRay {
-        origin: p1,
-        dir: d1.normalize(),
-        length: d1.length(),
-    };
-
-    let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
-    println!("{:#?}", result);
-    assert_eq!(result.t0, 0.0);
-    assert_eq!(result.t1, 2.0);
-    assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
-    assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
-}
-
-#[test]
-fn point_segment_intersect_2d_0deg() {
-    let test_point = glam::Vec2::new(100.0, 0.0);
-    let p0 = glam::Vec2::new(0.0, 100.0);
-    let p1 = glam::Vec2::new(200.0, 100.0);
-
-    let result = point_segment_intersect_2d(test_point, p0, p1);
-    let dot = (result.closest_point - test_point).dot(p1 - p0);
-
-    println!("{:#?}", result);
-    println!("dot {}", dot);
-    assert_eq!(result.t, 0.5);
-    assert_eq!(result.closest_point, glam::Vec2::new(100.0, 100.0));
-    assert_eq!(result.distance_sq, 10000.0);
-    assert!(dot.abs() < 0.0001);
-}
-
-#[test]
-fn point_segment_intersect_2d_45deg() {
-    let test_point = glam::Vec2::new(100.0, 0.0);
-    let p0 = glam::Vec2::new(100.0, 100.0);
-    let p1 = glam::Vec2::new(200.0, 0.0);
-
-    let result = point_segment_intersect_2d(test_point, p0, p1);
-    let dot = (result.closest_point - test_point).dot(p1 - p0);
-
-    println!("{:#?}", result);
-    println!("dot {}", dot);
-    assert_eq!(result.t, 0.5);
-    assert_eq!(result.closest_point, glam::Vec2::new(150.0, 50.0));
-    assert_eq!(result.distance_sq, 5000.0);
-    assert!(dot.abs() < 0.0001);
-}
-
-#[test]
-fn point_segment_intersect_2d_30deg() {
-    let test_point = glam::Vec2::new(100.0, 0.0);
-    let p0 = glam::Vec2::new(100.0, 300.0);
-    let p1 = glam::Vec2::new(500.0, 0.0);
-
-    let result = point_segment_intersect_2d(test_point, p0, p1);
-    let dot = (result.closest_point - test_point).dot(p1 - p0);
-
-    println!("{:#?}", result);
-    println!("dot {}", dot);
-    assert_eq!(result.t, 0.36);
-    assert_eq!(result.closest_point, glam::Vec2::new(244.0, 192.0));
-    assert_eq!(result.distance_sq, 57600.0);
-    assert!(dot.abs() < 0.0001);
-}
-
-#[test]
-fn point_segment_intersect_2d_60deg() {
-    let test_point = glam::Vec2::new(100.0, 0.0);
-    let p0 = glam::Vec2::new(100.0, 400.0);
-    let p1 = glam::Vec2::new(400.0, 0.0);
-
-    let result = point_segment_intersect_2d(test_point, p0, p1);
-    let dot = (result.closest_point - test_point).dot(p1 - p0);
-
-    println!("{:#?}", result);
-    println!("dot {}", dot);
-    assert_eq!(result.t, 0.64);
-    assert_eq!(result.closest_point, glam::Vec2::new(292.0, 144.0));
-    assert_eq!(result.distance_sq, 57600.0);
-    assert!(dot.abs() < 0.0001);
-}
-
-#[test]
-fn point_segment_intersect_2d_90deg() {
-    let test_point = glam::Vec2::new(100.0, 0.0);
-    let p0 = glam::Vec2::new(200.0, 100.0);
-    let p1 = glam::Vec2::new(200.0, -100.0);
-
-    let result = point_segment_intersect_2d(test_point, p0, p1);
-    let dot = (result.closest_point - test_point).dot(p1 - p0);
-
-    println!("{:#?}", result);
-    println!("dot {}", dot);
-    assert_eq!(result.t, 0.5);
-    assert_eq!(result.closest_point, glam::Vec2::new(200.0, 0.0));
-    assert_eq!(result.distance_sq, 10000.0);
-    assert!(dot.abs() < 0.0001);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assert_approx_eq::assert_approx_eq;
+
+    #[test]
+    fn ray_intersect_same_origin() {
+        let p0 = glam::Vec3::new(0.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(0.0, 0.0, 0.0);
+        let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 0.0);
+        assert_eq!(result.t1, 0.0);
+        assert_eq!(result.c0, glam::Vec3::zero());
+        assert_eq!(result.c1, glam::Vec3::zero());
+    }
+
+    #[test]
+    fn ray_intersect_given_points_closest_orthogonal() {
+        let p0 = glam::Vec3::new(0.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(0.0, 0.0, 1.0);
+        let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 0.0);
+        assert_eq!(result.t1, 0.0);
+        assert_eq!(result.c0, glam::Vec3::zero());
+        assert_eq!(result.c1, glam::Vec3::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn ray_intersect_orthogonal_non_intersect() {
+        let p0 = glam::Vec3::new(-2.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(2.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(0.0, -4.0, 1.0);
+        let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 1.0);
+        assert_eq!(result.t1, 2.0);
+        assert_eq!(result.c0, glam::Vec3::zero());
+        assert_eq!(result.c1, glam::Vec3::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn ray_intersect_orthogonal_intersect() {
+        let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
+        let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 1.0);
+        assert_eq!(result.t1, 2.0);
+        assert_eq!(result.c0, glam::Vec3::zero());
+        assert_eq!(result.c1, glam::Vec3::zero());
+    }
+
+    #[test]
+    fn ray_intersect_non_orthogonal_non_intersect() {
+        let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
+        let d0 = glam::Vec3::new(1.0, 1.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
+        let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_approx_eq!(result.t0, 1.0);
+        assert_approx_eq!(result.t1, 2.0);
+        assert_eq!(result.c0, glam::Vec3::zero());
+        assert_eq!(result.c1, glam::Vec3::zero());
+    }
+
+    #[test]
+    fn ray_intersect_non_power2() {
+        let p0 = glam::Vec3::new(0.0, -25.0, 0.0);
+        let d0 = glam::Vec3::new(0.0, 5.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(-5.0, 0.0, 0.0);
+        let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_approx_eq!(result.t0, 6.0);
+        assert_approx_eq!(result.t1, 5.0);
+        assert_approx_eq!(
+            0.0,
+            (result.c0 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared()
+        );
+        assert_approx_eq!(
+            0.0,
+            (result.c1 - glam::Vec3::new(0.0, 5.0, 0.0)).length_squared()
+        );
+    }
+
+    #[test]
+    fn ray_intersect_opposite_direction() {
+        let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
+        let d0 = glam::Vec3::new(-1.0, -1.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
+        let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_approx_eq!(result.t0, 0.0);
+        assert_approx_eq!(result.t1, 1.5);
+        assert_eq!(result.c0, glam::Vec3::new(-1.0, -1.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(0.0, -1.0, 0.0));
+    }
+
+    #[test]
+    fn ray_intersect_opposite_direction_rev() {
+        let p0 = glam::Vec3::new(0.0, -4.0, 0.0);
+        let d0 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(-1.0, -1.0, 0.0);
+        let d1 = glam::Vec3::new(-1.0, -1.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 1.5);
+        assert_eq!(result.t1, 0.0);
+        assert_eq!(result.c0, glam::Vec3::new(0.0, -1.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(-1.0, -1.0, 0.0));
+    }
+
+    #[test]
+    fn ray_intersect_distance_limited() {
+        let p0 = glam::Vec3::new(-1.0, -1.0, 0.0);
+        let d0 = glam::Vec3::new(1.0, 1.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(0.0, -4.0, 0.0);
+        let d1 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t1_max = 1.0;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 0.0);
+        assert_eq!(result.t1, 1.0);
+        assert_eq!(result.c0, glam::Vec3::new(-1.0, -1.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(0.0, -2.0, 0.0));
+    }
+
+    #[test]
+    fn ray_intersect_distance_limited_rev() {
+        let p0 = glam::Vec3::new(0.0, -4.0, 0.0);
+        let d0 = glam::Vec3::new(0.0, 2.0, 0.0);
+        let t0_max = 1.0;
+
+        let p1 = glam::Vec3::new(-1.0, -1.0, 0.0);
+        let d1 = glam::Vec3::new(1.0, 1.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 1.0);
+        assert_eq!(result.t1, 0.0);
+        assert_eq!(result.c0, glam::Vec3::new(0.0, -2.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(-1.0, -1.0, 0.0));
+    }
+
+    #[test]
+    fn ray_intersect_parallel_towards() {
+        let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let d1 = glam::Vec3::new(-1.0, 0.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 2.0);
+        assert_eq!(result.t1, 0.0);
+        assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn ray_intersect_parallel_away() {
+        let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(-1.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 0.0);
+        assert_eq!(result.t1, 0.0);
+        assert_eq!(result.c0, glam::Vec3::new(-1.0, 0.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn ray_intersect_parallel_same_dir() {
+        let p0 = glam::Vec3::new(-1.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 2.0);
+        assert_eq!(result.t1, 0.0);
+        assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn ray_intersect_parallel_same_dir_rev() {
+        let p0 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let d0 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let t0_max = f32::MAX;
+
+        let p1 = glam::Vec3::new(-1.0, 0.0, 0.0);
+        let d1 = glam::Vec3::new(1.0, 0.0, 0.0);
+        let t1_max = f32::MAX;
+
+        let r0 = NormalizedRay {
+            origin: p0,
+            dir: d0.normalize(),
+            length: d0.length(),
+        };
+        let r1 = NormalizedRay {
+            origin: p1,
+            dir: d1.normalize(),
+            length: d1.length(),
+        };
+
+        let result = ray_ray_intersect_3d(r0, r1, t0_max, t1_max);
+        println!("{:#?}", result);
+        assert_eq!(result.t0, 0.0);
+        assert_eq!(result.t1, 2.0);
+        assert_eq!(result.c0, glam::Vec3::new(1.0, 0.0, 0.0));
+        assert_eq!(result.c1, glam::Vec3::new(1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn point_segment_intersect_2d_0deg() {
+        let test_point = glam::Vec2::new(100.0, 0.0);
+        let p0 = glam::Vec2::new(0.0, 100.0);
+        let p1 = glam::Vec2::new(200.0, 100.0);
+
+        let result = point_segment_intersect_2d(test_point, p0, p1);
+        let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+        println!("{:#?}", result);
+        println!("dot {}", dot);
+        assert_eq!(result.t, 0.5);
+        assert_eq!(result.closest_point, glam::Vec2::new(100.0, 100.0));
+        assert_eq!(result.distance_sq, 10000.0);
+        assert!(dot.abs() < 0.0001);
+    }
+
+    #[test]
+    fn point_segment_intersect_2d_45deg() {
+        let test_point = glam::Vec2::new(100.0, 0.0);
+        let p0 = glam::Vec2::new(100.0, 100.0);
+        let p1 = glam::Vec2::new(200.0, 0.0);
+
+        let result = point_segment_intersect_2d(test_point, p0, p1);
+        let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+        println!("{:#?}", result);
+        println!("dot {}", dot);
+        assert_eq!(result.t, 0.5);
+        assert_eq!(result.closest_point, glam::Vec2::new(150.0, 50.0));
+        assert_eq!(result.distance_sq, 5000.0);
+        assert!(dot.abs() < 0.0001);
+    }
+
+    #[test]
+    fn point_segment_intersect_2d_30deg() {
+        let test_point = glam::Vec2::new(100.0, 0.0);
+        let p0 = glam::Vec2::new(100.0, 300.0);
+        let p1 = glam::Vec2::new(500.0, 0.0);
+
+        let result = point_segment_intersect_2d(test_point, p0, p1);
+        let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+        println!("{:#?}", result);
+        println!("dot {}", dot);
+        assert_eq!(result.t, 0.36);
+        assert_eq!(result.closest_point, glam::Vec2::new(244.0, 192.0));
+        assert_eq!(result.distance_sq, 57600.0);
+        assert!(dot.abs() < 0.0001);
+    }
+
+    #[test]
+    fn point_segment_intersect_2d_60deg() {
+        let test_point = glam::Vec2::new(100.0, 0.0);
+        let p0 = glam::Vec2::new(100.0, 400.0);
+        let p1 = glam::Vec2::new(400.0, 0.0);
+
+        let result = point_segment_intersect_2d(test_point, p0, p1);
+        let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+        println!("{:#?}", result);
+        println!("dot {}", dot);
+        assert_eq!(result.t, 0.64);
+        assert_eq!(result.closest_point, glam::Vec2::new(292.0, 144.0));
+        assert_eq!(result.distance_sq, 57600.0);
+        assert!(dot.abs() < 0.0001);
+    }
+
+    #[test]
+    fn point_segment_intersect_2d_90deg() {
+        let test_point = glam::Vec2::new(100.0, 0.0);
+        let p0 = glam::Vec2::new(200.0, 100.0);
+        let p1 = glam::Vec2::new(200.0, -100.0);
+
+        let result = point_segment_intersect_2d(test_point, p0, p1);
+        let dot = (result.closest_point - test_point).dot(p1 - p0);
+
+        println!("{:#?}", result);
+        println!("dot {}", dot);
+        assert_eq!(result.t, 0.5);
+        assert_eq!(result.closest_point, glam::Vec2::new(200.0, 0.0));
+        assert_eq!(result.distance_sq, 10000.0);
+        assert!(dot.abs() < 0.0001);
+    }
 }
