@@ -111,9 +111,11 @@ impl SpawnFrom<RigidBodyBallComponentDef> for RigidBodyComponent {
         let transform_components = legion_prefab::iter_component_slice_from_archetype::<
             TransformComponentDef,
         >(src_components, src_arch, src_entity_range.clone());
-        let from = legion_prefab::get_component_slice_from_archetype::<
-            RigidBodyBallComponentDef,
-        >(src_components, src_arch, src_entity_range)
+        let from = legion_prefab::get_component_slice_from_archetype::<RigidBodyBallComponentDef>(
+            src_components,
+            src_arch,
+            src_entity_range,
+        )
         .unwrap();
 
         for (src_transform, from) in izip!(transform_components, from,) {
@@ -189,13 +191,12 @@ impl SpawnFrom<RigidBodyBoxComponentDef> for RigidBodyComponent {
             TransformComponentDef,
         >(src_components, src_arch, src_entity_range.clone());
 
-        let from =
-            legion_prefab::get_component_slice_from_archetype::<RigidBodyBoxComponentDef>(
-                src_components,
-                src_arch,
-                src_entity_range,
-            )
-            .unwrap();
+        let from = legion_prefab::get_component_slice_from_archetype::<RigidBodyBoxComponentDef>(
+            src_components,
+            src_arch,
+            src_entity_range,
+        )
+        .unwrap();
 
         for (src_transform, from) in izip!(transform_components, from,) {
             let mut half_extents = *from.half_extents;
