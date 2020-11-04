@@ -31,7 +31,7 @@ impl AssetResourceUpdateCallback for DefaultAssetResourceUpdateCallback {
 
 pub struct AssetResource {
     loader: Loader,
-    resolver: Box<dyn IndirectionResolver>,
+    resolver: Box<dyn IndirectionResolver + Send + Sync + 'static>,
     storage: AssetStorageSet,
     tx: Sender<RefOp>,
     rx: Receiver<RefOp>,
@@ -39,7 +39,7 @@ pub struct AssetResource {
 }
 
 impl AssetResource {
-    pub fn new(loader: Loader, resolver: Box<dyn IndirectionResolver>) -> Self {
+    pub fn new(loader: Loader, resolver: Box<dyn IndirectionResolver + Send + Sync + 'static>) -> Self {
         let (tx, rx) = atelier_loader::crossbeam_channel::unbounded();
         let storage = AssetStorageSet::new(tx.clone());
 

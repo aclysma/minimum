@@ -29,6 +29,7 @@ pub trait DynAssetStorage: Any + Send {
     fn free(
         &mut self,
         handle: LoadHandle,
+        version: u32,
     );
 
     fn type_name(&self) -> &'static str;
@@ -142,6 +143,7 @@ impl AssetStorage for AssetStorageSet {
         &self,
         asset_data_type_id: &AssetTypeId,
         load_handle: LoadHandle,
+        version: u32
     ) {
         let mut inner = self.inner.lock().unwrap();
 
@@ -154,7 +156,7 @@ impl AssetStorage for AssetStorageSet {
             .storage
             .get_mut(&asset_type_id)
             .expect("unknown asset type")
-            .free(load_handle)
+            .free(load_handle, version)
     }
 }
 
@@ -290,8 +292,12 @@ where
         let asset = futures_executor::block_on(SerdeContext::with(
             loader_info,
             refop_sender.clone(),
-            async { bincode::deserialize::<AssetDataT>(data) },
-        )).map_err(|x| unreachable!())?; //FIXME: atelier-assets upstream change
+            async { 
+                bincode::deserialize::<AssetDataT>(data)
+                // Coerce into boxed error
+                .map_err(|x| -> Box<dyn Error + Send + 'static> { Box::new(x) })  
+            },
+        ))?; 
 
         load_op.complete();
         Ok(UpdateAssetResult::Result(asset))
@@ -449,20 +455,22 @@ impl<AssetT: TypeUuid + 'static + Send> DynAssetStorage for Storage<AssetT> {
     fn free(
         &mut self,
         load_handle: LoadHandle,
+        version: u32,
     ) {
-        // Remove it from the list of assets
-        let asset_state = self.assets.remove(&load_handle);
+        if let Some(asset_state) = self.assets.get(&load_handle) {
+            if asset_state.version == version {
+                // Remove it from the list of assets
+                let asset_state = self.assets.remove(&load_handle).unwrap();
 
-        if let Some(asset_state) = asset_state {
-            log::trace!(
-                "free {} {:?} {:?}",
-                core::any::type_name::<AssetT>(),
-                load_handle,
-                asset_state.asset_uuid
-            );
-
-            // Trigger the free callback on the load handler, if one exists
-            self.loader.free(load_handle);
+                log::trace!(
+                    "free {} {:?} {:?}",
+                    core::any::type_name::<AssetT>(),
+                    load_handle,
+                    asset_state.asset_uuid
+                );
+                // Trigger the free callback on the load handler, if one exists
+                self.loader.free(load_handle);
+            }
         }
     }
 

@@ -27,9 +27,6 @@ type TransformQuery = Query<
 >;
 
 pub fn editor_gizmos(schedule: &mut legion::systems::Builder) {
-    //FIXME: atelier-assets upstream change
-    unimplemented!();
-    /*
     schedule.add_system(
         SystemBuilder::new("editor_input")
             .read_resource::<ViewportResource>()
@@ -129,7 +126,7 @@ pub fn editor_gizmos(schedule: &mut legion::systems::Builder) {
                 },
             ),
     );
-    */
+    
 }
 
 #[derive(Ord, PartialOrd, PartialEq, Eq)]

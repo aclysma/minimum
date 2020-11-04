@@ -315,8 +315,6 @@ impl EditorStateResource {
         {
             let mut asset_resource = resources.get_mut::<AssetResource>().unwrap();
 
-            use atelier_assets::loader::Loader;
-
             let load_handle = asset_resource.loader().add_ref(prefab_uuid);
             let handle = atelier_loader::handle::Handle::<PrefabAsset>::new(
                 asset_resource.tx().clone(),

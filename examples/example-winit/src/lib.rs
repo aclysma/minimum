@@ -49,7 +49,7 @@ pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
 
 /// Create the asset manager that has all the required types registered
-pub fn create_asset_manager(loader: Loader, resolver: Box<dyn IndirectionResolver>) -> AssetResource {
+pub fn create_asset_manager(loader: Loader, resolver: Box<dyn IndirectionResolver + Send + Sync + 'static>) -> AssetResource {
     let mut asset_manager = AssetResource::new(loader, resolver);
     asset_manager.add_storage::<minimum::pipeline::PrefabAsset>();
     asset_manager

@@ -13,9 +13,7 @@ use minimum_kernel::resources::AssetResource;
 use crate::components::EditorMetadataComponent;
 
 pub fn editor_entity_list_window(schedule: &mut legion::systems::Builder) {
-    //FIXME: atelier-assets upstream change
-    unimplemented!();
-    /*
+    
     schedule.add_system(
         SystemBuilder::new("editor_entity_list_window")
             .write_resource::<ImguiResource>()
@@ -141,5 +139,4 @@ pub fn editor_entity_list_window(schedule: &mut legion::systems::Builder) {
                 },
             ),
     );
-    */
 }
