@@ -1,5 +1,7 @@
 # Transactions
 
+*Compiling code for this demo is located in [/examples/tutorial/examples](../../examples/tutorial/examples)*
+
 Once you have a cooked prefab, you can modify it by using transactions. We use transactions for:
 
  * Applying changes to the runtime state

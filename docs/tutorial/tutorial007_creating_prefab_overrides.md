@@ -1,5 +1,7 @@
 # Creating Prefab Overrides
 
+*Compiling code for this demo is located in [/examples/tutorial/examples](../../examples/tutorial/examples)*
+
 Currently we have some very basic support for prefabs. This chapter will explain how to produce a prefab that overrides
 another prefab and how to cook it.
 

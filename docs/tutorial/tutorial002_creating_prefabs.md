@@ -1,5 +1,6 @@
-
 # Creating Prefabs
+
+*Compiling code for this demo is located in [/examples/tutorial/examples](../../examples/tutorial/examples)*
 
 In this chapter, we'll convert a legion world into a prefab.
 

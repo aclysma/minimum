@@ -1,5 +1,7 @@
 # Saving and Loading Prefabs
 
+*Compiling code for this demo is located in [/examples/tutorial/examples](../../examples/tutorial/examples)*
+
 Starting from tutorial 2, we have set up components and a component registry. We will also use the same legion world.
 
 First lets convert that world to a prefab

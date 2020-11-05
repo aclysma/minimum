@@ -1,5 +1,7 @@
 # Spawning Prefabs
 
+*Compiling code for this demo is located in [/examples/tutorial/examples](../../examples/tutorial/examples)*
+
 Now that we have a cooked prefab, we can spawn it into a runtime world. Before we do that, lets return to component
 registration briefly.
 

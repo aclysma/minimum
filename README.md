@@ -1,10 +1,10 @@
 # minimum
 
-A game development framework that provides basic tooling and a content authoring workflow. Minimum has easy-to-use 
-extension points for integrating custom and 3rd-party libraries with your game logic.
+An experimental game development framework that provides basic tooling and a content authoring workflow. Minimum has 
+easy-to-use extension points for integrating custom and 3rd-party libraries with your game logic.
 
 This library is best suited for use by those who want to start with something thin and bring their own tech to put on 
-top of it. It's your very own build-a-game-engine toolkit.
+top of it.
 
 [![Build Status](https://travis-ci.org/aclysma/minimum.svg?branch=master)](https://travis-ci.org/aclysma/minimum)
 
@@ -24,9 +24,8 @@ Youtube Video:
 ## Status
 
 This is probably more experimental than what most people are looking for. Unless you're looking for a totally blank
-slate with atelier assets and legion integrated, you'll probably be better off looking at something else. I'll likely
-keep using this project to prove out new ideas so I'll try to keep it building and up to date with the rest of the
-ecosystem.
+slate with atelier assets and legion integrated, you'll probably be better off looking at something else. I plan to
+continue using this project to prove out new ideas, but I'm not updating it as regularly as many other projects.
 
 Please see the [docs](https://github.com/aclysma/minimum/blob/master/docs/index.md)!
 
@@ -84,7 +83,8 @@ Or alternatively `cargo run --package example-sdl2` if you'd like to run the sam
 
 ## Roadmap
 
-TBD.. I plan to dogfood this for personal projects to help find gaps in needed functionality.
+This project is not intended to become a full, ready-to-use engine. It is an experimental "kernel" of a game engine that
+can be integrated in downstream projects to solve some tricky problems with editor workflow and asset management.
 
 ## License
 

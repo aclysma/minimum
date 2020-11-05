@@ -1,5 +1,7 @@
 # Cooking Prefabs
 
+*Compiling code for this demo is located in [/examples/tutorial/examples](../../examples/tutorial/examples)*
+
 Prefabs come in two forms - cooked, and uncooked.
 
 Uncooked prefabs can reference other prefabs. "Cooking" a prefab is the process of flattening a prefab and all the other

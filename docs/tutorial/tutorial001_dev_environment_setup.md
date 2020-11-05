@@ -1,5 +1,6 @@
-
 # Dev Environment Setup
+
+*Compiling code for this demo is located in [/examples/tutorial/examples](../../examples/tutorial/examples)*
 
 In order to get things started, you'll need to create a new crate:
 

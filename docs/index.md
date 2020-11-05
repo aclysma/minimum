@@ -1,10 +1,7 @@
 
 # Minimum Documentation
 
-## Tutorial
-
-Since our goal is to empower you to choose whatever systems you want, our tutorial is a bit non-linear. Here's the
-outline:
+## Tutorials/Examples
 
  * Prefab System ([Complete code for each tutorial here!](../examples/tutorial))
    * [Dev Environment Setup](tutorial/tutorial001_dev_environment_setup.md)
@@ -38,11 +35,11 @@ cargo run --example tutorial001_dev_environment_setup
 
 ## Philosophy
 
-Most game engines are a big wad of code that (hopefully) implements everything one would ever want for a game. For
-example, UE4 and Unity provide their own prescribed systems (for rendering, audio, etc.) along with a way to glue custom
-game code with their systems.
+Most game engines are vertical integrations of every system one would want for a game. For example, UE4 and Unity
+provide their own prescribed systems (for rendering, audio, etc.) along with a way to glue custom game code with their
+systems.
 
-The primary goal of this "engine" is to avoid packing in prescribed solutions, for at least two reasons:
+The primary goal of this (experimental) "engine" is to avoid packing in prescribed solutions, for at least two reasons:
  * Scope Management - We don't have the bandwidth to implement or maintain everything ourselves
  * Quality - It's better to let you pick exactly what you need rather that prescribing the same solution
    for everyone 
@@ -51,14 +48,13 @@ However, finding a way for people using slightly different solutions to share co
 to solve this by defining a "protocol" for game data and an extendable toolset to work with it. (We prefer the word
 "kernel" over "engine")
 
-Our hope is that this approach will lead to an ecosystem of easy-to-share solutions with well-managed scope. We believe
+The hope is that this approach can support to an ecosystem of easy-to-share solutions with well-managed scope. I think
 such an ecosystem would be more compatible with the OSS model than a monolithic design. It lets people own just what
 they're interested in and decentralizes technical decisions - a requirement for sustainable growth.
 
 ## How Extension Works
 
-In order for systems to inter-operate without being strongly coupled, we are embracing data-driven design. Rather than
-have one system directly call functions on another system, we expect systems to read/write data on resources and
+Rather than have one system directly call functions on another system, systems read/write data on resources and
 components. It is only necessary to share the format of the data - not any of the implementation that produces or
 consumes the data.
 
@@ -69,4 +65,4 @@ the transform component.
 ```
 
 This avoids dependencies between the physics and rendering systems, allowing downstream crates to be owned by different
-authors.
+authors. The data is essentially the interface between the systems.
