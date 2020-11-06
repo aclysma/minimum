@@ -9,16 +9,12 @@ use legion::*;
 
 use std::collections::HashMap;
 
-use atelier_assets::core::asset_uuid;
-
 use minimum::components::*;
 
 mod systems;
 use systems::*;
 
 pub mod app;
-
-use atelier_assets::core as atelier_core;
 
 use minimum::resources::{
     AssetResource, CameraResource, ViewportResource, DebugDraw2DResource, TimeResource,
@@ -49,7 +45,10 @@ pub const GROUND_HALF_EXTENTS_WIDTH: f32 = 3.0;
 pub const GRAVITY: f32 = -9.81;
 
 /// Create the asset manager that has all the required types registered
-pub fn create_asset_manager(loader: Loader, resolver: Box<dyn IndirectionResolver + Send + Sync + 'static>) -> AssetResource {
+pub fn create_asset_manager(
+    loader: Loader,
+    resolver: Box<dyn IndirectionResolver + Send + Sync + 'static>,
+) -> AssetResource {
     let mut asset_manager = AssetResource::new(loader, resolver);
     asset_manager.add_storage::<minimum::pipeline::PrefabAsset>();
     asset_manager
@@ -195,13 +194,13 @@ impl app::AppHandler for DemoApp {
             keybinds,
         ));
 
+        let prefab_handle = resources
+            .get_mut::<AssetResource>()
+            .unwrap()
+            .load_asset_path("demo_level.prefab");
+
         // Start the application
-        EditorStateResource::open_prefab(
-            world,
-            resources,
-            asset_uuid!("3991506e-ed7e-4bcb-8cfd-3366b31a6439"),
-        )
-        .unwrap();
+        EditorStateResource::open_prefab(world, resources, prefab_handle).unwrap();
     }
 
     fn update(

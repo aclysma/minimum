@@ -10,7 +10,7 @@ use atelier_assets::core::AssetUuid;
 use legion_prefab::{CookedPrefab, Prefab};
 use std::sync::Arc;
 
-use atelier_assets::loader::handle::AssetHandle;
+use atelier_assets::loader::handle::Handle;
 use legion_transaction::{WorldDiff, ApplyDiffToPrefabError};
 use prefab_format::{EntityUuid};
 
@@ -34,7 +34,7 @@ pub enum PostCommitSelection {
 /// single place in the frame in FIFO order
 enum EditorOp {
     /// Clear the world and load the given prefab into it
-    OpenPrefab(AssetUuid),
+    OpenPrefab(Handle<PrefabAsset>),
 
     /// Save the current pre-play state to the currently open prefab file
     SavePrefab,
@@ -153,6 +153,10 @@ impl OpenedPrefabState {
 
     pub fn uuid(&self) -> &AssetUuid {
         &self.uuid
+    }
+
+    pub fn handle(&self) -> &atelier_loader::handle::Handle<PrefabAsset> {
+        &self.prefab_handle
     }
 }
 
@@ -310,28 +314,23 @@ impl EditorStateResource {
     pub fn open_prefab(
         world: &mut World,
         resources: &Resources,
-        prefab_uuid: AssetUuid,
+        handle: Handle<PrefabAsset>, //LoadHandle,
     ) -> Result<(), OpenPrefabResult> {
         {
             let mut asset_resource = resources.get_mut::<AssetResource>().unwrap();
 
-            let load_handle = asset_resource.loader().add_ref(prefab_uuid);
-            let handle = atelier_loader::handle::Handle::<PrefabAsset>::new(
-                asset_resource.tx().clone(),
-                load_handle,
-            );
-
             let version = loop {
                 asset_resource.update(resources);
-                let state = handle
-                    .load_status(asset_resource.loader());
+                let state = asset_resource.load_status(&handle);
                 //println!("opening... {:?}", state);
                 if let atelier_loader::storage::LoadStatus::Loaded = state {
-                    break handle
-                        .asset_version::<PrefabAsset, _>(asset_resource.storage())
+                    break asset_resource
+                        .asset_version::<PrefabAsset>(&handle)
                         .unwrap();
                 }
             };
+
+            let prefab_uuid = asset_resource.load_info(&handle).unwrap().asset_id;
 
             // Load the uncooked prefab from disk and cook it. (Eventually this will be handled
             // during atelier's build step
@@ -348,7 +347,7 @@ impl EditorStateResource {
             let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
             let component_registry = resources.get::<ComponentRegistryResource>().unwrap();
 
-            let prefab_asset = handle.asset(asset_resource.storage());
+            let prefab_asset = asset_resource.asset(&handle);
 
             match prefab_asset {
                 None => return Err(OpenPrefabResult::AssetNotFound),
@@ -357,7 +356,7 @@ impl EditorStateResource {
                     // done within the daemon.
                     let noop_diff = WorldDiff::new(vec![], vec![]);
                     let uncooked_prefab = legion_transaction::apply_diff_to_prefab(
-                        &handle.asset(asset_resource.storage()).unwrap().prefab,
+                        &asset_resource.asset(&handle).unwrap().prefab,
                         &noop_diff,
                         component_registry.components_by_uuid(),
                         component_registry.copy_clone_impl(),
@@ -482,10 +481,9 @@ impl EditorStateResource {
 
     pub fn enqueue_open_prefab(
         &mut self,
-        prefab_uuid: AssetUuid,
+        handle: Handle<PrefabAsset>,
     ) {
-        self.pending_editor_ops
-            .push(EditorOp::OpenPrefab(prefab_uuid));
+        self.pending_editor_ops.push(EditorOp::OpenPrefab(handle));
     }
 
     pub fn enqueue_toggle_pause(&mut self) {
@@ -650,9 +648,8 @@ impl EditorStateResource {
             let editor_state = resources.get::<EditorStateResource>().unwrap();
             if let Some(opened_prefab) = &editor_state.opened_prefab {
                 let asset_resource = resources.get_mut::<AssetResource>().unwrap();
-                let version = opened_prefab
-                    .prefab_handle
-                    .asset_version::<PrefabAsset, _>(asset_resource.storage())
+                let version = asset_resource
+                    .asset_version(&opened_prefab.prefab_handle)
                     .unwrap();
                 if opened_prefab.version != version {
                     prefab_to_reload = Some(opened_prefab.clone());
@@ -677,7 +674,7 @@ impl EditorStateResource {
             }
 
             // re-cook and load the prefab
-            Self::open_prefab(world, resources, opened_prefab.uuid).unwrap();
+            Self::open_prefab(world, resources, opened_prefab.prefab_handle.clone()).unwrap();
 
             // Restore selection
             let mut editor_state = resources.get_mut::<EditorStateResource>().unwrap();
@@ -964,18 +961,14 @@ impl EditorStateResource {
             &opened_prefab.uncooked_prefab,
         );
 
-        asset_resource
-            .loader()
-            .with_serde_context(asset_resource.tx(), || {
-                //let new_prefab_uuid = *uuid::Uuid::new_v4().as_bytes();
-                prefab_format::serialize(
-                    &mut ron_ser,
-                    &prefab_ser,
-                    //new_prefab_uuid
-                    opened_prefab.uncooked_prefab.prefab_id(),
-                )
-                .expect("failed to round-trip prefab");
-            });
+        asset_resource.with_serde_context(|| {
+            prefab_format::serialize(
+                &mut ron_ser,
+                &prefab_ser,
+                opened_prefab.uncooked_prefab.prefab_id(),
+            )
+            .expect("failed to round-trip prefab");
+        });
 
         let output = ron_ser.into_output_string();
         log::trace!("Exporting prefab:");
@@ -1161,13 +1154,11 @@ impl EditorTransaction {
         }
 
         // create a context?
-        let diffs = asset_resource
-            .loader()
-            .with_serde_context(asset_resource.tx(), || {
-                // Create diffs for this transaction
-                self.transaction
-                    .create_transaction_diffs(component_registry.components_by_uuid())
-            });
+        let diffs = asset_resource.with_serde_context(|| {
+            // Create diffs for this transaction
+            self.transaction
+                .create_transaction_diffs(component_registry.components_by_uuid())
+        });
 
         // Update the current transaction info on the editor state. This is necessary book-keeping
         // to handle multiple transactions.

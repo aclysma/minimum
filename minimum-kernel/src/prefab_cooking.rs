@@ -1,9 +1,6 @@
 use crate::resources::AssetResource;
 
-use atelier_assets::loader::{
-    handle::{AssetHandle, Handle},
-    storage::LoadStatus,
-};
+use atelier_assets::loader::{handle::Handle, storage::LoadStatus};
 use std::collections::HashMap;
 
 use legion::storage::ComponentTypeId;
@@ -41,7 +38,7 @@ pub fn cook_prefab<F: Fn(&mut AssetResource), S: BuildHasher, T: BuildHasher>(
     let mut prefab_lookup = HashMap::new();
 
     for prefab_handle in prefab_handle_lookup.values() {
-        let prefab_asset: &PrefabAsset = prefab_handle.asset(asset_manager.storage()).unwrap();
+        let prefab_asset: &PrefabAsset = asset_manager.asset(&prefab_handle).unwrap();
         prefab_lookup.insert(prefab_asset.prefab.prefab_meta.id, &prefab_asset.prefab);
     }
 
@@ -63,19 +60,18 @@ fn request_prefab_dependencies<F: Fn(&mut AssetResource)>(
     update_fn: &F,
 ) {
     // Request the asset
-    let load_handle = asset_manager.loader().add_ref(id);
-    let handle = Handle::<PrefabAsset>::new(asset_manager.tx().clone(), load_handle);
+    let handle = asset_manager.load_asset::<PrefabAsset>(id);
 
     // Block until it loads
     loop {
         (update_fn)(asset_manager);
-        if let LoadStatus::Loaded = handle.load_status(asset_manager.loader()) {
+        if let LoadStatus::Loaded = asset_manager.load_status(&handle) {
             break;
         }
     }
 
     // Grab a reference to the asset
-    let prefab_asset: &PrefabAsset = handle.asset(asset_manager.storage()).unwrap();
+    let prefab_asset: &PrefabAsset = asset_manager.asset(&handle).unwrap();
 
     // Get a list of prefabs this asset references. We clone these into a new list due to borrowing restrictions
     let other_prefab_ids: Vec<_> = prefab_asset

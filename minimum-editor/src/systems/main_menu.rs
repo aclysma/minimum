@@ -80,8 +80,8 @@ pub fn editor_imgui_menu(schedule: &mut legion::systems::Builder) {
                             if imgui::MenuItem::new(imgui::im_str!("Open")).build(ui) {
                                 if let Some(opened_prefab) = editor_state.opened_prefab() {
                                     // temporarily get the recently opened prefab uuid from editor state
-                                    let uuid = opened_prefab.uuid();
-                                    editor_state.enqueue_open_prefab(*uuid);
+                                    let handle = opened_prefab.handle().clone();
+                                    editor_state.enqueue_open_prefab(handle);
                                 }
                             }
 

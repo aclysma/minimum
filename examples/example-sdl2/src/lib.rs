@@ -13,9 +13,6 @@ use skulpin::{Sdl2Window, RendererBuilder};
 
 use skulpin_plugin_imgui::ImguiRendererPlugin;
 
-use atelier_assets::core::asset_uuid;
-use atelier_assets::core as atelier_core;
-
 use legion::*;
 
 use minimum::resources::*;
@@ -108,13 +105,13 @@ pub fn run() {
     let mut world = World::default();
     let mut resources = create_resources(&sdl2_window, &sdl2_imgui);
 
+    let prefab_handle = resources
+        .get_mut::<AssetResource>()
+        .unwrap()
+        .load_asset_path("demo_level.prefab");
+
     // Start the application
-    EditorStateResource::open_prefab(
-        &mut world,
-        &resources,
-        asset_uuid!("3991506e-ed7e-4bcb-8cfd-3366b31a6439"),
-    )
-    .unwrap();
+    EditorStateResource::open_prefab(&mut world, &resources, prefab_handle).unwrap();
 
     let schedule_criteria = systems::ScheduleCriteria::new(false, EditorMode::Active);
     let mut update_schedule = systems::create_update_schedule(&schedule_criteria);

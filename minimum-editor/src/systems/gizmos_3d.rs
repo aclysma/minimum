@@ -126,7 +126,6 @@ pub fn editor_gizmos(schedule: &mut legion::systems::Builder) {
                 },
             ),
     );
-    
 }
 
 #[derive(Ord, PartialOrd, PartialEq, Eq)]
