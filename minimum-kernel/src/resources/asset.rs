@@ -89,6 +89,10 @@ impl AssetResource {
             .add_storage_with_loader::<AssetDataT, AssetT, LoaderT>(loader);
     }
 
+    pub fn loader(&self) -> &Loader {
+        &self.loader
+    }
+
     /// Call this frequently to update the asset loading system. This will call the function
     /// provided by set_update_fn, which should then call do_update. This allows for custom code to
     /// occur before/after update calls which might be triggered at the engine level rather than
